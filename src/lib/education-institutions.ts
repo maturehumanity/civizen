@@ -44,6 +44,111 @@ export type EducationLevel = (typeof EDUCATION_LEVELS)[number];
 
 export const DEFAULT_EDUCATION_LEVEL: EducationLevel = 'middle_school';
 
+/** Ordinal rank for comparing attainment (higher = more advanced). */
+export const EDUCATION_LEVEL_RANK: Record<EducationLevel, number> = {
+  middle_school: 1,
+  high_school: 2,
+  certificate: 3,
+  associate: 4,
+  bachelor: 5,
+  master: 6,
+  doctorate: 7,
+};
+
+/**
+ * Preliminary Learning base from highest attainment (before verification / breadth).
+ * Vocational certificates are scored above high school so formal university is not
+ * the only path to a meaningful Learning score.
+ */
+export const EDUCATION_LEVEL_BASE_SCORE: Record<EducationLevel, number> = {
+  middle_school: 12,
+  high_school: 22,
+  certificate: 32,
+  associate: 42,
+  bachelor: 55,
+  master: 68,
+  doctorate: 78,
+};
+
+const KNOWN_EDUCATION_LEVELS = new Set<string>(EDUCATION_LEVELS);
+
+/**
+ * Map stored degree labels (built-in keys or custom free text) onto a canonical level.
+ * Recognizes specialist / 5-year diploma programs as master’s-equivalent.
+ */
+export function normalizeEducationLevel(raw: string | null | undefined): EducationLevel {
+  const trimmed = (raw ?? '').trim();
+  if (!trimmed) return DEFAULT_EDUCATION_LEVEL;
+
+  const key = trimmed.toLowerCase().replace(/[_-]+/g, ' ').replace(/\s+/g, ' ');
+  const compact = key.replace(/\s/g, '');
+
+  if (KNOWN_EDUCATION_LEVELS.has(trimmed)) return trimmed as EducationLevel;
+  if (KNOWN_EDUCATION_LEVELS.has(key.replace(/\s/g, '_'))) {
+    return key.replace(/\s/g, '_') as EducationLevel;
+  }
+
+  if (/\b(ph\.?\s*d|doctorate|doctoral|dphil|edd|md)\b/.test(key) || compact.includes('phd')) {
+    return 'doctorate';
+  }
+
+  // Soviet / Armenian / European specialist diplomas (typically 5 years) ≈ master’s.
+  if (
+    (/\b(5\s*year|five\s*year)\b/.test(key) && /\b(diploma|degree|specialist)\b/.test(key)) ||
+    /\bspecialist\s+degree\b/.test(key) ||
+    /\bdiplom\b/.test(key) && /\b(specialist|magister)\b/.test(key)
+  ) {
+    return 'master';
+  }
+
+  if (
+    /\b(master|masters|mba|magister|mphil|msc|ma)\b/.test(key) ||
+    compact.startsWith('master')
+  ) {
+    return 'master';
+  }
+
+  if (
+    /\b(bachelor|baccalaureate|undergraduate|bsc|ba|bs)\b/.test(key) ||
+    compact.startsWith('bachelor')
+  ) {
+    return 'bachelor';
+  }
+
+  if (/\b(associate|aa|as)\b/.test(key) || compact.startsWith('associate')) {
+    return 'associate';
+  }
+
+  if (/\b(high\s*school|secondary|ged|lycee|lycée)\b/.test(key)) {
+    return 'high_school';
+  }
+
+  if (/\b(middle\s*school|junior\s*high|primary)\b/.test(key)) {
+    return 'middle_school';
+  }
+
+  if (/\b(certificate|certification|license|licence|diploma|vocational|trade|bootcamp)\b/.test(key)) {
+    return 'certificate';
+  }
+
+  // Unknown custom labels: treat as certificate-level, not middle school.
+  return 'certificate';
+}
+
+export function highestEducationLevel(
+  levels: Array<string | null | undefined>,
+): EducationLevel | null {
+  let best: EducationLevel | null = null;
+  for (const raw of levels) {
+    if (raw == null || String(raw).trim() === '') continue;
+    const level = normalizeEducationLevel(raw);
+    if (!best || EDUCATION_LEVEL_RANK[level] > EDUCATION_LEVEL_RANK[best]) {
+      best = level;
+    }
+  }
+  return best;
+}
+
 /** Broad fields / departments for the Education sentence picker. */
 export const EDUCATION_DEPARTMENT_SEEDS = [
   'Economics',

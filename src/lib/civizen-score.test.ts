@@ -109,6 +109,40 @@ describe('civizen score model', () => {
     expect(skills.sourceCount).toBe(1);
   });
 
+  it('scores Learning from highest education level, not record count alone', () => {
+    const countOnly = buildScoreFromProfileActivity({ educationCount: 1 });
+    const countScore = countOnly.categories.find((c) => c.id === 'learning')!.score!;
+    expect(countScore).toBeCloseTo(diminishingQuantityScore(1, 6, 55), 5);
+
+    const fiveYear = buildScoreFromProfileActivity({
+      educationEntries: [{ level: '5-Year Diploma Degree', verificationStatus: 'unverified' }],
+    });
+    const fiveYearScore = fiveYear.categories.find((c) => c.id === 'learning')!.score!;
+    expect(fiveYearScore).toBe(68);
+    expect(fiveYearScore).toBeGreaterThan(countScore);
+    expect(fiveYear.categories.find((c) => c.id === 'learning')!.confidence).toBe('low');
+
+    const master = buildScoreFromProfileActivity({
+      educationLevels: ['master'],
+      educationCount: 1,
+    });
+    expect(master.categories.find((c) => c.id === 'learning')!.score).toBe(68);
+
+    const bachelor = buildScoreFromProfileActivity({
+      educationLevels: ['bachelor'],
+      educationCount: 1,
+    });
+    expect(bachelor.categories.find((c) => c.id === 'learning')!.score).toBe(55);
+    expect(fiveYearScore).toBeGreaterThan(
+      bachelor.categories.find((c) => c.id === 'learning')!.score!,
+    );
+
+    const verifiedMaster = buildScoreFromProfileActivity({
+      educationEntries: [{ level: 'master', verificationStatus: 'verified' }],
+    });
+    expect(verifiedMaster.categories.find((c) => c.id === 'learning')!.score).toBe(78);
+  });
+
   it('scores Experience primarily from cumulative months, not entry count', () => {
     const shortHops = buildScoreFromProfileActivity({
       experienceCount: 3,

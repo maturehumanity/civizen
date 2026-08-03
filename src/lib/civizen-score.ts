@@ -8,8 +8,23 @@ import {
   calculateTierStatus,
   type CivizenTierStatus,
 } from '@/lib/civizen-score-tiers';
+import {
+  EDUCATION_LEVEL_BASE_SCORE,
+  highestEducationLevel,
+  type EducationLevel,
+} from '@/lib/education-institutions';
 
-export const SCORE_CALCULATION_VERSION = 'civizen-score-v1';
+export const SCORE_CALCULATION_VERSION = 'civizen-score-v1.1';
+
+/** Education row input for Learning (level-aware). */
+export type EducationScoreEntry = {
+  level?: string | null;
+  verificationStatus?: string | null;
+};
+
+export function isEducationVerified(status?: string | null): boolean {
+  return status === 'verified' || status === 'certificate_provided';
+}
 
 export type ScoreCategoryId =
   | 'learning'
@@ -584,6 +599,42 @@ export function diminishingQuantityScore(
 }
 
 /**
+ * Learning from education records: highest degree level is primary;
+ * extra credentials add a small breadth bonus; verification raises the score.
+ * Count-only fallback remains when no level strings are available.
+ */
+export function scoreLearningFromEducation(args: {
+  educationCount: number;
+  verifiedEducationCount: number;
+  educationLevels?: Array<string | null | undefined>;
+}): { score: number; highestLevel: EducationLevel | null } {
+  const levels = (args.educationLevels ?? []).filter(
+    (level): level is string => typeof level === 'string' && level.trim().length > 0,
+  );
+  const count = Math.max(args.educationCount, levels.length);
+  const verified = Math.max(0, args.verifiedEducationCount);
+  const highestLevel = highestEducationLevel(levels);
+
+  let levelScore = 0;
+  if (highestLevel) {
+    levelScore = EDUCATION_LEVEL_BASE_SCORE[highestLevel];
+  } else if (count > 0) {
+    // Legacy / missing level: quantity curve only (same as pre-v1.1).
+    levelScore = diminishingQuantityScore(count, 6, 55);
+  }
+
+  const extra = Math.max(0, count - 1);
+  const breadthBonus =
+    extra > 0 ? Math.min(12, diminishingQuantityScore(extra, 3, 12)) : 0;
+  const verifiedBoost = Math.min(22, verified * 10);
+
+  return {
+    score: clampScore(levelScore + breadthBonus + verifiedBoost),
+    highestLevel,
+  };
+}
+
+/**
  * Build a score model from currently available app data.
  * Education → Learning; skills → Skills; experience → Experience;
  * contribution events → Contributions; performance ratings → Performance.
@@ -593,6 +644,10 @@ export function buildScoreFromProfileActivity(args: {
   userId?: string;
   educationCount?: number;
   verifiedEducationCount?: number;
+  /** Raw education levels (built-in keys or custom labels). Preferred over count-only. */
+  educationLevels?: Array<string | null | undefined>;
+  /** Full education rows; when set, derives count / verified / levels. */
+  educationEntries?: EducationScoreEntry[];
   skillCount?: number;
   verifiedSkillCount?: number;
   experienceCount?: number;
@@ -607,8 +662,18 @@ export function buildScoreFromProfileActivity(args: {
   categoryOverrides?: Partial<Record<ScoreCategoryId, CategoryScoreInput>>;
   history?: ScoreHistoryItem[];
 }): CivizenScoreResponse {
-  const educationCount = args.educationCount ?? 0;
-  const verifiedEducationCount = args.verifiedEducationCount ?? 0;
+  const educationEntries = args.educationEntries;
+  const educationLevelsFromEntries = educationEntries?.map((entry) => entry.level);
+  const educationLevels = args.educationLevels ?? educationLevelsFromEntries;
+  const educationCount = Math.max(
+    args.educationCount ?? 0,
+    educationEntries?.length ?? 0,
+    educationLevels?.filter((level) => typeof level === 'string' && level.trim()).length ?? 0,
+  );
+  const verifiedEducationCount = Math.max(
+    args.verifiedEducationCount ?? 0,
+    educationEntries?.filter((entry) => isEducationVerified(entry.verificationStatus)).length ?? 0,
+  );
   const skillCount = args.skillCount ?? 0;
   const verifiedSkillCount = args.verifiedSkillCount ?? 0;
   const experienceCount = args.experienceCount ?? 0;
@@ -629,10 +694,13 @@ export function buildScoreFromProfileActivity(args: {
   }
 
   if (!categories.learning && educationCount > 0) {
-    const base = diminishingQuantityScore(educationCount, 6, 55);
-    const verifiedBoost = Math.min(30, verifiedEducationCount * 10);
+    const { score } = scoreLearningFromEducation({
+      educationCount,
+      verifiedEducationCount,
+      educationLevels,
+    });
     categories.learning = {
-      score: clampScore(base + verifiedBoost),
+      score,
       sourceCount: educationCount,
       verifiedSourceCount: verifiedEducationCount,
       confidence: verifiedEducationCount > 0 ? 'moderate' : 'low',
@@ -640,7 +708,7 @@ export function buildScoreFromProfileActivity(args: {
         {
           id: 'education',
           label: 'Education',
-          value: clampScore(base + verifiedBoost),
+          value: score,
           sourceCount: educationCount,
           confidence: verifiedEducationCount > 0 ? 'moderate' : 'low',
         },

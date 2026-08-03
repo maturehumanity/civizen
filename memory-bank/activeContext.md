@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Learning level-aware scoring (2026-08-03):** Learning is no longer count-only. Highest education level drives the preliminary score (`EDUCATION_LEVEL_BASE_SCORE`); custom labels like **5-Year Diploma Degree** normalize to master’s (68). Verification and extra credentials still boost. Wired through Profile / Home / UserProfile (`education_level` select). `SCORE_CALCULATION_VERSION` → `civizen-score-v1.1`. **Testing v0.1.115** (build 117).
+
 **Experience duration scoring (2026-08-03):** Experience is scored primarily from cumulative months (union of intervals, diminishing returns), not entry count. Extra roles add only a small breadth bonus so 2×3-year jobs outrank 3×6-month hops. Spec-aligned: years alone do not run away. **Testing v0.1.114**.
 
 **Experience field hover + Present default (2026-08-03):** Positions cycle pauses when hovering/opening any sentence token (areas, positions, duration, companies). Duration To is pre-filled as Present (“from – Present”). LANGUAGE_PACK_VERSION 107. **Testing v0.1.113** (build 115).

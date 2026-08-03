@@ -49,6 +49,7 @@ export default function UserProfile() {
   const [endorsements, setEndorsements] = useState<Endorsement[]>([]);
   const [educationCount, setEducationCount] = useState(0);
   const [verifiedEducationCount, setVerifiedEducationCount] = useState(0);
+  const [educationLevels, setEducationLevels] = useState<string[]>([]);
   const [skillCount, setSkillCount] = useState(0);
   const [experienceCount, setExperienceCount] = useState(0);
   const [contributionInput, setContributionInput] = useState<CategoryScoreInput | null>(null);
@@ -86,7 +87,7 @@ export default function UserProfile() {
         .eq('is_hidden', false),
       (supabase as any)
         .from('profile_education_entries')
-        .select('id, verification_status')
+        .select('id, education_level, verification_status')
         .eq('profile_id', userId),
       (supabase as any)
         .from('profile_skills_entries')
@@ -118,6 +119,17 @@ export default function UserProfile() {
             row.verification_status === 'certificate_provided',
         ).length,
       );
+      setEducationLevels(
+        educationData
+          .map((row: { education_level?: string | null }) =>
+            typeof row.education_level === 'string' ? row.education_level : '',
+          )
+          .filter((level: string) => level.trim().length > 0),
+      );
+    } else {
+      setEducationCount(0);
+      setVerifiedEducationCount(0);
+      setEducationLevels([]);
     }
 
     setSkillCount(countSkillsFromEntry(skillsData));
@@ -156,6 +168,7 @@ export default function UserProfile() {
         userId,
         educationCount,
         verifiedEducationCount,
+        educationLevels,
         skillCount,
         experienceCount,
         endorsementCount: endorsements.length,
@@ -166,6 +179,7 @@ export default function UserProfile() {
       userId,
       educationCount,
       verifiedEducationCount,
+      educationLevels,
       skillCount,
       experienceCount,
       endorsements.length,
