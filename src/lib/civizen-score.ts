@@ -14,7 +14,7 @@ import {
   type EducationLevel,
 } from '@/lib/education-institutions';
 
-export const SCORE_CALCULATION_VERSION = 'civizen-score-v1.1';
+export const SCORE_CALCULATION_VERSION = 'civizen-score-v1.2';
 
 /** Education row input for Learning (level-aware). */
 export type EducationScoreEntry = {
@@ -599,24 +599,27 @@ export function diminishingQuantityScore(
 }
 
 /**
- * Learning from education records: highest degree level is primary;
- * extra credentials add a small breadth bonus; verification raises the score.
+ * Learning: highest degree level is primary; trainings are a secondary boost.
+ * Extra education credentials add a small breadth bonus; verification raises the score.
  * Count-only fallback remains when no level strings are available.
  */
 export function scoreLearningFromEducation(args: {
   educationCount: number;
   verifiedEducationCount: number;
   educationLevels?: Array<string | null | undefined>;
+  trainingCount?: number;
 }): { score: number; highestLevel: EducationLevel | null } {
   const levels = (args.educationLevels ?? []).filter(
     (level): level is string => typeof level === 'string' && level.trim().length > 0,
   );
   const count = Math.max(args.educationCount, levels.length);
   const verified = Math.max(0, args.verifiedEducationCount);
+  const trainingCount = Math.max(0, args.trainingCount ?? 0);
   const highestLevel = highestEducationLevel(levels);
 
   let levelScore = 0;
   if (highestLevel) {
+    // Degree / diploma attainment is the primary Learning factor.
     levelScore = EDUCATION_LEVEL_BASE_SCORE[highestLevel];
   } else if (count > 0) {
     // Legacy / missing level: quantity curve only (same as pre-v1.1).
@@ -626,10 +629,16 @@ export function scoreLearningFromEducation(args: {
   const extra = Math.max(0, count - 1);
   const breadthBonus =
     extra > 0 ? Math.min(12, diminishingQuantityScore(extra, 3, 12)) : 0;
+  // Trainings add continuing-learning signal; capped lower when a degree already carries the score.
+  const trainingCap = highestLevel || count > 0 ? 18 : 45;
+  const trainingBonus =
+    trainingCount > 0
+      ? Math.min(trainingCap, diminishingQuantityScore(trainingCount, 6, trainingCap))
+      : 0;
   const verifiedBoost = Math.min(22, verified * 10);
 
   return {
-    score: clampScore(levelScore + breadthBonus + verifiedBoost),
+    score: clampScore(levelScore + breadthBonus + trainingBonus + verifiedBoost),
     highestLevel,
   };
 }
@@ -648,6 +657,8 @@ export function buildScoreFromProfileActivity(args: {
   educationLevels?: Array<string | null | undefined>;
   /** Full education rows; when set, derives count / verified / levels. */
   educationEntries?: EducationScoreEntry[];
+  /** Declared trainings / continuing courses (secondary Learning factor). */
+  trainingCount?: number;
   skillCount?: number;
   verifiedSkillCount?: number;
   experienceCount?: number;
@@ -674,6 +685,7 @@ export function buildScoreFromProfileActivity(args: {
     args.verifiedEducationCount ?? 0,
     educationEntries?.filter((entry) => isEducationVerified(entry.verificationStatus)).length ?? 0,
   );
+  const trainingCount = Math.max(0, args.trainingCount ?? 0);
   const skillCount = args.skillCount ?? 0;
   const verifiedSkillCount = args.verifiedSkillCount ?? 0;
   const experienceCount = args.experienceCount ?? 0;
@@ -693,15 +705,17 @@ export function buildScoreFromProfileActivity(args: {
     categories.performance = args.performance;
   }
 
-  if (!categories.learning && educationCount > 0) {
+  if (!categories.learning && (educationCount > 0 || trainingCount > 0)) {
     const { score } = scoreLearningFromEducation({
       educationCount,
       verifiedEducationCount,
       educationLevels,
+      trainingCount,
     });
+    const sourceCount = Math.max(educationCount, trainingCount > 0 ? educationCount + trainingCount : educationCount);
     categories.learning = {
       score,
-      sourceCount: educationCount,
+      sourceCount: Math.max(1, sourceCount),
       verifiedSourceCount: verifiedEducationCount,
       confidence: verifiedEducationCount > 0 ? 'moderate' : 'low',
       metrics: [
@@ -709,7 +723,7 @@ export function buildScoreFromProfileActivity(args: {
           id: 'education',
           label: 'Education',
           value: score,
-          sourceCount: educationCount,
+          sourceCount: Math.max(educationCount, trainingCount > 0 ? 1 : 0),
           confidence: verifiedEducationCount > 0 ? 'moderate' : 'low',
         },
         ...emptyMetrics('learning').filter((m) => m.id !== 'education'),
@@ -778,6 +792,7 @@ export function buildScoreFromProfileActivity(args: {
     args.performance?.metrics?.find((m) => m.id === 'ratings')?.sourceCount ?? 0;
   const evidenceCount =
     educationCount +
+    trainingCount +
     skillCount +
     experienceCount +
     endorsementCount +

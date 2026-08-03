@@ -34,6 +34,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
 import { uploadProfileAvatar } from '@/lib/profile-avatar';
 import { countSkillsFromEntry } from '@/lib/profile-skills';
+import { countTrainingsFromEntry } from '@/lib/profile-trainings';
 import { parseExperienceEntries, cumulativeExperienceMonths } from '@/lib/profile-experience';
 import {
   scoreContributionsFromEvents,
@@ -47,6 +48,7 @@ import {
   type PerformanceActivity,
 } from '@/lib/civizen-performance';
 import { EducationDetailsDialog } from '@/components/profile/EducationDetailsDialog';
+import { TrainingDetailsDialog } from '@/components/profile/TrainingDetailsDialog';
 import { SkillsDetailsDialog } from '@/components/profile/SkillsDetailsDialog';
 import { ExperienceDetailsDialog } from '@/components/profile/ExperienceDetailsDialog';
 import { ContributionsDetailsPanel } from '@/components/profile/ContributionsDetailsPanel';
@@ -84,6 +86,7 @@ export default function Profile() {
   const [educationCount, setEducationCount] = useState(0);
   const [verifiedEducationCount, setVerifiedEducationCount] = useState(0);
   const [educationLevels, setEducationLevels] = useState<string[]>([]);
+  const [trainingCount, setTrainingCount] = useState(0);
   const [skillCount, setSkillCount] = useState(0);
   const [experienceCount, setExperienceCount] = useState(0);
   const [experienceMonths, setExperienceMonths] = useState(0);
@@ -93,6 +96,7 @@ export default function Profile() {
   const [rotationDeg, setRotationDeg] = useState(0);
   const [selectedCategoryId, setSelectedCategoryId] = useState<ScoreCategoryId | null>(null);
   const [educationPanelOpen, setEducationPanelOpen] = useState(false);
+  const [trainingPanelOpen, setTrainingPanelOpen] = useState(false);
   const [skillsPanelOpen, setSkillsPanelOpen] = useState(false);
   const [contributionsPanelOpen, setContributionsPanelOpen] = useState(false);
   const [contributionEvents, setContributionEvents] = useState<ContributionEvent[]>([]);
@@ -145,6 +149,7 @@ export default function Profile() {
     const [
       { data: endorsementData },
       { data: educationData },
+      { data: trainingData },
       { data: skillsData },
       { data: experienceData },
       { data: avatarRow },
@@ -167,6 +172,11 @@ export default function Profile() {
         .from('profile_education_entries')
         .select('id, education_level, verification_status')
         .eq('profile_id', profile.id),
+      (supabase as any)
+        .from('profile_training_entries')
+        .select('training_names')
+        .eq('profile_id', profile.id)
+        .maybeSingle(),
       (supabase as any)
         .from('profile_skills_entries')
         .select('hard_skill_names, soft_skill_names, skill_names')
@@ -211,6 +221,7 @@ export default function Profile() {
       setEducationLevels([]);
     }
 
+    setTrainingCount(countTrainingsFromEntry(trainingData));
     setSkillCount(countSkillsFromEntry(skillsData));
     const experienceEntries = parseExperienceEntries(experienceData?.experiences);
     setExperienceCount(experienceEntries.length);
@@ -247,6 +258,7 @@ export default function Profile() {
         educationCount,
         verifiedEducationCount,
         educationLevels,
+        trainingCount,
         skillCount,
         experienceCount,
         experienceMonths,
@@ -259,6 +271,7 @@ export default function Profile() {
       educationCount,
       verifiedEducationCount,
       educationLevels,
+      trainingCount,
       skillCount,
       experienceCount,
       experienceMonths,
@@ -505,6 +518,7 @@ export default function Profile() {
   const activateCategory = (categoryId: ScoreCategoryId) => {
     setSelectedCategoryId(categoryId);
     setEducationPanelOpen(categoryId === 'learning');
+    setTrainingPanelOpen(categoryId === 'learning');
     setSkillsPanelOpen(categoryId === 'skills');
     setContributionsPanelOpen(categoryId === 'contributions');
     setPerformancePanelOpen(categoryId === 'performance');
@@ -515,7 +529,9 @@ export default function Profile() {
           ? 'contributions-ledger-panel'
           : categoryId === 'performance'
             ? 'performance-ledger-panel'
-            : `score-category-card-${categoryId}`;
+            : categoryId === 'learning'
+              ? 'learning-education-panel'
+              : `score-category-card-${categoryId}`;
       document.getElementById(targetId)?.scrollIntoView({
         behavior: 'smooth',
         block: 'nearest',
@@ -527,6 +543,7 @@ export default function Profile() {
     if (selectedCategoryId === categoryId) {
       setSelectedCategoryId(null);
       setEducationPanelOpen(false);
+      setTrainingPanelOpen(false);
       setSkillsPanelOpen(false);
       setContributionsPanelOpen(false);
       setPerformancePanelOpen(false);
@@ -1086,6 +1103,26 @@ export default function Profile() {
                 regionCode: profile.region_code,
                 city: profile.city,
               }}
+            />
+          </motion.div>
+        ) : null}
+
+        {profile?.id ? (
+          <motion.div
+            className={`mt-3 w-full max-w-md overflow-visible ${trainingPanelOpen ? '' : 'hidden'}`}
+            initial={false}
+            animate={
+              trainingPanelOpen ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }
+            }
+            transition={{ duration: 0.25 }}
+          >
+            <TrainingDetailsDialog
+              open={trainingPanelOpen}
+              onOpenChange={setTrainingPanelOpen}
+              onSaved={() => {
+                void fetchScoreInputs();
+              }}
+              profileId={profile.id}
             />
           </motion.div>
         ) : null}

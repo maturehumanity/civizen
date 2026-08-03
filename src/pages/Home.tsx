@@ -12,6 +12,7 @@ import { type Endorsement } from '@/lib/scoring';
 import { buildScoreFromProfileActivity, formatScoreValue, type CategoryScoreInput, type CivizenScoreResponse } from '@/lib/civizen-score';
 import { getDevelopmentalScoreColor } from '@/lib/civizen-score-tiers';
 import { countSkillsFromEntry } from '@/lib/profile-skills';
+import { countTrainingsFromEntry } from '@/lib/profile-trainings';
 import { parseExperienceEntries } from '@/lib/profile-experience';
 import {
   scoreContributionsFromEvents,
@@ -111,6 +112,7 @@ export default function Home() {
   const [educationCount, setEducationCount] = useState(0);
   const [verifiedEducationCount, setVerifiedEducationCount] = useState(0);
   const [educationLevels, setEducationLevels] = useState<string[]>([]);
+  const [trainingCount, setTrainingCount] = useState(0);
   const [skillCount, setSkillCount] = useState(0);
   const [experienceCount, setExperienceCount] = useState(0);
   const [contributionInput, setContributionInput] = useState<CategoryScoreInput | null>(null);
@@ -388,6 +390,13 @@ export default function Home() {
         setEducationLevels([]);
       }
 
+      const { data: trainingData } = await (supabase as any)
+        .from('profile_training_entries')
+        .select('training_names')
+        .eq('profile_id', profile.id)
+        .maybeSingle();
+      setTrainingCount(countTrainingsFromEntry(trainingData));
+
       const { data: skillsData } = await (supabase as any)
         .from('profile_skills_entries')
         .select('hard_skill_names, soft_skill_names, skill_names')
@@ -477,6 +486,7 @@ export default function Home() {
         educationCount,
         verifiedEducationCount,
         educationLevels,
+        trainingCount,
         skillCount,
         experienceCount,
         endorsementCount: endorsements.length,
@@ -488,6 +498,7 @@ export default function Home() {
       educationCount,
       verifiedEducationCount,
       educationLevels,
+      trainingCount,
       skillCount,
       experienceCount,
       endorsements.length,

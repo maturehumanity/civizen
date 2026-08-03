@@ -12,6 +12,7 @@ import { PILLARS, type PillarId } from '@/lib/constants';
 import { calculateCivizenScore, type Endorsement } from '@/lib/scoring';
 import { buildScoreFromProfileActivity, formatScoreValue, type CategoryScoreInput } from '@/lib/civizen-score';
 import { countSkillsFromEntry } from '@/lib/profile-skills';
+import { countTrainingsFromEntry } from '@/lib/profile-trainings';
 import { parseExperienceEntries } from '@/lib/profile-experience';
 import {
   loadContributionEvents,
@@ -50,6 +51,7 @@ export default function UserProfile() {
   const [educationCount, setEducationCount] = useState(0);
   const [verifiedEducationCount, setVerifiedEducationCount] = useState(0);
   const [educationLevels, setEducationLevels] = useState<string[]>([]);
+  const [trainingCount, setTrainingCount] = useState(0);
   const [skillCount, setSkillCount] = useState(0);
   const [experienceCount, setExperienceCount] = useState(0);
   const [contributionInput, setContributionInput] = useState<CategoryScoreInput | null>(null);
@@ -78,7 +80,7 @@ export default function UserProfile() {
       setProfile(profileData);
     }
 
-    const [{ data: endorsementData }, { data: educationData }, { data: skillsData }, { data: experienceData }] =
+    const [{ data: endorsementData }, { data: educationData }, { data: trainingData }, { data: skillsData }, { data: experienceData }] =
       await Promise.all([
       supabase
         .from('endorsements')
@@ -89,6 +91,11 @@ export default function UserProfile() {
         .from('profile_education_entries')
         .select('id, education_level, verification_status')
         .eq('profile_id', userId),
+      (supabase as any)
+        .from('profile_training_entries')
+        .select('training_names')
+        .eq('profile_id', userId)
+        .maybeSingle(),
       (supabase as any)
         .from('profile_skills_entries')
         .select('hard_skill_names, soft_skill_names, skill_names')
@@ -132,6 +139,7 @@ export default function UserProfile() {
       setEducationLevels([]);
     }
 
+    setTrainingCount(countTrainingsFromEntry(trainingData));
     setSkillCount(countSkillsFromEntry(skillsData));
     setExperienceCount(parseExperienceEntries(experienceData?.experiences).length);
 
@@ -169,6 +177,7 @@ export default function UserProfile() {
         educationCount,
         verifiedEducationCount,
         educationLevels,
+        trainingCount,
         skillCount,
         experienceCount,
         endorsementCount: endorsements.length,
@@ -180,6 +189,7 @@ export default function UserProfile() {
       educationCount,
       verifiedEducationCount,
       educationLevels,
+      trainingCount,
       skillCount,
       experienceCount,
       endorsements.length,

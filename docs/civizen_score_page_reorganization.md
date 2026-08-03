@@ -135,7 +135,7 @@ Important implementation rule:
 
 The category must not privilege formal university education as the only valid form of learning. Vocational, community-based, self-directed, practical, and assessed learning must also be supported.
 
-**Preliminary scoring (v1.1):** Learning is driven primarily by **highest education level** (middle school → doctorate), not by record count alone. Custom labels such as a **5-year diploma / specialist degree** normalize to master’s-equivalent. Additional credentials add a small breadth bonus; verification raises the score and confidence. When level data is missing, the older quantity curve remains as a fallback.
+**Preliminary scoring (v1.2):** Learning is driven primarily by **highest education level** (middle school → doctorate), not by record count. Custom labels such as a **5-year diploma / specialist degree** normalize to master’s-equivalent. **Trainings** (continuing courses attended) are a secondary boost, capped so they cannot outrank degree attainment. Additional credentials add a small breadth bonus; verification raises the score and confidence. When level data is missing, the older quantity curve remains as a fallback.
 
 Suggested expanded subsections:
 

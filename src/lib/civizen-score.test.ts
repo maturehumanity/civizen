@@ -143,6 +143,26 @@ describe('civizen score model', () => {
     expect(verifiedMaster.categories.find((c) => c.id === 'learning')!.score).toBe(78);
   });
 
+  it('treats degree level as primary Learning factor and trainings as secondary', () => {
+    const masterOnly = buildScoreFromProfileActivity({
+      educationEntries: [{ level: 'master', verificationStatus: 'unverified' }],
+    });
+    const masterPlusTrainings = buildScoreFromProfileActivity({
+      educationEntries: [{ level: 'master', verificationStatus: 'unverified' }],
+      trainingCount: 4,
+    });
+    const trainingsOnly = buildScoreFromProfileActivity({ trainingCount: 4 });
+    const masterScore = masterOnly.categories.find((c) => c.id === 'learning')!.score!;
+    const withTrainings = masterPlusTrainings.categories.find((c) => c.id === 'learning')!.score!;
+    const trainingsScore = trainingsOnly.categories.find((c) => c.id === 'learning')!.score!;
+
+    expect(masterScore).toBe(68);
+    expect(withTrainings).toBeGreaterThan(masterScore);
+    expect(withTrainings - masterScore).toBeLessThanOrEqual(18);
+    expect(trainingsScore).toBeGreaterThan(0);
+    expect(trainingsScore).toBeLessThan(masterScore);
+  });
+
   it('scores Experience primarily from cumulative months, not entry count', () => {
     const shortHops = buildScoreFromProfileActivity({
       experienceCount: 3,

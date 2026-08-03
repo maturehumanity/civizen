@@ -685,6 +685,7 @@ export function EducationDetailsDialog({
   return (
     <Card
       ref={cardRef}
+      id="learning-education-panel"
       className="relative mt-3 w-full max-w-md overflow-visible border-border/80 shadow-soft"
     >
       <div className="pointer-events-none absolute left-3 top-0 z-10 -translate-y-1/2">

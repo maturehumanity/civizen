@@ -2748,6 +2748,19 @@ export const baseTranslations = {
       "updateRating": "Update",
       "moreActivities": "And {count} more activities"
     },
+    "trainingDetails": {
+      "title": "Trainings",
+      "sentenceLead": "I have attended training on",
+      "trainings": "Trainings",
+      "trainingsPlaceholder": "trainings",
+      "trainingsSearch": "Search or add a training",
+      "trainingsEmpty": "No matching trainings.",
+      "addTraining": "Add “{name}”",
+      "autoSaving": "Saving…",
+      "autoSaved": "Saved",
+      "saveFailed": "Could not save trainings.",
+      "loadFailed": "Could not load trainings."
+    },
     "educationDetails": {
       "title": "Education details",
       "description": "Add the school or program that best represents your Learning & Qualifications.",
