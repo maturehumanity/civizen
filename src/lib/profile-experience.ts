@@ -311,7 +311,8 @@ export function emptyExperienceDraft(): Omit<ExperienceEntry, 'id'> & { id?: str
     positions: [],
     companies: [],
     durationStart: '',
-    durationEnd: '',
+    // To defaults to Present so the sentence shows “from – Present” before From is chosen.
+    durationEnd: DURATION_PRESENT,
   };
 }
 

@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Experience field hover + Present default (2026-08-03):** Positions cycle pauses when hovering/opening any sentence token (areas, positions, duration, companies). Duration To is pre-filled as Present (“from – Present”). LANGUAGE_PACK_VERSION 107. **Testing v0.1.113** (build 115).
+
 **Experience edit on hover (2026-08-03):** Committed experience rows show Edit/Delete only on hover (always visible on touch). Edit loads the entry into the sentence builder; saving replaces it in place. LANGUAGE_PACK_VERSION 106. **Testing v0.1.112** (build 114).
 
 **Experience positions preview cycle (2026-08-03):** Empty positions token cycles through catalog titles (Analyst, Director, …) instead of the word “positions”; pauses on hover/focus/open so the user can select. **Testing v0.1.111** (build 113).

@@ -436,9 +436,12 @@ export function ExperienceDetailsDialog({
   const [autosaveStatus, setAutosaveStatus] = useState<AutosaveStatus>('idle');
   const [areasOpen, setAreasOpen] = useState(false);
   const [positionsOpen, setPositionsOpen] = useState(false);
-  const [positionsHovered, setPositionsHovered] = useState(false);
   const [durationOpen, setDurationOpen] = useState(false);
   const [companiesOpen, setCompaniesOpen] = useState(false);
+  const [areasHovered, setAreasHovered] = useState(false);
+  const [positionsHovered, setPositionsHovered] = useState(false);
+  const [durationHovered, setDurationHovered] = useState(false);
+  const [companiesHovered, setCompaniesHovered] = useState(false);
   const [areasQuery, setAreasQuery] = useState('');
   const [positionsQuery, setPositionsQuery] = useState('');
   const [companiesQuery, setCompaniesQuery] = useState('');
@@ -508,6 +511,9 @@ export function ExperienceDetailsDialog({
       setAreasOpen(false);
       setPositionsOpen(false);
       setPositionsHovered(false);
+      setAreasHovered(false);
+      setDurationHovered(false);
+      setCompaniesHovered(false);
       setDurationOpen(false);
       setCompaniesOpen(false);
       setAreasQuery('');
@@ -886,9 +892,35 @@ export function ExperienceDetailsDialog({
   const presentLabel = t('profile.experienceDetails.durationPresent');
   const areasEmpty = draft.areas.length === 0;
   const positionsEmpty = draft.positions.length === 0;
+  const durationStartMissing = !normalizeDurationStart(draft.durationStart);
   const durationEmpty = !experienceDurationComplete(draft);
   const companiesEmpty = draft.companies.length === 0;
   const useBullets = entries.length > 1;
+  const pausePositionsCycle =
+    areasOpen ||
+    positionsOpen ||
+    durationOpen ||
+    companiesOpen ||
+    areasHovered ||
+    positionsHovered ||
+    durationHovered ||
+    companiesHovered;
+
+  const durationTokenLabel = durationStartMissing ? (
+    <>
+      <span className="text-muted-foreground">
+        {t('profile.experienceDetails.durationFromPlaceholder')}
+      </span>
+      {' – '}
+      <span className="text-primary">{presentLabel}</span>
+    </>
+  ) : (
+    formatDurationRange(
+      draft.durationStart,
+      draft.durationEnd || DURATION_PRESENT,
+      presentLabel,
+    )
+  );
 
   return (
     <Card
@@ -968,6 +1000,7 @@ export function ExperienceDetailsDialog({
               <SentenceToken
                 open={areasOpen}
                 onOpenChange={setAreasOpen}
+                onHoverChange={setAreasHovered}
                 ariaLabel={t('profile.experienceDetails.areas')}
                 empty={areasEmpty}
                 panel={
@@ -1077,7 +1110,7 @@ export function ExperienceDetailsDialog({
                   <CyclingOptionsLabel
                     options={PROFILE_EXPERIENCE_POSITION_SEEDS}
                     active
-                    paused={positionsOpen || positionsHovered}
+                    paused={pausePositionsCycle}
                     fallback={t('profile.experienceDetails.positionsPlaceholder')}
                   />
                 ) : (
@@ -1088,31 +1121,27 @@ export function ExperienceDetailsDialog({
               <SentenceToken
                 open={durationOpen}
                 onOpenChange={setDurationOpen}
+                onHoverChange={setDurationHovered}
                 ariaLabel={t('profile.experienceDetails.duration')}
                 empty={durationEmpty}
                 contentClassName="w-[min(22rem,calc(100vw-2rem))]"
                 panel={
                   <DurationPicker
                     durationStart={draft.durationStart}
-                    durationEnd={draft.durationEnd}
+                    durationEnd={draft.durationEnd || DURATION_PRESENT}
                     onChangeStart={setDurationStart}
                     onChangeEnd={setDurationEndMonthYear}
                     onSelectPresent={setDurationEndPresent}
                   />
                 }
               >
-                {durationEmpty
-                  ? t('profile.experienceDetails.durationPlaceholder')
-                  : formatDurationRange(
-                      draft.durationStart,
-                      draft.durationEnd || DURATION_PRESENT,
-                      presentLabel,
-                    )}
+                {durationTokenLabel}
               </SentenceToken>{' '}
               {t('profile.experienceDetails.sentenceWith')}{' '}
               <SentenceToken
                 open={companiesOpen}
                 onOpenChange={setCompaniesOpen}
+                onHoverChange={setCompaniesHovered}
                 ariaLabel={t('profile.experienceDetails.companies')}
                 empty={companiesEmpty}
                 panel={
