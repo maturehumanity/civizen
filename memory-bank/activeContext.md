@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Experience positions preview cycle (2026-08-03):** Empty positions token cycles through catalog titles (Analyst, Director, …) instead of the word “positions”; pauses on hover/focus/open so the user can select.
+
 **Profile Experience Present duration (2026-08-03):** Duration picker is From / To. Selecting From defaults To to **Present** (shown as “May 2002 – Present”); To can still be any month/year. Legacy single-point entries migrate to start + Present. LANGUAGE_PACK_VERSION 105. **Testing v0.1.110** (build 112).
 
 **Percent ring fix (2026-08-03):** Multi-colored tier-band track + split dashed progress made the ring look distorted and like progress sat in the wrong tiers. Restored one muted track, one continuous progress stroke, and slim tier separators only. **Testing v0.1.109**.

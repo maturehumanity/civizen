@@ -87,6 +87,7 @@ type SentenceTokenProps = {
   children: ReactNode;
   panel: ReactNode;
   contentClassName?: string;
+  onHoverChange?: (hovered: boolean) => void;
 };
 
 function SentenceToken({
@@ -97,6 +98,7 @@ function SentenceToken({
   children,
   panel,
   contentClassName,
+  onHoverChange,
 }: SentenceTokenProps) {
   const closeTimerRef = useRef<number | null>(null);
 
@@ -123,6 +125,10 @@ function SentenceToken({
     closeTimerRef.current = window.setTimeout(() => onOpenChange(false), 160);
   };
 
+  const setHovered = (hovered: boolean) => {
+    onHoverChange?.(hovered);
+  };
+
   return (
     <Popover
       open={open}
@@ -141,11 +147,15 @@ function SentenceToken({
             empty && 'text-muted-foreground',
           )}
           onMouseEnter={() => {
+            setHovered(true);
             if (canHoverOpen()) openMenu();
           }}
           onMouseLeave={() => {
+            setHovered(false);
             if (canHoverOpen()) scheduleClose();
           }}
+          onFocus={() => setHovered(true)}
+          onBlur={() => setHovered(false)}
         >
           <span className="whitespace-normal">{children}</span>
         </button>
@@ -155,9 +165,11 @@ function SentenceToken({
         sideOffset={6}
         className={cn('w-[min(18rem,calc(100vw-2rem))] p-0', contentClassName)}
         onMouseEnter={() => {
+          setHovered(true);
           if (canHoverOpen()) openMenu();
         }}
         onMouseLeave={() => {
+          setHovered(false);
           if (canHoverOpen()) scheduleClose();
         }}
         onOpenAutoFocus={(event) => event.preventDefault()}
@@ -165,6 +177,46 @@ function SentenceToken({
         {panel}
       </PopoverContent>
     </Popover>
+  );
+}
+
+function CyclingOptionsLabel({
+  options,
+  active,
+  paused,
+  fallback,
+}: {
+  options: readonly string[];
+  active: boolean;
+  paused: boolean;
+  fallback: string;
+}) {
+  const [index, setIndex] = useState(0);
+  const [preferReducedMotion, setPreferReducedMotion] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const sync = () => setPreferReducedMotion(media.matches);
+    sync();
+    media.addEventListener('change', sync);
+    return () => media.removeEventListener('change', sync);
+  }, []);
+
+  useEffect(() => {
+    if (!active || paused || preferReducedMotion || options.length <= 1) return;
+    const timer = window.setInterval(() => {
+      setIndex((current) => (current + 1) % options.length);
+    }, 1600);
+    return () => window.clearInterval(timer);
+  }, [active, paused, preferReducedMotion, options]);
+
+  if (!active || options.length === 0) return <>{fallback}</>;
+  const label = options[index % options.length] ?? fallback;
+  return (
+    <span className="inline-block min-w-[4.5ch] transition-opacity duration-300" aria-hidden>
+      {label}
+    </span>
   );
 }
 
@@ -380,6 +432,7 @@ export function ExperienceDetailsDialog({
   const [autosaveStatus, setAutosaveStatus] = useState<AutosaveStatus>('idle');
   const [areasOpen, setAreasOpen] = useState(false);
   const [positionsOpen, setPositionsOpen] = useState(false);
+  const [positionsHovered, setPositionsHovered] = useState(false);
   const [durationOpen, setDurationOpen] = useState(false);
   const [companiesOpen, setCompaniesOpen] = useState(false);
   const [areasQuery, setAreasQuery] = useState('');
@@ -437,6 +490,7 @@ export function ExperienceDetailsDialog({
       setAutosaveStatus('idle');
       setAreasOpen(false);
       setPositionsOpen(false);
+      setPositionsHovered(false);
       setDurationOpen(false);
       setCompaniesOpen(false);
       setAreasQuery('');
@@ -820,6 +874,7 @@ export function ExperienceDetailsDialog({
               <SentenceToken
                 open={positionsOpen}
                 onOpenChange={setPositionsOpen}
+                onHoverChange={setPositionsHovered}
                 ariaLabel={t('profile.experienceDetails.positions')}
                 empty={positionsEmpty}
                 panel={
@@ -870,9 +925,16 @@ export function ExperienceDetailsDialog({
                   </Command>
                 }
               >
-                {positionsEmpty
-                  ? t('profile.experienceDetails.positionsPlaceholder')
-                  : formatEnglishList(draft.positions)}
+                {positionsEmpty ? (
+                  <CyclingOptionsLabel
+                    options={PROFILE_EXPERIENCE_POSITION_SEEDS}
+                    active
+                    paused={positionsOpen || positionsHovered}
+                    fallback={t('profile.experienceDetails.positionsPlaceholder')}
+                  />
+                ) : (
+                  formatEnglishList(draft.positions)
+                )}
               </SentenceToken>{' '}
               {t('profile.experienceDetails.sentenceDuration')}{' '}
               <SentenceToken
