@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Testing v0.1.119 (2026-08-03):** Build 121 (`20260803-v0.1.119`). Live/Production remains on prior soak build. Includes org Social accounts + Publish to….
+
 **Org social publish (2026-08-03):** Official `@civizen` account can connect LinkedIn / Facebook / X under Settings → Social accounts, then use Home **Publish to…** (Share icon, next to Comment) after a Civizen post exists. Not simultaneous. LinkedIn company page `143053953`. LANGUAGE_PACK_VERSION 110.
 
 **Home Post composer placeholder (2026-08-03):** Composer empty state is now “Share an idea, update, or opportunity...” (was “What’s on your mind?”). LANGUAGE_PACK_VERSION 109.
