@@ -62,7 +62,7 @@ import {
   ScoreOverview,
   TierProgressSection,
 } from '@/components/score/ScorePageSections';
-import { getTierColorHex, TIER_RING_BANDS, TIER_RING_SEPARATORS } from '@/lib/civizen-score-tiers';
+import { getTierColorHex, TIER_RING_SEPARATORS } from '@/lib/civizen-score-tiers';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 const iconMap: Record<string, LucideIcon> = {
@@ -666,8 +666,6 @@ export default function Profile() {
   const percentFontSize = Math.round(dialRingStroke * 0.58);
   const tierColor = getTierColorHex(score.tier.finalTier ?? 'explorer');
   const percentFill = tierColor.toUpperCase() === '#D9A441' ? '#1C1917' : '#FFFFFF';
-  /** Hairline gaps in the progress stroke so all five tier bands stay visible when filled. */
-  const progressGapFraction = 0.006;
 
   return (
     <AppLayout>
@@ -824,70 +822,34 @@ export default function Profile() {
                   strokeWidth={dialRingStroke + 4}
                   className="stroke-background"
                 />
-                {/* Unequal tier bands — slim gaps, no labels */}
+                {/* Uniform track — tier sections are marked by separators only (not colored band fills). */}
+                <circle
+                  cx={dialRingCx}
+                  cy={dialRingCy}
+                  r={dialRingRadius}
+                  fill="none"
+                  strokeWidth={dialRingStroke}
+                  className="stroke-muted/45"
+                />
                 <g transform={`rotate(-90 ${dialRingCx} ${dialRingCy})`}>
-                  {TIER_RING_BANDS.map((band) => {
-                    const span = (band.toPercent - band.fromPercent) / 100;
-                    const start = band.fromPercent / 100;
-                    const gap = 0.006;
-                    const usable = Math.max(0.004, span - gap);
-                    const dash = usable * dialRingCircumference;
-                    const gapDash = dialRingCircumference - dash;
-                    const offset = -(start + gap / 2) * dialRingCircumference;
-                    return (
-                      <circle
-                        key={`band-${band.tier}`}
-                        cx={dialRingCx}
-                        cy={dialRingCy}
-                        r={dialRingRadius}
-                        fill="none"
-                        stroke={getTierColorHex(band.tier)}
-                        strokeOpacity={0.32}
-                        strokeWidth={dialRingStroke}
-                        strokeLinecap="butt"
-                        style={{
-                          strokeDasharray: `${dash} ${gapDash}`,
-                          strokeDashoffset: offset,
-                        }}
-                      />
-                    );
-                  })}
-                  {/* Progress fill split per tier band so separators stay visible at 100% */}
-                  {TIER_RING_BANDS.map((band) => {
-                    const from = band.fromPercent / 100;
-                    const to = band.toPercent / 100;
-                    if (overallRingProgress <= from) return null;
-                    const filledEnd = Math.min(overallRingProgress, to);
-                    const halfGap = progressGapFraction / 2;
-                    const start = from + (from > 0 ? halfGap : 0);
-                    const end = filledEnd - (to < 1 && filledEnd >= to - 1e-6 ? halfGap : 0);
-                    const length = Math.max(0, end - start);
-                    if (length <= 0) return null;
-                    const dash = length * dialRingCircumference;
-                    const gapDash = dialRingCircumference - dash;
-                    const offset = -start * dialRingCircumference;
-                    return (
-                      <motion.circle
-                        key={`fill-${band.tier}`}
-                        cx={dialRingCx}
-                        cy={dialRingCy}
-                        r={dialRingRadius}
-                        fill="none"
-                        stroke={tierColor}
-                        strokeWidth={dialRingStroke}
-                        strokeLinecap="butt"
-                        style={{
-                          strokeDasharray: `${dash} ${gapDash}`,
-                          strokeDashoffset: offset,
-                        }}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.6, ease: 'easeOut', delay: 0.45 }}
-                      />
-                    );
-                  })}
+                  <motion.circle
+                    cx={dialRingCx}
+                    cy={dialRingCy}
+                    r={dialRingRadius}
+                    fill="none"
+                    stroke={tierColor}
+                    strokeWidth={dialRingStroke}
+                    strokeLinecap="butt"
+                    style={{ strokeDasharray: dialRingCircumference }}
+                    initial={{ strokeDashoffset: dialRingCircumference }}
+                    animate={{
+                      strokeDashoffset:
+                        dialRingCircumference - overallRingProgress * dialRingCircumference,
+                    }}
+                    transition={{ duration: 1, ease: 'easeOut', delay: 0.5 }}
+                  />
                 </g>
-                {/* Slim tier separators — knockout + tier color so all five sections read on a full fill */}
+                {/* Slim tier separators (30/60/75/85) — knockout + tier color */}
                 {TIER_RING_SEPARATORS.map((mark) => {
                   const angle = -Math.PI / 2 + (mark.atPercent / 100) * 2 * Math.PI;
                   const half = dialRingStroke / 2 + 0.5;

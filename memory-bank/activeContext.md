@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Percent ring fix (2026-08-03):** Multi-colored tier-band track + split dashed progress made the ring look distorted and like progress sat in the wrong tiers. Restored one muted track, one continuous progress stroke, and slim tier separators only. **Testing v0.1.109**.
+
 **Dial photo/progress core (2026-08-02):** Modest ~11% larger photo + percent ring (`dialRingSize` 176, photo 8.5rem). `RING_INNER` raised 108→118 to reclaim gutter; factor band height stays mostly intact for Contributions / Performance labels. **Testing v0.1.108**.
 
 **Dial size for mobile labels (2026-08-02):** Score dial uses `max-w-lg` (same content width as Score categories) with a tighter SVG viewBox so the ring fills more of the square. Slightly larger name type + floor so Contributions / Performance stay readable; page `px-4` keeps a side margin. **Testing v0.1.107**.

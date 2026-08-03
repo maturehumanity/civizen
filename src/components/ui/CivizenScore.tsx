@@ -4,7 +4,6 @@ import {
   formatScorePercent,
   getDevelopmentalScoreColor,
   getTierColorHex,
-  TIER_RING_BANDS,
   TIER_RING_SEPARATORS,
   type CivizenTier,
 } from '@/lib/civizen-score-tiers';
@@ -42,7 +41,7 @@ export function CivizenScore({
   const circumference = 2 * Math.PI * radius;
   const progress = displayScore / 100;
   const strokeWidth = 10;
-  const progressGapFraction = 0.006;
+  const strokeDashoffset = circumference - progress * circumference;
   const cx = 50;
   const cy = 50;
   const progressColor = getTierColorHex(displayTier);
@@ -59,66 +58,28 @@ export function CivizenScore({
         transition={{ duration: 0.5, ease: 'easeOut' }}
       >
         <svg className="absolute inset-0" viewBox="0 0 100 100" aria-hidden>
+          <circle
+            cx={cx}
+            cy={cy}
+            r={radius}
+            fill="none"
+            strokeWidth={strokeWidth}
+            className="stroke-muted/45"
+          />
           <g transform={`rotate(-90 ${cx} ${cy})`}>
-            {TIER_RING_BANDS.map((band) => {
-              const span = (band.toPercent - band.fromPercent) / 100;
-              const start = band.fromPercent / 100;
-              const gap = 0.006;
-              const usable = Math.max(0.004, span - gap);
-              const dash = usable * circumference;
-              const gapDash = circumference - dash;
-              const offset = -(start + gap / 2) * circumference;
-              return (
-                <circle
-                  key={`band-${band.tier}`}
-                  cx={cx}
-                  cy={cy}
-                  r={radius}
-                  fill="none"
-                  stroke={getTierColorHex(band.tier)}
-                  strokeOpacity={0.32}
-                  strokeWidth={strokeWidth}
-                  strokeLinecap="butt"
-                  style={{
-                    strokeDasharray: `${dash} ${gapDash}`,
-                    strokeDashoffset: offset,
-                  }}
-                />
-              );
-            })}
-            {TIER_RING_BANDS.map((band) => {
-              const from = band.fromPercent / 100;
-              const to = band.toPercent / 100;
-              if (progress <= from) return null;
-              const filledEnd = Math.min(progress, to);
-              const halfGap = progressGapFraction / 2;
-              const start = from + (from > 0 ? halfGap : 0);
-              const end = filledEnd - (to < 1 && filledEnd >= to - 1e-6 ? halfGap : 0);
-              const length = Math.max(0, end - start);
-              if (length <= 0) return null;
-              const dash = length * circumference;
-              const gapDash = circumference - dash;
-              const offset = -start * circumference;
-              return (
-                <motion.circle
-                  key={`fill-${band.tier}`}
-                  cx={cx}
-                  cy={cy}
-                  r={radius}
-                  fill="none"
-                  stroke={progressColor}
-                  strokeWidth={strokeWidth}
-                  strokeLinecap="butt"
-                  style={{
-                    strokeDasharray: `${dash} ${gapDash}`,
-                    strokeDashoffset: offset,
-                  }}
-                  initial={animate ? { opacity: 0 } : undefined}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}
-                />
-              );
-            })}
+            <motion.circle
+              cx={cx}
+              cy={cy}
+              r={radius}
+              fill="none"
+              stroke={progressColor}
+              strokeWidth={strokeWidth}
+              strokeLinecap="butt"
+              style={{ strokeDasharray: circumference }}
+              initial={animate ? { strokeDashoffset: circumference } : { strokeDashoffset }}
+              animate={{ strokeDashoffset }}
+              transition={{ duration: 1, ease: 'easeOut', delay: 0.2 }}
+            />
           </g>
           {TIER_RING_SEPARATORS.map((mark) => {
             const angle = -Math.PI / 2 + (mark.atPercent / 100) * 2 * Math.PI;
