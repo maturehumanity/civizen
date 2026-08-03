@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { AlertCircle, CheckCircle2, Loader2, Plus, Trash2, X } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Loader2, Pencil, Plus, Trash2, X } from 'lucide-react';
 
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -422,11 +422,15 @@ export function ExperienceDetailsDialog({
   const entryIdRef = useRef<string | null>(null);
   const entriesRef = useRef<ExperienceEntry[]>([]);
   const draftRef = useRef<DraftState>(emptyDraft());
+  const editingIdRef = useRef<string | null>(null);
+  const editingIndexRef = useRef<number | null>(null);
+  const editBaselineRef = useRef<string>('');
   const onSavedRef = useRef(onSaved);
   onSavedRef.current = onSaved;
 
   const [entries, setEntries] = useState<ExperienceEntry[]>([]);
   const [draft, setDraft] = useState<DraftState>(emptyDraft());
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [entryId, setEntryId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [autosaveStatus, setAutosaveStatus] = useState<AutosaveStatus>('idle');
@@ -442,6 +446,19 @@ export function ExperienceDetailsDialog({
   entryIdRef.current = entryId;
   entriesRef.current = entries;
   draftRef.current = draft;
+  editingIdRef.current = editingId;
+
+  const draftSerializedKey = useMemo(
+    () =>
+      JSON.stringify({
+        areas: normalizeNameList(draft.areas),
+        positions: normalizeNameList(draft.positions),
+        companies: normalizeNameList(draft.companies),
+        durationStart: normalizeDurationStart(draft.durationStart),
+        durationEnd: normalizeDurationEnd(draft.durationEnd || DURATION_PRESENT),
+      }),
+    [draft],
+  );
 
   const formKey = serializeExperienceEntries(entries);
   const areaSuggestions = useMemo(
@@ -496,6 +513,10 @@ export function ExperienceDetailsDialog({
       setAreasQuery('');
       setPositionsQuery('');
       setCompaniesQuery('');
+      setEditingId(null);
+      editingIdRef.current = null;
+      editingIndexRef.current = null;
+      editBaselineRef.current = '';
       return;
     }
     if (!profileId) return;
@@ -522,6 +543,10 @@ export function ExperienceDetailsDialog({
       setEntryId(typeof data?.id === 'string' ? data.id : null);
       setEntries(nextEntries);
       setDraft(emptyDraft());
+      setEditingId(null);
+      editingIdRef.current = null;
+      editingIndexRef.current = null;
+      editBaselineRef.current = '';
       lastSavedRef.current = serializeExperienceEntries(nextEntries);
       setLoading(false);
       hydratedRef.current = true;
@@ -594,33 +619,95 @@ export function ExperienceDetailsDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- persist on formKey only
   }, [formKey, open]);
 
+  const buildEntryFromDraft = (id: string): ExperienceEntry => ({
+    id,
+    areas: normalizeNameList(draftRef.current.areas),
+    positions: normalizeNameList(draftRef.current.positions),
+    companies: normalizeNameList(draftRef.current.companies),
+    durationStart: normalizeDurationStart(draftRef.current.durationStart),
+    durationEnd: normalizeDurationEnd(draftRef.current.durationEnd || DURATION_PRESENT),
+  });
+
+  const insertEntryAt = (
+    list: ExperienceEntry[],
+    entry: ExperienceEntry,
+    index: number | null,
+  ): ExperienceEntry[] => {
+    const next = [...list];
+    const at = index == null ? next.length : Math.min(Math.max(index, 0), next.length);
+    next.splice(at, 0, entry);
+    return next;
+  };
+
+  const clearDraftEditor = () => {
+    setDraft(emptyDraft());
+    setEditingId(null);
+    editingIdRef.current = null;
+    editingIndexRef.current = null;
+    editBaselineRef.current = '';
+    setAreasOpen(false);
+    setPositionsOpen(false);
+    setDurationOpen(false);
+    setCompaniesOpen(false);
+    setAreasQuery('');
+    setPositionsQuery('');
+    setCompaniesQuery('');
+  };
+
+  const beginEditEntry = (entry: ExperienceEntry) => {
+    // Preserve an in-progress edit if the draft is still complete.
+    if (editingIdRef.current) {
+      const previous = buildEntryFromDraft(editingIdRef.current);
+      if (experienceEntryComplete(previous)) {
+        setEntries((current) =>
+          insertEntryAt(current, previous, editingIndexRef.current),
+        );
+      }
+    }
+
+    const index = entriesRef.current.findIndex((item) => item.id === entry.id);
+    const nextDraft: DraftState = {
+      areas: [...entry.areas],
+      positions: [...entry.positions],
+      companies: [...entry.companies],
+      durationStart: entry.durationStart,
+      durationEnd: entry.durationEnd,
+    };
+    setEditingId(entry.id);
+    editingIdRef.current = entry.id;
+    editingIndexRef.current = index >= 0 ? index : entriesRef.current.length;
+    editBaselineRef.current = JSON.stringify({
+      areas: normalizeNameList(nextDraft.areas),
+      positions: normalizeNameList(nextDraft.positions),
+      companies: normalizeNameList(nextDraft.companies),
+      durationStart: normalizeDurationStart(nextDraft.durationStart),
+      durationEnd: normalizeDurationEnd(nextDraft.durationEnd || DURATION_PRESENT),
+    });
+    setDraft(nextDraft);
+    setEntries((current) => current.filter((item) => item.id !== entry.id));
+    setAreasOpen(false);
+    setPositionsOpen(false);
+    setDurationOpen(false);
+    setCompaniesOpen(false);
+  };
+
   // Commit a complete draft into the experience list, then reset the sentence builder.
   useEffect(() => {
     if (!hydratedRef.current || !open) return;
     if (!experienceEntryComplete(draft)) return;
+    // Editing loads a complete draft; wait until the user changes something.
+    if (editingId && draftSerializedKey === editBaselineRef.current) return;
+
     const timer = window.setTimeout(() => {
-      const committed: ExperienceEntry = {
-        id: newExperienceDraftId(),
-        areas: normalizeNameList(draftRef.current.areas),
-        positions: normalizeNameList(draftRef.current.positions),
-        companies: normalizeNameList(draftRef.current.companies),
-        durationStart: normalizeDurationStart(draftRef.current.durationStart),
-        durationEnd: normalizeDurationEnd(
-          draftRef.current.durationEnd || DURATION_PRESENT,
-        ),
-      };
+      const id = editingIdRef.current ?? newExperienceDraftId();
+      const committed = buildEntryFromDraft(id);
       if (!experienceEntryComplete(committed)) return;
-      setEntries((current) => [...current, committed]);
-      setDraft(emptyDraft());
-      setAreasOpen(false);
-      setPositionsOpen(false);
-      setDurationOpen(false);
-      setCompaniesOpen(false);
-      setAreasQuery('');
-      setPositionsQuery('');
-      setCompaniesQuery('');
+      const insertAt = editingIdRef.current ? editingIndexRef.current : null;
+      setEntries((current) => insertEntryAt(current, committed, insertAt));
+      clearDraftEditor();
     }, COMMIT_MS);
     return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- commit on draft fields / edit baseline
   }, [
     open,
     draft.areas,
@@ -628,25 +715,59 @@ export function ExperienceDetailsDialog({
     draft.companies,
     draft.durationStart,
     draft.durationEnd,
+    draftSerializedKey,
+    editingId,
   ]);
 
   const flushAndClose = async () => {
-    // If draft is complete at close, fold it in before save.
     let next = entriesRef.current;
+    const currentDraftKey = JSON.stringify({
+      areas: normalizeNameList(draftRef.current.areas),
+      positions: normalizeNameList(draftRef.current.positions),
+      companies: normalizeNameList(draftRef.current.companies),
+      durationStart: normalizeDurationStart(draftRef.current.durationStart),
+      durationEnd: normalizeDurationEnd(
+        draftRef.current.durationEnd || DURATION_PRESENT,
+      ),
+    });
+
     if (experienceEntryComplete(draftRef.current)) {
-      const committed: ExperienceEntry = {
-        id: newExperienceDraftId(),
-        areas: normalizeNameList(draftRef.current.areas),
-        positions: normalizeNameList(draftRef.current.positions),
-        companies: normalizeNameList(draftRef.current.companies),
-        durationStart: normalizeDurationStart(draftRef.current.durationStart),
-        durationEnd: normalizeDurationEnd(
-          draftRef.current.durationEnd || DURATION_PRESENT,
-        ),
-      };
-      next = [...next, committed];
+      const unchangedEdit =
+        Boolean(editingIdRef.current) && currentDraftKey === editBaselineRef.current;
+      if (!unchangedEdit) {
+        const committed = buildEntryFromDraft(
+          editingIdRef.current ?? newExperienceDraftId(),
+        );
+        next = insertEntryAt(
+          next,
+          committed,
+          editingIdRef.current ? editingIndexRef.current : null,
+        );
+      } else if (editingIdRef.current) {
+        const restored = buildEntryFromDraft(editingIdRef.current);
+        next = insertEntryAt(next, restored, editingIndexRef.current);
+      }
       setEntries(next);
-      setDraft(emptyDraft());
+      clearDraftEditor();
+    } else if (editingIdRef.current) {
+      try {
+        const baseline = JSON.parse(editBaselineRef.current) as DraftState;
+        const restored: ExperienceEntry = {
+          id: editingIdRef.current,
+          areas: normalizeNameList(baseline.areas ?? []),
+          positions: normalizeNameList(baseline.positions ?? []),
+          companies: normalizeNameList(baseline.companies ?? []),
+          durationStart: normalizeDurationStart(baseline.durationStart ?? ''),
+          durationEnd: normalizeDurationEnd(baseline.durationEnd || DURATION_PRESENT),
+        };
+        if (experienceEntryComplete(restored)) {
+          next = insertEntryAt(next, restored, editingIndexRef.current);
+          setEntries(next);
+        }
+      } catch {
+        /* ignore corrupt baseline */
+      }
+      clearDraftEditor();
     }
     await persistEntries(next, { force: true });
     onOpenChange(false);
@@ -711,8 +832,38 @@ export function ExperienceDetailsDialog({
   };
 
   const removeEntry = (id: string) => {
+    if (editingIdRef.current === id) {
+      clearDraftEditor();
+    }
     setEntries((current) => current.filter((entry) => entry.id !== id));
   };
+
+  const renderEntryActions = (entry: ExperienceEntry) => (
+    <div
+      className={cn(
+        'absolute right-0 top-0 flex items-center gap-0.5',
+        'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100',
+        '[@media(hover:none)]:opacity-100',
+      )}
+    >
+      <button
+        type="button"
+        className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground transition-colors hover:text-primary"
+        aria-label={t('profile.experienceDetails.editExperience')}
+        onClick={() => beginEditEntry(entry)}
+      >
+        <Pencil className="h-3.5 w-3.5" aria-hidden />
+      </button>
+      <button
+        type="button"
+        className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground transition-colors hover:text-destructive"
+        aria-label={t('profile.experienceDetails.removeExperience')}
+        onClick={() => removeEntry(entry.id)}
+      >
+        <Trash2 className="h-3.5 w-3.5" aria-hidden />
+      </button>
+    </div>
+  );
 
   if (!open) return null;
 
@@ -783,40 +934,37 @@ export function ExperienceDetailsDialog({
                 {useBullets ? (
                   <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-foreground">
                     {entries.map((entry) => (
-                      <li key={entry.id} className="relative pr-6">
+                      <li key={entry.id} className="group relative pr-14">
                         <span>{formatExperienceLine(entry, presentLabel)}</span>
-                        <button
-                          type="button"
-                          className="absolute right-0 top-0 inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground transition-colors hover:text-destructive"
-                          aria-label={t('profile.experienceDetails.removeExperience')}
-                          onClick={() => removeEntry(entry.id)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" aria-hidden />
-                        </button>
+                        {renderEntryActions(entry)}
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <div className="relative pr-6 text-sm leading-relaxed text-foreground">
+                  <div className="group relative pr-14 text-sm leading-relaxed text-foreground">
                     <span>{formatExperienceLine(entries[0], presentLabel)}.</span>
-                    <button
-                      type="button"
-                      className="absolute right-0 top-0 inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground transition-colors hover:text-destructive"
-                      aria-label={t('profile.experienceDetails.removeExperience')}
-                      onClick={() => removeEntry(entries[0].id)}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" aria-hidden />
-                    </button>
+                    {renderEntryActions(entries[0])}
                   </div>
                 )}
-                <p className="text-xs font-medium text-muted-foreground">
-                  {t('profile.experienceDetails.addAnother')}
-                </p>
               </>
+            ) : editingId ? (
+              <p className="text-sm leading-relaxed text-foreground">
+                {t('profile.experienceDetails.sentenceLead')}:
+              </p>
+            ) : null}
+
+            {editingId || entries.length > 0 ? (
+              <p className="text-xs font-medium text-muted-foreground">
+                {editingId
+                  ? t('profile.experienceDetails.editingExperience')
+                  : t('profile.experienceDetails.addAnother')}
+              </p>
             ) : null}
 
             <p className="text-sm leading-relaxed text-foreground">
-              {entries.length === 0 ? <>{t('profile.experienceDetails.sentenceLead')}{' '}</> : null}
+              {entries.length === 0 && !editingId ? (
+                <>{t('profile.experienceDetails.sentenceLead')}{' '}</>
+              ) : null}
               <SentenceToken
                 open={areasOpen}
                 onOpenChange={setAreasOpen}

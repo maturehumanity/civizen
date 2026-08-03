@@ -2691,6 +2691,8 @@ export const baseTranslations = {
       "companiesEmpty": "No matching companies.",
       "addCompany": "Add “{name}”",
       "removeExperience": "Remove experience",
+      "editExperience": "Edit experience",
+      "editingExperience": "Editing experience",
       "autoSaving": "Saving…",
       "autoSaved": "Saved",
       "saveFailed": "Could not save experience.",
