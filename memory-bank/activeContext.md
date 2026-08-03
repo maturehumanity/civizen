@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Home Post composer placeholder (2026-08-03):** Composer empty state is now “Share an idea, update, or opportunity...” (was “What’s on your mind?”). LANGUAGE_PACK_VERSION 109.
+
 **Testing v0.1.117 (2026-08-03):** Build 119 (`20260803-v0.1.117`). Live/Production remains on **v0.1.106** until soak. Includes Learning trainings panel and level-aware Learning/Experience scoring.
 
 **Learning trainings panel (2026-08-03):** Selecting Learning opens Education plus a Trainings sentence card (“I have attended training on [cycling multi-select]”). Trainings persist in `profile_training_entries` and add a secondary Learning boost (degree remains primary). `SCORE_CALCULATION_VERSION` → `civizen-score-v1.2`. LANGUAGE_PACK_VERSION 108.
@@ -84,7 +86,7 @@
 
 **Governance Solutions Discuss/Solve (2026-08-02):** `/governance/solutions` supports **Discuss** (default: public thread + AI participation) and **Solve** (categorize → route to civic authority taxonomy → seek certified professional). Catalog: 37 jurisdiction-agnostic authorities in `solution-authorities.ts`. Copy updated on Governance landing. LANGUAGE_PACK_VERSION 82.
 
-**Home Post composer (2026-08-02):** Placeholder is name-free (“What’s on your mind?”) because Welcome already greets the user; empty state uses `SlowRunningText` with `onlyWhenOverflow` on narrow widths. LANGUAGE_PACK_VERSION 81.
+**Home Post composer (2026-08-02 / 2026-08-03):** Placeholder is name-free (“Share an idea, update, or opportunity...”) because Welcome already greets the user; empty state uses `SlowRunningText` with `onlyWhenOverflow` on narrow widths. LANGUAGE_PACK_VERSION 109.
 
 **Civizen logo (2026-08-02):** Replaced hand-drawn mark with assets converted from the approved Primary logo + icon-only PNGs (`docs/04-operations/dev/brand-source/`). `scripts/convert-brand-logos.mjs` knocks out paper white, builds light/dark transparent marks + app tiles + SVG wrappers. Header uses `CivizenBrandIcon` → `civizen-mark-256.png` / `civizen-mark-dark-256.png`. Slogan unchanged: **For a Mature Humanity**.
 

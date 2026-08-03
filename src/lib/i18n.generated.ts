@@ -204,7 +204,7 @@ export const translations = {
     },
     "home": {
       "welcomeBack": "Welcome back,",
-      "whatsOnYourMind": "What’s on your mind?",
+      "whatsOnYourMind": "Share an idea, update, or opportunity...",
       "shortcutHint": "Press Ctrl/⌘ + Enter to post faster.",
       "post": "Post",
       "posting": "Posting...",

@@ -1057,7 +1057,7 @@ export default function Home() {
           </motion.div>
         ) : null}
 
-        {/* Create Post / What’s on your mind block */}
+        {/* Create Post / Share an idea block */}
         {showComposer ? (
           <motion.div
             initial={{ opacity: 0, y: -10 }}

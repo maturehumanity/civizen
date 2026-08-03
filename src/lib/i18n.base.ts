@@ -2516,7 +2516,7 @@ export const baseTranslations = {
     "accountSwitchBusiness": "Business account",
     "accountSwitchLinked": "Linked account",
     "currentPage": "Current",
-    "whatsOnYourMind": "What’s on your mind?",
+    "whatsOnYourMind": "Share an idea, update, or opportunity...",
     "shortcutHint": "Press Ctrl/⌘ + Enter to post faster.",
     "post": "Post",
     "posting": "Posting...",
