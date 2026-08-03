@@ -4,7 +4,7 @@
 
 **Home Post composer placeholder (2026-08-03):** Composer empty state is now “Share an idea, update, or opportunity...” (was “What’s on your mind?”). LANGUAGE_PACK_VERSION 109.
 
-**Testing v0.1.117 (2026-08-03):** Build 119 (`20260803-v0.1.117`). Live/Production remains on **v0.1.106** until soak. Includes Learning trainings panel and level-aware Learning/Experience scoring.
+**Testing v0.1.118 (2026-08-03):** Build 120 (`20260803-v0.1.118`). Live/Production remains on **v0.1.106** until soak. Includes Home post composer placeholder copy.
 
 **Learning trainings panel (2026-08-03):** Selecting Learning opens Education plus a Trainings sentence card (“I have attended training on [cycling multi-select]”). Trainings persist in `profile_training_entries` and add a secondary Learning boost (degree remains primary). `SCORE_CALCULATION_VERSION` → `civizen-score-v1.2`. LANGUAGE_PACK_VERSION 108.
 
