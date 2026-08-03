@@ -24,10 +24,25 @@ import {
 } from '@/lib/civizen-performance';
 import { type PillarId } from '@/lib/constants';
 import { useNavigate } from 'react-router-dom';
-import { BadgeCheck, BadgeX, Briefcase, ChevronDown, Landmark, MessageCircle, Search, Sparkles, Star, ThumbsUp, TrendingUp, Users } from 'lucide-react';
+import { BadgeCheck, BadgeX, Briefcase, Check, ChevronDown, Landmark, Loader2, MessageCircle, Search, Share2, Sparkles, Star, ThumbsUp, TrendingUp, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  canShowPublishToSocial,
+  isOfficialCivizenOrgProfile,
+  SOCIAL_PROVIDERS,
+  type SocialProvider,
+} from '@/lib/civizen-org-account';
+import {
+  fetchSocialConnectionStatuses,
+  fetchSocialCrosspostsForPosts,
+  providerDisplayName,
+  publishPostToSocial,
+  type SocialConnectionStatus,
+  type SocialCrosspostStatus,
+} from '@/lib/social-accounts';
 import { cn } from '@/lib/utils';
 import { UnifiedSearchBlock } from '@/components/search/UnifiedSearchBlock';
 import { Badge } from '@/components/ui/badge';
@@ -132,6 +147,10 @@ export default function Home() {
   const [optimisticLikeStates, setOptimisticLikeStates] = useState<Record<string, boolean>>({});
   const [isComposerFocused, setIsComposerFocused] = useState(false);
   const [isInlineSearchOpen, setIsInlineSearchOpen] = useState(false);
+  const [isCivizenOrgAccount, setIsCivizenOrgAccount] = useState(false);
+  const [socialConnections, setSocialConnections] = useState<SocialConnectionStatus[]>([]);
+  const [socialCrossposts, setSocialCrossposts] = useState<Record<string, SocialCrosspostStatus[]>>({});
+  const [publishingKey, setPublishingKey] = useState<string | null>(null);
   const [homeTab, setHomeTab] = useState<'all' | 'favourite' | 'stories'>('all');
   const [storyGroupTab, setStoryGroupTab] = useState<'development' | 'suggestions'>('development');
   const [storySectionFilter, setStorySectionFilter] = useState<string>('all');
@@ -149,6 +168,44 @@ export default function Home() {
       return cleanup;
     }
   }, [profile?.id]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const ok = await isOfficialCivizenOrgProfile(profile?.id, { username: profile?.username });
+      if (cancelled) return;
+      setIsCivizenOrgAccount(ok);
+      if (!ok) {
+        setSocialConnections([]);
+        return;
+      }
+      try {
+        const statuses = await fetchSocialConnectionStatuses();
+        if (!cancelled) setSocialConnections(statuses);
+      } catch {
+        if (!cancelled) setSocialConnections([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [profile?.id, profile?.username]);
+
+  useEffect(() => {
+    if (!isCivizenOrgAccount || posts.length === 0) {
+      setSocialCrossposts({});
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      const ownPostIds = posts.filter((post) => post.author_id === profile?.id).map((post) => post.id);
+      const map = await fetchSocialCrosspostsForPosts(ownPostIds);
+      if (!cancelled) setSocialCrossposts(map);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isCivizenOrgAccount, posts, profile?.id]);
 
   useEffect(() => {
     const textarea = postTextareaRef.current;
@@ -834,6 +891,31 @@ export default function Home() {
     }));
   };
 
+  const handlePublishToSocial = async (postId: string, provider: SocialProvider) => {
+    const key = `${postId}:${provider}`;
+    if (publishingKey === key) return;
+    setPublishingKey(key);
+    try {
+      await publishPostToSocial({ postId, provider });
+      setSocialCrossposts((prev) => {
+        const existing = (prev[postId] || []).filter((row) => row.provider !== provider);
+        return {
+          ...prev,
+          [postId]: [...existing, { provider, status: 'published', externalPostId: null }],
+        };
+      });
+      toast.success(t('home.publishToSuccess', { network: providerDisplayName(provider) }));
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : t('home.publishToFailed', { network: providerDisplayName(provider) }),
+      );
+    } finally {
+      setPublishingKey(null);
+    }
+  };
+
   const submitComment = async (postId: string) => {
     if (!profile?.id || submittingCommentPostId === postId) return;
     const content = commentDrafts[postId]?.trim();
@@ -1248,6 +1330,93 @@ export default function Home() {
                                 {t('home.comment')}
                                 {comments.length > 0 ? ` (${comments.length})` : ''}
                               </Button>
+
+                              {canShowPublishToSocial({
+                                isOfficialOrg: isCivizenOrgAccount,
+                                viewerProfileId: profile?.id,
+                                postAuthorId: post.author_id,
+                              }) ? (
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="gap-2 rounded-xl px-3 text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+                                    >
+                                      <Share2 className="w-4 h-4" />
+                                      {t('home.publishTo')}
+                                    </Button>
+                                  </PopoverTrigger>
+                                  <PopoverContent align="start" className="w-52 p-2">
+                                    <div className="space-y-1">
+                                      {SOCIAL_PROVIDERS.map((provider) => {
+                                        const connection = socialConnections.find((row) => row.provider === provider);
+                                        const published = (socialCrossposts[post.id] || []).some(
+                                          (row) => row.provider === provider && row.status === 'published',
+                                        );
+                                        const busy = publishingKey === `${post.id}:${provider}`;
+                                        const labelKey =
+                                          provider === 'linkedin'
+                                            ? 'home.publishToLinkedIn'
+                                            : provider === 'facebook'
+                                              ? 'home.publishToFacebook'
+                                              : 'home.publishToX';
+
+                                        if (published) {
+                                          return (
+                                            <Button
+                                              key={provider}
+                                              type="button"
+                                              variant="ghost"
+                                              size="sm"
+                                              className="w-full justify-start gap-2"
+                                              disabled
+                                            >
+                                              <Check className="h-4 w-4 text-primary" />
+                                              {t(labelKey)} · {t('home.publishToAlready')}
+                                            </Button>
+                                          );
+                                        }
+
+                                        if (!connection?.connected) {
+                                          return (
+                                            <Button
+                                              key={provider}
+                                              type="button"
+                                              variant="ghost"
+                                              size="sm"
+                                              className="w-full justify-start gap-2 text-muted-foreground"
+                                              onClick={() => navigate('/settings/social-accounts')}
+                                            >
+                                              <Share2 className="h-4 w-4" />
+                                              {t(labelKey)} · {t('home.publishToConnect')}
+                                            </Button>
+                                          );
+                                        }
+
+                                        return (
+                                          <Button
+                                            key={provider}
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="w-full justify-start gap-2"
+                                            disabled={busy}
+                                            onClick={() => void handlePublishToSocial(post.id, provider)}
+                                          >
+                                            {busy ? (
+                                              <Loader2 className="h-4 w-4 animate-spin" />
+                                            ) : (
+                                              <Share2 className="h-4 w-4" />
+                                            )}
+                                            {busy ? t('home.publishToPublishing') : t(labelKey)}
+                                          </Button>
+                                        );
+                                      })}
+                                    </div>
+                                  </PopoverContent>
+                                </Popover>
+                              ) : null}
                             </div>
                           </div>
 

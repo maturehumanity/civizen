@@ -76,6 +76,7 @@ const TaxonomySettings = lazyWithChunkReload(() => import('@/pages/settings/Taxo
 const MessagingSettingsPage = lazyWithChunkReload(() => import('@/pages/settings/MessagingSettings'));
 const MessagingSecurity = lazyWithChunkReload(() => import('@/pages/settings/MessagingSecurity'));
 const PrivacySettings = lazyWithChunkReload(() => import('@/pages/settings/PrivacySettings'));
+const SocialAccountsSettings = lazyWithChunkReload(() => import('@/pages/settings/SocialAccountsSettings'));
 const NotFound = lazyWithChunkReload(() => import('@/pages/NotFound'));
 
 const queryClient = new QueryClient();
@@ -319,6 +320,7 @@ const App = () => (
                   />
                   <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                   <Route path="/settings/privacy" element={<ProtectedRoute><PrivacySettings /></ProtectedRoute>} />
+                  <Route path="/settings/social-accounts" element={<ProtectedRoute><SocialAccountsSettings /></ProtectedRoute>} />
                   <Route path="/settings/prototype-credits" element={<ProtectedRoute><WalletPage /></ProtectedRoute>} />
                   <Route path="/settings/wallet" element={<ProtectedRoute><Navigate to="/settings/prototype-credits" replace /></ProtectedRoute>} />
                   <Route path="/settings/taxonomy" element={<ProtectedRoute><TaxonomySettings /></ProtectedRoute>} />

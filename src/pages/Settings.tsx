@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { loadLanguageOptions, type LanguageCode, type LanguageOption } from '@/lib/i18n.runtime';
 import { permissionListHas, permissionListHasAny, type AppPermission } from '@/lib/access-control';
+import { isOfficialCivizenOrgProfile } from '@/lib/civizen-org-account';
 import { APP_VERSION_TAG, ANDROID_VERSION_CODE } from '@/lib/app-release';
 import {
   ensureAuthorizedAppUpdateChannel,
@@ -45,6 +46,7 @@ import {
   MessageCircle,
   Vote,
   FlaskConical,
+  Share2,
 } from 'lucide-react';
 
 function canHoverOpen(): boolean {
@@ -102,6 +104,12 @@ const settingsItems: SettingsNavItem[] = [
     path: '/settings/privacy',
   },
   {
+    icon: Share2,
+    labelKey: 'settings.socialAccounts',
+    descriptionKey: 'settings.socialAccountsDescription',
+    path: '/settings/social-accounts',
+  },
+  {
     icon: Award,
     labelKey: 'settings.professions',
     descriptionKey: 'settings.professionsDescription',
@@ -151,6 +159,18 @@ export default function Settings() {
   const canAccessAdmin = profile
     ? permissionListHasAny(profile.effective_permissions || [], ['role.assign', 'settings.manage'])
     : false;
+  const [isCivizenOrgAccount, setIsCivizenOrgAccount] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const ok = await isOfficialCivizenOrgProfile(profile?.id, { username: profile?.username });
+      if (!cancelled) setIsCivizenOrgAccount(ok);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [profile?.id, profile?.username]);
 
   const canUseTestingUpdateChannel = Boolean(
     profile && permissionListHas(profile.effective_permissions || [], 'updates.test'),
@@ -207,9 +227,15 @@ export default function Settings() {
     : [];
 
   const visibleSettingsItems = settingsItems.filter(
-    (item) =>
-      !item.requiredPermissions ||
-      permissionListHasAny(profile?.effective_permissions || [], item.requiredPermissions),
+    (item) => {
+      if (item.path === '/settings/social-accounts' && !isCivizenOrgAccount) {
+        return false;
+      }
+      return (
+        !item.requiredPermissions ||
+        permissionListHasAny(profile?.effective_permissions || [], item.requiredPermissions)
+      );
+    },
   );
 
   const primaryRowLabel = (row: PrimarySettingsRow): string => {
