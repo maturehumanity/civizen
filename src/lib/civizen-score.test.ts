@@ -108,4 +108,26 @@ describe('civizen score model', () => {
     expect(skills.confidence).toBe('low');
     expect(skills.sourceCount).toBe(1);
   });
+
+  it('scores Experience primarily from cumulative months, not entry count', () => {
+    const shortHops = buildScoreFromProfileActivity({
+      experienceCount: 3,
+      experienceMonths: 18, // 3 × 6 months
+    });
+    const longerRoles = buildScoreFromProfileActivity({
+      experienceCount: 2,
+      experienceMonths: 72, // 2 × 3 years
+    });
+    const shortScore = shortHops.categories.find((c) => c.id === 'experience')!.score!;
+    const longScore = longerRoles.categories.find((c) => c.id === 'experience')!.score!;
+    expect(longScore).toBeGreaterThan(shortScore);
+
+    const singleLong = buildScoreFromProfileActivity({
+      experienceCount: 1,
+      experienceMonths: 12 * 23,
+    });
+    const singleScore = singleLong.categories.find((c) => c.id === 'experience')!.score!;
+    expect(singleScore).toBeGreaterThan(40);
+    expect(singleScore).toBeCloseTo(diminishingQuantityScore(23, 15, 72), 5);
+  });
 });

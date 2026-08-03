@@ -34,7 +34,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
 import { uploadProfileAvatar } from '@/lib/profile-avatar';
 import { countSkillsFromEntry } from '@/lib/profile-skills';
-import { parseExperienceEntries } from '@/lib/profile-experience';
+import { parseExperienceEntries, cumulativeExperienceMonths } from '@/lib/profile-experience';
 import {
   scoreContributionsFromEvents,
   syncContributionEvents,
@@ -85,6 +85,7 @@ export default function Profile() {
   const [verifiedEducationCount, setVerifiedEducationCount] = useState(0);
   const [skillCount, setSkillCount] = useState(0);
   const [experienceCount, setExperienceCount] = useState(0);
+  const [experienceMonths, setExperienceMonths] = useState(0);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -202,7 +203,9 @@ export default function Profile() {
     }
 
     setSkillCount(countSkillsFromEntry(skillsData));
-    setExperienceCount(parseExperienceEntries(experienceData?.experiences).length);
+    const experienceEntries = parseExperienceEntries(experienceData?.experiences);
+    setExperienceCount(experienceEntries.length);
+    setExperienceMonths(cumulativeExperienceMonths(experienceEntries));
 
     if (avatarRow?.avatar_url) {
       setAvatarUrl(avatarRow.avatar_url);
@@ -236,6 +239,7 @@ export default function Profile() {
         verifiedEducationCount,
         skillCount,
         experienceCount,
+        experienceMonths,
         endorsementCount: endorsements.length,
         contributions: contributionInput,
         performance: performanceInput,
@@ -246,6 +250,7 @@ export default function Profile() {
       verifiedEducationCount,
       skillCount,
       experienceCount,
+      experienceMonths,
       endorsements.length,
       contributionInput,
       performanceInput,

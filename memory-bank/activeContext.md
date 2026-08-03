@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Experience duration scoring (2026-08-03):** Experience is scored primarily from cumulative months (union of intervals, diminishing returns), not entry count. Extra roles add only a small breadth bonus so 2×3-year jobs outrank 3×6-month hops. Spec-aligned: years alone do not run away. **Testing v0.1.114**.
+
 **Experience field hover + Present default (2026-08-03):** Positions cycle pauses when hovering/opening any sentence token (areas, positions, duration, companies). Duration To is pre-filled as Present (“from – Present”). LANGUAGE_PACK_VERSION 107. **Testing v0.1.113** (build 115).
 
 **Experience edit on hover (2026-08-03):** Committed experience rows show Edit/Delete only on hover (always visible on touch). Edit loads the entry into the sentence builder; saving replaces it in place. LANGUAGE_PACK_VERSION 106. **Testing v0.1.112** (build 114).

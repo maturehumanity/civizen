@@ -298,6 +298,106 @@ export function experienceYearOptions(span = 60): number[] {
   return Array.from({ length: span }, (_, index) => current - index);
 }
 
+/** Absolute month index for interval math (year*12 + month-1). */
+export function toMonthIndex(point: ExperienceMonthYear): number {
+  return point.year * 12 + (point.month - 1);
+}
+
+/**
+ * Inclusive months for one experience row (Present → asOf).
+ * Swapped start/end are normalized. Incomplete dates → 0.
+ */
+export function durationMonthsForEntry(
+  entry: { durationStart?: string; durationEnd?: string; durationKeys?: string[] },
+  asOf: Date = new Date(),
+): number {
+  const normalized =
+    entry.durationStart || entry.durationEnd
+      ? {
+          durationStart: normalizeDurationStart(entry.durationStart ?? ''),
+          durationEnd: normalizeDurationEnd(entry.durationEnd ?? ''),
+        }
+      : durationFromLegacyKeys(entry.durationKeys);
+
+  const start = parseMonthYearKey(normalized.durationStart);
+  if (!start || !normalized.durationEnd) return 0;
+
+  let end: ExperienceMonthYear;
+  if (isDurationPresent(normalized.durationEnd)) {
+    end = { year: asOf.getFullYear(), month: asOf.getMonth() + 1 };
+  } else {
+    const parsed = parseMonthYearKey(normalized.durationEnd);
+    if (!parsed) return 0;
+    end = parsed;
+  }
+
+  let a = toMonthIndex(start);
+  let b = toMonthIndex(end);
+  if (a > b) [a, b] = [b, a];
+  return b - a + 1;
+}
+
+/**
+ * Union of experience intervals in months (overlapping roles are not double-counted).
+ * This is the primary input for Experience scoring.
+ */
+export function cumulativeExperienceMonths(
+  entries: Array<{ durationStart?: string; durationEnd?: string; durationKeys?: string[] }>,
+  asOf: Date = new Date(),
+): number {
+  const intervals: Array<{ start: number; end: number }> = [];
+
+  for (const entry of entries) {
+    const months = durationMonthsForEntry(entry, asOf);
+    if (months <= 0) continue;
+
+    const normalized =
+      entry.durationStart || entry.durationEnd
+        ? {
+            durationStart: normalizeDurationStart(entry.durationStart ?? ''),
+            durationEnd: normalizeDurationEnd(entry.durationEnd ?? ''),
+          }
+        : durationFromLegacyKeys(entry.durationKeys);
+
+    const start = parseMonthYearKey(normalized.durationStart);
+    if (!start) continue;
+
+    let end: ExperienceMonthYear;
+    if (isDurationPresent(normalized.durationEnd)) {
+      end = { year: asOf.getFullYear(), month: asOf.getMonth() + 1 };
+    } else {
+      const parsed = parseMonthYearKey(normalized.durationEnd);
+      if (!parsed) continue;
+      end = parsed;
+    }
+
+    let a = toMonthIndex(start);
+    let b = toMonthIndex(end);
+    if (a > b) [a, b] = [b, a];
+    intervals.push({ start: a, end: b });
+  }
+
+  if (intervals.length === 0) return 0;
+  intervals.sort((left, right) => left.start - right.start || left.end - right.end);
+
+  let total = 0;
+  let curStart = intervals[0].start;
+  let curEnd = intervals[0].end;
+  for (let index = 1; index < intervals.length; index += 1) {
+    const next = intervals[index];
+    if (next.start <= curEnd + 1) {
+      curEnd = Math.max(curEnd, next.end);
+    } else {
+      total += curEnd - curStart + 1;
+      curStart = next.start;
+      curEnd = next.end;
+    }
+  }
+  total += curEnd - curStart + 1;
+  return total;
+}
+
+
 export function newExperienceDraftId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return crypto.randomUUID();

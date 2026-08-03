@@ -597,6 +597,8 @@ export function buildScoreFromProfileActivity(args: {
   verifiedSkillCount?: number;
   experienceCount?: number;
   verifiedExperienceCount?: number;
+  /** Cumulative months of experience (union of intervals). Primary Experience factor. */
+  experienceMonths?: number;
   endorsementCount?: number;
   /** Precomputed Contributions category from estimated activity events. */
   contributions?: CategoryScoreInput | null;
@@ -611,6 +613,7 @@ export function buildScoreFromProfileActivity(args: {
   const verifiedSkillCount = args.verifiedSkillCount ?? 0;
   const experienceCount = args.experienceCount ?? 0;
   const verifiedExperienceCount = args.verifiedExperienceCount ?? 0;
+  const experienceMonths = Math.max(0, args.experienceMonths ?? 0);
   const endorsementCount = args.endorsementCount ?? 0;
 
   const categories: Partial<Record<ScoreCategoryId, CategoryScoreInput>> = {
@@ -670,13 +673,20 @@ export function buildScoreFromProfileActivity(args: {
     };
   }
 
-  if (!categories.experience && experienceCount > 0) {
-    const base = diminishingQuantityScore(experienceCount, 6, 55);
-    const verifiedBoost = Math.min(30, verifiedExperienceCount * 10);
-    const score = clampScore(base + verifiedBoost);
+  if (!categories.experience && (experienceMonths > 0 || experienceCount > 0)) {
+    // Primary: cumulative years with diminishing returns (years alone do not run away).
+    const years = experienceMonths / 12;
+    const durationScore = diminishingQuantityScore(years, 15, 72);
+    // Secondary: modest breadth for additional distinct roles (cannot beat long tenure).
+    const breadthBonus =
+      experienceCount > 1
+        ? Math.min(12, diminishingQuantityScore(experienceCount - 1, 3, 12))
+        : 0;
+    const verifiedBoost = Math.min(20, verifiedExperienceCount * 8);
+    const score = clampScore(durationScore + breadthBonus + verifiedBoost);
     categories.experience = {
       score,
-      sourceCount: experienceCount,
+      sourceCount: Math.max(experienceCount, experienceMonths > 0 ? 1 : 0),
       verifiedSourceCount: verifiedExperienceCount,
       confidence: verifiedExperienceCount > 0 ? 'moderate' : 'low',
       metrics: [
@@ -684,7 +694,7 @@ export function buildScoreFromProfileActivity(args: {
           id: 'professional',
           label: 'Professional',
           value: score,
-          sourceCount: experienceCount,
+          sourceCount: Math.max(experienceCount, experienceMonths > 0 ? 1 : 0),
           confidence: verifiedExperienceCount > 0 ? 'moderate' : 'low',
         },
         ...emptyMetrics('experience').filter((m) => m.id !== 'professional'),

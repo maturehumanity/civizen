@@ -1,6 +1,8 @@
 import {
   DURATION_PRESENT,
+  cumulativeExperienceMonths,
   durationFromLegacyKeys,
+  durationMonthsForEntry,
   experienceEntryComplete,
   filterExperienceOptions,
   formatDurationRange,
@@ -143,5 +145,36 @@ describe('parseExperienceEntries', () => {
       durationStart: '2020-01',
       durationEnd: DURATION_PRESENT,
     });
+  });
+});
+
+describe('experience duration months', () => {
+  it('counts inclusive months for a closed range', () => {
+    expect(
+      durationMonthsForEntry({ durationStart: '2020-01', durationEnd: '2020-06' }),
+    ).toBe(6);
+  });
+
+  it('unions overlapping intervals for cumulative months', () => {
+    const asOf = new Date(2024, 5, 1); // June 2024
+    const months = cumulativeExperienceMonths(
+      [
+        { durationStart: '2020-01', durationEnd: '2022-12' },
+        { durationStart: '2022-06', durationEnd: '2023-06' },
+      ],
+      asOf,
+    );
+    // Jan 2020 – Jun 2023 inclusive = 42 months (overlap not double-counted)
+    expect(months).toBe(42);
+  });
+
+  it('treats Present as asOf month', () => {
+    const asOf = new Date(2025, 7, 1); // August 2025
+    expect(
+      durationMonthsForEntry(
+        { durationStart: '2025-01', durationEnd: DURATION_PRESENT },
+        asOf,
+      ),
+    ).toBe(8);
   });
 });
