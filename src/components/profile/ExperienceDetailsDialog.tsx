@@ -15,17 +15,22 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatEnglishList } from '@/lib/profile-skills';
 import {
+  DURATION_PRESENT,
   emptyExperienceDraft,
+  experienceDurationComplete,
   experienceEntryComplete,
   experienceYearOptions,
   filterExperienceOptions,
   formatDurationRange,
   formatExperienceLine,
+  isDurationPresent,
   monthYearKey,
   newExperienceDraftId,
-  normalizeDurationKeys,
+  normalizeDurationEnd,
+  normalizeDurationStart,
   normalizeNameList,
   parseExperienceEntries,
+  parseMonthYearKey,
   PROFILE_EXPERIENCE_AREA_SEEDS,
   PROFILE_EXPERIENCE_COMPANY_SEEDS,
   PROFILE_EXPERIENCE_MONTH_LABELS,
@@ -50,7 +55,8 @@ type DraftState = {
   areas: string[];
   positions: string[];
   companies: string[];
-  durationKeys: string[];
+  durationStart: string;
+  durationEnd: string;
 };
 
 const AUTOSAVE_MS = 650;
@@ -162,96 +168,188 @@ function SentenceToken({
   );
 }
 
-type MonthYearPickerProps = {
-  selectedKeys: string[];
-  onToggle: (year: number, month: number) => void;
+type DurationPickerProps = {
+  durationStart: string;
+  durationEnd: string;
+  onChangeStart: (year: number, month: number) => void;
+  onChangeEnd: (year: number, month: number) => void;
+  onSelectPresent: () => void;
 };
 
-function MonthYearPicker({ selectedKeys, onToggle }: MonthYearPickerProps) {
-  const { t } = useLanguage();
-  const selectedSet = useMemo(() => new Set(normalizeDurationKeys(selectedKeys)), [selectedKeys]);
-  const [focusYear, setFocusYear] = useState(
-    () => YEAR_OPTIONS[0] ?? new Date().getFullYear(),
+function MonthYearColumns({
+  year,
+  month,
+  onYearChange,
+  onMonthChange,
+  monthLabel,
+  yearLabel,
+}: {
+  year: number;
+  month: number;
+  onYearChange: (year: number) => void;
+  onMonthChange: (month: number) => void;
+  monthLabel: string;
+  yearLabel: string;
+}) {
+  return (
+    <div className="grid grid-cols-2 gap-2 rounded-lg border border-border/70 bg-muted/30 p-1">
+      <ScrollArea className="h-40">
+        <div className="flex flex-col gap-0.5 p-1" role="listbox" aria-label={monthLabel}>
+          {PROFILE_EXPERIENCE_MONTH_LABELS.map((label, index) => {
+            const value = index + 1;
+            const active = month === value;
+            return (
+              <button
+                key={label}
+                type="button"
+                role="option"
+                aria-selected={active}
+                className={cn(
+                  'rounded-md px-2 py-1.5 text-left text-sm transition-colors',
+                  active
+                    ? 'bg-background font-semibold text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:bg-background/60 hover:text-foreground',
+                )}
+                onClick={() => onMonthChange(value)}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      </ScrollArea>
+      <ScrollArea className="h-40">
+        <div className="flex flex-col gap-0.5 p-1" role="listbox" aria-label={yearLabel}>
+          {YEAR_OPTIONS.map((option) => {
+            const active = year === option;
+            return (
+              <button
+                key={option}
+                type="button"
+                role="option"
+                aria-selected={active}
+                className={cn(
+                  'rounded-md px-2 py-1.5 text-left text-sm transition-colors',
+                  active
+                    ? 'bg-background font-semibold text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:bg-background/60 hover:text-foreground',
+                )}
+                onClick={() => onYearChange(option)}
+              >
+                {option}
+              </button>
+            );
+          })}
+        </div>
+      </ScrollArea>
+    </div>
   );
-  const [focusMonth, setFocusMonth] = useState(() => new Date().getMonth() + 1);
+}
 
-  const focusKey = monthYearKey(focusYear, focusMonth);
-  const focusSelected = selectedSet.has(focusKey);
+function DurationPicker({
+  durationStart,
+  durationEnd,
+  onChangeStart,
+  onChangeEnd,
+  onSelectPresent,
+}: DurationPickerProps) {
+  const { t } = useLanguage();
+  const presentLabel = t('profile.experienceDetails.durationPresent');
+  const startPoint = parseMonthYearKey(durationStart);
+  const endPoint = isDurationPresent(durationEnd) ? null : parseMonthYearKey(durationEnd);
+  const endIsPresent = isDurationPresent(durationEnd);
+
+  const [fromYear, setFromYear] = useState(
+    () => startPoint?.year ?? YEAR_OPTIONS[0] ?? new Date().getFullYear(),
+  );
+  const [fromMonth, setFromMonth] = useState(
+    () => startPoint?.month ?? new Date().getMonth() + 1,
+  );
+  const [toYear, setToYear] = useState(
+    () => endPoint?.year ?? YEAR_OPTIONS[0] ?? new Date().getFullYear(),
+  );
+  const [toMonth, setToMonth] = useState(
+    () => endPoint?.month ?? new Date().getMonth() + 1,
+  );
+
+  useEffect(() => {
+    if (startPoint) {
+      setFromYear(startPoint.year);
+      setFromMonth(startPoint.month);
+    }
+  }, [durationStart]);
+
+  useEffect(() => {
+    if (endPoint) {
+      setToYear(endPoint.year);
+      setToMonth(endPoint.month);
+    }
+  }, [durationEnd]);
+
+  const applyFrom = (year: number, month: number) => {
+    setFromYear(year);
+    setFromMonth(month);
+    onChangeStart(year, month);
+  };
+
+  const applyTo = (year: number, month: number) => {
+    setToYear(year);
+    setToMonth(month);
+    onChangeEnd(year, month);
+  };
 
   return (
-    <div className="p-2">
-      <div className="mb-2 flex items-center justify-between gap-2 px-1">
-        <p className="text-xs text-muted-foreground">{t('profile.experienceDetails.durationHint')}</p>
-        <button
-          type="button"
-          className={cn(
-            'rounded-md px-2 py-1 text-xs font-medium transition-colors',
-            focusSelected
-              ? 'bg-primary/15 text-primary'
-              : 'bg-muted text-foreground hover:bg-muted/80',
-          )}
-          onClick={() => onToggle(focusYear, focusMonth)}
-        >
-          {focusSelected
-            ? t('profile.experienceDetails.durationRemove')
-            : t('profile.experienceDetails.durationAdd')}
-        </button>
+    <div className="space-y-3 p-2">
+      <p className="px-1 text-xs text-muted-foreground">
+        {t('profile.experienceDetails.durationHint')}
+      </p>
+
+      <div className="space-y-1.5">
+        <p className="px-1 text-xs font-medium text-foreground">
+          {t('profile.experienceDetails.durationFrom')}
+        </p>
+        <MonthYearColumns
+          year={fromYear}
+          month={fromMonth}
+          onYearChange={(year) => applyFrom(year, fromMonth)}
+          onMonthChange={(month) => applyFrom(fromYear, month)}
+          monthLabel={t('profile.experienceDetails.month')}
+          yearLabel={t('profile.experienceDetails.year')}
+        />
       </div>
-      <div className="grid grid-cols-2 gap-2 rounded-lg border border-border/70 bg-muted/30 p-1">
-        <ScrollArea className="h-44">
-          <div className="flex flex-col gap-0.5 p-1" role="listbox" aria-label={t('profile.experienceDetails.month')}>
-            {PROFILE_EXPERIENCE_MONTH_LABELS.map((label, index) => {
-              const month = index + 1;
-              const active = focusMonth === month;
-              return (
-                <button
-                  key={label}
-                  type="button"
-                  role="option"
-                  aria-selected={active}
-                  className={cn(
-                    'rounded-md px-2 py-1.5 text-left text-sm transition-colors',
-                    active
-                      ? 'bg-background font-semibold text-foreground shadow-sm'
-                      : 'text-muted-foreground hover:bg-background/60 hover:text-foreground',
-                  )}
-                  onClick={() => setFocusMonth(month)}
-                >
-                  {label}
-                </button>
-              );
-            })}
-          </div>
-        </ScrollArea>
-        <ScrollArea className="h-44">
-          <div className="flex flex-col gap-0.5 p-1" role="listbox" aria-label={t('profile.experienceDetails.year')}>
-            {YEAR_OPTIONS.map((year) => {
-              const active = focusYear === year;
-              return (
-                <button
-                  key={year}
-                  type="button"
-                  role="option"
-                  aria-selected={active}
-                  className={cn(
-                    'rounded-md px-2 py-1.5 text-left text-sm transition-colors',
-                    active
-                      ? 'bg-background font-semibold text-foreground shadow-sm'
-                      : 'text-muted-foreground hover:bg-background/60 hover:text-foreground',
-                  )}
-                  onClick={() => setFocusYear(year)}
-                >
-                  {year}
-                </button>
-              );
-            })}
-          </div>
-        </ScrollArea>
+
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between gap-2 px-1">
+          <p className="text-xs font-medium text-foreground">
+            {t('profile.experienceDetails.durationTo')}
+          </p>
+          <button
+            type="button"
+            className={cn(
+              'rounded-md px-2 py-1 text-xs font-medium transition-colors',
+              endIsPresent
+                ? 'bg-primary/15 text-primary'
+                : 'bg-muted text-foreground hover:bg-muted/80',
+            )}
+            onClick={onSelectPresent}
+          >
+            {presentLabel}
+          </button>
+        </div>
+        <MonthYearColumns
+          year={toYear}
+          month={toMonth}
+          onYearChange={(year) => applyTo(year, toMonth)}
+          onMonthChange={(month) => applyTo(toYear, month)}
+          monthLabel={t('profile.experienceDetails.month')}
+          yearLabel={t('profile.experienceDetails.year')}
+        />
       </div>
-      {selectedKeys.length > 0 ? (
-        <p className="mt-2 px-1 text-xs text-muted-foreground">
+
+      {durationStart ? (
+        <p className="px-1 text-xs text-muted-foreground">
           {t('profile.experienceDetails.durationSelected', {
-            value: formatDurationRange(selectedKeys),
+            value: formatDurationRange(durationStart, durationEnd || DURATION_PRESENT, presentLabel),
           })}
         </p>
       ) : null}
@@ -396,7 +494,8 @@ export function ExperienceDetailsDialog({
         areas: normalizeNameList(entry.areas),
         positions: normalizeNameList(entry.positions),
         companies: normalizeNameList(entry.companies),
-        durationKeys: normalizeDurationKeys(entry.durationKeys),
+        durationStart: normalizeDurationStart(entry.durationStart),
+        durationEnd: normalizeDurationEnd(entry.durationEnd),
       })),
       updated_at: new Date().toISOString(),
     };
@@ -451,7 +550,10 @@ export function ExperienceDetailsDialog({
         areas: normalizeNameList(draftRef.current.areas),
         positions: normalizeNameList(draftRef.current.positions),
         companies: normalizeNameList(draftRef.current.companies),
-        durationKeys: normalizeDurationKeys(draftRef.current.durationKeys),
+        durationStart: normalizeDurationStart(draftRef.current.durationStart),
+        durationEnd: normalizeDurationEnd(
+          draftRef.current.durationEnd || DURATION_PRESENT,
+        ),
       };
       if (!experienceEntryComplete(committed)) return;
       setEntries((current) => [...current, committed]);
@@ -470,7 +572,8 @@ export function ExperienceDetailsDialog({
     draft.areas,
     draft.positions,
     draft.companies,
-    draft.durationKeys,
+    draft.durationStart,
+    draft.durationEnd,
   ]);
 
   const flushAndClose = async () => {
@@ -482,7 +585,10 @@ export function ExperienceDetailsDialog({
         areas: normalizeNameList(draftRef.current.areas),
         positions: normalizeNameList(draftRef.current.positions),
         companies: normalizeNameList(draftRef.current.companies),
-        durationKeys: normalizeDurationKeys(draftRef.current.durationKeys),
+        durationStart: normalizeDurationStart(draftRef.current.durationStart),
+        durationEnd: normalizeDurationEnd(
+          draftRef.current.durationEnd || DURATION_PRESENT,
+        ),
       };
       next = [...next, committed];
       setEntries(next);
@@ -517,15 +623,37 @@ export function ExperienceDetailsDialog({
     clearQuery();
   };
 
-  const toggleDuration = (year: number, month: number) => {
+  const setDurationStart = (year: number, month: number) => {
     const key = monthYearKey(year, month);
     setDraft((current) => {
-      const exists = current.durationKeys.includes(key);
-      const next = exists
-        ? current.durationKeys.filter((item) => item !== key)
-        : normalizeDurationKeys([...current.durationKeys, key]);
-      return { ...current, durationKeys: next };
+      // Selecting From defaults To to Present when To is empty or still Present.
+      const nextEnd =
+        !current.durationEnd || isDurationPresent(current.durationEnd)
+          ? DURATION_PRESENT
+          : normalizeDurationEnd(current.durationEnd);
+      return {
+        ...current,
+        durationStart: key,
+        durationEnd: nextEnd,
+      };
     });
+  };
+
+  const setDurationEndMonthYear = (year: number, month: number) => {
+    const key = monthYearKey(year, month);
+    setDraft((current) => ({
+      ...current,
+      durationEnd: key,
+      // If To is chosen before From, seed From to the same month so the range is valid.
+      durationStart: current.durationStart || key,
+    }));
+  };
+
+  const setDurationEndPresent = () => {
+    setDraft((current) => ({
+      ...current,
+      durationEnd: DURATION_PRESENT,
+    }));
   };
 
   const removeEntry = (id: string) => {
@@ -550,9 +678,10 @@ export function ExperienceDetailsDialog({
         ? t('profile.experienceDetails.saveFailed')
         : t('profile.experienceDetails.autoSaved');
 
+  const presentLabel = t('profile.experienceDetails.durationPresent');
   const areasEmpty = draft.areas.length === 0;
   const positionsEmpty = draft.positions.length === 0;
-  const durationEmpty = draft.durationKeys.length === 0;
+  const durationEmpty = !experienceDurationComplete(draft);
   const companiesEmpty = draft.companies.length === 0;
   const useBullets = entries.length > 1;
 
@@ -601,7 +730,7 @@ export function ExperienceDetailsDialog({
                   <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-foreground">
                     {entries.map((entry) => (
                       <li key={entry.id} className="relative pr-6">
-                        <span>{formatExperienceLine(entry)}</span>
+                        <span>{formatExperienceLine(entry, presentLabel)}</span>
                         <button
                           type="button"
                           className="absolute right-0 top-0 inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground transition-colors hover:text-destructive"
@@ -615,7 +744,7 @@ export function ExperienceDetailsDialog({
                   </ul>
                 ) : (
                   <div className="relative pr-6 text-sm leading-relaxed text-foreground">
-                    <span>{formatExperienceLine(entries[0])}.</span>
+                    <span>{formatExperienceLine(entries[0], presentLabel)}.</span>
                     <button
                       type="button"
                       className="absolute right-0 top-0 inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground transition-colors hover:text-destructive"
@@ -751,17 +880,24 @@ export function ExperienceDetailsDialog({
                 onOpenChange={setDurationOpen}
                 ariaLabel={t('profile.experienceDetails.duration')}
                 empty={durationEmpty}
-                contentClassName="w-[min(20rem,calc(100vw-2rem))]"
+                contentClassName="w-[min(22rem,calc(100vw-2rem))]"
                 panel={
-                  <MonthYearPicker
-                    selectedKeys={draft.durationKeys}
-                    onToggle={toggleDuration}
+                  <DurationPicker
+                    durationStart={draft.durationStart}
+                    durationEnd={draft.durationEnd}
+                    onChangeStart={setDurationStart}
+                    onChangeEnd={setDurationEndMonthYear}
+                    onSelectPresent={setDurationEndPresent}
                   />
                 }
               >
                 {durationEmpty
                   ? t('profile.experienceDetails.durationPlaceholder')
-                  : formatDurationRange(draft.durationKeys)}
+                  : formatDurationRange(
+                      draft.durationStart,
+                      draft.durationEnd || DURATION_PRESENT,
+                      presentLabel,
+                    )}
               </SentenceToken>{' '}
               {t('profile.experienceDetails.sentenceWith')}{' '}
               <SentenceToken

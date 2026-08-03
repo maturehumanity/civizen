@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Profile Experience Present duration (2026-08-03):** Duration picker is From / To. Selecting From defaults To to **Present** (shown as “May 2002 – Present”); To can still be any month/year. Legacy single-point entries migrate to start + Present. LANGUAGE_PACK_VERSION 105.
+
 **Percent ring fix (2026-08-03):** Multi-colored tier-band track + split dashed progress made the ring look distorted and like progress sat in the wrong tiers. Restored one muted track, one continuous progress stroke, and slim tier separators only. **Testing v0.1.109**.
 
 **Dial photo/progress core (2026-08-02):** Modest ~11% larger photo + percent ring (`dialRingSize` 176, photo 8.5rem). `RING_INNER` raised 108→118 to reclaim gutter; factor band height stays mostly intact for Contributions / Performance labels. **Testing v0.1.108**.

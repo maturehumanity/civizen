@@ -61,6 +61,9 @@ export const PROFILE_EXPERIENCE_MONTH_LABELS = [
   'December',
 ] as const;
 
+/** Sentinel for an ongoing experience end date. */
+export const DURATION_PRESENT = 'present';
+
 export type ExperienceMonthYear = {
   year: number;
   month: number; // 1–12
@@ -71,8 +74,10 @@ export type ExperienceEntry = {
   areas: string[];
   positions: string[];
   companies: string[];
-  /** Sorted unique YYYY-MM keys representing selected month-years. */
-  durationKeys: string[];
+  /** Start month-year as YYYY-MM. */
+  durationStart: string;
+  /** End month-year as YYYY-MM, or {@link DURATION_PRESENT}. */
+  durationEnd: string;
 };
 
 export function normalizeNameList(names: string[]): string[] {
@@ -102,19 +107,34 @@ export function parseMonthYearKey(key: string): ExperienceMonthYear | null {
   return { year, month };
 }
 
-export function normalizeDurationKeys(keys: string[]): string[] {
-  const seen = new Set<string>();
-  const parsed: ExperienceMonthYear[] = [];
-  for (const raw of keys) {
-    const point = parseMonthYearKey(raw);
-    if (!point) continue;
-    const key = monthYearKey(point.year, point.month);
-    if (seen.has(key)) continue;
-    seen.add(key);
-    parsed.push(point);
-  }
-  parsed.sort((a, b) => a.year - b.year || a.month - b.month);
-  return parsed.map((p) => monthYearKey(p.year, p.month));
+export function isDurationPresent(value: string | null | undefined): boolean {
+  return (value ?? '').trim().toLowerCase() === DURATION_PRESENT;
+}
+
+export function normalizeDurationStart(value: string | null | undefined): string {
+  const point = parseMonthYearKey(value ?? '');
+  return point ? monthYearKey(point.year, point.month) : '';
+}
+
+export function normalizeDurationEnd(value: string | null | undefined): string {
+  if (isDurationPresent(value)) return DURATION_PRESENT;
+  return normalizeDurationStart(value);
+}
+
+/**
+ * Compare two ends for ordering. Present sorts after any concrete month-year.
+ * Returns negative if a < b, 0 if equal, positive if a > b.
+ */
+export function compareDurationEnds(a: string, b: string): number {
+  if (isDurationPresent(a) && isDurationPresent(b)) return 0;
+  if (isDurationPresent(a)) return 1;
+  if (isDurationPresent(b)) return -1;
+  const pa = parseMonthYearKey(a);
+  const pb = parseMonthYearKey(b);
+  if (!pa && !pb) return 0;
+  if (!pa) return -1;
+  if (!pb) return 1;
+  return pa.year - pb.year || pa.month - pb.month;
 }
 
 export function formatMonthYear(point: ExperienceMonthYear): string {
@@ -122,47 +142,133 @@ export function formatMonthYear(point: ExperienceMonthYear): string {
   return `${label} ${point.year}`;
 }
 
+export function formatDurationEndLabel(end: string, presentLabel = 'Present'): string {
+  if (isDurationPresent(end)) return presentLabel;
+  const point = parseMonthYearKey(end);
+  return point ? formatMonthYear(point) : '';
+}
+
 /**
- * One selected month-year → "May 2021".
- * Two or more → range from earliest to latest → "May 2021 – June 2023".
+ * From only → empty (incomplete until end is set; callers usually default end to Present).
+ * From + Present → "May 2002 – Present".
+ * From + To → "May 2002 – June 2023".
+ * Same start/end concrete month → "May 2002".
  */
-export function formatDurationRange(keys: string[]): string {
-  const normalized = normalizeDurationKeys(keys);
-  if (normalized.length === 0) return '';
-  const first = parseMonthYearKey(normalized[0]);
-  const last = parseMonthYearKey(normalized[normalized.length - 1]);
-  if (!first || !last) return '';
-  if (normalized.length === 1) return formatMonthYear(first);
-  return `${formatMonthYear(first)} – ${formatMonthYear(last)}`;
+export function formatDurationRange(
+  start: string,
+  end: string,
+  presentLabel = 'Present',
+): string {
+  const from = normalizeDurationStart(start);
+  const to = normalizeDurationEnd(end);
+  if (!from) return '';
+  const fromPoint = parseMonthYearKey(from);
+  if (!fromPoint) return '';
+  if (!to) return formatMonthYear(fromPoint);
+  if (isDurationPresent(to)) return `${formatMonthYear(fromPoint)} – ${presentLabel}`;
+  const toPoint = parseMonthYearKey(to);
+  if (!toPoint) return formatMonthYear(fromPoint);
+  if (from === to) return formatMonthYear(fromPoint);
+  // Ensure chronological display even if ends were swapped in storage.
+  if (compareDurationEnds(from, to) > 0) {
+    return `${formatMonthYear(toPoint)} – ${formatMonthYear(fromPoint)}`;
+  }
+  return `${formatMonthYear(fromPoint)} – ${formatMonthYear(toPoint)}`;
+}
+
+/**
+ * Legacy multi-point durationKeys → start/end.
+ * One point → start that month, end Present.
+ * Two+ → min start, max end.
+ */
+export function durationFromLegacyKeys(keys: unknown): {
+  durationStart: string;
+  durationEnd: string;
+} {
+  if (!Array.isArray(keys)) return { durationStart: '', durationEnd: '' };
+  const points = keys
+    .filter((item): item is string => typeof item === 'string')
+    .map((item) => {
+      if (isDurationPresent(item)) return DURATION_PRESENT;
+      return normalizeDurationStart(item);
+    })
+    .filter(Boolean);
+  const concrete = points
+    .filter((item) => !isDurationPresent(item))
+    .map((item) => parseMonthYearKey(item))
+    .filter((item): item is ExperienceMonthYear => item != null)
+    .sort((a, b) => a.year - b.year || a.month - b.month);
+  const hasPresent = points.some((item) => isDurationPresent(item));
+  if (concrete.length === 0) return { durationStart: '', durationEnd: '' };
+  const start = monthYearKey(concrete[0].year, concrete[0].month);
+  if (hasPresent || concrete.length === 1) {
+    return { durationStart: start, durationEnd: DURATION_PRESENT };
+  }
+  const last = concrete[concrete.length - 1];
+  return {
+    durationStart: start,
+    durationEnd: monthYearKey(last.year, last.month),
+  };
+}
+
+export function experienceDurationComplete(entry: {
+  durationStart?: string;
+  durationEnd?: string;
+}): boolean {
+  const start = normalizeDurationStart(entry.durationStart);
+  const end = normalizeDurationEnd(entry.durationEnd);
+  if (!start || !end) return false;
+  if (isDurationPresent(end)) return true;
+  return compareDurationEnds(start, end) <= 0;
 }
 
 export function experienceEntryComplete(entry: {
   areas: string[];
   positions: string[];
   companies: string[];
-  durationKeys: string[];
+  durationStart?: string;
+  durationEnd?: string;
+  /** @deprecated legacy */
+  durationKeys?: string[];
 }): boolean {
+  const duration =
+    entry.durationStart || entry.durationEnd
+      ? { durationStart: entry.durationStart ?? '', durationEnd: entry.durationEnd ?? '' }
+      : durationFromLegacyKeys(entry.durationKeys);
   return (
     normalizeNameList(entry.areas).length > 0 &&
     normalizeNameList(entry.positions).length > 0 &&
     normalizeNameList(entry.companies).length > 0 &&
-    normalizeDurationKeys(entry.durationKeys).length > 0
+    experienceDurationComplete(duration)
   );
 }
 
 /** One line for a committed experience (no trailing period). */
-export function formatExperienceLine(entry: {
-  areas: string[];
-  positions: string[];
-  companies: string[];
-  durationKeys: string[];
-}): string {
+export function formatExperienceLine(
+  entry: {
+    areas: string[];
+    positions: string[];
+    companies: string[];
+    durationStart?: string;
+    durationEnd?: string;
+    durationKeys?: string[];
+  },
+  presentLabel = 'Present',
+): string {
   const areas = formatEnglishList(normalizeNameList(entry.areas));
   const positions = formatEnglishList(normalizeNameList(entry.positions));
-  const duration = formatDurationRange(entry.durationKeys);
+  const duration =
+    entry.durationStart || entry.durationEnd
+      ? { durationStart: entry.durationStart ?? '', durationEnd: entry.durationEnd ?? '' }
+      : durationFromLegacyKeys(entry.durationKeys);
+  const durationText = formatDurationRange(
+    duration.durationStart,
+    duration.durationEnd,
+    presentLabel,
+  );
   const companies = formatEnglishList(normalizeNameList(entry.companies));
-  if (!areas || !positions || !duration || !companies) return '';
-  return `${areas} at the position of ${positions} for the duration of ${duration} with ${companies}`;
+  if (!areas || !positions || !durationText || !companies) return '';
+  return `${areas} at the position of ${positions} for the duration of ${durationText} with ${companies}`;
 }
 
 export function filterExperienceOptions(
@@ -204,7 +310,8 @@ export function emptyExperienceDraft(): Omit<ExperienceEntry, 'id'> & { id?: str
     areas: [],
     positions: [],
     companies: [],
-    durationKeys: [],
+    durationStart: '',
+    durationEnd: '',
   };
 }
 
@@ -215,9 +322,30 @@ export function serializeExperienceEntries(entries: ExperienceEntry[]): string {
       areas: normalizeNameList(entry.areas),
       positions: normalizeNameList(entry.positions),
       companies: normalizeNameList(entry.companies),
-      durationKeys: normalizeDurationKeys(entry.durationKeys),
+      durationStart: normalizeDurationStart(entry.durationStart),
+      durationEnd: normalizeDurationEnd(entry.durationEnd),
     })),
   );
+}
+
+function readDurationFields(row: Record<string, unknown>): {
+  durationStart: string;
+  durationEnd: string;
+} {
+  if (typeof row.durationStart === 'string' || typeof row.duration_start === 'string') {
+    const start = normalizeDurationStart(
+      (typeof row.durationStart === 'string' ? row.durationStart : row.duration_start) as string,
+    );
+    const endRaw =
+      typeof row.durationEnd === 'string'
+        ? row.durationEnd
+        : typeof row.duration_end === 'string'
+          ? row.duration_end
+          : '';
+    const end = normalizeDurationEnd(endRaw || (start ? DURATION_PRESENT : ''));
+    return { durationStart: start, durationEnd: end };
+  }
+  return durationFromLegacyKeys(row.durationKeys ?? row.duration_keys);
 }
 
 export function parseExperienceEntries(raw: unknown): ExperienceEntry[] {
@@ -241,17 +369,23 @@ export function parseExperienceEntries(raw: unknown): ExperienceEntry[] {
       : Array.isArray(row.company_names)
         ? normalizeNameList(row.company_names.filter((v): v is string => typeof v === 'string'))
         : [];
-    const durationKeys = Array.isArray(row.durationKeys)
-      ? normalizeDurationKeys(row.durationKeys.filter((v): v is string => typeof v === 'string'))
-      : Array.isArray(row.duration_keys)
-        ? normalizeDurationKeys(row.duration_keys.filter((v): v is string => typeof v === 'string'))
-        : [];
+    const { durationStart, durationEnd } = readDurationFields(row);
     const id =
       typeof row.id === 'string' && row.id.trim()
         ? row.id
         : newExperienceDraftId();
-    if (!experienceEntryComplete({ areas, positions, companies, durationKeys })) continue;
-    result.push({ id, areas, positions, companies, durationKeys });
+    if (
+      !experienceEntryComplete({
+        areas,
+        positions,
+        companies,
+        durationStart,
+        durationEnd,
+      })
+    ) {
+      continue;
+    }
+    result.push({ id, areas, positions, companies, durationStart, durationEnd });
   }
   return result;
 }

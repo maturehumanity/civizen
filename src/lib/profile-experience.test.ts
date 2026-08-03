@@ -1,10 +1,13 @@
 import {
+  DURATION_PRESENT,
+  durationFromLegacyKeys,
   experienceEntryComplete,
   filterExperienceOptions,
   formatDurationRange,
   formatExperienceLine,
   monthYearKey,
-  normalizeDurationKeys,
+  normalizeDurationEnd,
+  normalizeDurationStart,
   normalizeNameList,
   parseExperienceEntries,
   parseMonthYearKey,
@@ -12,19 +15,37 @@ import {
 } from '@/lib/profile-experience';
 
 describe('formatDurationRange', () => {
-  it('formats a single month-year', () => {
-    expect(formatDurationRange(['2021-05'])).toBe('May 2021');
+  it('formats from → Present', () => {
+    expect(formatDurationRange('2021-05', DURATION_PRESENT)).toBe('May 2021 – Present');
   });
 
-  it('formats multiple selections as a min–max range', () => {
-    expect(formatDurationRange(['2023-06', '2021-05', '2022-01'])).toBe(
-      'May 2021 – June 2023',
-    );
+  it('formats from → to range', () => {
+    expect(formatDurationRange('2021-05', '2023-06')).toBe('May 2021 – June 2023');
   });
 
-  it('returns empty for invalid keys', () => {
-    expect(formatDurationRange([])).toBe('');
-    expect(formatDurationRange(['nope'])).toBe('');
+  it('formats identical start and end as a single month', () => {
+    expect(formatDurationRange('2021-05', '2021-05')).toBe('May 2021');
+  });
+
+  it('returns empty without a start', () => {
+    expect(formatDurationRange('', DURATION_PRESENT)).toBe('');
+    expect(formatDurationRange('nope', DURATION_PRESENT)).toBe('');
+  });
+});
+
+describe('durationFromLegacyKeys', () => {
+  it('maps a single point to start + Present', () => {
+    expect(durationFromLegacyKeys(['2021-05'])).toEqual({
+      durationStart: '2021-05',
+      durationEnd: DURATION_PRESENT,
+    });
+  });
+
+  it('maps multiple points to min–max', () => {
+    expect(durationFromLegacyKeys(['2023-06', '2021-05', '2022-01'])).toEqual({
+      durationStart: '2021-05',
+      durationEnd: '2023-06',
+    });
   });
 });
 
@@ -35,7 +56,8 @@ describe('experienceEntryComplete', () => {
         areas: ['Professional work'],
         positions: ['Engineer'],
         companies: ['Google'],
-        durationKeys: ['2021-05'],
+        durationStart: '2021-05',
+        durationEnd: DURATION_PRESENT,
       }),
     ).toBe(true);
     expect(
@@ -43,34 +65,34 @@ describe('experienceEntryComplete', () => {
         areas: ['Professional work'],
         positions: [],
         companies: ['Google'],
-        durationKeys: ['2021-05'],
+        durationStart: '2021-05',
+        durationEnd: DURATION_PRESENT,
       }),
     ).toBe(false);
   });
 });
 
 describe('formatExperienceLine', () => {
-  it('builds the experience clause', () => {
+  it('builds the experience clause with Present', () => {
     expect(
       formatExperienceLine({
         areas: ['Professional work', 'Leadership'],
         positions: ['Engineer'],
         companies: ['Google'],
-        durationKeys: ['2021-05', '2023-06'],
+        durationStart: '2021-05',
+        durationEnd: DURATION_PRESENT,
       }),
     ).toBe(
-      'Professional work and Leadership at the position of Engineer for the duration of May 2021 – June 2023 with Google',
+      'Professional work and Leadership at the position of Engineer for the duration of May 2021 – Present with Google',
     );
   });
 });
 
 describe('normalize helpers', () => {
-  it('dedupes names and duration keys', () => {
+  it('normalizes start/end and names', () => {
     expect(normalizeNameList([' Google ', 'google', 'Apple'])).toEqual(['Google', 'Apple']);
-    expect(normalizeDurationKeys(['2021-05', '2021-05', '2022-01'])).toEqual([
-      '2021-05',
-      '2022-01',
-    ]);
+    expect(normalizeDurationStart('2021-05')).toBe('2021-05');
+    expect(normalizeDurationEnd('present')).toBe(DURATION_PRESENT);
     expect(monthYearKey(2021, 5)).toBe('2021-05');
     expect(parseMonthYearKey('2021-05')).toEqual({ year: 2021, month: 5 });
   });
@@ -88,24 +110,38 @@ describe('filterExperienceOptions', () => {
 });
 
 describe('parseExperienceEntries', () => {
-  it('accepts complete rows and skips incomplete', () => {
+  it('accepts start/end rows and migrates legacy durationKeys', () => {
     const parsed = parseExperienceEntries([
       {
         id: 'a',
         areas: ['Professional work'],
         positions: ['Engineer'],
         companies: ['Google'],
-        durationKeys: ['2021-05'],
+        durationStart: '2021-05',
+        durationEnd: DURATION_PRESENT,
+      },
+      {
+        id: 'legacy',
+        areas: ['Leadership'],
+        positions: ['Manager'],
+        companies: ['Apple'],
+        durationKeys: ['2020-01'],
       },
       {
         id: 'b',
         areas: ['Leadership'],
         positions: [],
         companies: ['Apple'],
-        durationKeys: ['2020-01'],
+        durationStart: '2020-01',
+        durationEnd: DURATION_PRESENT,
       },
     ]);
-    expect(parsed).toHaveLength(1);
+    expect(parsed).toHaveLength(2);
     expect(parsed[0].id).toBe('a');
+    expect(parsed[1]).toMatchObject({
+      id: 'legacy',
+      durationStart: '2020-01',
+      durationEnd: DURATION_PRESENT,
+    });
   });
 });
