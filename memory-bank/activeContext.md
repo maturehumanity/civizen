@@ -2,7 +2,9 @@
 
 ## Current focus
 
-**Learning trainings panel (2026-08-03):** Selecting Learning opens Education plus a Trainings sentence card (“I have attended training on [cycling multi-select]”). Trainings persist in `profile_training_entries` and add a secondary Learning boost (degree remains primary). `SCORE_CALCULATION_VERSION` → `civizen-score-v1.2`. LANGUAGE_PACK_VERSION 108. **Testing v0.1.116** (build 118).
+**Testing v0.1.117 (2026-08-03):** Build 119 (`20260803-v0.1.117`). Live/Production remains on **v0.1.106** until soak. Includes Learning trainings panel and level-aware Learning/Experience scoring.
+
+**Learning trainings panel (2026-08-03):** Selecting Learning opens Education plus a Trainings sentence card (“I have attended training on [cycling multi-select]”). Trainings persist in `profile_training_entries` and add a secondary Learning boost (degree remains primary). `SCORE_CALCULATION_VERSION` → `civizen-score-v1.2`. LANGUAGE_PACK_VERSION 108.
 
 **Learning level-aware scoring (2026-08-03):** Learning is no longer count-only. Highest education level drives the preliminary score (`EDUCATION_LEVEL_BASE_SCORE`); custom labels like **5-Year Diploma Degree** normalize to master’s (68). Verification and extra credentials still boost. Wired through Profile / Home / UserProfile (`education_level` select). `SCORE_CALCULATION_VERSION` → `civizen-score-v1.1`. **Testing v0.1.115** (build 117).
 
