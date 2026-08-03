@@ -2,6 +2,10 @@
 
 ## Current focus
 
+**Testing v0.1.120 (2026-08-03):** Build 122 (`20260803-v0.1.120`). Live/Production remains on prior soak build. Home Post composer grows with draft length (no 160px clip).
+
+**Home Post composer auto-grow (2026-08-03):** Draft textarea grows with content (removed 160px height cap) so long messages stay fully visible while composing.
+
 **Testing v0.1.119 (2026-08-03):** Build 121 (`20260803-v0.1.119`). Live/Production remains on prior soak build. Includes org Social accounts + Publish to….
 
 **Org social publish (2026-08-03):** Official `@civizen` account can connect LinkedIn / Facebook / X under Settings → Social accounts, then use Home **Publish to…** (Share icon, next to Comment) after a Civizen post exists. Not simultaneous. LinkedIn company page `143053953`. LANGUAGE_PACK_VERSION 110.

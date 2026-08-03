@@ -211,8 +211,9 @@ export default function Home() {
     const textarea = postTextareaRef.current;
     if (!textarea) return;
 
-    textarea.style.height = '0px';
-    textarea.style.height = `${Math.min(textarea.scrollHeight, 160)}px`;
+    // Grow with content so the full draft stays visible (no fixed max clip).
+    textarea.style.height = 'auto';
+    textarea.style.height = `${textarea.scrollHeight}px`;
   }, [postContent]);
 
   const normalizePost = (raw: RawPostRecord): Post => ({
