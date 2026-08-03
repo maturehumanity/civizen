@@ -1,0 +1,41 @@
+---
+description: Mandatory Civizen project context — read before any task
+alwaysApply: true
+---
+
+# Civizen agent context (mandatory)
+
+## Start of every task
+
+Before planning or editing, read (in order):
+
+1. `memory-bank/activeContext.md`
+2. `docs/04-operations/dev/AGENTS.md`
+3. If the task touches secondary nav, Market bottom menu, Home/Study tabs, or `NavSecondaryCarousel`:
+   - **`docs/04-operations/dev/nav-secondary-carousel.md`** (canonical UX + geometry spec)
+
+Do not rely on conversation memory alone for component behavior.
+
+## After front-end or arc changes
+
+Run:
+
+```bash
+npm run verify:post-dev
+```
+
+Do not tell the user a UI fix is done until `verify:post-dev` passes **and** the change matches the relevant spec (not just scripts).
+
+## Arc carousel
+
+- Reference: approved Marketplace screenshot — wide shallow arc, **Sell · For you · Local · Jobs** visible at 390px.
+- Same component on Home, Study, Market (Market uses icons + loop).
+- Regression guards: `docs/04-operations/dev/AGENTS.md` §7.
+
+## Documentation updates
+
+When arc behavior or agent workflow changes, update in the **same session**:
+
+- `docs/04-operations/dev/nav-secondary-carousel.md`
+- `memory-bank/activeContext.md` if focus shifted
+- `docs/04-operations/dev/AGENTS.md` if process changes

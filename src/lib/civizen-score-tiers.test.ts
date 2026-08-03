@@ -1,0 +1,223 @@
+import { describe, expect, it } from 'vitest';
+
+import {
+  calculateTierStatus,
+  determineFinalTier,
+  getBaseTier,
+  getDevelopmentalScoreColor,
+} from '@/lib/civizen-score-tiers';
+import type { ScoreConfidence } from '@/lib/civizen-score';
+
+function input(partial: {
+  overallScore: number | null;
+  performanceScore?: number | null;
+  contributionsScore?: number | null;
+  confidence?: ScoreConfidence;
+  hasVerifiedActivity?: boolean;
+  hasSustainedActivity?: boolean;
+  hasSubstantialImpact?: boolean;
+  hasUnresolvedSeriousIntegrityIssue?: boolean;
+}) {
+  return {
+    overallScore: partial.overallScore,
+    performanceScore: partial.performanceScore ?? null,
+    contributionsScore: partial.contributionsScore ?? null,
+    confidence: partial.confidence ?? 'insufficient',
+    hasVerifiedActivity: partial.hasVerifiedActivity ?? false,
+    hasSustainedActivity: partial.hasSustainedActivity ?? false,
+    hasSubstantialImpact: partial.hasSubstantialImpact ?? false,
+    hasUnresolvedSeriousIntegrityIssue: partial.hasUnresolvedSeriousIntegrityIssue ?? false,
+  };
+}
+
+describe('civizen score tiers', () => {
+  it('Test 1: not yet scored still displays Explorer', () => {
+    const status = calculateTierStatus(input({ overallScore: null }));
+    expect(status.scoreState).toBe('not_scored');
+    expect(status.finalTier).toBe('explorer');
+    expect(status.baseTier).toBe('explorer');
+    expect(status.nextTier).toBe('builder');
+    expect(status.pointsToNextTier).toBe(30);
+  });
+
+  it('Test 2: Explorer with points to Builder', () => {
+    const status = calculateTierStatus(
+      input({ overallScore: 8.4, confidence: 'low' }),
+    );
+    expect(status.finalTier).toBe('explorer');
+    expect(status.nextTier).toBe('builder');
+    expect(status.pointsToNextTier).toBe(21.6);
+  });
+
+  it('Test 3: Builder threshold with verified activity', () => {
+    const result = determineFinalTier(
+      input({ overallScore: 30, hasVerifiedActivity: true, confidence: 'low' }),
+    );
+    expect(result.finalTier).toBe('builder');
+  });
+
+  it('Test 4: Builder score without verified activity stays Explorer', () => {
+    const result = determineFinalTier(
+      input({ overallScore: 42, hasVerifiedActivity: false, confidence: 'low' }),
+    );
+    expect(result.baseTier).toBe('builder');
+    expect(result.finalTier).toBe('explorer');
+    expect(result.unmetRequirements.some((r) => r.id === 'verified_activity')).toBe(true);
+  });
+
+  it('Test 5: Contributor threshold', () => {
+    const result = determineFinalTier(
+      input({
+        overallScore: 60,
+        performanceScore: 50,
+        contributionsScore: 50,
+        confidence: 'moderate',
+        hasVerifiedActivity: true,
+      }),
+    );
+    expect(result.finalTier).toBe('contributor');
+  });
+
+  it('Test 6: Contributor score but insufficient Performance → Builder', () => {
+    const result = determineFinalTier(
+      input({
+        overallScore: 68,
+        performanceScore: 42,
+        contributionsScore: 61,
+        confidence: 'high',
+        hasVerifiedActivity: true,
+      }),
+    );
+    expect(result.baseTier).toBe('contributor');
+    expect(result.finalTier).toBe('builder');
+    expect(
+      result.unmetRequirements.some(
+        (r) => r.id === 'performance_score' && r.explanation?.includes('50'),
+      ),
+    ).toBe(true);
+  });
+
+  it('Test 7: Catalyst threshold', () => {
+    const result = determineFinalTier(
+      input({
+        overallScore: 75,
+        performanceScore: 65,
+        contributionsScore: 65,
+        confidence: 'high',
+        hasVerifiedActivity: true,
+        hasSustainedActivity: true,
+      }),
+    );
+    expect(result.finalTier).toBe('catalyst');
+  });
+
+  it('Test 8: Catalyst score but low Contributions → Contributor', () => {
+    const result = determineFinalTier(
+      input({
+        overallScore: 81,
+        performanceScore: 72,
+        contributionsScore: 61,
+        confidence: 'high',
+        hasVerifiedActivity: true,
+        hasSustainedActivity: true,
+      }),
+    );
+    expect(result.baseTier).toBe('catalyst');
+    expect(result.finalTier).toBe('contributor');
+  });
+
+  it('Test 9: Steward threshold', () => {
+    const result = determineFinalTier(
+      input({
+        overallScore: 85,
+        performanceScore: 75,
+        contributionsScore: 75,
+        confidence: 'high',
+        hasVerifiedActivity: true,
+        hasSustainedActivity: true,
+        hasSubstantialImpact: true,
+      }),
+    );
+    expect(result.finalTier).toBe('steward');
+  });
+
+  it('Test 10: Steward score with unresolved integrity issue blocks Catalyst and Steward', () => {
+    const result = determineFinalTier(
+      input({
+        overallScore: 91,
+        performanceScore: 88,
+        contributionsScore: 86,
+        confidence: 'very_high',
+        hasVerifiedActivity: true,
+        hasSustainedActivity: true,
+        hasSubstantialImpact: true,
+        hasUnresolvedSeriousIntegrityIssue: true,
+      }),
+    );
+    expect(result.baseTier).toBe('steward');
+    expect(result.finalTier).toBe('contributor');
+    expect(result.unmetRequirements.some((r) => r.id === 'integrity')).toBe(true);
+  });
+
+  it('Test 11: boundary values for base tier', () => {
+    expect(getBaseTier(29.9)).toBe('explorer');
+    expect(getBaseTier(30.0)).toBe('builder');
+    expect(getBaseTier(59.9)).toBe('builder');
+    expect(getBaseTier(60.0)).toBe('contributor');
+    expect(getBaseTier(74.9)).toBe('contributor');
+    expect(getBaseTier(75.0)).toBe('catalyst');
+    expect(getBaseTier(84.9)).toBe('catalyst');
+    expect(getBaseTier(85.0)).toBe('steward');
+    expect(getBaseTier(100.0)).toBe('steward');
+  });
+
+  it('Test 12: score decrease recalculates tier and keeps unmet reasons', () => {
+    const before = determineFinalTier(
+      input({
+        overallScore: 78,
+        performanceScore: 70,
+        contributionsScore: 68,
+        confidence: 'high',
+        hasVerifiedActivity: true,
+        hasSustainedActivity: true,
+      }),
+    );
+    expect(before.finalTier).toBe('catalyst');
+
+    const after = determineFinalTier(
+      input({
+        overallScore: 72,
+        performanceScore: 70,
+        contributionsScore: 62,
+        confidence: 'high',
+        hasVerifiedActivity: true,
+        hasSustainedActivity: true,
+      }),
+    );
+    expect(after.baseTier).toBe('contributor');
+    expect(after.finalTier).toBe('contributor');
+  });
+
+  it('does not use destructive red for low developmental scores', () => {
+    expect(getDevelopmentalScoreColor(8.4, 'explorer')).not.toContain('destructive');
+    expect(getDevelopmentalScoreColor(8.4, 'explorer')).toBe('text-[#7B8AA1]');
+    expect(getDevelopmentalScoreColor(42, 'builder')).toBe('text-[#2BA8A0]');
+    expect(getDevelopmentalScoreColor(90, 'steward')).toBe('text-[#D9A441]');
+  });
+
+  it('example: score 78 with Performance 61 qualifies as Contributor not Catalyst', () => {
+    const result = determineFinalTier(
+      input({
+        overallScore: 78,
+        performanceScore: 61,
+        contributionsScore: 68,
+        confidence: 'high',
+        hasVerifiedActivity: true,
+        hasSustainedActivity: true,
+      }),
+    );
+    expect(result.baseTier).toBe('catalyst');
+    expect(result.finalTier).toBe('contributor');
+    expect(result.unmetRequirements.some((r) => r.id === 'performance_score')).toBe(true);
+  });
+});

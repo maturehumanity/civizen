@@ -1,0 +1,31 @@
+<!--
+CIVIZEN Icon Master (App / Favicon)
+Source: civizen_Production_SVG_Specification.xml emblem geometry
+Canvas: 1024 x 1024
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" fill="none">
+  <defs>
+    <linearGradient id="civizenIconBg" x1="120" y1="96" x2="900" y2="950" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#344384" />
+      <stop offset="1" stop-color="#1B275F" />
+    </linearGradient>
+    <linearGradient id="civizenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#14B8A6" />
+      <stop offset="55%" stop-color="#1D4ED8" />
+      <stop offset="100%" stop-color="#1E3A8A" />
+    </linearGradient>
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFD95A" />
+      <stop offset="100%" stop-color="#F4C542" />
+    </linearGradient>
+  </defs>
+
+  <rect x="40" y="40" width="944" height="944" rx="188" fill="url(#civizenIconBg)" />
+  <g transform="translate(150 120) scale(2)">
+    <path d="M180 60L250 130L250 280Q250 360 180 420Q110 360 110 280L110 130Z" fill="url(#civizenGradient)" />
+    <path d="M155 120L205 145L185 185L150 170L138 285L180 320L225 285L238 315L180 365L120 315L135 165Z" fill="#FFFFFF" />
+    <path d="M170 190L245 160L250 205L175 240Z" fill="#FFFFFF" />
+    <path d="M165 250L248 215L252 258L172 295Z" fill="#FFFFFF" />
+    <path d="M180 18Q210 45 205 75Q202 100 180 108Q158 100 155 75Q150 45 180 18Z" fill="url(#goldGradient)" />
+  </g>
+</svg>

@@ -1,0 +1,227 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Civizen Design System - Civic Trust Theme */
+
+@layer base {
+  :root {
+    /* Core brand colors - Teal trust palette */
+    --background: 180 20% 99%;
+    --foreground: 200 25% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 200 25% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 200 25% 10%;
+
+    /* Primary - Deep Teal (Trust) */
+    --primary: 174 62% 35%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary - Warm slate */
+    --secondary: 200 15% 94%;
+    --secondary-foreground: 200 25% 15%;
+
+    --muted: 200 10% 96%;
+    --muted-foreground: 200 10% 45%;
+
+    /* Accent - Warm Gold (Achievement) */
+    --accent: 38 92% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 200 15% 90%;
+    --input: 200 15% 90%;
+    --ring: 174 62% 35%;
+
+    --radius: 1rem;
+
+    /* Pillar colors */
+    --pillar-education: 199 89% 48%;
+    --pillar-culture: 280 65% 60%;
+    --pillar-responsibility: 142 71% 45%;
+    --pillar-environment: 152 69% 41%;
+    --pillar-economy: 38 92% 50%;
+
+    /* Score gradients */
+    --score-low: 0 72% 51%;
+    --score-medium: 38 92% 50%;
+    --score-high: 142 71% 45%;
+
+    /* Shadows */
+    --shadow-soft: 0 4px 20px -4px hsl(200 25% 10% / 0.08);
+    --shadow-elevated: 0 8px 30px -6px hsl(200 25% 10% / 0.12);
+    --shadow-glow: 0 0 40px -10px hsl(174 62% 35% / 0.3);
+
+    /* Mobile safe areas */
+    --safe-area-top: env(safe-area-inset-top);
+    --safe-area-bottom: env(safe-area-inset-bottom);
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 200 10% 26%;
+    --sidebar-primary: 174 62% 35%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 200 10% 96%;
+    --sidebar-accent-foreground: 200 25% 10%;
+    --sidebar-border: 200 15% 91%;
+    --sidebar-ring: 174 62% 35%;
+  }
+
+  .dark {
+    --background: 200 25% 6%;
+    --foreground: 180 10% 96%;
+
+    --card: 200 20% 10%;
+    --card-foreground: 180 10% 96%;
+
+    --popover: 200 20% 10%;
+    --popover-foreground: 180 10% 96%;
+
+    --primary: 174 55% 50%;
+    --primary-foreground: 200 25% 6%;
+
+    --secondary: 200 15% 18%;
+    --secondary-foreground: 180 10% 96%;
+
+    --muted: 200 15% 18%;
+    --muted-foreground: 200 10% 60%;
+
+    --accent: 38 80% 55%;
+    --accent-foreground: 200 25% 6%;
+
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 200 15% 20%;
+    --input: 200 15% 20%;
+    --ring: 174 55% 50%;
+
+    --sidebar-background: 200 20% 8%;
+    --sidebar-foreground: 180 10% 90%;
+    --sidebar-primary: 174 55% 50%;
+    --sidebar-primary-foreground: 200 25% 6%;
+    --sidebar-accent: 200 15% 15%;
+    --sidebar-accent-foreground: 180 10% 96%;
+    --sidebar-border: 200 15% 18%;
+    --sidebar-ring: 174 55% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    height: 100%;
+    overflow-x: hidden;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+    min-height: 100%;
+    padding-top: var(--safe-area-top);
+    padding-bottom: var(--safe-area-bottom);
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: auto;
+  }
+
+  /* Mobile / narrow: hide page scrollbar (app-like). md+ keeps the native track. */
+  @media (max-width: 767px) {
+    html,
+    body {
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar {
+      display: none;
+      width: 0;
+      height: 0;
+    }
+  }
+
+  #root {
+    min-height: 100%;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-card/80 backdrop-blur-xl border border-border/50;
+  }
+
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .shadow-elevated {
+    box-shadow: var(--shadow-elevated);
+  }
+
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .font-mrz {
+    font-family: "OCR B Std", "OCR-B", "OCRB", "Noto Sans Mono", "Consolas", "Menlo", monospace;
+    letter-spacing: 0.14em;
+  }
+
+  .safe-bottom {
+    padding-bottom: max(1rem, var(--safe-area-bottom));
+  }
+
+  .safe-top {
+    padding-top: max(0.5rem, var(--safe-area-top));
+  }
+
+  /* Pillar color utilities */
+  .pillar-education { color: hsl(var(--pillar-education)); }
+  .pillar-culture { color: hsl(var(--pillar-culture)); }
+  .pillar-responsibility { color: hsl(var(--pillar-responsibility)); }
+  .pillar-environment { color: hsl(var(--pillar-environment)); }
+  .pillar-economy { color: hsl(var(--pillar-economy)); }
+
+  .bg-pillar-education { background-color: hsl(var(--pillar-education)); }
+  .bg-pillar-culture { background-color: hsl(var(--pillar-culture)); }
+  .bg-pillar-responsibility { background-color: hsl(var(--pillar-responsibility)); }
+  .bg-pillar-environment { background-color: hsl(var(--pillar-environment)); }
+  .bg-pillar-economy { background-color: hsl(var(--pillar-economy)); }
+
+  /* Score color gradient utility */
+  .score-gradient {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--score-low)) 0%,
+      hsl(var(--score-medium)) 50%,
+      hsl(var(--score-high)) 100%
+    );
+  }
+
+  /* Mobile-optimized touch targets */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  /* Smooth page transitions */
+  .page-transition {
+    @apply animate-in fade-in slide-in-from-right-4 duration-300;
+  }
+}

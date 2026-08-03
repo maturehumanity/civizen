@@ -1,0 +1,22 @@
+<!-- =========================================================
+CIVIZEN brand assets (2026-08-02)
+Source: approved Primary logo + icon-only PNGs (ChatGPT concept sheet)
+Conversion: scripts/convert-brand-logos.mjs (transparent PNG + SVG wrappers)
+Product slogan (unchanged in UI): For a Mature Humanity
+========================================================= -->
+
+<!--
+Sources:
+  docs/04-operations/dev/brand-source/civizen-icon-source.png
+  docs/04-operations/dev/brand-source/civizen-lockup-source.png
+
+Outputs (public/brand/):
+  civizen-mark.svg / .png / -256.png          light surfaces
+  civizen-mark-dark.svg / .png / -256.png     dark surfaces
+  civizen-lockup.svg / .png (+ -dark)         primary lockup
+  civizen-icon-full.svg                       navy app / favicon tile
+  civizen-icon-light.svg                      soft light tile
+
+App chrome: CivizenBrandIcon -> civizen-mark-256.png / civizen-mark-dark-256.png
+Favicon + Android: npm run icons:generate
+-->

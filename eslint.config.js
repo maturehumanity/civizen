@@ -1,0 +1,49 @@
+import js from "@eslint/js";
+import globals from "globals";
+import reactHooks from "eslint-plugin-react-hooks";
+import reactRefresh from "eslint-plugin-react-refresh";
+import tseslint from "typescript-eslint";
+
+export default tseslint.config(
+  { ignores: ["dist", "android/**/build/**"] },
+  {
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    files: ["**/*.{ts,tsx}"],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.browser,
+    },
+    plugins: {
+      "react-hooks": reactHooks,
+      "react-refresh": reactRefresh,
+    },
+    rules: {
+      ...reactHooks.configs.recommended.rules,
+      "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
+      "@typescript-eslint/no-unused-vars": "off",
+    },
+  },
+  {
+    files: ["src/components/ui/**/*.tsx", "src/contexts/**/*.tsx"],
+    rules: {
+      "react-refresh/only-export-components": "off",
+    },
+  },
+  {
+    files: [
+      "src/components/layout/BuildOverlay.tsx",
+      "src/pages/EndorseFlow.tsx",
+      "src/pages/EndorseSelect.tsx",
+      "src/pages/Home.tsx",
+      "src/pages/Profile.tsx",
+      "src/pages/UserProfile.tsx",
+      "src/pages/settings/EditProfile.tsx",
+      "src/pages/settings/GovernanceAdmin.tsx",
+      "src/pages/settings/Pillars.tsx",
+    ],
+    rules: {
+      // These screens intentionally scope effects to specific identity/timing triggers.
+      "react-hooks/exhaustive-deps": "off",
+    },
+  },
+);

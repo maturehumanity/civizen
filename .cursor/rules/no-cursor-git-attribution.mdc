@@ -1,0 +1,13 @@
+---
+description: Never attribute git commits or PRs to Cursor/cursoragent
+alwaysApply: true
+---
+
+# No Cursor git attribution
+
+When creating commits or pull requests:
+
+- Do **not** add `Co-authored-by: Cursor <cursoragent@cursor.com>`
+- Do **not** add `Made-with: Cursor` or "Made with Cursor" trailers
+- Author and committer must remain the repo owner's configured git identity (`maturehumanity`)
+- If a tool or template inserts Cursor attribution, strip it before finishing the commit/PR

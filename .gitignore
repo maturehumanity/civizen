@@ -1,0 +1,46 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+.cache/
+.verify-*.png
+.debug-*.png
+dist
+dist-ssr
+test-results/
+*.local
+.env
+supabase/.temp/
+
+# Capacitor platforms
+/android/
+ios/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+.codex
+
+# APK artifacts stay local and on the VPS only.
+public/downloads/*.apk
+docs/civizen_institutional_correction_specification*.md
+*:Zone.Identifier
+docs/civizen_remaining_remediation*.md
+docs/civizen_project_purpose_alignment*.md

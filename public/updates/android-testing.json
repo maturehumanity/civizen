@@ -1,0 +1,14 @@
+{
+  "platform": "android",
+  "version": "0.1.107",
+  "versionTag": "v0.1.107",
+  "buildNumber": 109,
+  "releaseId": "20260802-v0.1.107",
+  "downloadPath": "/downloads/civizen-debug-testing-20260802-v0.1.107.apk",
+  "downloadUrl": "https://civizen.world/downloads/civizen-debug-testing-20260802-v0.1.107.apk?v=20260802-v0.1.107",
+  "publishedAt": "2026-08-03T06:09:55Z",
+  "notes": [
+    "Latest Civizen Android release built from the current application.",
+    "Open Settings to confirm the installed version and build number."
+  ]
+}

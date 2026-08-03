@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Civizen — For a Mature Humanity</title>
+    <meta name="description" content="Join a unified, open, decentralized global network built to prevent harm and war, advance world citizenship, and build for a mature humanity." />
+    <meta name="author" content="Civizen" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
+    <meta name="theme-color" content="#3bc8c0" />
+
+    <meta property="og:title" content="Civizen — For a Mature Humanity" />
+    <meta property="og:description" content="Join a unified, open, decentralized global network built to prevent harm and war, advance world citizenship, and build for a mature humanity." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@Civizen" />
+    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <script>
+      (function () {
+        var bootComplete = false;
+        var bootFailureReason = 'unknown';
+        var BOOT_FAILURE_REPORT_KEY = 'civizen-last-boot-failure';
+
+        function rememberBootFailure(reason) {
+          try {
+            var payload = {
+              reason: reason || 'unknown',
+              at: new Date().toISOString(),
+              href: window.location.href,
+            };
+            window.localStorage.setItem(BOOT_FAILURE_REPORT_KEY, JSON.stringify(payload));
+          } catch (_error) {
+            // Ignore storage failures.
+          }
+        }
+
+        function getInstallStableLabel() {
+          return 'Install stable build';
+        }
+
+        function renderFallback(message) {
+          var root = document.getElementById('root');
+          if (!root) return;
+          if (bootComplete) return;
+          if (root.dataset.bootFallbackVisible === 'true') return;
+
+          root.dataset.bootFallbackVisible = 'true';
+          root.innerHTML =
+            '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:#050b12;color:#e8f2ff;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;">' +
+            '<div style="width:100%;max-width:540px;border:1px solid rgba(88,117,146,.35);border-radius:24px;background:rgba(10,22,34,.92);padding:20px;">' +
+            '<h1 style="margin:0 0 8px 0;font-size:24px;line-height:1.2;">Civizen could not start</h1>' +
+            '<p style="margin:0 0 14px 0;font-size:14px;line-height:1.5;color:#aac2da;">' + message + '</p>' +
+            '<p style="margin:0 0 14px 0;font-size:13px;line-height:1.5;color:#93adc6;">If this is a bad testing build, install the stable production build and reopen the app.</p>' +
+            '<div style="display:flex;gap:10px;flex-wrap:wrap;">' +
+            '<button id="civizen-boot-reload" type="button" style="height:40px;border:0;border-radius:12px;background:#34d1c6;color:#02151f;font-weight:600;padding:0 16px;cursor:pointer;">Reload app</button>' +
+            '<button id="civizen-boot-stable" type="button" style="height:40px;border:1px solid rgba(88,117,146,.5);border-radius:12px;background:transparent;color:#e8f2ff;font-weight:600;padding:0 16px;cursor:pointer;">' + getInstallStableLabel() + '</button>' +
+            '</div>' +
+            '</div></div>';
+
+          var button = document.getElementById('civizen-boot-reload');
+          if (button) {
+            button.addEventListener('click', function () {
+              var url = new URL(window.location.href);
+              url.searchParams.set('boot_reload', Date.now().toString());
+              window.location.replace(url.toString());
+            });
+          }
+
+          var stableButton = document.getElementById('civizen-boot-stable');
+          if (stableButton) {
+            stableButton.addEventListener('click', function () {
+              var fallbackUrl = '/downloads/civizen-debug.apk';
+              var withTs = fallbackUrl + '?boot_fallback=' + Date.now();
+
+              fetch('/updates/android-release.json?ts=' + Date.now(), { cache: 'no-store' })
+                .then(function (response) {
+                  if (!response.ok) return null;
+                  return response.json();
+                })
+                .then(function (manifest) {
+                  var url = manifest && typeof manifest.downloadUrl === 'string'
+                    ? manifest.downloadUrl
+                    : withTs;
+                  window.location.assign(url);
+                })
+                .catch(function () {
+                  window.location.assign(withTs);
+                });
+            });
+          }
+        }
+
+        var bootWatchdogMs = 60000;
+        var bootTimeoutId = window.setTimeout(function () {
+          if (!bootComplete) {
+            bootFailureReason = 'boot-timeout';
+            rememberBootFailure(bootFailureReason);
+            renderFallback(
+              'The first launch after an update can take up to a minute on slower devices and connections. If this message stays, reload once or reinstall the latest APK from the website.',
+            );
+          }
+        }, bootWatchdogMs);
+
+        window.__CIVIZEN_BOOT_READY__ = function () {
+          bootComplete = true;
+          window.clearTimeout(bootTimeoutId);
+        };
+
+        window.addEventListener(
+          'error',
+          function (event) {
+            var target = event && event.target;
+            if (event instanceof ErrorEvent && !bootComplete) {
+              bootFailureReason = 'runtime-error';
+              rememberBootFailure(bootFailureReason);
+              renderFallback('The testing build crashed before startup finished.');
+              return;
+            }
+            // Only treat as a failed script *fetch* — runtime ErrorEvents also
+            // bubble with target sometimes pointing at the script element, and
+            // must not be mistaken for a missing bundle.
+            if (
+              target &&
+              target.tagName === 'SCRIPT' &&
+              !(event instanceof ErrorEvent)
+            ) {
+              bootFailureReason = 'script-load-failure';
+              rememberBootFailure(bootFailureReason);
+              renderFallback('A required app script did not load.');
+            }
+          },
+          true
+        );
+      })();
+    </script>
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

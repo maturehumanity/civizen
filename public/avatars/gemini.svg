@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Gemini">
+  <defs>
+    <linearGradient id="gm-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a237e"/>
+      <stop offset="100%" stop-color="#0d47a1"/>
+    </linearGradient>
+    <linearGradient id="gm-star" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8ab4f8"/>
+      <stop offset="50%" stop-color="#c58af9"/>
+      <stop offset="100%" stop-color="#f28b82"/>
+    </linearGradient>
+  </defs>
+  <circle cx="64" cy="64" r="62" fill="url(#gm-bg)"/>
+  <path d="M64 28 L70 54 L96 54 L76 70 L84 96 L64 80 L44 96 L52 70 L32 54 L58 54 Z" fill="url(#gm-star)"/>
+</svg>
