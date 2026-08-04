@@ -2,7 +2,7 @@
 
 ## Current focus
 
-**Market Jobs sentence form polish (2026-08-04):** Logged-in users no longer see Worker/Employer tabs (mode from personal vs `biz_*` account). Job-type token cycles seed labels until hover/select; multi-select shows “Baker or Barista” style lists with checks in the dropdown. Location shows city/region plus matching country flag (`RoundCountryFlag`), also beside Full name. Prior form ship: **Testing v0.1.171** (build 173).
+**Market Jobs sentence form polish + Production (2026-08-04):** Logged-in users no longer see Worker/Employer tabs (mode from personal vs `biz_*` account). Job-type token cycles seed labels until hover/select; multi-select shows “Baker or Barista” style lists with checks in the dropdown. Location shows city/region plus matching country flag (`RoundCountryFlag`), also beside Full name. Also ships Permissions drag-scroll, ProtectedRoute profile-load gate, and AppPageHeader alignment. **Production v0.1.172** (build 174).
 
 **Market Jobs sentence form (2026-08-04):** Jobs replaces StudySpecialists with a progressive sentence form (job type + location tokens, then contact + More details). Marketplace title hover shows the transactional specialist description. Submissions persist to `market_job_interests`. LANGUAGE_PACK_VERSION 123. **Testing v0.1.171** (build 173).
 
