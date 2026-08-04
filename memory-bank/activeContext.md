@@ -2,6 +2,10 @@
 
 ## Current focus
 
+**Testing v0.1.122 (2026-08-03):** Build 124 (`20260803-v0.1.122`). Live/Production remains on prior soak build. Home score card: no Confidence line; points-to-next on dial/tier hover.
+
+**Home score card declutter (2026-08-03):** Removed always-visible “Confidence: …” from Home. “N points to {tier}” shows only on hover of the dial or tier label (e.g. Builder).
+
 **Testing v0.1.121 (2026-08-03):** Build 123 (`20260803-v0.1.121`). Live/Production remains on prior soak build. Home feed post body aligns with avatar left edge.
 
 **Home post body full-bleed (2026-08-03):** Feed post body/actions start at the avatar’s left edge (not indented under the name). Header stays avatar + name/time on one row.

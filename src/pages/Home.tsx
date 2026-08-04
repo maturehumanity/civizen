@@ -603,6 +603,15 @@ export default function Home() {
   const showPostsFeed = homeTab === 'all';
   const showRecentEndorsements = homeTab === 'all' || homeTab === 'favourite';
   const showDevelopmentStories = homeTab === 'stories';
+  const homeScoreTierId = score.tier.finalTier ?? 'explorer';
+  const homeScoreTierLabel = t(`score.tier.${homeScoreTierId}`);
+  const homePointsToNextLabel =
+    score.tier.pointsToNextTier != null && score.tier.nextTier
+      ? t('score.pointsToTier', {
+          points: score.tier.pointsToNextTier,
+          tier: t(`score.tier.${score.tier.nextTier}`),
+        })
+      : null;
   const curatedStories = useMemo<CuratedStoryListItem[]>(
     () => buildCuratedStoryList(developmentStories),
     [developmentStories],
@@ -1063,79 +1072,119 @@ export default function Home() {
             transition={{ delay: 0.1 }}
           >
             <Card className="border-border/70 bg-gradient-to-br from-primary/5 via-card to-accent/5 p-5 shadow-sm transition-all duration-200 hover:border-border hover:shadow-md sm:p-6">
-              <div className="flex items-start gap-4 sm:gap-6">
-                <CivizenScore
-                  score={score.overall.score}
-                  size="md"
-                  showLabel={false}
-                  tier={score.tier.finalTier}
-                />
-                <div className="min-w-0 flex-1">
-                  <h2 className="font-display text-xl font-bold uppercase tracking-wide text-foreground">
-                    {t('home.yourCivizenScore')}
-                  </h2>
-                  {score.overall.score == null ? (
-                    <>
-                      <p
-                        className={`mt-1 font-display text-2xl font-bold ${getDevelopmentalScoreColor(
-                          null,
-                          score.tier.finalTier ?? 'explorer',
-                        )}`}
-                      >
-                        {t(`score.tier.${score.tier.finalTier ?? 'explorer'}`)}
-                      </p>
-                      <p className="mt-2 text-sm text-muted-foreground">
-                        {t('home.scoreBuildingHint')}
-                      </p>
-                      {score.tier.pointsToNextTier != null && score.tier.nextTier ? (
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          {t('score.pointsToTier', {
-                            points: score.tier.pointsToNextTier,
-                            tier: t(`score.tier.${score.tier.nextTier}`),
-                          })}
-                        </p>
-                      ) : null}
-                    </>
-                  ) : (
-                    <>
-                      <p className="mt-1 font-display text-2xl font-bold text-foreground">
-                        {formatScoreValue(score.overall.score)} / 100
-                      </p>
-                      {score.tier.finalTier ? (
-                        <p
-                          className={`mt-1 text-sm font-semibold uppercase tracking-wide ${getDevelopmentalScoreColor(
-                            score.overall.score,
-                            score.tier.finalTier,
-                          )}`}
+              <TooltipProvider delayDuration={200}>
+                <div className="flex items-start gap-4 sm:gap-6">
+                  {homePointsToNextLabel ? (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div
+                          className="shrink-0 cursor-default outline-none"
+                          tabIndex={0}
+                          aria-label={homePointsToNextLabel}
                         >
-                          {t(`score.tier.${score.tier.finalTier}`)}
-                        </p>
-                      ) : null}
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {t('score.confidenceLabel')}:{' '}
-                        {t(`score.confidence.${score.overall.confidence}`)}
-                      </p>
-                      {score.tier.pointsToNextTier != null && score.tier.nextTier ? (
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          {t('score.pointsToTier', {
-                            points: score.tier.pointsToNextTier,
-                            tier: t(`score.tier.${score.tier.nextTier}`),
-                          })}
-                        </p>
-                      ) : null}
-                    </>
+                          <CivizenScore
+                            score={score.overall.score}
+                            size="md"
+                            showLabel={false}
+                            tier={score.tier.finalTier}
+                          />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">{homePointsToNextLabel}</TooltipContent>
+                    </Tooltip>
+                  ) : (
+                    <div className="shrink-0">
+                      <CivizenScore
+                        score={score.overall.score}
+                        size="md"
+                        showLabel={false}
+                        tier={score.tier.finalTier}
+                      />
+                    </div>
                   )}
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => navigate('/profile')}
-                    className="mt-3 gap-2 rounded-xl border-border/70 bg-background/75 shadow-sm hover:bg-background"
-                  >
-                    {t('home.viewScoreDetails')}
-                    <TrendingUp className="h-4 w-4" />
-                  </Button>
+                  <div className="min-w-0 flex-1">
+                    <h2 className="font-display text-xl font-bold uppercase tracking-wide text-foreground">
+                      {t('home.yourCivizenScore')}
+                    </h2>
+                    {score.overall.score == null ? (
+                      <>
+                        {homePointsToNextLabel ? (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <p
+                                className={`mt-1 cursor-default font-display text-2xl font-bold outline-none ${getDevelopmentalScoreColor(
+                                  null,
+                                  homeScoreTierId,
+                                )}`}
+                                tabIndex={0}
+                                aria-label={`${homeScoreTierLabel}. ${homePointsToNextLabel}`}
+                              >
+                                {homeScoreTierLabel}
+                              </p>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom">{homePointsToNextLabel}</TooltipContent>
+                          </Tooltip>
+                        ) : (
+                          <p
+                            className={`mt-1 font-display text-2xl font-bold ${getDevelopmentalScoreColor(
+                              null,
+                              homeScoreTierId,
+                            )}`}
+                          >
+                            {homeScoreTierLabel}
+                          </p>
+                        )}
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          {t('home.scoreBuildingHint')}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="mt-1 font-display text-2xl font-bold text-foreground">
+                          {formatScoreValue(score.overall.score)} / 100
+                        </p>
+                        {score.tier.finalTier ? (
+                          homePointsToNextLabel ? (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <p
+                                  className={`mt-1 cursor-default text-sm font-semibold uppercase tracking-wide outline-none ${getDevelopmentalScoreColor(
+                                    score.overall.score,
+                                    score.tier.finalTier,
+                                  )}`}
+                                  tabIndex={0}
+                                  aria-label={`${homeScoreTierLabel}. ${homePointsToNextLabel}`}
+                                >
+                                  {homeScoreTierLabel}
+                                </p>
+                              </TooltipTrigger>
+                              <TooltipContent side="bottom">{homePointsToNextLabel}</TooltipContent>
+                            </Tooltip>
+                          ) : (
+                            <p
+                              className={`mt-1 text-sm font-semibold uppercase tracking-wide ${getDevelopmentalScoreColor(
+                                score.overall.score,
+                                score.tier.finalTier,
+                              )}`}
+                            >
+                              {homeScoreTierLabel}
+                            </p>
+                          )
+                        ) : null}
+                      </>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => navigate('/profile')}
+                      className="mt-3 gap-2 rounded-xl border-border/70 bg-background/75 shadow-sm hover:bg-background"
+                    >
+                      {t('home.viewScoreDetails')}
+                      <TrendingUp className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              </TooltipProvider>
             </Card>
           </motion.div>
         ) : null}
