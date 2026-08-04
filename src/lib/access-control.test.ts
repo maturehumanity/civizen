@@ -30,4 +30,10 @@ describe('access control', () => {
       coalesceRpcEffectivePermissions('member', ['content.read', 'profile.read'], { rpcFailed: false }),
     ).toEqual(['content.read', 'profile.read']);
   });
+
+  it('falls back when founder RPC omits admin permissions', () => {
+    expect(
+      coalesceRpcEffectivePermissions('founder', ['content.read', 'profile.read'], { rpcFailed: false }),
+    ).toEqual(APP_PERMISSIONS);
+  });
 });

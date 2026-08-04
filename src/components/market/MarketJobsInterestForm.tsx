@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Check, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { RoundCountryFlag } from '@/components/governance/RoundCountryFlag';
 import { Button } from '@/components/ui/button';
 import {
   Command,
@@ -16,14 +17,16 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { getCountryName, getCountryOptions } from '@/lib/countries';
+import { getCountryOptions } from '@/lib/countries';
 import { listGeoCities, listGeoRegions, type GeoRegionOption } from '@/lib/geo-locations';
 import {
   ageFromDateOfBirth,
   filterMarketJobTypeOptions,
+  formatEnglishOrList,
   MARKET_JOB_DAYS,
   MARKET_JOB_PAY_PERIODS,
   MARKET_JOB_TERMS,
+  MARKET_JOB_TYPE_SEEDS,
   type MarketJobMode,
 } from '@/lib/market-job-types';
 import { submitMarketJobInterest } from '@/lib/submit-market-job-interest';
@@ -47,6 +50,7 @@ type SentenceTokenProps = {
   children: ReactNode;
   panel: ReactNode;
   contentClassName?: string;
+  onHoverChange?: (hovered: boolean) => void;
 };
 
 function SentenceToken({
@@ -57,6 +61,7 @@ function SentenceToken({
   children,
   panel,
   contentClassName,
+  onHoverChange,
 }: SentenceTokenProps) {
   const closeTimerRef = useRef<number | null>(null);
 
@@ -83,6 +88,10 @@ function SentenceToken({
     closeTimerRef.current = window.setTimeout(() => onOpenChange(false), 160);
   };
 
+  const setHovered = (hovered: boolean) => {
+    onHoverChange?.(hovered);
+  };
+
   return (
     <Popover
       open={open}
@@ -101,13 +110,17 @@ function SentenceToken({
             empty && 'text-muted-foreground',
           )}
           onMouseEnter={() => {
+            setHovered(true);
             if (canHoverOpen()) openMenu();
           }}
           onMouseLeave={() => {
+            setHovered(false);
             if (canHoverOpen()) scheduleClose();
           }}
+          onFocus={() => setHovered(true)}
+          onBlur={() => setHovered(false)}
         >
-          <span className="whitespace-normal">{children}</span>
+          <span className="inline-flex items-center gap-1.5 whitespace-normal">{children}</span>
         </button>
       </PopoverTrigger>
       <PopoverContent
@@ -115,9 +128,11 @@ function SentenceToken({
         sideOffset={6}
         className={cn('w-[min(18rem,calc(100vw-2rem))] p-0', contentClassName)}
         onMouseEnter={() => {
+          setHovered(true);
           if (canHoverOpen()) openMenu();
         }}
         onMouseLeave={() => {
+          setHovered(false);
           if (canHoverOpen()) scheduleClose();
         }}
         onOpenAutoFocus={(event) => event.preventDefault()}
@@ -128,27 +143,57 @@ function SentenceToken({
   );
 }
 
-function formatLocationLabel(parts: {
-  city: string;
-  regionCode: string;
-  countryCode: string;
-  language: string;
-}): string {
-  const country = parts.countryCode
-    ? getCountryName(parts.countryCode, parts.language)
-    : '';
-  return [parts.city, parts.regionCode, country].filter(Boolean).join(', ') || '';
+function CyclingOptionsLabel({
+  options,
+  active,
+  paused,
+  fallback,
+}: {
+  options: readonly string[];
+  active: boolean;
+  paused: boolean;
+  fallback: string;
+}) {
+  const [index, setIndex] = useState(0);
+  const [preferReducedMotion, setPreferReducedMotion] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const sync = () => setPreferReducedMotion(media.matches);
+    sync();
+    media.addEventListener('change', sync);
+    return () => media.removeEventListener('change', sync);
+  }, []);
+
+  useEffect(() => {
+    if (!active || paused || preferReducedMotion || options.length <= 1) return;
+    const timer = window.setInterval(() => {
+      setIndex((current) => (current + 1) % options.length);
+    }, 1600);
+    return () => window.clearInterval(timer);
+  }, [active, paused, preferReducedMotion, options]);
+
+  if (!active || options.length === 0) return <>{fallback}</>;
+  const label = options[index % options.length] ?? fallback;
+  return (
+    <span className="inline-block min-w-[4.5ch] transition-opacity duration-300" aria-hidden>
+      {label}
+    </span>
+  );
 }
 
 export function MarketJobsInterestForm() {
   const { t, language } = useLanguage();
   const { user, profile } = useAuth();
   const isBusiness = isBusinessUsername(profile?.username);
+  const isLoggedIn = Boolean(user?.id);
 
   const [mode, setMode] = useState<MarketJobMode>(() => (isBusiness ? 'employer' : 'seeker'));
   const [jobTypes, setJobTypes] = useState<string[]>([]);
   const [jobQuery, setJobQuery] = useState('');
   const [jobOpen, setJobOpen] = useState(false);
+  const [jobHovered, setJobHovered] = useState(false);
 
   const [city, setCity] = useState(() => trimOrEmpty(profile?.city));
   const [regionCode, setRegionCode] = useState(() => trimOrEmpty(profile?.region_code));
@@ -183,6 +228,11 @@ export function MarketJobsInterestForm() {
   const showContact = jobTypes.length > 0;
   const countryOptions = useMemo(() => getCountryOptions(language), [language]);
   const jobOptions = useMemo(() => filterMarketJobTypeOptions(jobQuery, jobTypes), [jobQuery, jobTypes]);
+  const selectedJobSet = useMemo(
+    () => new Set(jobTypes.map((item) => item.toLowerCase())),
+    [jobTypes],
+  );
+  const pauseJobCycle = jobOpen || jobHovered;
 
   useEffect(() => {
     setMode(isBusiness ? 'employer' : 'seeker');
@@ -250,12 +300,19 @@ export function MarketJobsInterestForm() {
     };
   }, [countryCode, regionCode]);
 
-  const locationLabel =
-    formatLocationLabel({ city, regionCode, countryCode, language }) ||
-    t('market.jobsForm.locationPlaceholder');
+  const locationText = [city, regionCode].filter(Boolean).join(', ');
+  const locationEmpty = !city && !regionCode && !countryCode;
 
-  const jobLabel =
-    jobTypes.length > 0 ? jobTypes.join(', ') : t('market.jobsForm.jobTypePlaceholder');
+  const toggleJobType = (job: string) => {
+    setJobTypes((current) => {
+      const needle = job.toLowerCase();
+      if (current.some((item) => item.toLowerCase() === needle)) {
+        return current.filter((item) => item.toLowerCase() !== needle);
+      }
+      return [...current, job];
+    });
+    setJobQuery('');
+  };
 
   const toggleDay = (day: string) => {
     setDays((current) =>
@@ -327,34 +384,37 @@ export function MarketJobsInterestForm() {
 
   return (
     <div className="space-y-5 px-1" data-testid="market-jobs-interest-form">
-      <div className="flex justify-center">
-        <div
-          className="inline-flex rounded-full border border-border/70 bg-muted/20 p-0.5"
-          role="group"
-          aria-label={t('market.jobsForm.modeLabel')}
-        >
-          <Button
-            type="button"
-            size="sm"
-            variant={mode === 'seeker' ? 'default' : 'ghost'}
-            className="h-8 rounded-full px-4 text-xs"
-            onClick={() => setMode('seeker')}
-            aria-pressed={mode === 'seeker'}
+      {!isLoggedIn ? (
+        <div className="flex justify-center">
+          <div
+            className="inline-flex rounded-full border border-border/70 bg-muted/20 p-0.5"
+            role="group"
+            aria-label={t('market.jobsForm.modeLabel')}
+            data-testid="market-jobs-mode-tabs"
           >
-            {t('market.jobsForm.modeSeeker')}
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant={mode === 'employer' ? 'default' : 'ghost'}
-            className="h-8 rounded-full px-4 text-xs"
-            onClick={() => setMode('employer')}
-            aria-pressed={mode === 'employer'}
-          >
-            {t('market.jobsForm.modeEmployer')}
-          </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={mode === 'seeker' ? 'default' : 'ghost'}
+              className="h-8 rounded-full px-4 text-xs"
+              onClick={() => setMode('seeker')}
+              aria-pressed={mode === 'seeker'}
+            >
+              {t('market.jobsForm.modeSeeker')}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={mode === 'employer' ? 'default' : 'ghost'}
+              className="h-8 rounded-full px-4 text-xs"
+              onClick={() => setMode('employer')}
+              aria-pressed={mode === 'employer'}
+            >
+              {t('market.jobsForm.modeEmployer')}
+            </Button>
+          </div>
         </div>
-      </div>
+      ) : null}
 
       <div className="space-y-2 text-center">
         <h3 className="text-xl font-display font-semibold text-foreground sm:text-2xl">
@@ -370,6 +430,7 @@ export function MarketJobsInterestForm() {
         <SentenceToken
           open={jobOpen}
           onOpenChange={setJobOpen}
+          onHoverChange={setJobHovered}
           ariaLabel={t('market.jobsForm.jobTypeLabel')}
           empty={jobTypes.length === 0}
           panel={
@@ -382,34 +443,35 @@ export function MarketJobsInterestForm() {
               <CommandList>
                 <CommandEmpty>{t('market.jobsForm.jobTypeEmpty')}</CommandEmpty>
                 <CommandGroup>
-                  {jobTypes.map((job) => (
-                    <CommandItem
-                      key={`selected-${job}`}
-                      value={job}
-                      onSelect={() => setJobTypes((current) => current.filter((item) => item !== job))}
-                    >
-                      {job} ×
-                    </CommandItem>
-                  ))}
-                  {jobOptions.map((job) => (
-                    <CommandItem
-                      key={job}
-                      value={job}
-                      onSelect={() => {
-                        setJobTypes((current) => [...current, job]);
-                        setJobQuery('');
-                      }}
-                    >
-                      {job}
-                    </CommandItem>
-                  ))}
+                  {jobOptions.map((job) => {
+                    const selected = selectedJobSet.has(job.toLowerCase());
+                    return (
+                      <CommandItem
+                        key={job}
+                        value={job}
+                        onSelect={() => {
+                          toggleJobType(job);
+                          requestAnimationFrame(() => setJobOpen(true));
+                        }}
+                      >
+                        <Check
+                          className={cn('mr-2 h-4 w-4', selected ? 'opacity-100' : 'opacity-0')}
+                          aria-hidden
+                        />
+                        {job}
+                      </CommandItem>
+                    );
+                  })}
                   {jobQuery.trim() &&
-                  !jobTypes.some((item) => item.toLowerCase() === jobQuery.trim().toLowerCase()) ? (
+                  !jobTypes.some((item) => item.toLowerCase() === jobQuery.trim().toLowerCase()) &&
+                  !MARKET_JOB_TYPE_SEEDS.some(
+                    (seed) => seed.toLowerCase() === jobQuery.trim().toLowerCase(),
+                  ) ? (
                     <CommandItem
                       value={`add-${jobQuery.trim()}`}
                       onSelect={() => {
-                        setJobTypes((current) => [...current, jobQuery.trim()]);
-                        setJobQuery('');
+                        toggleJobType(jobQuery.trim());
+                        requestAnimationFrame(() => setJobOpen(true));
                       }}
                     >
                       {t('market.jobsForm.addCustom', { label: jobQuery.trim() })}
@@ -420,14 +482,23 @@ export function MarketJobsInterestForm() {
             </Command>
           }
         >
-          {jobLabel}
+          {jobTypes.length > 0 ? (
+            formatEnglishOrList(jobTypes)
+          ) : (
+            <CyclingOptionsLabel
+              options={MARKET_JOB_TYPE_SEEDS}
+              active
+              paused={pauseJobCycle}
+              fallback={t('market.jobsForm.jobTypePlaceholder')}
+            />
+          )}
         </SentenceToken>{' '}
         {mode === 'seeker' ? t('market.jobsForm.seekerMid') : t('market.jobsForm.employerMid')}{' '}
         <SentenceToken
           open={locationOpen}
           onOpenChange={setLocationOpen}
           ariaLabel={t('market.jobsForm.locationLabel')}
-          empty={!city && !regionCode && !countryCode}
+          empty={locationEmpty}
           contentClassName="w-[min(22rem,calc(100vw-2rem))]"
           panel={
             <Command>
@@ -450,7 +521,10 @@ export function MarketJobsInterestForm() {
                         setLocationQuery('');
                       }}
                     >
-                      {option.label}
+                      <span className="inline-flex items-center gap-2">
+                        <RoundCountryFlag countryCode={option.code} locale={language} size="xs" />
+                        {option.label}
+                      </span>
                     </CommandItem>
                   ))}
                 </CommandGroup>
@@ -492,7 +566,21 @@ export function MarketJobsInterestForm() {
             </Command>
           }
         >
-          {locationLabel}
+          {locationEmpty ? (
+            t('market.jobsForm.locationPlaceholder')
+          ) : (
+            <>
+              {locationText || t('market.jobsForm.locationPlaceholder')}
+              {countryCode ? (
+                <RoundCountryFlag
+                  countryCode={countryCode}
+                  locale={language}
+                  size="xs"
+                  className="translate-y-px"
+                />
+              ) : null}
+            </>
+          )}
         </SentenceToken>
         {mode === 'employer' ? (
           <>
@@ -542,11 +630,16 @@ export function MarketJobsInterestForm() {
           <div className="flex flex-wrap items-end gap-x-4 gap-y-3 text-sm">
             <label className="min-w-[10rem] flex-1 space-y-1">
               <span className="text-xs text-muted-foreground">{t('market.jobsForm.fullNameLabel')}</span>
-              <Input
-                value={fullName}
-                onChange={(event) => setFullName(event.target.value)}
-                className="h-9 border-0 border-b border-dashed border-border/80 bg-transparent px-0 shadow-none focus-visible:ring-0"
-              />
+              <div className="flex items-center gap-2">
+                <Input
+                  value={fullName}
+                  onChange={(event) => setFullName(event.target.value)}
+                  className="h-9 flex-1 border-0 border-b border-dashed border-border/80 bg-transparent px-0 shadow-none focus-visible:ring-0"
+                />
+                {countryCode ? (
+                  <RoundCountryFlag countryCode={countryCode} locale={language} size="sm" />
+                ) : null}
+              </div>
             </label>
             {mode === 'employer' ? (
               <label className="min-w-[10rem] flex-1 space-y-1">

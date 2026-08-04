@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { TermsReconsentGate } from '@/components/auth/TermsReconsentGate';
 import { useAuth } from '@/contexts/AuthContext';
@@ -32,11 +32,21 @@ export function ProtectedRoute({
     return <Navigate to="/onboarding" state={{ from: location }} replace />;
   }
 
+  // Auth unblocks as soon as the session is known; profile/permissions load next.
+  // Do not treat a missing profile as "denied" or refresh will bounce admin routes to Home.
+  if (requiredPermissions?.length && !profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-pulse-soft text-muted-foreground">{t('common.loading')}</div>
+      </div>
+    );
+  }
+
   if (
     requiredPermissions?.length &&
-    (!profile ||
-      (!(profile.role === 'founder' || profile.role === 'system') &&
-        !permissionListHasAny(profile.effective_permissions || [], requiredPermissions)))
+    profile &&
+    !(profile.role === 'founder' || profile.role === 'system') &&
+    !permissionListHasAny(profile.effective_permissions || [], requiredPermissions)
   ) {
     return <Navigate to={redirectTo} replace />;
   }

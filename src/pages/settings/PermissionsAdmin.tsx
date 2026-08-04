@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Check,
@@ -6,12 +6,16 @@ import {
   ChevronRight,
   CircleHelp,
   Loader2,
+  Search,
   X,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { AppPageHeader } from '@/components/layout/AppPageHeader';
+import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useDragToScroll } from '@/hooks/useDragToScroll';
 import { APP_ROLES, type AppPermission, type AppRole } from '@/lib/access-control';
 import { pageRegistry, type PageId, type SectionId } from '@/lib/feature-registry';
 import { permissionMetadata, permissionMetadataMap } from '@/lib/permission-metadata';
@@ -20,6 +24,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+
+const UserPageMenu = lazy(() =>
+  import('@/components/layout/UserPageMenu').then((module) => ({ default: module.UserPageMenu })),
+);
 
 const sectionOrder: SectionId[] = ['home', 'discovery', 'knowledge', 'identity', 'contribution', 'marketplace', 'preferences', 'administration'];
 const pageOrder: PageId[] = ['home', 'messaging', 'study', 'features', 'law', 'profile', 'editProfile', 'endorse', 'market', 'settings', 'admin', 'adminRoles', 'adminUsers', 'adminPermissions'];
@@ -35,6 +43,7 @@ function getPageLabel(pageId: PageId, t: (key: string, params?: Record<string, s
 export default function PermissionsAdmin() {
   const { t } = useLanguage();
   const { profile, refreshProfile } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState<string | null>(null);
   /** Missing keys default to collapsed so groups open folded until clicked. */
@@ -47,24 +56,33 @@ export default function PermissionsAdmin() {
     () => (profile?.role === 'admin' ? APP_ROLES.filter((role) => role !== 'founder') : APP_ROLES),
     [profile?.role],
   );
+  /** Fixed role widths so the strip overflows and can scroll (1fr was eating the gap). */
   const FEATURE_COL = '8.5rem';
-  const ROLE_COL_MIN = '4.75rem';
+  const ROLE_COL = '5rem';
   const matrixMinWidth = useMemo(
-    () => `calc(${FEATURE_COL} + (${visibleRoles.length} * ${ROLE_COL_MIN}))`,
+    () => `calc(${FEATURE_COL} + (${visibleRoles.length} * ${ROLE_COL}))`,
     [visibleRoles.length],
   );
   const matrixGridTemplate = useMemo(
-    () => `${FEATURE_COL} repeat(${visibleRoles.length}, minmax(${ROLE_COL_MIN}, 1fr))`,
+    () => `${FEATURE_COL} repeat(${visibleRoles.length}, ${ROLE_COL})`,
     [visibleRoles.length],
+  );
+  const matrixCanvasStyle = useMemo(
+    () => ({
+      width: matrixMinWidth,
+      minWidth: matrixMinWidth,
+    }),
+    [matrixMinWidth],
   );
   const matrixRowStyle = useMemo(
     () => ({
       gridTemplateColumns: matrixGridTemplate,
-      width: '100%',
-      minWidth: matrixMinWidth,
+      width: matrixMinWidth,
     }),
     [matrixGridTemplate, matrixMinWidth],
   );
+  const matrixScrollRef = useRef<HTMLDivElement>(null);
+  useDragToScroll(matrixScrollRef);
 
   useEffect(() => {
     const loadMatrix = async () => {
@@ -224,8 +242,8 @@ export default function PermissionsAdmin() {
   };
 
   return (
-    <AppLayout>
-      <div className="flex h-[calc(100dvh-5rem)] flex-col gap-2 px-2 pt-2">
+    <AppLayout hideTopChrome>
+      <div className="flex h-[calc(100dvh-5rem)] min-w-0 flex-col gap-2 px-2 pt-2">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="shrink-0">
           <AppPageHeader
             title={
@@ -234,7 +252,7 @@ export default function PermissionsAdmin() {
                 <button
                   type="button"
                   onClick={toggleExpandAll}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
+                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
                   aria-expanded={allExpanded}
                   aria-label={allExpanded ? t('admin.permissions.collapseAll') : t('admin.permissions.expandAll')}
                   data-testid="permissions-expand-all"
@@ -249,6 +267,25 @@ export default function PermissionsAdmin() {
             }
             showBack
             fallbackPath="/settings"
+            padForChrome={false}
+            actions={
+              <>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  className="h-10 w-10 shrink-0 rounded-full border border-border/60 bg-card/60"
+                  onClick={() => navigate('/search')}
+                  aria-label={t('common.search')}
+                  data-testid="permissions-header-search"
+                >
+                  <Search className="h-4 w-4" />
+                </Button>
+                <Suspense fallback={<div className="h-10 w-10 shrink-0 rounded-full border border-border/60 bg-card/60" />}>
+                  <UserPageMenu />
+                </Suspense>
+              </>
+            }
           />
         </motion.div>
 
@@ -256,9 +293,9 @@ export default function PermissionsAdmin() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="min-h-0 flex-1"
+          className="min-h-0 min-w-0 flex-1"
         >
-          <Card className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border-border/60 shadow-sm">
+          <Card className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-2xl border-border/60 shadow-sm">
             {loading ? (
               <div className="flex flex-1 items-center justify-center gap-2 px-6 py-20 text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -266,13 +303,14 @@ export default function PermissionsAdmin() {
               </div>
             ) : (
               <div
+                ref={matrixScrollRef}
                 data-testid="permissions-matrix-scroll"
-                className="min-h-0 flex-1 overflow-auto overscroll-contain touch-pan-x touch-pan-y [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                className="min-h-0 min-w-0 flex-1 cursor-grab overflow-x-auto overflow-y-auto overscroll-contain touch-pan-x touch-pan-y data-[dragging=true]:cursor-grabbing"
               >
                 <div
                   data-testid="permissions-matrix-canvas"
-                  className="min-w-full"
-                  style={{ minWidth: matrixMinWidth }}
+                  className="select-none"
+                  style={matrixCanvasStyle}
                 >
                 <div
                   className="sticky top-0 z-20 grid items-center gap-1 border-b border-border/60 bg-card/95 px-2 py-3 backdrop-blur supports-[backdrop-filter]:bg-card/80"
@@ -299,15 +337,20 @@ export default function PermissionsAdmin() {
                     const sectionLabel = t(`admin.permissions.sectionNames.${sectionGroup.sectionId}`);
 
                     return (
-                      <div key={sectionGroup.sectionId} className="space-y-3">
+                      <div key={sectionGroup.sectionId} className="space-y-2">
                         <button
                           type="button"
                           onClick={() => toggleSectionVisibility(sectionGroup.sectionId)}
-                          className="sticky left-0 z-10 flex w-max max-w-[min(100%,12rem)] items-center bg-card/95 px-1 text-left backdrop-blur supports-[backdrop-filter]:bg-card/80"
+                          className="sticky left-0 z-10 flex w-max max-w-[min(100%,14rem)] items-center rounded-md bg-card/95 px-1.5 py-1 text-left backdrop-blur supports-[backdrop-filter]:bg-card/80"
                           aria-expanded={!sectionCollapsed}
                           data-testid={`permissions-section-toggle-${sectionGroup.sectionId}`}
                         >
-                          <h3 className="text-base font-semibold text-foreground">{sectionLabel}</h3>
+                          <h3
+                            className="text-[11px] font-bold uppercase tracking-[0.14em] text-primary"
+                            data-testid={`permissions-section-label-${sectionGroup.sectionId}`}
+                          >
+                            {sectionLabel}
+                          </h3>
                         </button>
 
                         {!sectionCollapsed
@@ -321,18 +364,23 @@ export default function PermissionsAdmin() {
                               return (
                                 <Card
                                   key={`${sectionGroup.sectionId}-${pageGroup.pageId}`}
-                                  className="min-w-full rounded-2xl border-border/60 shadow-none"
+                                  className="min-w-full rounded-2xl border-border/60 bg-background/20 shadow-none"
                                 >
                                   {showPageLabel ? (
-                                    <div className="border-b border-border/60 px-2 py-2.5">
+                                    <div className="border-b border-border/60 px-2 py-2">
                                       <button
                                         type="button"
                                         onClick={() => togglePageVisibility(pageKey)}
-                                        className="sticky left-0 z-10 flex w-max max-w-[min(100%,12rem)] items-center bg-card px-1 text-left"
+                                        className="sticky left-0 z-10 flex w-max max-w-[min(100%,14rem)] items-center bg-card px-1 text-left"
                                         aria-expanded={!pageCollapsed}
                                         data-testid={`permissions-page-toggle-${pageKey}`}
                                       >
-                                        <h4 className="text-sm font-semibold text-foreground">{pageLabel}</h4>
+                                        <h4
+                                          className="text-xs font-semibold tracking-wide text-muted-foreground"
+                                          data-testid={`permissions-page-label-${pageKey}`}
+                                        >
+                                          {pageLabel}
+                                        </h4>
                                       </button>
                                     </div>
                                   ) : null}
@@ -344,14 +392,15 @@ export default function PermissionsAdmin() {
                                           key={entry.permission}
                                           className="grid items-center gap-1 rounded-xl px-2 py-2 transition-[background-color,box-shadow] hover:bg-background/40 hover:ring-1 hover:ring-primary/20"
                                           style={matrixRowStyle}
+                                          data-testid={`permissions-function-row-${entry.permission}`}
                                         >
-                                          <div className="sticky left-0 z-10 min-w-0 bg-card px-1">
+                                          <div className="sticky left-0 z-10 min-w-0 bg-card px-1 pl-3">
                                             <TooltipProvider delayDuration={120}>
                                               <Tooltip>
                                                 <TooltipTrigger asChild>
                                                   <button
                                                     type="button"
-                                                    className="inline-flex max-w-full items-center gap-1 text-left font-medium text-foreground"
+                                                    className="inline-flex max-w-full items-center gap-1 text-left text-sm font-normal text-foreground/90"
                                                   >
                                                     <span className="truncate">{t(entry.titleKey)}</span>
                                                     <CircleHelp className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />

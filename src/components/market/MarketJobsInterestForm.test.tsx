@@ -59,24 +59,43 @@ describe('MarketJobsInterestForm', () => {
     Element.prototype.scrollIntoView = vi.fn();
   });
 
+  it('hides Worker/Employer tabs for logged-in users and cycles job type labels', () => {
+    render(<MarketJobsInterestForm />);
+
+    expect(screen.queryByTestId('market-jobs-mode-tabs')).not.toBeInTheDocument();
+    expect(screen.getByTestId('market-jobs-sentence')).toHaveTextContent(/Baker|Cashier|Cook|Driver/);
+    expect(screen.getByTestId('market-jobs-sentence')).toHaveTextContent('Bakersfield, CA');
+    expect(screen.getByAltText('United States')).toBeInTheDocument();
+  });
+
   it('reveals contact fields after a job type is chosen and autofills known profile fields', async () => {
     render(<MarketJobsInterestForm />);
 
     expect(screen.queryByTestId('market-jobs-contact')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByLabelText('Job type'));
-    fireEvent.click(await screen.findByText('Baker'));
+    fireEvent.click(await screen.findByRole('option', { name: 'Baker' }));
 
     expect(await screen.findByTestId('market-jobs-contact')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Armen Yeremyan')).toBeInTheDocument();
     expect(screen.getByDisplayValue('5550100')).toBeInTheDocument();
   });
 
+  it('allows multi-select job types and formats them with or', async () => {
+    render(<MarketJobsInterestForm />);
+
+    fireEvent.click(screen.getByLabelText('Job type'));
+    fireEvent.click(await screen.findByRole('option', { name: 'Baker' }));
+    fireEvent.click(await screen.findByRole('option', { name: 'Barista' }));
+
+    expect(await screen.findByTestId('market-jobs-sentence')).toHaveTextContent('Baker or Barista');
+  });
+
   it('toggles more details and submits', async () => {
     render(<MarketJobsInterestForm />);
 
     fireEvent.click(screen.getByLabelText('Job type'));
-    fireEvent.click(await screen.findByText('Cashier'));
+    fireEvent.click(await screen.findByRole('option', { name: 'Cashier' }));
     fireEvent.click(await screen.findByTestId('market-jobs-more-toggle'));
     expect(await screen.findByTestId('market-jobs-details')).toBeInTheDocument();
 

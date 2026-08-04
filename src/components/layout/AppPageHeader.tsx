@@ -72,17 +72,18 @@ export function AppPageHeader({
   return (
     <div
       className={cn(
-        'flex items-start gap-1',
+        'flex items-center gap-1',
         padForChrome && APP_PAGE_HEADER_CHROME_PAD,
         className,
       )}
+      data-testid="app-page-header"
     >
       {backVisible ? (
         <Button
           type="button"
           size="icon"
           variant="ghost"
-          className="mt-0.5 h-10 w-10 shrink-0"
+          className="h-10 w-10 shrink-0"
           onClick={handleBack}
           aria-label={t('common.back')}
           data-testid="app-page-header-back"
@@ -90,12 +91,12 @@ export function AppPageHeader({
           <ChevronLeft className="h-5 w-5" />
         </Button>
       ) : null}
-      {leading ? <div className="mt-0.5 shrink-0">{leading}</div> : null}
+      {leading ? <div className="shrink-0">{leading}</div> : null}
       <div className="min-w-0 flex-1">
         {typeof title === 'string' || typeof title === 'number' ? (
           <h1
             className={cn(
-              'text-2xl font-display font-bold leading-tight text-foreground',
+              'text-2xl font-display font-bold leading-none text-foreground',
               titleClassName,
             )}
             data-testid="app-page-header-title"
@@ -107,7 +108,7 @@ export function AppPageHeader({
             role="heading"
             aria-level={1}
             className={cn(
-              'flex items-center gap-2 text-2xl font-display font-bold leading-tight text-foreground',
+              'flex items-center gap-2 text-2xl font-display font-bold leading-none text-foreground',
               titleClassName,
             )}
             data-testid="app-page-header-title"
@@ -117,7 +118,11 @@ export function AppPageHeader({
         )}
         {subtitle ? <div className="mt-1 text-sm text-muted-foreground">{subtitle}</div> : null}
       </div>
-      {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
+      {actions ? (
+        <div className="flex shrink-0 items-center gap-2" data-testid="app-page-header-actions">
+          {actions}
+        </div>
+      ) : null}
     </div>
   );
 }

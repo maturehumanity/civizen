@@ -57,9 +57,24 @@ vi.mock('framer-motion', () => ({
 }));
 
 vi.mock('@/components/layout/AppLayout', () => ({
-  AppLayout: ({ children }: { children: ReactNode }) => (
-    <div data-testid="permissions-admin-layout">{children}</div>
+  AppLayout: ({
+    children,
+    hideTopChrome,
+  }: {
+    children: ReactNode;
+    hideTopChrome?: boolean;
+  }) => (
+    <div
+      data-testid="permissions-admin-layout"
+      data-hide-top-chrome={hideTopChrome ? 'true' : 'false'}
+    >
+      {children}
+    </div>
   ),
+}));
+
+vi.mock('@/components/layout/UserPageMenu', () => ({
+  UserPageMenu: () => <div data-testid="user-page-menu-trigger" />,
 }));
 
 vi.mock('@/contexts/AuthContext', () => ({
@@ -108,25 +123,37 @@ describe('PermissionsAdmin page', () => {
       </MemoryRouter>,
     );
 
-    expect(await screen.findByTestId('permissions-admin-layout')).toBeInTheDocument();
+    expect(await screen.findByTestId('permissions-admin-layout')).toHaveAttribute(
+      'data-hide-top-chrome',
+      'true',
+    );
+    expect(screen.getByTestId('app-page-header').className).toContain('items-center');
+    expect(screen.getByTestId('permissions-header-search')).toBeInTheDocument();
+    expect(screen.getByTestId('user-page-menu-trigger')).toBeInTheDocument();
     expect(await screen.findByTestId('permissions-expand-all')).toHaveAttribute('aria-expanded', 'false');
     expect(await screen.findByTestId('permissions-section-toggle-home')).toHaveAttribute('aria-expanded', 'false');
     expect(screen.getByTestId('permissions-section-toggle-knowledge')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /^Create$/ })).not.toBeInTheDocument();
 
     const matrixScroll = screen.getByTestId('permissions-matrix-scroll');
-    expect(matrixScroll.className).toContain('[scrollbar-width:none]');
-    expect(matrixScroll.className).toContain('[&::-webkit-scrollbar]:hidden');
+    expect(matrixScroll.className).toContain('min-w-0');
+    expect(matrixScroll.className).toContain('overflow-x-auto');
+    expect(matrixScroll.className).toContain('cursor-grab');
+    expect(matrixScroll.className).not.toContain('[scrollbar-width:none]');
+    expect(matrixScroll.className).not.toContain('[&::-webkit-scrollbar]:hidden');
     expect(matrixScroll.className).toContain('touch-pan-x');
     expect(matrixScroll.className).not.toContain('max-h-[72vh]');
 
     const matrixHeader = screen.getByTestId('permissions-matrix-header');
     const headerStyle = matrixHeader.getAttribute('style') || '';
-    expect(headerStyle).toContain('minmax(4.75rem, 1fr)');
-    expect(headerStyle).toContain('min-width');
+    expect(headerStyle).toContain('repeat(');
+    expect(headerStyle).toContain('5rem');
+    expect(headerStyle).not.toContain('1fr');
 
     const matrixCanvas = screen.getByTestId('permissions-matrix-canvas');
-    expect(matrixCanvas.getAttribute('style') || '').toContain('min-width');
+    const canvasStyle = matrixCanvas.getAttribute('style') || '';
+    expect(canvasStyle).toContain('min-width');
+    expect(canvasStyle).toContain('5rem');
   });
 
   it('expands all folders from the title chevron, and still unfolds one folder by name', async () => {
@@ -141,6 +168,11 @@ describe('PermissionsAdmin page', () => {
 
     expect(screen.getByTestId('permissions-expand-all')).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByTestId('permissions-section-toggle-home')).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByTestId('permissions-section-label-home').className).toContain('uppercase');
+    expect(screen.getByTestId('permissions-section-label-home').className).toContain('tracking-[0.14em]');
+    expect(screen.getByTestId('permissions-page-label-home:messaging').className).toContain('text-muted-foreground');
+    const createRow = screen.getByTestId('permissions-function-row-post.create');
+    expect(createRow.querySelector('button')?.className).toContain('font-normal');
     expect(screen.getAllByRole('button', { name: /^Create$/ }).length).toBeGreaterThan(0);
     expect(screen.getByTestId('permissions-page-toggle-home:messaging')).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getAllByRole('button', { name: /^Send$/ }).length).toBeGreaterThan(0);

@@ -55,12 +55,33 @@ export const MARKET_JOB_TERMS = [
 
 export type MarketJobMode = 'seeker' | 'employer';
 
-export function filterMarketJobTypeOptions(query: string, selected: readonly string[]): string[] {
+export function filterMarketJobTypeOptions(query: string, selected: readonly string[] = []): string[] {
   const needle = query.trim().toLowerCase();
   const selectedSet = new Set(selected.map((item) => item.toLowerCase()));
-  const seeds = MARKET_JOB_TYPE_SEEDS.filter((seed) => !selectedSet.has(seed.toLowerCase()));
-  if (!needle) return [...seeds];
-  return seeds.filter((seed) => seed.toLowerCase().includes(needle));
+  const seeds = [...MARKET_JOB_TYPE_SEEDS];
+  const customSelected = selected.filter(
+    (item) => !MARKET_JOB_TYPE_SEEDS.some((seed) => seed.toLowerCase() === item.toLowerCase()),
+  );
+  const pool = [...customSelected, ...seeds];
+  const filtered = needle
+    ? pool.filter((seed) => seed.toLowerCase().includes(needle))
+    : pool;
+  // Selected items first, then the rest alphabetically.
+  return filtered.sort((left, right) => {
+    const leftSelected = selectedSet.has(left.toLowerCase()) ? 0 : 1;
+    const rightSelected = selectedSet.has(right.toLowerCase()) ? 0 : 1;
+    if (leftSelected !== rightSelected) return leftSelected - rightSelected;
+    return left.localeCompare(right);
+  });
+}
+
+/** English list join with "or": "A", "A or B", "A, B or C". */
+export function formatEnglishOrList(items: string[]): string {
+  const cleaned = items.map((item) => item.trim()).filter(Boolean);
+  if (cleaned.length === 0) return '';
+  if (cleaned.length === 1) return cleaned[0];
+  if (cleaned.length === 2) return `${cleaned[0]} or ${cleaned[1]}`;
+  return `${cleaned.slice(0, -1).join(', ')} or ${cleaned[cleaned.length - 1]}`;
 }
 
 export function ageFromDateOfBirth(dateOfBirth: string | null | undefined, now = new Date()): string {

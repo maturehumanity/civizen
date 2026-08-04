@@ -41,8 +41,10 @@ describe('AppPageHeader', () => {
       </MemoryRouter>,
     );
 
+    const header = screen.getByTestId('app-page-header');
     const back = screen.getByTestId('app-page-header-back');
     const title = screen.getByTestId('app-page-header-title');
+    expect(header.className).toContain('items-center');
     expect(back).toBeInTheDocument();
     expect(title).toHaveTextContent('Settings');
     expect(back.parentElement).toContainElement(title);

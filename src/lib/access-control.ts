@@ -267,12 +267,16 @@ export function coalesceRpcEffectivePermissions(
     return fallback;
   }
 
-  if (
-    rpcPermissions.length === 0 &&
-    fallback.length > 0 &&
-    (role === 'founder' || role === 'admin' || role === 'system')
-  ) {
-    return fallback;
+  const isBootstrapAuthority = role === 'founder' || role === 'admin' || role === 'system';
+  if (isBootstrapAuthority && fallback.length > 0) {
+    // Empty or incomplete RPC payloads must not strip admin access on refresh.
+    if (
+      rpcPermissions.length === 0 ||
+      !rpcPermissions.includes('role.assign') ||
+      !rpcPermissions.includes('settings.manage')
+    ) {
+      return fallback;
+    }
   }
 
   return rpcPermissions;

@@ -1,11 +1,21 @@
 import { describe, expect, it } from 'vitest';
 
-import { ageFromDateOfBirth, filterMarketJobTypeOptions } from '@/lib/market-job-types';
+import {
+  ageFromDateOfBirth,
+  filterMarketJobTypeOptions,
+  formatEnglishOrList,
+} from '@/lib/market-job-types';
 
 describe('market-job-types', () => {
-  it('filters job types by query and excludes selected', () => {
+  it('filters job types by query and keeps selected in the pool', () => {
     expect(filterMarketJobTypeOptions('bak', [])).toEqual(expect.arrayContaining(['Baker']));
-    expect(filterMarketJobTypeOptions('', ['Baker'])).not.toEqual(expect.arrayContaining(['Baker']));
+    expect(filterMarketJobTypeOptions('', ['Baker'])).toEqual(expect.arrayContaining(['Baker']));
+  });
+
+  it('formats job lists with or', () => {
+    expect(formatEnglishOrList(['Baker'])).toBe('Baker');
+    expect(formatEnglishOrList(['Baker', 'Barista'])).toBe('Baker or Barista');
+    expect(formatEnglishOrList(['Baker', 'Barista', 'Bartender'])).toBe('Baker, Barista or Bartender');
   });
 
   it('derives age from date of birth', () => {
