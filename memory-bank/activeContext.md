@@ -2,7 +2,7 @@
 
 ## Current focus
 
-**Market Jobs sentence form (2026-08-04):** Jobs replaces StudySpecialists with a Worker/Employer progressive sentence form (job type + location tokens, then contact + More details). Marketplace title hover shows the transactional specialist description. Submissions persist to `market_job_interests`. LANGUAGE_PACK_VERSION 123.
+**Market Jobs sentence form (2026-08-04):** Jobs replaces StudySpecialists with a Worker/Employer progressive sentence form (job type + location tokens, then contact + More details). Marketplace title hover shows the transactional specialist description. Submissions persist to `market_job_interests`. LANGUAGE_PACK_VERSION 123. **Testing v0.1.171** (build 173).
 
 **Permissions folder vs function labels (2026-08-04):** Section folders use small uppercase primary tracking; nested page folders use muted tracking; permission rows use normal-weight body text with indent. Continues scroll/refresh work from **Testing v0.1.171**. **Testing v0.1.172** (build 174).
 
