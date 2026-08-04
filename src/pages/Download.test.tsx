@@ -15,6 +15,12 @@ vi.mock('framer-motion', () => ({
     },
   ),
 }));
+vi.mock('@/contexts/AuthContext', () => ({
+  useAuth: () => ({
+    user: null,
+    profile: null,
+  }),
+}));
 vi.mock('@/contexts/LanguageContext', async () => {
   const { baseTranslations, translateMessage } = await import('@/lib/i18n');
 
