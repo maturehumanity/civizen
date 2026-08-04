@@ -101,7 +101,7 @@ describe('PermissionsAdmin page', () => {
     fromMock.mockClear();
   });
 
-  it('keeps the matrix folded behind the Permissions title chevron', async () => {
+  it('shows main folders folded, with expand-all after the Permissions title', async () => {
     render(
       <MemoryRouter>
         <PermissionsAdmin />
@@ -109,34 +109,39 @@ describe('PermissionsAdmin page', () => {
     );
 
     expect(await screen.findByTestId('permissions-admin-layout')).toBeInTheDocument();
-    const pageToggle = screen.getByTestId('permissions-matrix-toggle');
-    expect(pageToggle).toHaveAttribute('aria-expanded', 'false');
-    expect(screen.queryByTestId('permissions-section-toggle-home')).not.toBeInTheDocument();
-    expect(screen.queryByText('Feature')).not.toBeInTheDocument();
+    expect(await screen.findByTestId('permissions-expand-all')).toHaveAttribute('aria-expanded', 'false');
+    expect(await screen.findByTestId('permissions-section-toggle-home')).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.getByTestId('permissions-section-toggle-knowledge')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Create$/ })).not.toBeInTheDocument();
   });
 
-  it('unlocks the matrix from the title, then folds groups by clicking their names', async () => {
+  it('expands all folders from the title chevron, and still unfolds one folder by name', async () => {
     render(
       <MemoryRouter>
         <PermissionsAdmin />
       </MemoryRouter>,
     );
 
-    fireEvent.click(await screen.findByTestId('permissions-matrix-toggle'));
+    await screen.findByTestId('permissions-section-toggle-home');
+    fireEvent.click(screen.getByTestId('permissions-expand-all'));
 
-    expect(screen.getByTestId('permissions-matrix-toggle')).toHaveAttribute('aria-expanded', 'true');
-    expect(await screen.findByTestId('permissions-section-toggle-home')).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.getByTestId('permissions-expand-all')).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByTestId('permissions-section-toggle-home')).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getAllByRole('button', { name: /^Create$/ }).length).toBeGreaterThan(0);
+    expect(screen.getByTestId('permissions-page-toggle-home:messaging')).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getAllByRole('button', { name: /^Send$/ }).length).toBeGreaterThan(0);
+
+    fireEvent.click(screen.getByTestId('permissions-expand-all'));
+    expect(screen.getByTestId('permissions-expand-all')).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.getByTestId('permissions-section-toggle-home')).toHaveAttribute('aria-expanded', 'false');
     expect(screen.queryByRole('button', { name: /^Create$/ })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('permissions-section-toggle-home'));
-
     expect(screen.getByTestId('permissions-section-toggle-home')).toHaveAttribute('aria-expanded', 'true');
-    expect(screen.getByRole('button', { name: /^Create$/ })).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /^Create$/ }).length).toBeGreaterThan(0);
 
     const messagingToggle = screen.getByTestId('permissions-page-toggle-home:messaging');
     expect(messagingToggle).toHaveAttribute('aria-expanded', 'false');
-    expect(screen.queryByRole('button', { name: /^Send$/ })).not.toBeInTheDocument();
-
     fireEvent.click(messagingToggle);
 
     const messagingToggleOpen = screen.getByTestId('permissions-page-toggle-home:messaging');

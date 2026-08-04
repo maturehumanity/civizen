@@ -10,7 +10,7 @@
 
 **CI Download/Onboarding Auth mocks (2026-08-04):** All main pushes after Profile menu chrome failed Vitest: `PublicPageToolbar` calls `useAuth`, but Download/Onboarding tests had no AuthContext mock. Fixed with logged-out mocks. Yesterday’s green CI was the `npm audit` fix — this was a separate same-day regression.
 
-**Permissions matrix folded groups (2026-08-04):** `/settings/admin/permissions` starts folded behind a `>` next to the Permissions title. Unlocking the title reveals section/page group names (no per-group chevrons); click a group name to unfold/fold its rows. Co-located `PermissionsAdmin.test.tsx`. **Testing v0.1.155** (build 157).
+**Permissions expand-all title chevron (2026-08-04):** Title reads `Permissions >`. Main folders stay visible (folded). Title `>` expands/collapses all groups; clicking a folder name still toggles that folder only.
 
 **App-wide chrome back (2026-08-04, superseded):** Briefly lived in `AppTopChrome` with a height spacer; rejected for wasted vertical space. Replaced by same-line `AppPageHeader` Back + title (see Current focus).
 

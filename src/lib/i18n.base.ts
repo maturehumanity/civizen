@@ -3359,6 +3359,8 @@ export const baseTranslations = {
       "readOnlyRole": "Read only",
       "showRoleCards": "Show role cards",
       "hideRoleCards": "Hide role cards",
+      "expandAll": "Expand all groups",
+      "collapseAll": "Collapse all groups",
       "matrixTitle": "Role access",
       "matrixDescription": "Grouped by section, page, and feature.",
       "permissionColumn": "Permission",

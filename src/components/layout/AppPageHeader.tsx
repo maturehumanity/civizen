@@ -73,15 +73,29 @@ export function AppPageHeader({
       ) : null}
       {leading ? <div className="mt-0.5 shrink-0">{leading}</div> : null}
       <div className="min-w-0 flex-1">
-        <h1
-          className={cn(
-            'text-2xl font-display font-bold leading-tight text-foreground',
-            titleClassName,
-          )}
-          data-testid="app-page-header-title"
-        >
-          {title}
-        </h1>
+        {typeof title === 'string' || typeof title === 'number' ? (
+          <h1
+            className={cn(
+              'text-2xl font-display font-bold leading-tight text-foreground',
+              titleClassName,
+            )}
+            data-testid="app-page-header-title"
+          >
+            {title}
+          </h1>
+        ) : (
+          <div
+            role="heading"
+            aria-level={1}
+            className={cn(
+              'flex items-center gap-2 text-2xl font-display font-bold leading-tight text-foreground',
+              titleClassName,
+            )}
+            data-testid="app-page-header-title"
+          >
+            {title}
+          </div>
+        )}
         {subtitle ? <div className="mt-1 text-sm text-muted-foreground">{subtitle}</div> : null}
       </div>
       {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
