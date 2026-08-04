@@ -2,7 +2,7 @@
 
 ## Current focus
 
-**Profile Earnings page (2026-08-03):** `/earnings` in the Home avatar menu shows seller product/service activity from agreements (signed = sold; pending listed separately). Illustrative Lumen totals only — settlement not active. Notice copy avoids registration/banking roadmap language. Home removed from that menu (bottom nav covers it); `pageRegistry.home` icon aligned to Lucide `Home`. LANGUAGE_PACK_VERSION 114. **Testing v0.1.137** (build 139).
+**Profile Earnings page (2026-08-03):** `/earnings` in the Home avatar menu shows seller product/service activity from agreements (signed = sold; pending listed separately). Illustrative Lumen totals only — settlement not active. Notice copy avoids registration/banking roadmap language. Home removed from that menu (bottom nav covers it); `pageRegistry.home` icon aligned to Lucide `Home`. LANGUAGE_PACK_VERSION 114. **Testing v0.1.138** (build 140).
 
 **App load performance (2026-08-03):** Home and shared bootstrap were stacking full-screen gates (i18n → auth profile/E2EE → Home sequential fetch including full contribution sync), so sparse pages felt ~5s empty. Fixed: prefetch i18n base with App chunk (no language shell gate); Auth clears loading on session and publishes profile before messaging E2EE; Home/Profile paint from parallel queries + ledger read while contribution sync runs in background with 90s TTL; Stories seed/list deferred until Stories tab. **Testing v0.1.136** (build 138); Live/Production remains on prior soak build. Deploy also caps site backups (≤2) and prunes old testing APKs so the VPS does not fill mid-publish.
 
