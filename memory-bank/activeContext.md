@@ -6,7 +6,7 @@
 
 **Permissions matrix folded groups (2026-08-04):** `/settings/admin/permissions` opens with section and nested page folders collapsed (`>` chevron). Click a section to unfold; nested folders (e.g. Messaging under Home) stay folded until opened individually. Co-located `PermissionsAdmin.test.tsx`.
 
-**App-wide chrome back (2026-08-04):** Back chevron lives in `AppTopChrome` (left), not before each page title. Shown on every AppLayout route except bottom-nav hubs (Home/Study/Contribute/Market/Messaging). Uses history pop when available, otherwise section fallback (e.g. `/settings/*` → `/settings`). Chrome reserves header height so titles no longer sit under Search/Profile.
+**App-wide chrome back (2026-08-04):** Back chevron lives in `AppTopChrome` (left), not before each page title. Shown on every AppLayout route except bottom-nav hubs (Home/Study/Contribute/Market/Messaging). Uses history pop when available, otherwise section fallback (e.g. `/settings/*` → `/settings`). Chrome reserves header height so titles no longer sit under Search/Profile. **Testing v0.1.153** (build 155).
 
 **Endorse vs credentials icons (2026-08-04):** Endorse uses Lucide `ThumbsUp`; Professional credentials keeps `Award`, so Profile menu / Contribute / Settings no longer share the same medal icon. **Testing v0.1.152** (build 154).
 
