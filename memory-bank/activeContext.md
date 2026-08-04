@@ -2,7 +2,7 @@
 
 ## Current focus
 
-**Profile avatar header sizing (2026-08-04):** `UserPageMenu` supports `size="sm"` (32px) and defaults to `md` (40px, matches AppTopChrome Search). Messaging/Market use `sm`. Messaging inbox filter row uses `items-center` + `overflow-y-hidden` (and hidden horizontal scrollbar chrome) so a tall avatar cannot create a vertical header scrollbar.
+**Profile avatar header sizing (2026-08-04):** `UserPageMenu` supports `size="sm"` (32px) and defaults to `md` (40px, matches AppTopChrome Search). Messaging/Market use `sm`. Messaging inbox filter row uses `items-center` + `overflow-y-hidden` (and hidden horizontal scrollbar chrome) so a tall avatar cannot create a vertical header scrollbar. **Testing v0.1.168** (build 170).
 
 **Permissions header + matrix scroll (2026-08-04):** Permissions uses `AppLayout hideTopChrome` so Back · Permissions › · Search · Profile share one `items-center` header row. Matrix scroll parent uses `min-w-0` + `overflow-x-auto` (flex default `min-width: auto` was blocking horizontal swipe); canvas is `width: max(100%, calc(...))` so roles expand on wide screens and scroll on narrow.
 
