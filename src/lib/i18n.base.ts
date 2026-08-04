@@ -887,8 +887,8 @@ export const baseTranslations = {
   },
   "earnings": {
     "pageTitle": "Earnings",
-    "pageSubtitle": "Products and services you have sold across Civizen.",
-    "settlementNotice": "This page tracks products and services you sell through Civizen. Amounts shown are illustrative prototype credits only — they are not money, and in-app payment settlement is not active yet.",
+    "pageSubtitle": "Earnings from your work, services, and products sold through Civizen.",
+    "settlementNotice": "This page tracks your earnings from work you've done, services you've provided, and products you've sold through Civizen. Amounts shown are illustrative prototype credits only — they are not money, and in-app payment settlement is not active yet.",
     "summaryProducts": "Products sold",
     "summaryServices": "Services sold",
     "summaryPending": "Pending",
