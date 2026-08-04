@@ -888,7 +888,7 @@ export const baseTranslations = {
   "earnings": {
     "pageTitle": "Earnings",
     "pageSubtitle": "Products and services you have sold across Civizen.",
-    "settlementNotice": "Sales tracking is available now. In-app payment settlement is not active yet — amounts shown are illustrative prototype credits only. Real settlement will begin after Civizen is registered and financial accounts are set up.",
+    "settlementNotice": "This page tracks products and services you sell through Civizen. Amounts shown are illustrative prototype credits only — they are not money, and in-app payment settlement is not active yet.",
     "summaryProducts": "Products sold",
     "summaryServices": "Services sold",
     "summaryPending": "Pending",
