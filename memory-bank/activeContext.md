@@ -2,7 +2,7 @@
 
 ## Current focus
 
-**UsersAdmin username on avatar hover (2026-08-04):** Mobile user cards hide `@username` from the card body; hovering the photo/logo shows it. Status pills stay on one scrollable row so cards remain 3 lines. **Testing pending release bump.**
+**UsersAdmin username on avatar hover (2026-08-04):** Mobile user cards hide `@username` from the card body; hovering the photo/logo shows it. Status pills stay on one scrollable row so cards remain 3 lines. **Testing v0.1.147** (build 149).
 
 **Score Details formation note (2026-08-04):** Home Score Details icon tooltip now shows “View Score Details” plus a second line: rating system is still in formation and may not reflect the correct or actual rating. LANGUAGE_PACK_VERSION 117. **Testing v0.1.146** (build 148).
 
