@@ -23,6 +23,10 @@ vi.mock('@/components/layout/UserPageMenu', () => ({
   UserPageMenu: () => <button type="button" data-testid="user-page-menu-trigger" aria-label="Open your page menu" />,
 }));
 
+vi.mock('@/components/market/MarketJobsInterestForm', () => ({
+  MarketJobsInterestForm: () => <div data-testid="market-jobs-interest-form" />,
+}));
+
 vi.mock('@/hooks/usePageSecondaryNav', () => ({
   usePageSecondaryNav: () => {},
 }));
@@ -40,10 +44,6 @@ vi.mock('@/lib/use-market-published-listings', () => ({
     error: null,
     refetch: () => {},
   }),
-}));
-
-vi.mock('@/pages/study/StudySpecialists', () => ({
-  default: () => <div data-testid="study-specialists" />,
 }));
 
 vi.mock('@/contexts/AuthContext', () => ({
@@ -86,8 +86,6 @@ describe('Market', () => {
     expect(screen.getByTestId('app-layout')).toHaveAttribute('data-hide-top-chrome', 'true');
     expect(await screen.findByTestId('user-page-menu-trigger')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Agreements' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Prototype credits' })).toBeInTheDocument();
-    expect(screen.getByTestId('market-listing-search-toggle')).toBeInTheDocument();
   });
 
   it('restores the remembered section when For you has nothing new', async () => {
@@ -102,6 +100,19 @@ describe('Market', () => {
     expect(await screen.findByRole('heading', { name: 'Local', level: 2 })).toBeInTheDocument();
   });
 
+  it('shows the Jobs interest form instead of specialists copy', async () => {
+    writeLastMarketSection('jobs');
+
+    render(
+      <MemoryRouter initialEntries={['/market']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <Market />
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByTestId('market-jobs-interest-form')).toBeInTheDocument();
+    expect(screen.queryByText(/transactional specialist help/i)).not.toBeInTheDocument();
+  });
+
   it('toggles the listing search bar from the Search icon', async () => {
     render(
       <MemoryRouter initialEntries={['/market']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -112,16 +123,5 @@ describe('Market', () => {
     expect(screen.queryByTestId('market-listing-search-bar')).not.toBeInTheDocument();
     fireEvent.click(await screen.findByTestId('market-listing-search-toggle'));
     expect(screen.getByTestId('market-listing-search-bar')).toBeInTheDocument();
-  });
-
-  it('does not keep the Luma prototype notice card in the page body', async () => {
-    render(
-      <MemoryRouter initialEntries={['/market']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <Market />
-      </MemoryRouter>,
-    );
-
-    await screen.findByTestId('app-layout');
-    expect(screen.queryByText(/Luma is a prototype feature/i)).not.toBeInTheDocument();
   });
 });

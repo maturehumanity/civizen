@@ -3,11 +3,11 @@ import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } fro
 import { Link, useSearchParams } from 'react-router-dom';
 
 import { MarketFiltersSheet } from '@/components/market/MarketFiltersSheet';
+import { MarketJobsInterestForm } from '@/components/market/MarketJobsInterestForm';
 import { MarketListingCard } from '@/components/market/MarketListingCard';
 import { MarketListingKindIconToggle } from '@/components/market/MarketListingKindIconToggle';
 import { PostMarketListingDialog } from '@/components/market/PostMarketListingDialog';
 import { AppLayout } from '@/components/layout/AppLayout';
-import StudySpecialists from '@/pages/study/StudySpecialists';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -235,9 +235,16 @@ export default function Market() {
           <TooltipProvider delayDuration={200}>
             <div className="flex items-center justify-between gap-2 px-3">
               <div className="flex min-w-0 flex-1 items-center gap-0.5">
-                <h1 className="truncate text-xl font-display font-bold leading-none tracking-tight text-foreground">
-                  {t('market.title')}
-                </h1>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <h1 className="truncate text-xl font-display font-bold leading-none tracking-tight text-foreground">
+                      {t('market.title')}
+                    </h1>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-xs text-sm leading-relaxed">
+                    {t('market.specialists.description')}
+                  </TooltipContent>
+                </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
@@ -387,13 +394,8 @@ export default function Market() {
           ) : null}
 
           {isJobs ? (
-            <div className="px-1">
-              <Card className="border-border/70 bg-card/95 p-4 shadow-sm">
-                <p className="text-sm text-muted-foreground">{t('market.specialists.description')}</p>
-              </Card>
-              <div className="pt-3">
-                <StudySpecialists embedded />
-              </div>
+            <div className="px-1 pt-1">
+              <MarketJobsInterestForm />
             </div>
           ) : null}
 

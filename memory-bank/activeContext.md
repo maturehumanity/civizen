@@ -2,6 +2,10 @@
 
 ## Current focus
 
+**Market Jobs sentence form (2026-08-04):** Jobs replaces StudySpecialists with a Worker/Employer progressive sentence form (job type + location tokens, then contact + More details). Marketplace title hover shows the transactional specialist description. Submissions persist to `market_job_interests`. LANGUAGE_PACK_VERSION 123.
+
+**Permissions folder vs function labels (2026-08-04):** Section folders use small uppercase primary tracking; nested page folders use muted tracking; permission rows use normal-weight body text with indent. Continues scroll/refresh work from **Testing v0.1.171**. **Testing v0.1.172** (build 174).
+
 **Market header UX (2026-08-04):** All Market header icons show names on hover (Filters · Products · Services · Agreements · Prototype credits · Search · Profile). Prototype credits hover also shows the Luma notice (banner removed). Search icon toggles the listing search bar (Study-style). `/market` restores the last section unless For you has unseen listings. Spec: `nav-secondary-carousel.md`. **Testing v0.1.170** (build 172).
 
 **Market Jobs default + Services icon (2026-08-04):** `/market` defaults to **Jobs** (specialists lane with content) instead of empty For you. Products/Services header toggle uses Package + Handshake with on-hover tooltips. Spec: `nav-secondary-carousel.md`. **Testing v0.1.169** (build 171).
