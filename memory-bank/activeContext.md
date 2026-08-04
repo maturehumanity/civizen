@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Search typing one-letter bug (2026-08-04):** `/search` could only accept one character because `UnifiedSearchBlock` re-applied stale URL `q` into local state on every `query` change. URL→state sync now runs only when `searchParams` change; local→URL writes skip no-op updates. Regression test: `UnifiedSearchBlock.test.tsx`. **Testing v0.1.145** (build 147).
+
 **UsersAdmin cards denser (2026-08-04):** Mobile user cards capped at 3 lines — (1) photo/logo + name + settings/verify/login, (2) @handle · level · activity, (3) status pills where the role pill is also the hover/click role menu (removed duplicate role Select). Personal accounts and linked business orgs are grouped; org cards show the organization name. Verification shows status (check/X) in the action group; click toggles verification. **Testing v0.1.144** (build 146).
 
 **Profile menu + main nav chrome (2026-08-04):** Bottom nav is Home · Study · Contribute · Market · Messaging (Settings removed from nav; stays in Profile menu). Profile menu hides main-nav duplicates plus Search, Download, Edit Profile, and Contribute. Edit Profile is a pencil on personal/business account rows. Download Civizen is public-only (toolbar when logged out). App-wide Search + Profile chrome on AppLayout (hide on scroll down / show on scroll up). LANGUAGE_PACK_VERSION 116. **Testing v0.1.143** (build 145).

@@ -62,18 +62,19 @@ export function UnifiedSearchBlock({
       : 'all';
   });
 
+  // Adopt URL → local only when the URL itself changes (back/forward, deep link).
+  // Do not depend on `query`/`tab` here — that reverts each keystroke against a stale `q`.
   useEffect(() => {
     if (!syncUrlParams) return;
 
     const incomingTab = searchParams.get('tab');
-    if (incomingTab === 'all' || incomingTab === 'people' || incomingTab === 'companies' || incomingTab === 'products' || incomingTab === 'services') {
-      setTab(incomingTab);
-    }
-    const incomingQuery = searchParams.get('q');
-    if (incomingQuery !== null && incomingQuery !== query) {
-      setQuery(incomingQuery);
-    }
-  }, [query, searchParams, syncUrlParams]);
+    setTab(
+      incomingTab === 'all' || incomingTab === 'people' || incomingTab === 'companies' || incomingTab === 'products' || incomingTab === 'services'
+        ? incomingTab
+        : 'all',
+    );
+    setQuery(searchParams.get('q') ?? '');
+  }, [searchParams, syncUrlParams]);
 
   useEffect(() => {
     if (!syncUrlParams) return;
@@ -86,6 +87,7 @@ export function UnifiedSearchBlock({
         next.delete('q');
       }
       next.set('tab', tab);
+      if (next.toString() === current.toString()) return current;
       return next;
     }, { replace: true });
   }, [query, setSearchParams, syncUrlParams, tab]);
