@@ -214,6 +214,12 @@ export default function Home() {
     const textarea = postTextareaRef.current;
     if (!textarea) return;
 
+    // Empty: keep the single-line min height so Post stays on the same row.
+    if (!postContent) {
+      textarea.style.height = '';
+      return;
+    }
+
     // Grow with content so the full draft stays visible (no fixed max clip).
     textarea.style.height = 'auto';
     textarea.style.height = `${textarea.scrollHeight}px`;
@@ -1328,27 +1334,39 @@ export default function Home() {
                   : 'border-border/80 shadow-none'
               }`}
             >
-              <div className="flex min-w-0 items-start gap-2.5 sm:gap-3">
+              <div
+                className={cn(
+                  'flex min-w-0 gap-2.5 sm:gap-3',
+                  postContent.trim() ? 'items-start' : 'items-center',
+                )}
+              >
                 <Avatar className="h-10 w-10 shrink-0 sm:h-12 sm:w-12">
                   <AvatarImage src={profile?.avatar_url || undefined} />
                   <AvatarFallback className="bg-primary/20 text-primary">
                     {getInitials(profile?.full_name)}
                   </AvatarFallback>
                 </Avatar>
-                <div className="flex min-w-0 flex-1 items-end gap-2 sm:gap-3">
+                <div
+                  className={cn(
+                    'flex min-w-0 flex-1 gap-2 sm:gap-3',
+                    postContent.trim() ? 'items-end' : 'items-center',
+                  )}
+                >
                   <div className="relative min-w-0 flex-1">
                     {!postContent ? (
-                      <SlowRunningText
-                        text={composerPlaceholder}
-                        onlyWhenOverflow
-                        className="pointer-events-none absolute inset-x-3 top-1/2 z-[1] -translate-y-1/2 text-sm leading-6 text-muted-foreground sm:inset-x-4"
-                      />
+                      <div className="pointer-events-none absolute inset-0 z-[1] flex items-center px-3 sm:px-4">
+                        <SlowRunningText
+                          text={composerPlaceholder}
+                          onlyWhenOverflow
+                          className="min-w-0 flex-1 text-sm leading-6 text-muted-foreground"
+                        />
+                      </div>
                     ) : null}
                     <textarea
                       ref={postTextareaRef}
                       rows={1}
                       aria-label={composerPlaceholder}
-                      className={`min-h-[44px] w-full overflow-hidden resize-none rounded-2xl border px-3 py-2.5 text-sm leading-6 text-foreground outline-none transition-all focus:border-primary/60 focus:ring-2 focus:ring-primary/10 sm:px-4 sm:py-3 ${
+                      className={`min-h-[44px] w-full overflow-hidden resize-none rounded-2xl border px-3 py-2.5 text-sm leading-6 text-foreground outline-none transition-all focus:border-primary/60 focus:ring-2 focus:ring-primary/10 sm:min-h-[48px] sm:px-4 sm:py-3 ${
                         canPost
                           ? 'border-primary/30 bg-primary/5 shadow-sm'
                           : 'border-border bg-background'
@@ -1372,7 +1390,7 @@ export default function Home() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-11 shrink-0 rounded-2xl px-3 sm:px-4"
+                      className="h-11 shrink-0 rounded-2xl px-3 sm:h-12 sm:px-4"
                       onClick={clearPostComposerDraft}
                       disabled={isPosting}
                     >
@@ -1381,7 +1399,7 @@ export default function Home() {
                   ) : null}
                   <Button
                     size="sm"
-                    className={`h-11 shrink-0 rounded-2xl px-4 transition-all sm:px-5 disabled:border disabled:border-border disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100 ${
+                    className={`h-11 shrink-0 rounded-2xl px-4 transition-all sm:h-12 sm:px-5 disabled:border disabled:border-border disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100 ${
                       canPost
                         ? 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 hover:shadow-md'
                         : ''

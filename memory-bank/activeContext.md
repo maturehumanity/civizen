@@ -2,6 +2,10 @@
 
 ## Current focus
 
+**Testing v0.1.125 (2026-08-03):** Build 127 (`20260803-v0.1.125`). Live/Production remains on prior soak build. Empty composer: Post same row; placeholder vertically centered.
+
+**Home composer empty-state align (2026-08-03):** Empty field keeps single-line height so Post stays on the same row; placeholder marquee is flex-centered in the field.
+
 **Testing v0.1.124 (2026-08-03):** Build 126 (`20260803-v0.1.124`). Live/Production remains on prior soak build. Denser Home: score details icon, compact Governance, composer under Governance.
 
 **Home layout denser (2026-08-03):** Score details is an icon beside `/ 100` (hover label). Governance is one row (icon + title/description). Post composer sits under Governance.
