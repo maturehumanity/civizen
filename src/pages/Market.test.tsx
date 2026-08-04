@@ -66,4 +66,15 @@ describe('Market', () => {
     expect(screen.getByRole('link', { name: 'Prototype credits' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Search' })).toBeInTheDocument();
   });
+
+  it('defaults to the Jobs section when no section query is set', async () => {
+    render(
+      <MemoryRouter initialEntries={['/market']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <Market />
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByRole('heading', { name: 'Jobs', level: 2 })).toBeInTheDocument();
+    expect(screen.queryByTestId('market-listing-kind-products')).not.toBeInTheDocument();
+  });
 });

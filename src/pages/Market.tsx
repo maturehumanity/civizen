@@ -36,7 +36,7 @@ import {
 } from '@/lib/use-market-published-listings';
 import { LUMA_PROTOTYPE_NOTICE } from '@/lib/prototype-credits';
 
-const DEFAULT_SECTION: MarketPrimaryTabId = 'for-you';
+const DEFAULT_SECTION: MarketPrimaryTabId = 'jobs';
 
 function readListingKindFromParams(searchParams: URLSearchParams): MarketListingKind {
   return searchParams.get('kind') === 'service' ? 'service' : 'product';
