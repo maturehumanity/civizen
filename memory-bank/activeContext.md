@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Home post views (2026-08-03):** Feed post name line shows an Eye icon on the far right with unique visitor count; hover shows unique + total views. Table `post_views` + RPC `record_post_view` (authors do not inflate their own counts; 15-minute revisit cooldown). LANGUAGE_PACK_VERSION 111.
+
 **Admin Users startup crash (2026-08-03):** `/settings/admin/users` hit sequential ReferenceErrors after a partial split: missing `Select` import, then missing `manageableRoles` import for Create User. Both restored. Boot-recovery / cache reset signs out (expected). **Testing v0.1.130** (build 132); Live/Production remains on prior soak build.
 
 **Testing v0.1.128 (2026-08-03):** Build 130 (`20260803-v0.1.128`). Live/Production remains on prior soak build. Composer wraps under avatar with curved shape-outside.

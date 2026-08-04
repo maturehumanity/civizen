@@ -24,7 +24,7 @@ import {
 } from '@/lib/civizen-performance';
 import { type PillarId } from '@/lib/constants';
 import { useNavigate } from 'react-router-dom';
-import { BadgeCheck, BadgeX, Briefcase, Check, ChevronDown, Landmark, Loader2, MessageCircle, Search, Share2, Sparkles, Star, ThumbsUp, TrendingUp, Users } from 'lucide-react';
+import { BadgeCheck, BadgeX, Briefcase, Check, ChevronDown, Eye, Landmark, Loader2, MessageCircle, Search, Share2, Sparkles, Star, ThumbsUp, TrendingUp, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -43,6 +43,12 @@ import {
   type SocialConnectionStatus,
   type SocialCrosspostStatus,
 } from '@/lib/social-accounts';
+import {
+  fetchPostViewStats,
+  isRecordablePostId,
+  recordPostView,
+  type PostViewStats,
+} from '@/lib/post-views';
 import { cn } from '@/lib/utils';
 import { UnifiedSearchBlock } from '@/components/search/UnifiedSearchBlock';
 import { Badge } from '@/components/ui/badge';
@@ -136,6 +142,7 @@ export default function Home() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [postLikes, setPostLikes] = useState<Record<string, string[]>>({});
   const [postComments, setPostComments] = useState<Record<string, PostComment[]>>({});
+  const [postViewStats, setPostViewStats] = useState<Record<string, PostViewStats>>({});
   const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({});
   const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
@@ -160,6 +167,7 @@ export default function Home() {
   const postEditorRef = useRef<HTMLDivElement | null>(null);
   const postDraftHydratedRef = useRef(false);
   const postContentRef = useRef(postContent);
+  const recordedPostViewsRef = useRef<Set<string>>(new Set());
   const canPost = postContent.trim().length > 0;
   const composerPlaceholder = t('home.whatsOnYourMind');
   postContentRef.current = postContent;
@@ -209,6 +217,49 @@ export default function Home() {
       cancelled = true;
     };
   }, [isCivizenOrgAccount, posts, profile?.id]);
+
+  useEffect(() => {
+    if (!profile?.id || posts.length === 0 || typeof IntersectionObserver === 'undefined') {
+      return;
+    }
+
+    const nodes = Array.from(document.querySelectorAll<HTMLElement>('[data-home-post-id]'));
+    if (nodes.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const postId = entry.target.getAttribute('data-home-post-id');
+          if (!postId || !isRecordablePostId(postId) || recordedPostViewsRef.current.has(postId)) {
+            return;
+          }
+          recordedPostViewsRef.current.add(postId);
+          void recordPostView(postId)
+            .then((stats) => {
+              if (!stats) return;
+              setPostViewStats((prev) => ({
+                ...prev,
+                [postId]: {
+                  uniqueVisitors: Math.max(prev[postId]?.uniqueVisitors || 0, stats.uniqueVisitors),
+                  totalViews: Math.max(prev[postId]?.totalViews || 0, stats.totalViews),
+                },
+              }));
+            })
+            .catch((error) => {
+              recordedPostViewsRef.current.delete(postId);
+              if (!isMissingTableError(error as FeedQueryError)) {
+                console.error('Error recording post view:', error);
+              }
+            });
+        });
+      },
+      { threshold: 0.45 },
+    );
+
+    nodes.forEach((node) => observer.observe(node));
+    return () => observer.disconnect();
+  }, [posts, profile?.id]);
 
   const readPostEditorText = (el: HTMLDivElement) => {
     const raw = el.innerText.replace(/\u00a0/g, ' ');
@@ -416,6 +467,7 @@ export default function Home() {
     if (postIds.length === 0) {
       setPostLikes({});
       setPostComments({});
+      setPostViewStats({});
       return false;
     }
 
@@ -474,6 +526,29 @@ export default function Home() {
         });
       });
       setPostComments((prev) => mergeFetchedCommentState(prev, nextComments));
+    }
+
+    try {
+      const nextViewStats = await fetchPostViewStats(postIds);
+      setPostViewStats((prev) => {
+        const merged = { ...prev };
+        Object.entries(nextViewStats).forEach(([postId, stats]) => {
+          if (!(postId in merged)) {
+            merged[postId] = stats;
+          } else {
+            merged[postId] = {
+              uniqueVisitors: Math.max(merged[postId].uniqueVisitors, stats.uniqueVisitors),
+              totalViews: Math.max(merged[postId].totalViews, stats.totalViews),
+            };
+          }
+        });
+        return merged;
+      });
+    } catch (viewError) {
+      console.error('Error fetching post views:', viewError);
+      if (isMissingTableError(viewError as FeedQueryError)) {
+        backendUnavailable = true;
+      }
     }
 
     return backendUnavailable;
@@ -1463,6 +1538,7 @@ export default function Home() {
               {posts.map((post, index) => {
                 const likes = postLikes[post.id] || [];
                 const comments = postComments[post.id] || [];
+                const viewStats = postViewStats[post.id] || { uniqueVisitors: 0, totalViews: 0 };
                 const serverHasLiked = profile?.id ? likes.includes(profile.id) : false;
                 const hasLiked = optimisticLikeStates[post.id] ?? serverHasLiked;
                 const likeCountDelta = hasLiked === serverHasLiked ? 0 : hasLiked ? 1 : -1;
@@ -1478,7 +1554,10 @@ export default function Home() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 + index * 0.04 }}
                   >
-                    <Card className="border-border/70 bg-card/95 p-4 shadow-sm transition-all duration-200 hover:border-border hover:shadow-md">
+                    <Card
+                      data-home-post-id={post.id}
+                      className="border-border/70 bg-card/95 p-4 shadow-sm transition-all duration-200 hover:border-border hover:shadow-md"
+                    >
                       <div className="min-w-0 space-y-2">
                         <div className="flex items-start gap-3">
                           <Avatar className="h-10 w-10 shrink-0">
@@ -1487,7 +1566,7 @@ export default function Home() {
                               {getInitials(post.author?.full_name)}
                             </AvatarFallback>
                           </Avatar>
-                          <div className="min-w-0">
+                          <div className="min-w-0 flex-1">
                             <p className="truncate text-sm font-semibold text-foreground">
                               {getDisplayName(post.author)}
                             </p>
@@ -1495,6 +1574,26 @@ export default function Home() {
                               {formatRelativeTime(post.created_at)}
                             </p>
                           </div>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div
+                                className="inline-flex shrink-0 items-center gap-1 pt-0.5 text-xs text-muted-foreground"
+                                aria-label={t('home.viewsTooltip', {
+                                  unique: String(viewStats.uniqueVisitors),
+                                  total: String(Math.max(viewStats.totalViews, viewStats.uniqueVisitors)),
+                                })}
+                              >
+                                <Eye className="h-3.5 w-3.5" strokeWidth={1.75} />
+                                <span className="tabular-nums">{viewStats.uniqueVisitors}</span>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="text-xs">
+                              {t('home.viewsTooltip', {
+                                unique: String(viewStats.uniqueVisitors),
+                                total: String(Math.max(viewStats.totalViews, viewStats.uniqueVisitors)),
+                              })}
+                            </TooltipContent>
+                          </Tooltip>
                         </div>
 
                         <p className="whitespace-pre-wrap break-words text-sm text-foreground">
