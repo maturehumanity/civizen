@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Messaging header chrome overlap (2026-08-04):** Same as Market — floating AppTopChrome Search + Profile duplicated Messaging’s inbox Search. Messaging uses `AppLayout hideTopChrome`; Profile lives in the ChatBar page header (inbox + thread). **Testing** bump pending after verify.
+
 **Search Contents + no All tab (2026-08-04):** Search filters are People · Companies · Products · Services · Contents. No All chip — with nothing selected, every category is searched. Contents covers app pages, features, Study, Law, institutional docs, and Contribute lanes. Legacy `?tab=all` maps to search-everything. LANGUAGE_PACK_VERSION 122. **Testing v0.1.165** (build 167).
 
 **Market header chrome overlap (2026-08-04):** Floating AppTopChrome Search + Profile sat on top of Market’s Agreements and Prototype credits shortcuts. Market now uses `AppLayout hideTopChrome` and keeps Search + Profile in the page header (with Agreements · Credits). **Testing v0.1.165** (build 167).

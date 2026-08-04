@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -73,6 +73,20 @@ import {
   getDeviceMessagingSecretKey,
 } from '@/lib/messaging-e2ee';
 import { cn } from '@/lib/utils';
+
+const UserPageMenu = lazy(() =>
+  import('@/components/layout/UserPageMenu').then((module) => ({ default: module.UserPageMenu })),
+);
+
+function MessagingPageProfile() {
+  return (
+    <div data-testid="messaging-page-profile" className="shrink-0">
+      <Suspense fallback={<div className="h-12 w-12 shrink-0 rounded-full border border-border/60 bg-card/60" />}>
+        <UserPageMenu />
+      </Suspense>
+    </div>
+  );
+}
 
 interface Message {
   id: string;
@@ -3523,6 +3537,7 @@ export function ChatBar({
                     >
                       <Plus className="h-4 w-4" />
                     </Button>
+                    {profile?.id ? <MessagingPageProfile /> : null}
                   </div>
                   <div className="min-h-0 flex-1 overflow-y-auto">
                     <div className="space-y-2 border-b border-border bg-muted/10 px-3 py-2">
@@ -3923,6 +3938,7 @@ export function ChatBar({
                             </DropdownMenuContent>
                           </DropdownMenu>
                         ) : null}
+                        {profile?.id ? <MessagingPageProfile /> : null}
                       </>
                     )}
                   </div>
