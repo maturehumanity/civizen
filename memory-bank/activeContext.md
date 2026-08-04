@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Admin Users startup crash (2026-08-03):** `/settings/admin/users` threw `Select is not defined` (emergency-status filter used `<Select>` without importing `@/components/ui/select`), which triggered the boot-recovery modal; Reset local cache cleared the session (expected sign-out). Import restored. **Testing v0.1.129** (build 131); Live/Production remains on prior soak build.
+
 **Testing v0.1.128 (2026-08-03):** Build 130 (`20260803-v0.1.128`). Live/Production remains on prior soak build. Composer wraps under avatar with curved shape-outside.
 
 **Home composer wraparound (2026-08-03):** Long drafts use a single bordered field with floated avatar + circular shape-outside so lines wrap under the photo (full width from ~line 3) with a soft curve.
