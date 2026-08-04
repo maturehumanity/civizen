@@ -12,7 +12,7 @@
 
 **CI Download/Onboarding Auth mocks (2026-08-04):** All main pushes after Profile menu chrome failed Vitest: `PublicPageToolbar` calls `useAuth`, but Download/Onboarding tests had no AuthContext mock. Fixed with logged-out mocks. Yesterday’s green CI was the `npm audit` fix — this was a separate same-day regression.
 
-**Permissions dense columns (2026-08-04):** Feature labels sit in a tight sticky first column next to role checkboxes (no `fr` gap). Role columns are fixed-width and swipe/scroll horizontally on small screens; scrollbars stay hidden.
+**Permissions dense columns (2026-08-04):** Feature labels sit in a tight sticky first column next to role checkboxes (no `fr` gap). Role columns are fixed-width and swipe/scroll horizontally on small screens; scrollbars stay hidden. **Testing v0.1.161** (build 163).
 
 **Permissions full-bleed matrix (2026-08-04):** Permissions matrix fills the viewport below the title (no `72vh` inset card); vertical/horizontal scrollbars are hidden while scrolling still works. **Testing v0.1.160** (build 162).
 
