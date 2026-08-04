@@ -158,8 +158,11 @@ export default function Home() {
   const [selectedStoryId, setSelectedStoryId] = useState<string | null>(null);
   const { stories: developmentStories, loading: storiesLoading } = useDevelopmentStories();
   const postTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const postDraftHydratedRef = useRef(false);
+  const postContentRef = useRef(postContent);
   const canPost = postContent.trim().length > 0;
   const composerPlaceholder = t('home.whatsOnYourMind');
+  postContentRef.current = postContent;
   useEffect(() => {
     if (profile?.id) {
       setOptimisticLikeStates({});
@@ -235,6 +238,10 @@ export default function Home() {
     return profile?.id ? `civizen-home-${kind}:${profile.id}` : `civizen-home-${kind}:anonymous`;
   };
 
+  const getPostDraftStorageKey = () => {
+    return profile?.id ? `civizen-home-post-draft:${profile.id}` : 'civizen-home-post-draft:anonymous';
+  };
+
   const readStoredValue = <T,>(key: string, fallback: T): T => {
     if (typeof window === 'undefined') return fallback;
 
@@ -256,6 +263,67 @@ export default function Home() {
       // Ignore storage quota and serialization errors.
     }
   };
+
+  const removeStoredValue = (key: string) => {
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.removeItem(key);
+    } catch {
+      // Ignore storage errors.
+    }
+  };
+
+  const persistPostDraft = (content: string) => {
+    const key = getPostDraftStorageKey();
+    if (!content.trim()) {
+      removeStoredValue(key);
+      return;
+    }
+    writeStoredValue(key, content);
+  };
+
+  const clearPostComposerDraft = () => {
+    setPostContent('');
+    removeStoredValue(getPostDraftStorageKey());
+  };
+
+  useEffect(() => {
+    postDraftHydratedRef.current = false;
+    if (!profile?.id) {
+      setPostContent('');
+      return;
+    }
+    const stored = readStoredValue<string>(getPostDraftStorageKey(), '');
+    setPostContent(typeof stored === 'string' ? stored : '');
+    postDraftHydratedRef.current = true;
+  }, [profile?.id]);
+
+  useEffect(() => {
+    if (!profile?.id || !postDraftHydratedRef.current) return;
+    const timer = window.setTimeout(() => {
+      persistPostDraft(postContent);
+    }, 250);
+    return () => window.clearTimeout(timer);
+  }, [postContent, profile?.id]);
+
+  useEffect(() => {
+    if (!profile?.id) return;
+
+    const flushDraft = () => {
+      persistPostDraft(postContentRef.current);
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') flushDraft();
+    };
+
+    window.addEventListener('pagehide', flushDraft);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      window.removeEventListener('pagehide', flushDraft);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, [profile?.id]);
 
   const mergePostsById = (existingPosts: Post[], incomingPosts: Post[]) => {
     const merged = new Map<string, Post>();
@@ -759,7 +827,7 @@ export default function Home() {
         toast.message(t('home.savedLocallyPost'), {
           description: t('home.savedLocallyPostDescription'),
         });
-        setPostContent('');
+        clearPostComposerDraft();
         return;
       }
 
@@ -791,7 +859,7 @@ export default function Home() {
           toast.message(t('home.savedLocallyPost'), {
             description: t('home.savedLocallyPostDescription'),
           });
-          setPostContent('');
+          clearPostComposerDraft();
         } else {
           toast.error(t('home.couldNotCreatePost'), {
             description: t('common.tryAgainMoment'),
@@ -805,7 +873,7 @@ export default function Home() {
         setPosts((prev) => mergePostsById(prev, [normalized]));
         setPostLikes(prev => ({ ...prev, [normalized.id]: [] }));
         setPostComments(prev => ({ ...prev, [normalized.id]: [] }));
-        setPostContent('');
+        clearPostComposerDraft();
         toast.success(t('home.postedToFeed'));
       }
     } catch (err) {
@@ -817,6 +885,7 @@ export default function Home() {
       toast.message(t('home.savedLocallyPost'), {
         description: t('home.savedLocallyPostDescription'),
       });
+      clearPostComposerDraft();
     } finally {
       setIsPosting(false);
     }
@@ -1210,7 +1279,7 @@ export default function Home() {
                     {getInitials(profile?.full_name)}
                   </AvatarFallback>
                 </Avatar>
-                <div className="flex min-w-0 flex-1 items-end gap-2 sm:gap-3">
+                  <div className="flex min-w-0 flex-1 items-end gap-2 sm:gap-3">
                   <div className="relative min-w-0 flex-1">
                     {!postContent ? (
                       <SlowRunningText
@@ -1231,7 +1300,10 @@ export default function Home() {
                       value={postContent}
                       onChange={(e) => setPostContent(e.target.value)}
                       onFocus={() => setIsComposerFocused(true)}
-                      onBlur={() => setIsComposerFocused(false)}
+                      onBlur={() => {
+                        setIsComposerFocused(false);
+                        persistPostDraft(postContentRef.current);
+                      }}
                       onKeyDown={(event) => {
                         if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
                           event.preventDefault();
@@ -1240,6 +1312,17 @@ export default function Home() {
                       }}
                     />
                   </div>
+                  {canPost ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-11 shrink-0 rounded-2xl px-3 sm:px-4"
+                      onClick={clearPostComposerDraft}
+                      disabled={isPosting}
+                    >
+                      {t('common.cancel')}
+                    </Button>
+                  ) : null}
                   <Button
                     size="sm"
                     className={`h-11 shrink-0 rounded-2xl px-4 transition-all sm:px-5 disabled:border disabled:border-border disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100 ${

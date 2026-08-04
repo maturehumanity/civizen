@@ -2,6 +2,10 @@
 
 ## Current focus
 
+**Testing v0.1.123 (2026-08-03):** Build 125 (`20260803-v0.1.123`). Live/Production remains on prior soak build. Home post composer autosaves drafts; Cancel discards; Post publishes.
+
+**Home post draft autosave (2026-08-03):** Composer text autosaves per user in localStorage (debounced + flush on blur/hide). Restores on return. Cancel clears draft; Post clears after publish.
+
 **Testing v0.1.122 (2026-08-03):** Build 124 (`20260803-v0.1.122`). Live/Production remains on prior soak build. Home score card: no Confidence line; points-to-next on dial/tier hover.
 
 **Home score card declutter (2026-08-03):** Removed always-visible “Confidence: …” from Home. “N points to {tier}” shows only on hover of the dial or tier label (e.g. Builder).
