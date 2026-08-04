@@ -11,23 +11,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { Building2, CheckCircle, Package, Search as SearchIcon, UserRound, Wrench } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import {
+  parseSearchDirectoryPayload,
+  type SearchDirectoryCompany,
+  type SearchDirectoryPerson,
+} from '@/lib/search-directory';
 import { useMarketPublishedListings } from '@/lib/use-market-published-listings';
 import { cn } from '@/lib/utils';
-
-interface UserProfile {
-  id: string;
-  username: string | null;
-  full_name: string | null;
-  avatar_url: string | null;
-  is_verified: boolean | null;
-  deleted_at?: string | null;
-}
-
-interface CompanyProfile {
-  profile_id: string;
-  business_name_normalized: string | null;
-  profile: UserProfile;
-}
 
 interface UnifiedSearchBlockProps {
   showTitle?: boolean;
@@ -50,8 +40,8 @@ export function UnifiedSearchBlock({
   const { t } = useLanguage();
   const { listings } = useMarketPublishedListings();
   const [query, setQuery] = useState(() => (syncUrlParams ? searchParams.get('q') ?? '' : initialQuery));
-  const [peopleResults, setPeopleResults] = useState<UserProfile[]>([]);
-  const [companyResults, setCompanyResults] = useState<CompanyProfile[]>([]);
+  const [peopleResults, setPeopleResults] = useState<SearchDirectoryPerson[]>([]);
+  const [companyResults, setCompanyResults] = useState<SearchDirectoryCompany[]>([]);
   const [directoryError, setDirectoryError] = useState(false);
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState<'all' | 'people' | 'companies' | 'products' | 'services'>(() => {
@@ -104,27 +94,13 @@ export function UnifiedSearchBlock({
       setLoading(true);
       setDirectoryError(false);
 
-      const [{ data: peopleData, error: peopleError }, { data: companiesData, error: companiesError }] = await Promise.all([
-        supabase
-          .from('profiles')
-          .select('id, username, full_name, avatar_url, is_verified, deleted_at')
-          .or(`username.ilike.%${query}%,full_name.ilike.%${query}%`)
-          .neq('id', currentProfile?.id || '')
-          .is('deleted_at', null)
-          .limit(30),
-        supabase
-          .from('linked_accounts')
-          .select(`
-            linked_profile_id,
-            business_name_normalized,
-            relationship_type,
-            linked:profiles!linked_accounts_linked_profile_id_fkey(id, username, full_name, avatar_url, is_verified, deleted_at)
-          `)
-          .eq('relationship_type', 'business')
-          .limit(120),
-      ]);
+      const { data, error } = await supabase.rpc('search_civizen_directory', {
+        p_query: query,
+        p_exclude_profile_id: currentProfile?.id ?? null,
+        p_limit: 30,
+      });
 
-      if (peopleError || companiesError) {
+      if (error) {
         setDirectoryError(true);
         setPeopleResults([]);
         setCompanyResults([]);
@@ -132,30 +108,9 @@ export function UnifiedSearchBlock({
         return;
       }
 
-      setPeopleResults((peopleData ?? []) as UserProfile[]);
-
-      const normalizedQuery = query.trim().toLowerCase();
-      const companyAccumulator = new Map<string, CompanyProfile>();
-      (companiesData ?? []).forEach((row) => {
-        const linked = row.linked;
-        if (!linked || linked.deleted_at) return;
-        if (linked.id === currentProfile?.id) return;
-        if (companyAccumulator.has(linked.id)) return;
-        const haystack = `${linked.full_name ?? ''} ${linked.username ?? ''} ${row.business_name_normalized ?? ''}`.toLowerCase();
-        if (!haystack.includes(normalizedQuery)) return;
-        companyAccumulator.set(linked.id, {
-          profile_id: linked.id,
-          business_name_normalized: row.business_name_normalized,
-          profile: {
-            id: linked.id,
-            full_name: linked.full_name,
-            username: linked.username,
-            avatar_url: linked.avatar_url,
-            is_verified: linked.is_verified,
-          },
-        });
-      });
-      setCompanyResults(Array.from(companyAccumulator.values()));
+      const parsed = parseSearchDirectoryPayload(data);
+      setPeopleResults(parsed.people);
+      setCompanyResults(parsed.companies);
       setLoading(false);
     };
 
@@ -324,41 +279,75 @@ export function UnifiedSearchBlock({
               <Building2 className="h-4 w-4 text-muted-foreground" />
               <h2 className="text-sm font-semibold text-foreground">{t('search.tabCompanies')}</h2>
             </div>
-            {companyResults.map((company, index) => (
-              <motion.div
-                key={company.profile_id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.03 }}
-              >
-                <Card className="p-4">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="w-12 h-12">
-                      <AvatarImage src={company.profile.avatar_url || undefined} />
-                      <AvatarFallback className="bg-primary/10 text-primary">
-                        {getInitials(company.profile.full_name || company.business_name_normalized)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-foreground truncate">
-                          {company.profile.full_name || company.business_name_normalized || t('search.companyFallback')}
-                        </h3>
-                        {company.profile.is_verified && (
-                          <CheckCircle className="w-4 h-4 text-primary shrink-0" />
-                        )}
+            {companyResults.map((company, index) => {
+              const ownerName = company.owner?.full_name || company.owner?.username || t('common.anonymousUser');
+              return (
+                <motion.div
+                  key={company.profile_id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.03 }}
+                >
+                  <Card className="space-y-3 p-4">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="w-12 h-12">
+                        <AvatarImage src={company.profile.avatar_url || undefined} />
+                        <AvatarFallback className="bg-primary/10 text-primary">
+                          {getInitials(company.profile.full_name || company.business_name_normalized)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-foreground truncate">
+                            {company.profile.full_name || company.business_name_normalized || t('search.companyFallback')}
+                          </h3>
+                          {company.profile.is_verified && (
+                            <CheckCircle className="w-4 h-4 text-primary shrink-0" />
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground truncate">
+                          {company.profile.username ? `@${company.profile.username}` : t('search.businessAccount')}
+                        </p>
                       </div>
-                      <p className="text-sm text-muted-foreground truncate">
-                        {company.profile.username ? `@${company.profile.username}` : t('search.businessAccount')}
-                      </p>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline" onClick={() => navigate(`/user/${company.profile_id}`)}>
+                          {t('search.viewProfile')}
+                        </Button>
+                        <Button size="sm" onClick={() => navigate(`/endorse/${company.profile_id}`)}>
+                          {t('common.endorse')}
+                        </Button>
+                      </div>
                     </div>
-                    <Button size="sm" variant="outline" onClick={() => navigate(`/user/${company.profile_id}`)}>
-                      {t('search.viewProfile')}
-                    </Button>
-                  </div>
-                </Card>
-              </motion.div>
-            ))}
+                    {company.owner ? (
+                      <button
+                        type="button"
+                        className="flex w-full items-center gap-3 rounded-md border border-border/60 bg-muted/30 px-3 py-2 text-left transition-colors hover:bg-muted/50"
+                        onClick={() => navigate(`/user/${company.owner!.id}`)}
+                        aria-label={t('search.viewOwnerProfile', { name: ownerName })}
+                      >
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={company.owner.avatar_url || undefined} />
+                          <AvatarFallback className="bg-primary/10 text-xs text-primary">
+                            {getInitials(company.owner.full_name || company.owner.username)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm text-foreground">
+                            {t('search.runBy', { name: ownerName })}
+                          </p>
+                          {company.owner.username ? (
+                            <p className="truncate text-xs text-muted-foreground">@{company.owner.username}</p>
+                          ) : null}
+                        </div>
+                        <span className="shrink-0 text-xs font-medium text-primary">
+                          {t('search.viewProfile')}
+                        </span>
+                      </button>
+                    ) : null}
+                  </Card>
+                </motion.div>
+              );
+            })}
           </div>
         )}
 

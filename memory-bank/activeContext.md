@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Search companies ownership + endorse (2026-08-04):** People no longer lists business profiles. Companies show a tappable “Run by [name]” owner row and Endorse. Directory uses `search_civizen_directory` RPC so owner fields work for all signed-in users despite `linked_accounts` RLS. LANGUAGE_PACK_VERSION 119. **Testing v0.1.151** (build 153).
+
 **UsersAdmin overview polish (2026-08-04):** Level hover label is “User Level”; stats cards fit in one row without a visible scrollbar; header is chevron-only Back beside the Users title. LANGUAGE_PACK_VERSION 118. **Testing v0.1.150** (build 152).
 
 **UsersAdmin level under avatar (2026-08-04):** Experience level (Entry/Junior/…) sits under the photo/logo on the same left column; hover/click opens a level menu like the role pill. **Testing v0.1.149** (build 151).

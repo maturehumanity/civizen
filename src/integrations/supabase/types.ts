@@ -6532,6 +6532,14 @@ export type Database = {
         Args: { p_market_listing_id: string; p_template_key?: string }
         Returns: string
       }
+      search_civizen_directory: {
+        Args: {
+          p_exclude_profile_id?: string | null
+          p_limit?: number
+          p_query: string
+        }
+        Returns: Json
+      }
       sign_agreement: {
         Args: { p_agreement_id: string }
         Returns: undefined

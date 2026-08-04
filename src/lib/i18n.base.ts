@@ -2645,6 +2645,8 @@ export const baseTranslations = {
     "sellerFallback": "Seller",
     "businessAccount": "Business account",
     "companyFallback": "Company",
+    "runBy": "Run by {name}",
+    "viewOwnerProfile": "View profile for {name}",
     "noDescription": "No description available.",
     "directoryError": "Some directory results could not be loaded."
   },
