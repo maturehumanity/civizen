@@ -20,7 +20,7 @@
 
 **CI Download/Onboarding Auth mocks (2026-08-04):** All main pushes after Profile menu chrome failed Vitest: `PublicPageToolbar` calls `useAuth`, but Download/Onboarding tests had no AuthContext mock. Fixed with logged-out mocks. Yesterday’s green CI was the `npm audit` fix — this was a separate same-day regression.
 
-**Permissions scroll + Home kick (2026-08-04):** Role columns use `minmax(4.75rem, 1fr)` so they expand on wide screens and keep a horizontal min-width for swipe-scroll on narrow screens. Empty/failed `current_app_permissions` no longer clears founder/admin access (ProtectedRoute also keeps founder/system).
+**Permissions scroll + Home kick (2026-08-04):** Role columns use `minmax(4.75rem, 1fr)` so they expand on wide screens and keep a horizontal min-width for swipe-scroll on narrow screens. Empty/failed `current_app_permissions` no longer clears founder/admin access (ProtectedRoute also keeps founder/system). **Testing v0.1.166** (build 168).
 
 **Permissions dense columns (2026-08-04):** Feature labels sit in a tight sticky first column next to role checkboxes. Role columns swipe/scroll horizontally on small screens; scrollbars stay hidden. **Testing v0.1.161** (build 163).
 
