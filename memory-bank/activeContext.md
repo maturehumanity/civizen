@@ -2,7 +2,7 @@
 
 ## Current focus
 
-**Profile menu Accounts add control (2026-08-04):** `UserPageMenu` Accounts card: `+` sits on the ACCOUNTS header row (right); hover shows “Add business account” (or “Business account linked” when already linked); click opens the create-business dialog. Bottom “Add business account” row removed.
+**Profile menu Accounts add control (2026-08-04):** `UserPageMenu` Accounts card: `+` sits on the ACCOUNTS header row (right); hover shows “Add business account” (or “Business account linked” when already linked); click opens the create-business dialog. Bottom “Add business account” row removed. **Testing v0.1.141** (build 143).
 
 **Profile Earnings page (2026-08-03 / 2026-08-04):** `/earnings` in the Home avatar menu shows seller product/service activity from agreements (signed = sold; pending listed separately). Illustrative Lumen totals only — settlement not active. Notice describes earnings from work, services, and products (no registration/banking roadmap language). Filters use a single-line scrollable underline tab strip (not pills). Home removed from that menu (bottom nav covers it); `pageRegistry.home` icon aligned to Lucide `Home`. LANGUAGE_PACK_VERSION 115. **Testing v0.1.140** (build 142).
 
