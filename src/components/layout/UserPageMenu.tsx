@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getAccessiblePageLinks } from '@/lib/app-pages';
@@ -663,9 +664,32 @@ export function UserPageMenu() {
             <div className="p-2 pt-2 space-y-2">
               <div className="rounded-2xl border border-border/60 bg-background/70 px-3 py-2">
                 <div className="space-y-0.5">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                    {t('home.accountSwitchTitle')}
-                  </p>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                      {t('home.accountSwitchTitle')}
+                    </p>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          className="h-6 w-6 shrink-0 text-muted-foreground hover:text-foreground"
+                          aria-label={t('home.accountSwitchAddBusiness')}
+                          onClick={() => setCreateBusinessOpen(true)}
+                          disabled={hasBusinessLink}
+                          data-testid="user-page-menu-add-business"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="left">
+                        {hasBusinessLink
+                          ? t('home.accountSwitchAlreadyLinked')
+                          : t('home.accountSwitchAddBusiness')}
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
                   <p className="text-xs text-muted-foreground">{t('home.accountSwitchSubtitle')}</p>
                 </div>
 
@@ -746,25 +770,6 @@ export function UserPageMenu() {
                           </p>
                         )}
                     </>
-                  )}
-                </div>
-
-                <div className="mt-3 flex items-center justify-between gap-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    className="gap-2"
-                    onClick={() => setCreateBusinessOpen(true)}
-                    disabled={hasBusinessLink}
-                  >
-                    <Plus className="h-4 w-4" />
-                    {t('home.accountSwitchAddBusiness')}
-                  </Button>
-                  {hasBusinessLink && (
-                    <span className="text-[11px] text-muted-foreground">
-                      {t('home.accountSwitchAlreadyLinked')}
-                    </span>
                   )}
                 </div>
               </div>

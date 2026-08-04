@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 
 import { UserPageMenu } from '@/components/layout/UserPageMenu';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 vi.mock('framer-motion', () => ({
   AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
@@ -67,13 +68,19 @@ vi.mock('@/contexts/LanguageContext', async () => {
   };
 });
 
-describe('UserPageMenu account switcher', () => {
-  it('keeps per-card Switch and omits the header Switch back control', () => {
-    render(
+function renderMenu() {
+  return render(
+    <TooltipProvider>
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <UserPageMenu />
-      </MemoryRouter>,
-    );
+      </MemoryRouter>
+    </TooltipProvider>,
+  );
+}
+
+describe('UserPageMenu account switcher', () => {
+  it('keeps per-card Switch and omits the header Switch back control', () => {
+    renderMenu();
 
     fireEvent.click(screen.getByTestId('user-page-menu-trigger'));
 
@@ -81,5 +88,20 @@ describe('UserPageMenu account switcher', () => {
     expect(screen.queryByRole('button', { name: /switch back/i })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^switch$/i })).toBeInTheDocument();
     expect(screen.getAllByText('Current').length).toBeGreaterThan(0);
+  });
+
+  it('places add-business on the Accounts header and opens the create dialog', () => {
+    renderMenu();
+
+    fireEvent.click(screen.getByTestId('user-page-menu-trigger'));
+
+    const addBusiness = screen.getByTestId('user-page-menu-add-business');
+    expect(addBusiness).toBeInTheDocument();
+    expect(addBusiness).toHaveAttribute('aria-label', 'Add business account');
+    // Bottom-row label text is gone; only the header icon remains until the dialog opens.
+    expect(screen.queryByText('Add business account')).not.toBeInTheDocument();
+
+    fireEvent.click(addBusiness);
+    expect(screen.getByRole('heading', { name: /add business account/i })).toBeInTheDocument();
   });
 });
