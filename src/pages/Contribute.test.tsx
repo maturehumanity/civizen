@@ -58,7 +58,7 @@ describe('ContributeLane', () => {
 
     expect(screen.getByText('contribute.lanes.tasks.title')).toBeInTheDocument();
     expect(screen.getByText('contribute.placeholder.comingSoonTitle')).toBeInTheDocument();
-    expect(screen.getByText('contribute.backToHub')).toBeInTheDocument();
+    expect(screen.getByTestId('app-page-header-back')).toBeInTheDocument();
   });
 
   it('redirects unknown lane ids to the hub', () => {
