@@ -62,7 +62,7 @@ export function UsersAdminRolePill({ disabled, role, t, onRoleChange }: UsersAdm
           type="button"
           disabled={disabled}
           className={cn(
-            'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors',
+            'inline-flex shrink-0 items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors',
             roleBadgeClassName[role],
             disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:opacity-90',
           )}

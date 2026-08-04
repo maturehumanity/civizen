@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { UsersAdminRolePill } from '@/components/admin/UsersAdminRolePill';
 
 type UsersAdminMobileListProps = {
@@ -85,6 +86,7 @@ export function UsersAdminMobileList({
     const displayName = getDisplayNameParts(user);
     const cardTitle =
       getAdminCardTitle(user, { isOrganization, organizationName }) || t('common.anonymousUser');
+    const usernameLabel = user.username ? `@${user.username}` : t('admin.users.noUsername');
     const userLevel = user.experience_level in userExperienceLevelIconMap ? user.experience_level : 'entry';
     const LevelIcon = userExperienceLevelIconMap[userLevel];
     const shouldShowProBadge = displayName.hasProfessionalSuffix || userLevel === 'professional';
@@ -111,14 +113,30 @@ export function UsersAdminMobileList({
           }
         }}
       >
-        {/* Line 1: avatar + name + action icons (verify shows status; click toggles) */}
+        {/* Line 1: avatar (username on hover) + name + action icons */}
         <div className="flex w-full items-center gap-2.5 text-left">
-          <Avatar className="h-10 w-10 shrink-0 rounded-2xl border border-border/60">
-            <AvatarImage src={user.avatar_url || undefined} alt="" className="rounded-2xl object-cover" />
-            <AvatarFallback className="rounded-2xl bg-primary/10 text-sm font-semibold text-primary">
-              {getInitials(cardTitle, user.username)}
-            </AvatarFallback>
-          </Avatar>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span
+                className="inline-flex shrink-0"
+                onClick={(event) => event.stopPropagation()}
+                onKeyDown={(event) => event.stopPropagation()}
+              >
+                <Avatar
+                  className="h-10 w-10 rounded-2xl border border-border/60"
+                  aria-label={usernameLabel}
+                >
+                  <AvatarImage src={user.avatar_url || undefined} alt={usernameLabel} className="rounded-2xl object-cover" />
+                  <AvatarFallback className="rounded-2xl bg-primary/10 text-sm font-semibold text-primary">
+                    {getInitials(cardTitle, user.username)}
+                  </AvatarFallback>
+                </Avatar>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top" onClick={(event) => event.stopPropagation()}>
+              {usernameLabel}
+            </TooltipContent>
+          </Tooltip>
           <p className="min-w-0 flex-1 truncate font-medium text-foreground">{cardTitle}</p>
           <div className="flex shrink-0 items-center gap-1">
             <Button
@@ -172,11 +190,8 @@ export function UsersAdminMobileList({
           </div>
         </div>
 
-        {/* Line 2: handle + level + activity */}
+        {/* Line 2: level + activity (username lives on avatar hover) */}
         <div className="flex min-w-0 items-center gap-2 pl-[3.25rem]">
-          <p className="min-w-0 truncate text-sm text-muted-foreground">
-            {user.username ? `@${user.username}` : t('admin.users.noUsername')}
-          </p>
           <button
             type="button"
             onClick={(event) => {
@@ -216,16 +231,16 @@ export function UsersAdminMobileList({
           </span>
         </div>
 
-        {/* Line 3: status pills — role pill is also the role dropdown */}
-        <div className="flex flex-wrap items-center gap-1.5 pl-[3.25rem]">
+        {/* Line 3: status pills — role pill is also the role dropdown; keep one row */}
+        <div className="flex flex-nowrap items-center gap-1.5 overflow-x-auto pl-[3.25rem] scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <Badge
-            className={cn('rounded-full border', citizenshipBadgeClassName[effectiveCitizenshipStatus])}
+            className={cn('shrink-0 rounded-full border', citizenshipBadgeClassName[effectiveCitizenshipStatus])}
             variant="outline"
           >
             {t(getCitizenStatusLabelKey(effectiveCitizenshipStatus))}
           </Badge>
           <Badge
-            className={cn('rounded-full border', getVerificationCaseBadgeClassName(verificationStatus))}
+            className={cn('shrink-0 rounded-full border', getVerificationCaseBadgeClassName(verificationStatus))}
             variant="outline"
           >
             {t(getVerificationCaseStatusLabelKey(verificationStatus))}
@@ -239,7 +254,7 @@ export function UsersAdminMobileList({
           {user.is_active_citizen && (
             <Badge
               variant="outline"
-              className="rounded-full border border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+              className="shrink-0 rounded-full border border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
             >
               {t('admin.users.activeCitizenBadge')}
             </Badge>
@@ -247,7 +262,7 @@ export function UsersAdminMobileList({
           {user.is_governance_eligible && (
             <Badge
               variant="outline"
-              className="rounded-full border border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300"
+              className="shrink-0 rounded-full border border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300"
             >
               {t('admin.users.governanceEligibleBadge')}
             </Badge>
@@ -336,18 +351,20 @@ export function UsersAdminMobileList({
     });
 
   return (
-    <div className="space-y-3 p-3 md:hidden">
-      {visibleGroups.map((group) => {
-        const groupKey = group.owner?.id ?? group.organizations.map((item) => item.profile.id).join('-');
-        return (
-          <div key={groupKey} className="space-y-2">
-            {group.owner && renderCard(group.owner)}
-            {group.organizations.map((membership) =>
-              renderOrganization(membership, group.owner ? 1 : 0),
-            )}
-          </div>
-        );
-      })}
-    </div>
+    <TooltipProvider delayDuration={200}>
+      <div className="space-y-3 p-3 md:hidden">
+        {visibleGroups.map((group) => {
+          const groupKey = group.owner?.id ?? group.organizations.map((item) => item.profile.id).join('-');
+          return (
+            <div key={groupKey} className="space-y-2">
+              {group.owner && renderCard(group.owner)}
+              {group.organizations.map((membership) =>
+                renderOrganization(membership, group.owner ? 1 : 0),
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </TooltipProvider>
   );
 }

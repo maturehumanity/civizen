@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**UsersAdmin username on avatar hover (2026-08-04):** Mobile user cards hide `@username` from the card body; hovering the photo/logo shows it. Status pills stay on one scrollable row so cards remain 3 lines. **Testing pending release bump.**
+
 **Score Details formation note (2026-08-04):** Home Score Details icon tooltip now shows “View Score Details” plus a second line: rating system is still in formation and may not reflect the correct or actual rating. LANGUAGE_PACK_VERSION 117. **Testing v0.1.146** (build 148).
 
 **Search typing one-letter bug (2026-08-04):** `/search` could only accept one character because `UnifiedSearchBlock` re-applied stale URL `q` into local state on every `query` change. URL→state sync now runs only when `searchParams` change; local→URL writes skip no-op updates. Regression test: `UnifiedSearchBlock.test.tsx`. **Testing v0.1.145** (build 147).

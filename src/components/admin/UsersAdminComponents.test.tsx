@@ -207,6 +207,9 @@ describe('UsersAdmin components', () => {
 
     expect(screen.getByText('Ada Lovelace')).toBeInTheDocument();
     expect(screen.getByText('Arts and Culture')).toBeInTheDocument();
+    expect(screen.queryByText('@ada')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('@ada')).toBeInTheDocument();
+    expect(screen.getByLabelText('@biz_arts')).toBeInTheDocument();
     expect(screen.getByLabelText('admin.users.userIsVerified')).toBeInTheDocument();
     expect(screen.getByLabelText('admin.users.userIsUnverified')).toBeInTheDocument();
   });
