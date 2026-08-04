@@ -1177,41 +1177,71 @@ export default function Home() {
                     </h2>
                     {score.overall.score == null ? (
                       <>
-                        {homePointsToNextLabel ? (
+                        <div className="mt-1 flex items-center gap-1.5">
+                          {homePointsToNextLabel ? (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <p
+                                  className={`cursor-default font-display text-2xl font-bold outline-none ${getDevelopmentalScoreColor(
+                                    null,
+                                    homeScoreTierId,
+                                  )}`}
+                                  tabIndex={0}
+                                  aria-label={`${homeScoreTierLabel}. ${homePointsToNextLabel}`}
+                                >
+                                  {homeScoreTierLabel}
+                                </p>
+                              </TooltipTrigger>
+                              <TooltipContent side="bottom">{homePointsToNextLabel}</TooltipContent>
+                            </Tooltip>
+                          ) : (
+                            <p
+                              className={`font-display text-2xl font-bold ${getDevelopmentalScoreColor(
+                                null,
+                                homeScoreTierId,
+                              )}`}
+                            >
+                              {homeScoreTierLabel}
+                            </p>
+                          )}
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <p
-                                className={`mt-1 cursor-default font-display text-2xl font-bold outline-none ${getDevelopmentalScoreColor(
-                                  null,
-                                  homeScoreTierId,
-                                )}`}
-                                tabIndex={0}
-                                aria-label={`${homeScoreTierLabel}. ${homePointsToNextLabel}`}
+                              <button
+                                type="button"
+                                className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border/70 bg-card/80 text-primary outline-none transition-colors hover:bg-muted/70 focus-visible:ring-2 focus-visible:ring-primary/20"
+                                aria-label={t('home.viewScoreDetails')}
+                                onClick={() => navigate('/profile')}
                               >
-                                {homeScoreTierLabel}
-                              </p>
+                                <TrendingUp className="h-3.5 w-3.5" aria-hidden />
+                              </button>
                             </TooltipTrigger>
-                            <TooltipContent side="bottom">{homePointsToNextLabel}</TooltipContent>
+                            <TooltipContent side="bottom">{t('home.viewScoreDetails')}</TooltipContent>
                           </Tooltip>
-                        ) : (
-                          <p
-                            className={`mt-1 font-display text-2xl font-bold ${getDevelopmentalScoreColor(
-                              null,
-                              homeScoreTierId,
-                            )}`}
-                          >
-                            {homeScoreTierLabel}
-                          </p>
-                        )}
+                        </div>
                         <p className="mt-2 text-sm text-muted-foreground">
                           {t('home.scoreBuildingHint')}
                         </p>
                       </>
                     ) : (
                       <>
-                        <p className="mt-1 font-display text-2xl font-bold text-foreground">
-                          {formatScoreValue(score.overall.score)} / 100
-                        </p>
+                        <div className="mt-1 flex items-center gap-1.5">
+                          <p className="font-display text-2xl font-bold text-foreground">
+                            {formatScoreValue(score.overall.score)} / 100
+                          </p>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border/70 bg-card/80 text-primary outline-none transition-colors hover:bg-muted/70 focus-visible:ring-2 focus-visible:ring-primary/20"
+                                aria-label={t('home.viewScoreDetails')}
+                                onClick={() => navigate('/profile')}
+                              >
+                                <TrendingUp className="h-3.5 w-3.5" aria-hidden />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom">{t('home.viewScoreDetails')}</TooltipContent>
+                          </Tooltip>
+                        </div>
                         {score.tier.finalTier ? (
                           homePointsToNextLabel ? (
                             <Tooltip>
@@ -1242,18 +1272,44 @@ export default function Home() {
                         ) : null}
                       </>
                     )}
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => navigate('/profile')}
-                      className="mt-3 gap-2 rounded-xl border-border/70 bg-background/75 shadow-sm hover:bg-background"
-                    >
-                      {t('home.viewScoreDetails')}
-                      <TrendingUp className="h-4 w-4" />
-                    </Button>
                   </div>
                 </div>
               </TooltipProvider>
+            </Card>
+          </motion.div>
+        ) : null}
+
+        {isInlineSearchOpen ? (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.12 }}
+          >
+            <Card className="border-border/70 bg-card/95 p-4 shadow-sm sm:p-5">
+              <UnifiedSearchBlock showTitle={false} syncUrlParams={false} />
+            </Card>
+          </motion.div>
+        ) : null}
+
+        {/* Quick Actions */}
+        {showHomeGovernanceHub && showQuickActions ? (
+          <motion.div
+            className={cn('grid gap-3', 'grid-cols-1')}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <Card
+              className="cursor-pointer border-border/70 bg-card/95 p-3 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:shadow-md sm:p-4"
+              onClick={() => navigate('/governance')}
+            >
+              <div className="flex items-center gap-3">
+                <Landmark className="h-8 w-8 shrink-0 text-primary" aria-hidden />
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-foreground">{t('home.governanceHub')}</h3>
+                  <p className="text-xs text-muted-foreground">{t('home.governanceHubDescription')}</p>
+                </div>
+              </div>
             </Card>
           </motion.div>
         ) : null}
@@ -1279,7 +1335,7 @@ export default function Home() {
                     {getInitials(profile?.full_name)}
                   </AvatarFallback>
                 </Avatar>
-                  <div className="flex min-w-0 flex-1 items-end gap-2 sm:gap-3">
+                <div className="flex min-w-0 flex-1 items-end gap-2 sm:gap-3">
                   <div className="relative min-w-0 flex-1">
                     {!postContent ? (
                       <SlowRunningText
@@ -1337,37 +1393,6 @@ export default function Home() {
                   </Button>
                 </div>
               </div>
-            </Card>
-          </motion.div>
-        ) : null}
-
-        {isInlineSearchOpen ? (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.12 }}
-          >
-            <Card className="border-border/70 bg-card/95 p-4 shadow-sm sm:p-5">
-              <UnifiedSearchBlock showTitle={false} syncUrlParams={false} />
-            </Card>
-          </motion.div>
-        ) : null}
-
-        {/* Quick Actions */}
-        {showHomeGovernanceHub && showQuickActions ? (
-          <motion.div
-            className={cn('grid gap-3', 'grid-cols-1')}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <Card
-              className="cursor-pointer border-border/70 bg-card/95 p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:shadow-md"
-              onClick={() => navigate('/governance')}
-            >
-              <Landmark className="mb-2 w-8 h-8 text-primary" />
-              <h3 className="font-semibold text-foreground">{t('home.governanceHub')}</h3>
-              <p className="text-xs text-muted-foreground">{t('home.governanceHubDescription')}</p>
             </Card>
           </motion.div>
         ) : null}

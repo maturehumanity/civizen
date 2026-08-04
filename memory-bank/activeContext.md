@@ -2,6 +2,10 @@
 
 ## Current focus
 
+**Testing v0.1.124 (2026-08-03):** Build 126 (`20260803-v0.1.124`). Live/Production remains on prior soak build. Denser Home: score details icon, compact Governance, composer under Governance.
+
+**Home layout denser (2026-08-03):** Score details is an icon beside `/ 100` (hover label). Governance is one row (icon + title/description). Post composer sits under Governance.
+
 **Testing v0.1.123 (2026-08-03):** Build 125 (`20260803-v0.1.123`). Live/Production remains on prior soak build. Home post composer autosaves drafts; Cancel discards; Post publishes.
 
 **Home post draft autosave (2026-08-03):** Composer text autosaves per user in localStorage (debounced + flush on blur/hide). Restores on return. Cancel clears draft; Post clears after publish.
