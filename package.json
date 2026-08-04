@@ -1,7 +1,7 @@
 {
   "name": "civizen",
   "private": true,
-  "version": "0.1.164",
+  "version": "0.1.165",
   "type": "module",
   "engines": {
     "node": ">=24.18.1",
