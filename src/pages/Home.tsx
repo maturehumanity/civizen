@@ -1283,118 +1283,85 @@ export default function Home() {
                     transition={{ delay: 0.3 + index * 0.04 }}
                   >
                     <Card className="border-border/70 bg-card/95 p-4 shadow-sm transition-all duration-200 hover:border-border hover:shadow-md">
-                      <div className="flex items-start gap-3">
-                        <Avatar className="w-10 h-10">
-                          <AvatarImage src={post.author?.avatar_url || undefined} />
-                          <AvatarFallback className="bg-secondary text-secondary-foreground text-sm">
-                            {getInitials(post.author?.full_name)}
-                          </AvatarFallback>
-                        </Avatar>
-
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="min-w-0">
-                              <p className="text-sm font-semibold text-foreground truncate">
-                                {getDisplayName(post.author)}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {formatRelativeTime(post.created_at)}
-                              </p>
-                            </div>
+                      <div className="min-w-0 space-y-2">
+                        <div className="flex items-start gap-3">
+                          <Avatar className="h-10 w-10 shrink-0">
+                            <AvatarImage src={post.author?.avatar_url || undefined} />
+                            <AvatarFallback className="bg-secondary text-sm text-secondary-foreground">
+                              {getInitials(post.author?.full_name)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold text-foreground">
+                              {getDisplayName(post.author)}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {formatRelativeTime(post.created_at)}
+                            </p>
                           </div>
+                        </div>
 
-                          <p className="text-sm text-foreground mt-2 whitespace-pre-wrap break-words">
-                            {post.content}
-                          </p>
+                        <p className="whitespace-pre-wrap break-words text-sm text-foreground">
+                          {post.content}
+                        </p>
 
-                          <div className="mt-3 border-t border-border/60 pt-2.5">
-                            <div className="flex items-center gap-2">
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className={`gap-2 rounded-xl px-3 ${hasLiked ? 'bg-primary/10 text-primary hover:bg-primary/15' : 'text-muted-foreground hover:bg-muted/70 hover:text-foreground'}`}
-                                onClick={() => toggleLike(post.id)}
-                                disabled={likingPostId === post.id}
-                              >
-                                <ThumbsUp className={`w-4 h-4 ${hasLiked ? 'fill-primary' : ''}`} />
-                                {hasLiked ? t('home.liked') : t('home.like')}
-                                {likeCount > 0 ? ` (${likeCount})` : ''}
-                              </Button>
+                        <div className="border-t border-border/60 pt-2.5">
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className={`gap-2 rounded-xl px-3 ${hasLiked ? 'bg-primary/10 text-primary hover:bg-primary/15' : 'text-muted-foreground hover:bg-muted/70 hover:text-foreground'}`}
+                              onClick={() => toggleLike(post.id)}
+                              disabled={likingPostId === post.id}
+                            >
+                              <ThumbsUp className={`h-4 w-4 ${hasLiked ? 'fill-primary' : ''}`} />
+                              {hasLiked ? t('home.liked') : t('home.like')}
+                              {likeCount > 0 ? ` (${likeCount})` : ''}
+                            </Button>
 
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="gap-2 rounded-xl px-3 text-muted-foreground hover:bg-muted/70 hover:text-foreground"
-                                onClick={() => toggleComments(post.id)}
-                              >
-                                <MessageCircle className="w-4 h-4" />
-                                {t('home.comment')}
-                                {comments.length > 0 ? ` (${comments.length})` : ''}
-                              </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="gap-2 rounded-xl px-3 text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+                              onClick={() => toggleComments(post.id)}
+                            >
+                              <MessageCircle className="h-4 w-4" />
+                              {t('home.comment')}
+                              {comments.length > 0 ? ` (${comments.length})` : ''}
+                            </Button>
 
-                              {canShowPublishToSocial({
-                                isOfficialOrg: isCivizenOrgAccount,
-                                viewerProfileId: profile?.id,
-                                postAuthorId: post.author_id,
-                              }) ? (
-                                <Popover>
-                                  <PopoverTrigger asChild>
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      className="gap-2 rounded-xl px-3 text-muted-foreground hover:bg-muted/70 hover:text-foreground"
-                                    >
-                                      <Share2 className="w-4 h-4" />
-                                      {t('home.publishTo')}
-                                    </Button>
-                                  </PopoverTrigger>
-                                  <PopoverContent align="start" className="w-52 p-2">
-                                    <div className="space-y-1">
-                                      {SOCIAL_PROVIDERS.map((provider) => {
-                                        const connection = socialConnections.find((row) => row.provider === provider);
-                                        const published = (socialCrossposts[post.id] || []).some(
-                                          (row) => row.provider === provider && row.status === 'published',
-                                        );
-                                        const busy = publishingKey === `${post.id}:${provider}`;
-                                        const labelKey =
-                                          provider === 'linkedin'
-                                            ? 'home.publishToLinkedIn'
-                                            : provider === 'facebook'
-                                              ? 'home.publishToFacebook'
-                                              : 'home.publishToX';
+                            {canShowPublishToSocial({
+                              isOfficialOrg: isCivizenOrgAccount,
+                              viewerProfileId: profile?.id,
+                              postAuthorId: post.author_id,
+                            }) ? (
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="gap-2 rounded-xl px-3 text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+                                  >
+                                    <Share2 className="h-4 w-4" />
+                                    {t('home.publishTo')}
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent align="start" className="w-52 p-2">
+                                  <div className="space-y-1">
+                                    {SOCIAL_PROVIDERS.map((provider) => {
+                                      const connection = socialConnections.find((row) => row.provider === provider);
+                                      const published = (socialCrossposts[post.id] || []).some(
+                                        (row) => row.provider === provider && row.status === 'published',
+                                      );
+                                      const busy = publishingKey === `${post.id}:${provider}`;
+                                      const labelKey =
+                                        provider === 'linkedin'
+                                          ? 'home.publishToLinkedIn'
+                                          : provider === 'facebook'
+                                            ? 'home.publishToFacebook'
+                                            : 'home.publishToX';
 
-                                        if (published) {
-                                          return (
-                                            <Button
-                                              key={provider}
-                                              type="button"
-                                              variant="ghost"
-                                              size="sm"
-                                              className="w-full justify-start gap-2"
-                                              disabled
-                                            >
-                                              <Check className="h-4 w-4 text-primary" />
-                                              {t(labelKey)} · {t('home.publishToAlready')}
-                                            </Button>
-                                          );
-                                        }
-
-                                        if (!connection?.connected) {
-                                          return (
-                                            <Button
-                                              key={provider}
-                                              type="button"
-                                              variant="ghost"
-                                              size="sm"
-                                              className="w-full justify-start gap-2 text-muted-foreground"
-                                              onClick={() => navigate('/settings/social-accounts')}
-                                            >
-                                              <Share2 className="h-4 w-4" />
-                                              {t(labelKey)} · {t('home.publishToConnect')}
-                                            </Button>
-                                          );
-                                        }
-
+                                      if (published) {
                                         return (
                                           <Button
                                             key={provider}
@@ -1402,72 +1369,102 @@ export default function Home() {
                                             variant="ghost"
                                             size="sm"
                                             className="w-full justify-start gap-2"
-                                            disabled={busy}
-                                            onClick={() => void handlePublishToSocial(post.id, provider)}
+                                            disabled
                                           >
-                                            {busy ? (
-                                              <Loader2 className="h-4 w-4 animate-spin" />
-                                            ) : (
-                                              <Share2 className="h-4 w-4" />
-                                            )}
-                                            {busy ? t('home.publishToPublishing') : t(labelKey)}
+                                            <Check className="h-4 w-4 text-primary" />
+                                            {t(labelKey)} · {t('home.publishToAlready')}
                                           </Button>
                                         );
-                                      })}
-                                    </div>
-                                  </PopoverContent>
-                                </Popover>
-                              ) : null}
+                                      }
+
+                                      if (!connection?.connected) {
+                                        return (
+                                          <Button
+                                            key={provider}
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="w-full justify-start gap-2 text-muted-foreground"
+                                            onClick={() => navigate('/settings/social-accounts')}
+                                          >
+                                            <Share2 className="h-4 w-4" />
+                                            {t(labelKey)} · {t('home.publishToConnect')}
+                                          </Button>
+                                        );
+                                      }
+
+                                      return (
+                                        <Button
+                                          key={provider}
+                                          type="button"
+                                          variant="ghost"
+                                          size="sm"
+                                          className="w-full justify-start gap-2"
+                                          disabled={busy}
+                                          onClick={() => void handlePublishToSocial(post.id, provider)}
+                                        >
+                                          {busy ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                          ) : (
+                                            <Share2 className="h-4 w-4" />
+                                          )}
+                                          {busy ? t('home.publishToPublishing') : t(labelKey)}
+                                        </Button>
+                                      );
+                                    })}
+                                  </div>
+                                </PopoverContent>
+                              </Popover>
+                            ) : null}
+                          </div>
+                        </div>
+
+                        {isCommentsOpen && (
+                          <div className="space-y-3 pt-1">
+                            {comments.length === 0 ? (
+                              <p className="text-xs text-muted-foreground">
+                                {t('home.noCommentsYet')}
+                              </p>
+                            ) : (
+                              <div className="space-y-2">
+                                {comments.map((comment) => (
+                                  <div key={comment.id} className="rounded-2xl border border-border/50 bg-muted/35 p-3 shadow-sm">
+                                    <p className="text-xs font-medium text-foreground">
+                                      {getDisplayName(comment.author)}
+                                    </p>
+                                    <p className="mt-1 whitespace-pre-wrap break-words text-sm text-foreground">
+                                      {comment.content}
+                                    </p>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            <div className="flex gap-2">
+                              <textarea
+                                className="min-h-[68px] w-full resize-none rounded-2xl border border-border/70 bg-background/90 p-3 text-sm outline-none transition-all placeholder:text-muted-foreground focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
+                                placeholder={t('home.writeComment')}
+                                value={draftComment}
+                                onChange={(event) =>
+                                  setCommentDrafts((prev) => ({
+                                    ...prev,
+                                    [post.id]: event.target.value,
+                                  }))
+                                }
+                              />
+                            </div>
+                            <div className="flex justify-end">
+                              <Button
+                                size="sm"
+                                className="rounded-xl px-4"
+                                onClick={() => submitComment(post.id)}
+                                disabled={isSubmittingComment || !draftComment.trim()}
+                              >
+                                {isSubmittingComment ? t('home.posting') : t('home.postComment')}
+                              </Button>
                             </div>
                           </div>
-
-                          {isCommentsOpen && (
-                            <div className="mt-3 space-y-3">
-                              {comments.length === 0 ? (
-                                <p className="text-xs text-muted-foreground">
-                                  {t('home.noCommentsYet')}
-                                </p>
-                              ) : (
-                                <div className="space-y-2">
-                                  {comments.map((comment) => (
-                                    <div key={comment.id} className="rounded-2xl border border-border/50 bg-muted/35 p-3 shadow-sm">
-                                      <p className="text-xs font-medium text-foreground">
-                                        {getDisplayName(comment.author)}
-                                      </p>
-                                      <p className="text-sm text-foreground mt-1 whitespace-pre-wrap break-words">
-                                        {comment.content}
-                                      </p>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-
-                              <div className="flex gap-2">
-                                <textarea
-                                  className="min-h-[68px] w-full resize-none rounded-2xl border border-border/70 bg-background/90 p-3 text-sm outline-none transition-all placeholder:text-muted-foreground focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
-                                  placeholder={t('home.writeComment')}
-                                  value={draftComment}
-                                  onChange={(event) =>
-                                    setCommentDrafts((prev) => ({
-                                      ...prev,
-                                      [post.id]: event.target.value,
-                                    }))
-                                  }
-                                />
-                              </div>
-                              <div className="flex justify-end">
-                                <Button
-                                  size="sm"
-                                  className="rounded-xl px-4"
-                                  onClick={() => submitComment(post.id)}
-                                  disabled={isSubmittingComment || !draftComment.trim()}
-                                >
-                                  {isSubmittingComment ? t('home.posting') : t('home.postComment')}
-                                </Button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
+                        )}
                       </div>
                     </Card>
                   </motion.div>

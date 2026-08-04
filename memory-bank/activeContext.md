@@ -2,6 +2,10 @@
 
 ## Current focus
 
+**Testing v0.1.121 (2026-08-03):** Build 123 (`20260803-v0.1.121`). Live/Production remains on prior soak build. Home feed post body aligns with avatar left edge.
+
+**Home post body full-bleed (2026-08-03):** Feed post body/actions start at the avatar’s left edge (not indented under the name). Header stays avatar + name/time on one row.
+
 **Testing v0.1.120 (2026-08-03):** Build 122 (`20260803-v0.1.120`). Live/Production remains on prior soak build. Home Post composer grows with draft length (no 160px clip).
 
 **Home Post composer auto-grow (2026-08-03):** Draft textarea grows with content (removed 160px height cap) so long messages stay fully visible while composing.
