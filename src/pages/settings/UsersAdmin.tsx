@@ -1,8 +1,9 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Plus } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -1455,14 +1456,28 @@ export default function UsersAdmin() {
   };
 
   return (
-    <AppLayout>
+    <AppLayout
+      topChromeBeforeSearch={(
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          className="h-10 w-10 rounded-full border border-border/60 bg-card/60"
+          onClick={() => setCreateUserOpen(true)}
+          aria-label={t('admin.users.createUser')}
+          title={t('admin.users.createUser')}
+          data-testid="users-admin-add-user"
+        >
+          <Plus className="h-4 w-4" />
+        </Button>
+      )}
+    >
       <div className="space-y-6 px-4 py-6">
         <UsersAdminOverview
           search={search}
           stats={stats}
           t={t}
           onBack={() => navigate('/settings')}
-          onOpenCreateUser={() => setCreateUserOpen(true)}
           onSearchChange={setSearch}
         />
 

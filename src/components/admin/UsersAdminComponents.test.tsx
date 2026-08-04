@@ -127,13 +127,13 @@ describe('UsersAdmin components', () => {
           stats={{ total: 1, admins: 0, staff: 0 }}
           t={t}
           onBack={() => {}}
-          onOpenCreateUser={() => {}}
           onSearchChange={() => {}}
         />,
       ),
     );
 
     expect(screen.getByText('admin.users.title')).toBeInTheDocument();
+    expect(screen.queryByText('admin.users.createUser')).not.toBeInTheDocument();
   });
 
   it('renders desktop table role controls without crashing', () => {

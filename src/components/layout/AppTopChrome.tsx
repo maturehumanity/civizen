@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, type ReactNode } from 'react';
 import { Search } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -12,11 +12,16 @@ const UserPageMenu = lazy(() =>
   import('@/components/layout/UserPageMenu').then((module) => ({ default: module.UserPageMenu })),
 );
 
+type AppTopChromeProps = {
+  /** Optional control(s) rendered immediately before the Search icon. */
+  beforeSearch?: ReactNode;
+};
+
 /**
  * App-wide chrome: Search + Profile menu on authenticated AppLayout pages.
  * Hides on scroll down; reappears on scroll up (same pattern as public headers).
  */
-export function AppTopChrome() {
+export function AppTopChrome({ beforeSearch }: AppTopChromeProps) {
   const { user, profile } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -39,6 +44,7 @@ export function AppTopChrome() {
       )}
     >
       <div className="pointer-events-auto flex items-center gap-2 px-4 pb-3 pt-2">
+        {beforeSearch}
         <Button
           type="button"
           size="icon"

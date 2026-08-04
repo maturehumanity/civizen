@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ArrowLeft, Plus, Search, Shield, Users } from 'lucide-react';
+import { ArrowLeft, Search, Shield, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -13,7 +13,6 @@ type UsersAdminOverviewProps = {
   };
   t: (key: string) => string;
   onBack: () => void;
-  onOpenCreateUser: () => void;
   onSearchChange: (value: string) => void;
 };
 
@@ -22,24 +21,19 @@ export function UsersAdminOverview({
   stats,
   t,
   onBack,
-  onOpenCreateUser,
   onSearchChange,
 }: UsersAdminOverviewProps) {
   return (
     <>
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
-        <div className="grid grid-cols-3 items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={onBack} className="col-span-1 w-fit gap-2">
+        <div className="relative grid grid-cols-[auto_1fr_auto] items-center gap-3">
+          <Button variant="ghost" size="sm" onClick={onBack} className="w-fit gap-2">
             <ArrowLeft className="h-4 w-4" />
             {t('common.back')}
           </Button>
-          <h1 className="col-span-1 text-center text-2xl font-display font-bold text-foreground">{t('admin.users.title')}</h1>
-          <div className="col-span-1 flex justify-end">
-            <Button className="w-full max-w-[180px] gap-2 sm:w-auto" onClick={onOpenCreateUser}>
-              <Plus className="h-4 w-4" />
-              {t('admin.users.createUser')}
-            </Button>
-          </div>
+          <h1 className="text-center text-2xl font-display font-bold text-foreground">{t('admin.users.title')}</h1>
+          {/* Spacer matches back control width so the title stays centered under top chrome actions */}
+          <div className="w-[4.5rem]" aria-hidden />
         </div>
       </motion.div>
 

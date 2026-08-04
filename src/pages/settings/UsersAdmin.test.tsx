@@ -121,7 +121,18 @@ vi.mock('framer-motion', () => ({
 }));
 
 vi.mock('@/components/layout/AppLayout', () => ({
-  AppLayout: ({ children }: { children: ReactNode }) => <div data-testid="users-admin-layout">{children}</div>,
+  AppLayout: ({
+    children,
+    topChromeBeforeSearch,
+  }: {
+    children: ReactNode;
+    topChromeBeforeSearch?: ReactNode;
+  }) => (
+    <div data-testid="users-admin-layout">
+      {topChromeBeforeSearch}
+      {children}
+    </div>
+  ),
 }));
 
 vi.mock('@/hooks/use-mobile', () => ({
@@ -184,6 +195,7 @@ describe('UsersAdmin page', () => {
     );
 
     expect(await screen.findByTestId('users-admin-layout')).toBeInTheDocument();
+    expect(screen.getByTestId('users-admin-add-user')).toBeInTheDocument();
   });
 
   it('loads emergency access data once without policy-driven reload loop', async () => {
