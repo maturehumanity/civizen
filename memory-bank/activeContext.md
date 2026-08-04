@@ -2,7 +2,7 @@
 
 ## Current focus
 
-**UsersAdmin add-user chrome (2026-08-04):** Create user is a `+` icon in AppTopChrome immediately before Search (not a text button beside the title). **Testing pending release bump.**
+**UsersAdmin add-user chrome (2026-08-04):** Create user is a `+` icon in AppTopChrome immediately before Search (not a text button beside the title). **Testing v0.1.148** (build 150).
 
 **UsersAdmin username on avatar hover (2026-08-04):** Mobile user cards hide `@username` from the card body; hovering the photo/logo shows it. Status pills stay on one scrollable row so cards remain 3 lines. **Testing v0.1.147** (build 149).
 
