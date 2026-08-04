@@ -1,5 +1,5 @@
 import { FileSignature, ListFilter, Search, Coins } from 'lucide-react';
-import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 
 import { MarketFiltersSheet } from '@/components/market/MarketFiltersSheet';
@@ -7,28 +7,28 @@ import { MarketListingCard } from '@/components/market/MarketListingCard';
 import { MarketListingKindIconToggle } from '@/components/market/MarketListingKindIconToggle';
 import { PostMarketListingDialog } from '@/components/market/PostMarketListingDialog';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { UnifiedSearchBlock } from '@/components/search/UnifiedSearchBlock';
 import StudySpecialists from '@/pages/study/StudySpecialists';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { usePageSecondaryNav } from '@/hooks/usePageSecondaryNav';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-
-const UserPageMenu = lazy(() =>
-  import('@/components/layout/UserPageMenu').then((module) => ({ default: module.UserPageMenu })),
-);
 import {
   isMarketBrowseCategoryId,
   isMarketSectionId,
   MARKET_CAROUSEL_SECTION_IDS,
-  parseMarketSectionParam,
   MARKET_CATEGORY_ICONS,
   marketCategoryLabelKey,
-  type MarketPrimaryTabId,
   type MarketSectionId,
 } from '@/lib/market-categories';
+import {
+  MARKET_FALLBACK_SECTION,
+  resolveMarketSection,
+  writeForYouSeenAt,
+  writeLastMarketSection,
+} from '@/lib/market-section-memory';
 import type { MarketListingKind } from '@/lib/use-market-published-listings';
 import {
   useMarketMyPublishedListings,
@@ -36,18 +36,12 @@ import {
 } from '@/lib/use-market-published-listings';
 import { LUMA_PROTOTYPE_NOTICE } from '@/lib/prototype-credits';
 
-const DEFAULT_SECTION: MarketPrimaryTabId = 'jobs';
+const UserPageMenu = lazy(() =>
+  import('@/components/layout/UserPageMenu').then((module) => ({ default: module.UserPageMenu })),
+);
 
 function readListingKindFromParams(searchParams: URLSearchParams): MarketListingKind {
   return searchParams.get('kind') === 'service' ? 'service' : 'product';
-}
-
-function readSectionFromParams(searchParams: URLSearchParams): MarketSectionId {
-  const fromUrl = parseMarketSectionParam(searchParams.get('section'));
-  if (fromUrl && MARKET_CAROUSEL_SECTION_IDS.includes(fromUrl)) {
-    return fromUrl;
-  }
-  return DEFAULT_SECTION;
 }
 
 export default function Market() {
@@ -63,14 +57,17 @@ export default function Market() {
     refetch: refetchMyListings,
   } = useMarketMyPublishedListings(profile?.id ?? null);
   const [postOpen, setPostOpen] = useState(false);
-  const [section, setSection] = useState<MarketSectionId>(() => readSectionFromParams(searchParams));
-  const [inlineSearchOpen, setInlineSearchOpen] = useState(false);
-  const [inlineSearchQuery, setInlineSearchQuery] = useState('');
+  const [section, setSection] = useState<MarketSectionId>(() =>
+    resolveMarketSection({ sectionParam: searchParams.get('section') }),
+  );
+  const [listingSearchOpen, setListingSearchOpen] = useState(false);
   const [searchDraft, setSearchDraft] = useState('');
   const [listingKind, setListingKind] = useState<MarketListingKind>(() =>
     readListingKindFromParams(searchParams),
   );
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const appliedForYouBoostRef = useRef(false);
 
   const amountLocale = language === 'en' ? 'en-US' : language;
 
@@ -91,7 +88,7 @@ export default function Market() {
   const sourceLoading = isSelling ? myListingsLoading : listingsLoading;
   const sourceError = isSelling ? myListingsError : listingsError;
 
-  const showListingKindToggle = !inlineSearchOpen && !isJobs;
+  const showListingKindToggle = !isJobs;
 
   const listingKindFilter: MarketListingKind | null = isJobs ? 'service' : listingKind;
 
@@ -154,39 +151,74 @@ export default function Market() {
   }, [browseCategoryId, isForYou, isJobs, isSaved, isSelling, listingKind, section, t]);
 
   const sectionTitle = t(marketCategoryLabelKey(section));
+  const profileMenuLabel = t('home.profileMenuButton');
+  const filtersLabel = t('market.filtersTitle');
+  const agreementsLabel = t('common.agreements');
+  const creditsLabel = t('market.walletShortcut');
+  const searchLabel = t('common.search');
 
   useEffect(() => {
-    const fromUrl = readSectionFromParams(searchParams);
+    const fromUrl = resolveMarketSection({ sectionParam: searchParams.get('section') });
     setSection((current) => (current === fromUrl ? current : fromUrl));
     const fromKind = readListingKindFromParams(searchParams);
     setListingKind((current) => (current === fromKind ? current : fromKind));
   }, [searchParams]);
 
   useEffect(() => {
-    setSearchParams((current) => {
-      const next = new URLSearchParams(current);
-      if (section === DEFAULT_SECTION) {
-        next.delete('section');
-      } else {
-        next.set('section', section);
-      }
-      if (listingKind === 'service') {
-        next.set('kind', 'service');
-      } else {
-        next.delete('kind');
-      }
-      next.delete('entity');
-      return next;
-    }, { replace: true });
+    if (listingsLoading || appliedForYouBoostRef.current) return;
+    if (searchParams.get('section')) {
+      appliedForYouBoostRef.current = true;
+      return;
+    }
+    const next = resolveMarketSection({
+      sectionParam: null,
+      listings,
+      listingsReady: true,
+    });
+    appliedForYouBoostRef.current = true;
+    setSection((current) => (current === next ? current : next));
+  }, [listings, listingsLoading, searchParams]);
+
+  useEffect(() => {
+    writeLastMarketSection(section);
+    if (section === 'for-you') {
+      writeForYouSeenAt(new Date().toISOString());
+    }
+  }, [section]);
+
+  useEffect(() => {
+    setSearchParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        if (section === MARKET_FALLBACK_SECTION) {
+          next.delete('section');
+        } else {
+          next.set('section', section);
+        }
+        if (listingKind === 'service') {
+          next.set('kind', 'service');
+        } else {
+          next.delete('kind');
+        }
+        next.delete('entity');
+        return next;
+      },
+      { replace: true },
+    );
   }, [listingKind, section, setSearchParams]);
 
   useEffect(() => {
     if ((section === 'sell' || section === 'saved') && !profile?.id) {
-      setSection(DEFAULT_SECTION);
+      setSection(MARKET_FALLBACK_SECTION);
     }
   }, [profile?.id, section]);
 
-  const showListingsGrid = !inlineSearchOpen && !isJobs && !isSaved;
+  useEffect(() => {
+    if (!listingSearchOpen) return;
+    queueMicrotask(() => searchInputRef.current?.focus());
+  }, [listingSearchOpen]);
+
+  const showListingsGrid = !isJobs && !isSaved;
 
   return (
     <AppLayout hideTopChrome>
@@ -200,191 +232,207 @@ export default function Market() {
           data-build-key="marketHeader"
           data-build-label="Marketplace header"
         >
-          <div className="flex items-center justify-between gap-2 px-3">
-            <div className="flex min-w-0 flex-1 items-center gap-0.5">
-              <h1 className="truncate text-xl font-display font-bold leading-none tracking-tight text-foreground">
-                {t('market.title')}
-              </h1>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground"
-                onClick={() => setFiltersOpen(true)}
-                data-build-key="marketFiltersButton"
-                data-build-label="Open marketplace filters"
-                aria-label={t('market.filtersTitle')}
-              >
-                <ListFilter className="h-4 w-4" aria-hidden />
-              </Button>
-              {showListingKindToggle ? (
-                <MarketListingKindIconToggle
-                  value={listingKind}
-                  onChange={setListingKind}
-                  productsLabel={t('market.filterProducts')}
-                  servicesLabel={t('market.filterServices')}
-                  groupLabel={t('market.listingKindToggleLabel')}
-                />
-              ) : null}
+          <TooltipProvider delayDuration={200}>
+            <div className="flex items-center justify-between gap-2 px-3">
+              <div className="flex min-w-0 flex-1 items-center gap-0.5">
+                <h1 className="truncate text-xl font-display font-bold leading-none tracking-tight text-foreground">
+                  {t('market.title')}
+                </h1>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground"
+                      onClick={() => setFiltersOpen(true)}
+                      data-build-key="marketFiltersButton"
+                      data-build-label="Open marketplace filters"
+                      aria-label={filtersLabel}
+                    >
+                      <ListFilter className="h-4 w-4" aria-hidden />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">{filtersLabel}</TooltipContent>
+                </Tooltip>
+                {showListingKindToggle ? (
+                  <MarketListingKindIconToggle
+                    value={listingKind}
+                    onChange={setListingKind}
+                    productsLabel={t('market.filterProducts')}
+                    servicesLabel={t('market.filterServices')}
+                    groupLabel={t('market.listingKindToggleLabel')}
+                  />
+                ) : null}
+              </div>
+              <div className="flex shrink-0 items-center gap-0.5">
+                {profile?.id ? (
+                  <>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button type="button" variant="ghost" size="icon" className="h-8 w-8 shrink-0" asChild>
+                          <Link
+                            to="/agreements"
+                            data-build-key="marketAgreementsLink"
+                            data-build-label="Agreements link"
+                            aria-label={agreementsLabel}
+                          >
+                            <FileSignature className="h-4 w-4" aria-hidden />
+                          </Link>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">{agreementsLabel}</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button type="button" variant="ghost" size="icon" className="h-8 w-8 shrink-0" asChild>
+                          <Link
+                            to="/settings/prototype-credits"
+                            data-build-key="marketPrototypeCreditsLink"
+                            data-build-label="Prototype credits link"
+                            aria-label={creditsLabel}
+                          >
+                            <Coins className="h-4 w-4" aria-hidden />
+                          </Link>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="max-w-xs space-y-1.5">
+                        <p className="font-medium">{creditsLabel}</p>
+                        <p className="text-xs font-normal leading-relaxed text-primary-foreground/90">
+                          {LUMA_PROTOTYPE_NOTICE}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 shrink-0"
+                          onClick={() => {
+                            setListingSearchOpen((current) => {
+                              const next = !current;
+                              if (!next) setSearchDraft('');
+                              return next;
+                            });
+                          }}
+                          data-build-key="marketListingSearchToggle"
+                          data-build-label="Toggle listing search"
+                          aria-label={searchLabel}
+                          aria-pressed={listingSearchOpen}
+                          data-testid="market-listing-search-toggle"
+                        >
+                          <Search className="h-4 w-4" aria-hidden />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">{searchLabel}</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="inline-flex shrink-0">
+                          <Suspense
+                            fallback={
+                              <div className="h-8 w-8 shrink-0 rounded-full border border-border/60 bg-card/60" />
+                            }
+                          >
+                            <UserPageMenu size="sm" />
+                          </Suspense>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">{profileMenuLabel}</TooltipContent>
+                    </Tooltip>
+                  </>
+                ) : null}
+              </div>
             </div>
-            <div className="flex shrink-0 items-center gap-0.5">
-              {profile?.id ? (
-                <>
-                <Button type="button" variant="ghost" size="icon" className="h-8 w-8 shrink-0" asChild>
-                  <Link
-                    to="/agreements"
-                    data-build-key="marketAgreementsLink"
-                    data-build-label="Agreements link"
-                    aria-label={t('common.agreements')}
-                  >
-                    <FileSignature className="h-4 w-4" aria-hidden />
-                  </Link>
-                </Button>
-                <Button type="button" variant="ghost" size="icon" className="h-8 w-8 shrink-0" asChild>
-                  <Link
-                    to="/settings/prototype-credits"
-                    data-build-key="marketPrototypeCreditsLink"
-                    data-build-label="Prototype credits link"
-                    aria-label={t('market.walletShortcut')}
-                  >
-                    <Coins className="h-4 w-4" aria-hidden />
-                  </Link>
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 shrink-0"
-                  onClick={() => {
-                    setInlineSearchOpen((current) => {
-                      const next = !current;
-                      if (next) {
-                        setInlineSearchQuery('');
-                      }
-                      return next;
-                    });
-                  }}
-                  data-build-key="marketGlobalSearchLink"
-                  data-build-label="Open global search"
-                  aria-label={t('common.search')}
-                >
-                  <Search className="h-4 w-4" aria-hidden />
-                </Button>
-                <Suspense fallback={<div className="h-8 w-8 shrink-0 rounded-full border border-border/60 bg-card/60" />}>
-                  <UserPageMenu size="sm" />
-                </Suspense>
-                </>
-              ) : null}
-            </div>
-          </div>
+          </TooltipProvider>
 
-          <div className="mt-3 px-3">
-            <div className="relative">
-              <Search
-                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-                aria-hidden
-              />
-              <Input
-                value={searchDraft}
-                onChange={(event) => setSearchDraft(event.target.value)}
-                placeholder={
-                  listingKind === 'service'
-                    ? t('market.searchBarPlaceholderServices')
-                    : t('market.searchBarPlaceholder')
-                }
-                className="h-10 rounded-full border-border/70 bg-muted/40 pl-9 pr-3 text-sm"
-                aria-label={
-                  listingKind === 'service'
-                    ? t('market.searchBarPlaceholderServices')
-                    : t('market.searchBarPlaceholder')
-                }
-              />
+          {listingSearchOpen ? (
+            <div className="mt-3 px-3" data-testid="market-listing-search-bar">
+              <div className="relative">
+                <Search
+                  className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                  aria-hidden
+                />
+                <Input
+                  ref={searchInputRef}
+                  value={searchDraft}
+                  onChange={(event) => setSearchDraft(event.target.value)}
+                  placeholder={
+                    listingKind === 'service'
+                      ? t('market.searchBarPlaceholderServices')
+                      : t('market.searchBarPlaceholder')
+                  }
+                  className="h-10 rounded-full border-border/70 bg-muted/40 pl-9 pr-3 text-sm"
+                  aria-label={
+                    listingKind === 'service'
+                      ? t('market.searchBarPlaceholderServices')
+                      : t('market.searchBarPlaceholder')
+                  }
+                />
+              </div>
             </div>
-          </div>
+          ) : null}
         </header>
 
-        {inlineSearchOpen ? (
-          <div className="px-3 pt-3">
-            <Card className="border-border/70 bg-card/95 p-3 shadow-sm">
-              <UnifiedSearchBlock
-                showTitle={false}
-                syncUrlParams={false}
-                initialTab="products"
-                initialQuery={inlineSearchQuery}
-              />
-            </Card>
-          </div>
-        ) : null}
-
         <div className="flex-1 space-y-3 px-2 pt-3 sm:px-3" data-build-key="marketGridSection">
-          {inlineSearchOpen ? null : (
-            <>
-              <Card
-                className="mx-1 border-amber-500/30 bg-amber-500/5 p-3 shadow-sm"
-                data-build-key="marketPrototypeNotice"
-                data-build-label="Nearby prototype notice"
-              >
-                <p className="text-xs leading-relaxed text-foreground">{LUMA_PROTOTYPE_NOTICE}</p>
+          {!isForYou ? (
+            <div className="px-1">
+              <h2 className="text-base font-semibold text-foreground">{sectionTitle}</h2>
+              {!isSelling && !isJobs && !isSaved && browseCategoryId ? (
+                <p className="mt-0.5 text-xs text-muted-foreground">{t('market.categoriesHint')}</p>
+              ) : null}
+            </div>
+          ) : null}
+
+          {isJobs ? (
+            <div className="px-1">
+              <Card className="border-border/70 bg-card/95 p-4 shadow-sm">
+                <p className="text-sm text-muted-foreground">{t('market.specialists.description')}</p>
               </Card>
+              <div className="pt-3">
+                <StudySpecialists embedded />
+              </div>
+            </div>
+          ) : null}
 
-              {!isForYou ? (
-                <div className="px-1">
-                  <h2 className="text-base font-semibold text-foreground">{sectionTitle}</h2>
-                  {!isSelling && !isJobs && !isSaved && browseCategoryId ? (
-                    <p className="mt-0.5 text-xs text-muted-foreground">{t('market.categoriesHint')}</p>
-                  ) : null}
-                </div>
-              ) : null}
+          {isSaved ? (
+            <Card className="mx-1 border-border/60 bg-muted/15 p-8 text-center text-sm text-muted-foreground">
+              {t('market.sectionSavedEmpty')}
+            </Card>
+          ) : null}
 
-              {isJobs ? (
-                <div className="px-1">
-                  <Card className="border-border/70 bg-card/95 p-4 shadow-sm">
-                    <p className="text-sm text-muted-foreground">{t('market.specialists.description')}</p>
-                  </Card>
-                  <div className="pt-3">
-                    <StudySpecialists embedded />
-                  </div>
-                </div>
-              ) : null}
-
-              {isSaved ? (
-                <Card className="mx-1 border-border/60 bg-muted/15 p-8 text-center text-sm text-muted-foreground">
-                  {t('market.sectionSavedEmpty')}
-                </Card>
-              ) : null}
-
-              {showListingsGrid ? (
-                sourceLoading ? (
-                  <p className="px-2 py-6 text-center text-sm text-muted-foreground">{t('market.listingsLoading')}</p>
-                ) : sourceError ? (
-                  <p className="px-2 py-6 text-center text-sm text-destructive">{t('market.listingsError')}</p>
-                ) : sourceListings.length === 0 ? (
-                  <Card className="mx-1 border-border/60 bg-muted/15 p-8 text-center text-sm text-muted-foreground">
-                    {emptyMessage}
-                  </Card>
-                ) : filteredListings.length === 0 ? (
-                  <Card className="mx-1 border-border/60 bg-muted/15 p-8 text-center text-sm text-muted-foreground">
-                    {searchDraft.trim() ? t('market.listingsNoMatch') : emptyMessage}
-                  </Card>
-                ) : (
-                  <ul className="grid grid-cols-2 gap-1.5 sm:gap-2 md:grid-cols-3 md:gap-3 lg:grid-cols-4">
-                    {filteredListings.map((listing) => (
-                      <MarketListingCard
-                        key={listing.id}
-                        listing={listing}
-                        buyerProfileId={profile?.id ?? null}
-                        amountLocale={amountLocale}
-                        t={t}
-                        layout="marketplace"
-                        onListingsChanged={bumpListings}
-                        onBalanceChanged={noopBalance}
-                      />
-                    ))}
-                  </ul>
-                )
-              ) : null}
-            </>
-          )}
+          {showListingsGrid ? (
+            sourceLoading ? (
+              <p className="px-2 py-6 text-center text-sm text-muted-foreground">{t('market.listingsLoading')}</p>
+            ) : sourceError ? (
+              <p className="px-2 py-6 text-center text-sm text-destructive">{t('market.listingsError')}</p>
+            ) : sourceListings.length === 0 ? (
+              <Card className="mx-1 border-border/60 bg-muted/15 p-8 text-center text-sm text-muted-foreground">
+                {emptyMessage}
+              </Card>
+            ) : filteredListings.length === 0 ? (
+              <Card className="mx-1 border-border/60 bg-muted/15 p-8 text-center text-sm text-muted-foreground">
+                {searchDraft.trim() ? t('market.listingsNoMatch') : emptyMessage}
+              </Card>
+            ) : (
+              <ul className="grid grid-cols-2 gap-1.5 sm:gap-2 md:grid-cols-3 md:gap-3 lg:grid-cols-4">
+                {filteredListings.map((listing) => (
+                  <MarketListingCard
+                    key={listing.id}
+                    listing={listing}
+                    buyerProfileId={profile?.id ?? null}
+                    amountLocale={amountLocale}
+                    t={t}
+                    layout="marketplace"
+                    onListingsChanged={bumpListings}
+                    onBalanceChanged={noopBalance}
+                  />
+                ))}
+              </ul>
+            )
+          ) : null}
         </div>
 
         {!user ? (

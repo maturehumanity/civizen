@@ -1,8 +1,9 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest';
 
 import Market from '@/pages/Market';
+import { writeLastMarketSection } from '@/lib/market-section-memory';
 
 vi.mock('@/components/layout/AppLayout', () => ({
   AppLayout: ({
@@ -19,7 +20,7 @@ vi.mock('@/components/layout/AppLayout', () => ({
 }));
 
 vi.mock('@/components/layout/UserPageMenu', () => ({
-  UserPageMenu: () => <div data-testid="user-page-menu-trigger" />,
+  UserPageMenu: () => <button type="button" data-testid="user-page-menu-trigger" aria-label="Open your page menu" />,
 }));
 
 vi.mock('@/hooks/usePageSecondaryNav', () => ({
@@ -27,8 +28,22 @@ vi.mock('@/hooks/usePageSecondaryNav', () => ({
 }));
 
 vi.mock('@/lib/use-market-published-listings', () => ({
-  useMarketPublishedListings: () => ({ listings: [], loading: false, error: null, refresh: () => {} }),
-  useMarketMyPublishedListings: () => ({ listings: [], loading: false, error: null, refresh: () => {} }),
+  useMarketPublishedListings: () => ({
+    listings: [],
+    loading: false,
+    error: null,
+    refetch: () => {},
+  }),
+  useMarketMyPublishedListings: () => ({
+    listings: [],
+    loading: false,
+    error: null,
+    refetch: () => {},
+  }),
+}));
+
+vi.mock('@/pages/study/StudySpecialists', () => ({
+  default: () => <div data-testid="study-specialists" />,
 }));
 
 vi.mock('@/contexts/AuthContext', () => ({
@@ -53,6 +68,14 @@ vi.mock('@/contexts/LanguageContext', async () => {
 });
 
 describe('Market', () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+
+  afterEach(() => {
+    window.localStorage.clear();
+  });
+
   it('hides app-wide top chrome and keeps Profile in the page header', async () => {
     render(
       <MemoryRouter initialEntries={['/market']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -64,17 +87,41 @@ describe('Market', () => {
     expect(await screen.findByTestId('user-page-menu-trigger')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Agreements' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Prototype credits' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Search' })).toBeInTheDocument();
+    expect(screen.getByTestId('market-listing-search-toggle')).toBeInTheDocument();
   });
 
-  it('defaults to the Jobs section when no section query is set', async () => {
+  it('restores the remembered section when For you has nothing new', async () => {
+    writeLastMarketSection('local');
+
     render(
       <MemoryRouter initialEntries={['/market']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Market />
       </MemoryRouter>,
     );
 
-    expect(await screen.findByRole('heading', { name: 'Jobs', level: 2 })).toBeInTheDocument();
-    expect(screen.queryByTestId('market-listing-kind-products')).not.toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Local', level: 2 })).toBeInTheDocument();
+  });
+
+  it('toggles the listing search bar from the Search icon', async () => {
+    render(
+      <MemoryRouter initialEntries={['/market']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <Market />
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByTestId('market-listing-search-bar')).not.toBeInTheDocument();
+    fireEvent.click(await screen.findByTestId('market-listing-search-toggle'));
+    expect(screen.getByTestId('market-listing-search-bar')).toBeInTheDocument();
+  });
+
+  it('does not keep the Luma prototype notice card in the page body', async () => {
+    render(
+      <MemoryRouter initialEntries={['/market']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <Market />
+      </MemoryRouter>,
+    );
+
+    await screen.findByTestId('app-layout');
+    expect(screen.queryByText(/Luma is a prototype feature/i)).not.toBeInTheDocument();
   });
 });

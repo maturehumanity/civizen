@@ -51,7 +51,7 @@ From `MARKET_CAROUSEL_SECTION_IDS`:
 
 **Saved · Sell · For you · Local · Jobs · Vehicles · …**
 
-Default section: **jobs** (temporary default so `/market` opens on a browse lane that can show recent service/job listings; **For you** remains available on the arc).
+Default section: restore the user’s **last Market section** from local storage. If **For you** has listings newer than the last time For you was opened, open **For you** instead. Fallback when nothing is remembered: **jobs**.
 
 ---
 
