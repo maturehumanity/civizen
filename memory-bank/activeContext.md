@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Account switcher UI (2026-08-03):** Removed the non-working header **Switch back** button from `UserPageMenu`. Account switching stays on each non-current account card via **Switch**.
+
 **UsersAdmin emergency-access reload loop (2026-08-03):** `loadData` depended on `emergencyAccessOpsPolicy` while also `set`ting it, so the page stayed on Loading and re-toasted “Could not load emergency access event summary.” Fixed with a policy ref + stable callback deps; event_summary now returns a zero row on empty lookback. Migration applied. **Testing v0.1.134** (build 136).
 
 **CI + page smoke coverage (2026-08-03):** Continuous GitHub CI fails were from `npm audit` (not Vitest). Added `scripts/audit-ci.mjs` (SPA-irrelevant RSC allowlist), upgraded `react-router-dom` to 7.18.2, and added page import/render smoke + UsersAdmin component tests so missing imports (`Select`, `manageableRoles`) fail in CI. **Testing v0.1.133** (build 135); Live/Production remains on prior soak build. Standing rule in `AGENTS.md`: always add/update Vitest for every module/page created or modified in the same session.

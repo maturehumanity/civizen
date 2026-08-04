@@ -18,7 +18,7 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
-import { ArrowLeftRight, Briefcase, LogIn, Plus, RefreshCcw } from 'lucide-react';
+import { Briefcase, LogIn, Plus, RefreshCcw } from 'lucide-react';
 
 type LinkedAccountRow = {
   id: string;
@@ -106,8 +106,6 @@ export function UserPageMenu() {
   const {
     profile,
     knownAccountSessions,
-    canSwitchBack,
-    switchBackToPreviousAccount,
     switchToKnownAccount,
     pruneKnownAccountSessions,
     signIn,
@@ -165,20 +163,6 @@ export function UserPageMenu() {
     });
 
     return ids;
-  }, [linkedAccounts, profile?.id]);
-
-  const fallbackSwitchBackProfileId = useMemo(() => {
-    if (!profile?.id) return null;
-
-    const businessLink = linkedAccounts.find(
-      (row) =>
-        row.relationship_type === 'business'
-        && row.linked_profile_id === profile.id
-        && !row.owner?.deleted_at
-        && !row.linked?.deleted_at,
-    );
-
-    return businessLink?.owner_profile_id ?? null;
   }, [linkedAccounts, profile?.id]);
 
   const accountOptions = useMemo<AccountOption[]>(() => {
@@ -396,37 +380,6 @@ export function UserPageMenu() {
     );
 
     return result;
-  };
-
-  const handleSwitchBack = async () => {
-    setSwitchingAccountId('switch-back');
-
-    if (canSwitchBack) {
-      const { error } = await switchBackToPreviousAccount();
-      if (error) {
-        toast.error(t('home.accountSwitchBackFailed'));
-      } else {
-        toast.success(t('home.accountSwitchBackSuccess'));
-      }
-      setSwitchingAccountId(null);
-      setOpen(false);
-      return;
-    }
-
-    if (fallbackSwitchBackProfileId) {
-      const { error } = await switchToLinkedProfile(fallbackSwitchBackProfileId);
-      if (error) {
-        toast.error(t('home.accountSwitchBackFailed'));
-      } else {
-        toast.success(t('home.accountSwitchBackSuccess'));
-      }
-      setSwitchingAccountId(null);
-      setOpen(false);
-      return;
-    }
-
-    toast.error(t('home.accountSwitchBackFailed'));
-    setSwitchingAccountId(null);
   };
 
   const handleSwitchAccount = async (account: AccountOption) => {
@@ -709,30 +662,11 @@ export function UserPageMenu() {
           >
             <div className="p-2 pt-2 space-y-2">
               <div className="rounded-2xl border border-border/60 bg-background/70 px-3 py-2">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="space-y-0.5">
-                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                      {t('home.accountSwitchTitle')}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{t('home.accountSwitchSubtitle')}</p>
-                  </div>
-                  {(canSwitchBack || Boolean(fallbackSwitchBackProfileId)) && (
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="secondary"
-                      className="gap-2"
-                      onClick={handleSwitchBack}
-                      disabled={switchingAccountId === 'switch-back'}
-                    >
-                      {switchingAccountId === 'switch-back' ? (
-                        <RefreshCcw className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <ArrowLeftRight className="h-4 w-4" />
-                      )}
-                      {t('home.accountSwitchBack')}
-                    </Button>
-                  )}
+                <div className="space-y-0.5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                    {t('home.accountSwitchTitle')}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{t('home.accountSwitchSubtitle')}</p>
                 </div>
 
                 <div className="mt-3 space-y-2">
