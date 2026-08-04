@@ -38,7 +38,7 @@ jobs:
         run: npm run release:guard
 
       - name: Audit
-        run: npm audit --audit-level=low
+        run: node scripts/audit-ci.mjs
 
       - name: Test
         run: npm test

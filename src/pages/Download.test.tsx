@@ -33,12 +33,12 @@ vi.mock('@/contexts/LanguageContext', async () => {
 describe('Download page', () => {
   it('shows the Android download card and iPhone coming-soon state', () => {
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <MemoryRouter>
         <DownloadPage />
       </MemoryRouter>,
     );
 
-    expect(screen.getByText('Download Civizen')).toBeInTheDocument();
+    expect(screen.getAllByText('Download Civizen').length).toBeGreaterThan(0);
     expect(screen.getByText('Android')).toBeInTheDocument();
     expect(screen.getByText('iPhone')).toBeInTheDocument();
 

@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**CI + page smoke coverage (2026-08-03):** Continuous GitHub CI fails were from `npm audit` (not Vitest). Added `scripts/audit-ci.mjs` (SPA-irrelevant RSC allowlist), upgraded `react-router-dom` to 7.18.2, and added page import/render smoke + UsersAdmin component tests so missing imports (`Select`, `manageableRoles`) fail in CI. **Testing v0.1.133** (build 135); Live/Production remains on prior soak build.
+
 **Home post views (2026-08-03):** Feed post name line shows an Eye icon on the far right; hover reveals unique visitors and total views. Table `post_views` + RPC `record_post_view` (authors do not inflate their own counts; 15-minute revisit cooldown). LANGUAGE_PACK_VERSION 111.
 
 **Admin Users startup crash (2026-08-03):** `/settings/admin/users` hit sequential ReferenceErrors after a partial split: missing `Select` import, then missing `manageableRoles` import for Create User. Both restored. Boot-recovery / cache reset signs out (expected). **Testing v0.1.130** (build 132); Live/Production remains on prior soak build.

@@ -1,0 +1,182 @@
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+
+import { UsersAdminCreateUserDialog } from '@/components/admin/UsersAdminCreateUserDialog';
+import { UsersAdminOverview } from '@/components/admin/UsersAdminOverview';
+import { UsersAdminMobileList } from '@/components/admin/UsersAdminMobileList';
+import { UsersAdminDesktopTable } from '@/components/admin/UsersAdminDesktopTable';
+import { manageableRoles, type ProfileRow } from '@/lib/users-admin';
+import { TooltipProvider } from '@/components/ui/tooltip';
+
+vi.mock('@/contexts/LanguageContext', async () => {
+  const { baseTranslations, translateMessage } = await import('@/lib/i18n');
+
+  return {
+    useLanguage: () => ({
+      language: 'en',
+      setLanguage: async () => {},
+      t: (key: string, vars?: Record<string, string | number>) => translateMessage(baseTranslations, key, vars),
+      getNode: (key: string) => key,
+      languageOptions: [{ code: 'en', label: 'English' }],
+      isLoadingLanguage: false,
+    }),
+  };
+});
+
+vi.mock('@/components/ui/select', () => ({
+  Select: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  SelectTrigger: ({ children }: { children: React.ReactNode }) => <button type="button">{children}</button>,
+  SelectValue: () => <span>value</span>,
+  SelectContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  SelectItem: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}));
+
+vi.mock('framer-motion', () => ({
+  motion: new Proxy(
+    {},
+    {
+      get: () =>
+        ({ children, ...props }: React.HTMLAttributes<HTMLElement> & Record<string, unknown>) => {
+          const { initial: _i, animate: _a, transition: _t, ...rest } = props;
+          return <div {...(rest as React.HTMLAttributes<HTMLElement>)}>{children}</div>;
+        },
+    },
+  ),
+}));
+
+const t = (key: string) => key;
+
+const sampleUser = {
+  id: 'p1',
+  user_id: 'u1',
+  username: 'ada',
+  full_name: 'Ada Lovelace',
+  avatar_url: null,
+  country: 'United Kingdom',
+  country_code: 'GB',
+  language_code: 'en',
+  official_id: null,
+  social_security_number: null,
+  is_verified: true,
+  is_admin: false,
+  citizenship_status: 'citizen',
+  citizenship_accepted_at: null,
+  citizenship_acceptance_mode: null,
+  citizenship_review_cleared_at: null,
+  is_active_citizen: true,
+  active_citizen_since: null,
+  is_governance_eligible: true,
+  governance_eligible_at: null,
+  experience_level: 'mid',
+  role: 'member',
+  custom_permissions: [],
+  granted_permissions: [],
+  denied_permissions: [],
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+  last_active_at: new Date().toISOString(),
+} as ProfileRow;
+
+function wrap(node: React.ReactNode) {
+  return <TooltipProvider>{node}</TooltipProvider>;
+}
+
+describe('UsersAdmin components', () => {
+  it('renders create-user dialog with role select from manageableRoles', () => {
+    render(
+      wrap(
+        <UsersAdminCreateUserDialog
+          creatingUser={false}
+          form={{ fullName: '', username: '', email: 'a@b.c', password: 'secret', role: 'member' }}
+          manageableRoles={manageableRoles}
+          open
+          t={t}
+          onCreate={() => {}}
+          onOpenChange={() => {}}
+          onUpdateForm={() => {}}
+        />,
+      ),
+    );
+
+    expect(screen.getByText('admin.users.createUserTitle')).toBeInTheDocument();
+    expect(screen.getByText('common.role')).toBeInTheDocument();
+  });
+
+  it('renders overview search chrome', () => {
+    render(
+      wrap(
+        <UsersAdminOverview
+          search=""
+          stats={{ total: 1, admins: 0, staff: 0 }}
+          t={t}
+          onBack={() => {}}
+          onOpenCreateUser={() => {}}
+          onSearchChange={() => {}}
+        />,
+      ),
+    );
+
+    expect(screen.getByText('admin.users.title')).toBeInTheDocument();
+  });
+
+  it('renders desktop table role controls without crashing', () => {
+    render(
+      wrap(
+        <UsersAdminDesktopTable
+          canLoginAsFromAdmin={false}
+          levelSavingUserId={null}
+          overrideSavingUserId={null}
+          profileUserId="u0"
+          roleSavingUserId={null}
+          selectedUserId={null}
+          switchingUserId={null}
+          t={t}
+          verificationCasesByProfile={{}}
+          visibleUsers={[sampleUser]}
+          formatDate={() => 'today'}
+          formatRelativeTime={() => 'now'}
+          getActivityTimestamp={() => new Date().toISOString()}
+          isUserOnline={() => true}
+          onCycleExperienceLevel={() => {}}
+          onLoginAsUser={() => {}}
+          onRoleChange={() => {}}
+          onSelectUser={() => {}}
+          onVerificationToggle={() => {}}
+        />,
+      ),
+    );
+
+    expect(screen.getByText('Ada Lovelace')).toBeInTheDocument();
+  });
+
+  it('renders mobile list role controls without crashing', () => {
+    render(
+      wrap(
+        <UsersAdminMobileList
+          canLoginAsFromAdmin={false}
+          levelSavingUserId={null}
+          overrideSavingUserId={null}
+          profileUserId="u0"
+          roleSavingUserId={null}
+          selectedUserId={null}
+          switchingUserId={null}
+          t={t}
+          verificationCasesByProfile={{}}
+          visibleUsers={[sampleUser]}
+          formatDate={() => 'today'}
+          formatRelativeTime={() => 'now'}
+          getActivityTimestamp={() => new Date().toISOString()}
+          isUserOnline={() => true}
+          onCycleExperienceLevel={() => {}}
+          onLoginAsUser={() => {}}
+          onRoleChange={() => {}}
+          onSelectUser={() => {}}
+          onToggleSelectedUser={() => {}}
+          onVerificationToggle={() => {}}
+        />,
+      ),
+    );
+
+    expect(screen.getByText('Ada Lovelace')).toBeInTheDocument();
+  });
+});

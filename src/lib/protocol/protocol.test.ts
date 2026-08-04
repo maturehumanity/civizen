@@ -117,7 +117,7 @@ describe('Protocol Governance Tests', () => {
       expect(proposal.votes.size).toBe(3);
     });
 
-    it('should finalize voting and approve upgrade', (done) => {
+    it('should finalize voting and approve upgrade', async () => {
       const manager = getProtocolManager();
 
       const features: ProtocolFeature[] = [
@@ -149,15 +149,12 @@ describe('Protocol Governance Tests', () => {
       manager.castVote(proposal.id, 'did:key:voter2', 'yes');
       manager.castVote(proposal.id, 'did:key:voter3', 'yes');
 
-      setTimeout(() => {
-        manager.finalizeVoting(proposal.id);
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      manager.finalizeVoting(proposal.id);
 
-        expect(proposal.status).toBe('approved');
-        expect(proposal.approvedAt).toBeDefined();
-        expect(proposal.activationTime).toBeDefined();
-
-        done();
-      }, 150);
+      expect(proposal.status).toBe('approved');
+      expect(proposal.approvedAt).toBeDefined();
+      expect(proposal.activationTime).toBeDefined();
     });
 
     it('should check feature enabled status', () => {
