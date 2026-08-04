@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Contribute hub redesign Phase 1 (2026-08-04):** `/contribute` is no longer profile/messaging/score/endorse shortcuts. It is the participation gateway (“How would you like to contribute today?”) with sections Ways · Community · Knowledge · Your Impact. Volunteer → `/fund/contribute`, Financial → `/fund`, Organization → `/partners`; other lanes use `/contribute/:laneId` placeholders. Spec: `docs/04-operations/dev/contribute-page.md`. Endorsement stays on Search + profiles. LANGUAGE_PACK_VERSION 120.
+
 **Post-push CI watch (2026-08-04):** Agents must run `npm run verify:ci` after every GitHub push (`scripts/verify-ci.mjs` waits for the `CI` workflow on `HEAD`). Encoded in AGENTS.md §10 and `.cursor/rules/civizen-project.mdc`.
 
 **CI Download/Onboarding Auth mocks (2026-08-04):** All main pushes after Profile menu chrome failed Vitest: `PublicPageToolbar` calls `useAuth`, but Download/Onboarding tests had no AuthContext mock. Fixed with logged-out mocks. Yesterday’s green CI was the `npm audit` fix — this was a separate same-day regression.
