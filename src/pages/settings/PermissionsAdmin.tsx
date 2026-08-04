@@ -40,7 +40,9 @@ export default function PermissionsAdmin() {
   const { profile, refreshProfile } = useAuth();
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState<string | null>(null);
-  /** Missing keys default to collapsed so the matrix opens as folded groups. */
+  /** Page-level fold: matrix stays hidden until the title chevron unlocks it. */
+  const [matrixCollapsed, setMatrixCollapsed] = useState(true);
+  /** Missing keys default to collapsed so groups open folded until clicked. */
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
   const [collapsedPages, setCollapsedPages] = useState<Record<string, boolean>>({});
   const [rolePermissions, setRolePermissions] = useState<Record<AppRole, AppPermission[]>>(
@@ -192,161 +194,169 @@ export default function PermissionsAdmin() {
         </Button>
 
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
-          <h1 className="text-2xl font-display font-bold text-foreground">{t('admin.permissions.title')}</h1>
+          <button
+            type="button"
+            onClick={() => setMatrixCollapsed((current) => !current)}
+            className="inline-flex items-center gap-2 text-left"
+            aria-expanded={!matrixCollapsed}
+            data-testid="permissions-matrix-toggle"
+          >
+            {matrixCollapsed ? (
+              <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden />
+            ) : (
+              <ChevronDown className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden />
+            )}
+            <h1 className="text-2xl font-display font-bold text-foreground">{t('admin.permissions.title')}</h1>
+          </button>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <Card className="overflow-hidden rounded-3xl border-border/60 shadow-sm">
-            {loading ? (
-              <div className="flex items-center justify-center gap-2 px-6 py-20 text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>{t('common.loading')}</span>
-              </div>
-            ) : (
-              <div className="max-h-[72vh] overflow-auto">
-                <div
-                  className="sticky top-0 z-20 grid items-center gap-3 border-b border-border/60 bg-card/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-card/80"
-                  style={{ gridTemplateColumns: matrixGridTemplate }}
-                >
-                  <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                    {t('admin.permissions.featureColumn')}
-                  </div>
-                  {visibleRoles.map((role) => (
-                    <div key={role} className="text-center text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                      {t(`admin.roles.${role}`)}
-                    </div>
-                  ))}
+        {!matrixCollapsed ? (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+            <Card className="overflow-hidden rounded-3xl border-border/60 shadow-sm">
+              {loading ? (
+                <div className="flex items-center justify-center gap-2 px-6 py-20 text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>{t('common.loading')}</span>
                 </div>
+              ) : (
+                <div className="max-h-[72vh] overflow-auto">
+                  <div
+                    className="sticky top-0 z-20 grid items-center gap-3 border-b border-border/60 bg-card/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-card/80"
+                    style={{ gridTemplateColumns: matrixGridTemplate }}
+                  >
+                    <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                      {t('admin.permissions.featureColumn')}
+                    </div>
+                    {visibleRoles.map((role) => (
+                      <div
+                        key={role}
+                        className="text-center text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground"
+                      >
+                        {t(`admin.roles.${role}`)}
+                      </div>
+                    ))}
+                  </div>
 
-                <div className="space-y-5 p-4">
-                  {groupedPermissions.map((sectionGroup) => {
-                    const sectionCollapsed = isSectionCollapsed(sectionGroup.sectionId);
-                    const sectionLabel = t(`admin.permissions.sectionNames.${sectionGroup.sectionId}`);
+                  <div className="space-y-5 p-4">
+                    {groupedPermissions.map((sectionGroup) => {
+                      const sectionCollapsed = isSectionCollapsed(sectionGroup.sectionId);
+                      const sectionLabel = t(`admin.permissions.sectionNames.${sectionGroup.sectionId}`);
 
-                    return (
-                      <div key={sectionGroup.sectionId} className="space-y-4">
-                        <button
-                          type="button"
-                          onClick={() => toggleSectionVisibility(sectionGroup.sectionId)}
-                          className="flex w-full items-center gap-2 text-left"
-                          aria-expanded={!sectionCollapsed}
-                          data-testid={`permissions-section-toggle-${sectionGroup.sectionId}`}
-                        >
-                          {sectionCollapsed ? (
-                            <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-                          ) : (
-                            <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
-                          )}
-                          <h3 className="text-base font-semibold text-foreground">{sectionLabel}</h3>
-                        </button>
+                      return (
+                        <div key={sectionGroup.sectionId} className="space-y-4">
+                          <button
+                            type="button"
+                            onClick={() => toggleSectionVisibility(sectionGroup.sectionId)}
+                            className="flex w-full items-center text-left"
+                            aria-expanded={!sectionCollapsed}
+                            data-testid={`permissions-section-toggle-${sectionGroup.sectionId}`}
+                          >
+                            <h3 className="text-base font-semibold text-foreground">{sectionLabel}</h3>
+                          </button>
 
-                        {!sectionCollapsed
-                          ? sectionGroup.pages.map((pageGroup) => {
-                              const pageLabel = getPageLabel(pageGroup.pageId, t);
-                              const showPageLabel =
-                                pageLabel.trim().toLowerCase() !== sectionLabel.trim().toLowerCase();
-                              const pageKey = `${sectionGroup.sectionId}:${pageGroup.pageId}`;
-                              const pageCollapsed = showPageLabel ? isPageCollapsed(pageKey) : false;
+                          {!sectionCollapsed
+                            ? sectionGroup.pages.map((pageGroup) => {
+                                const pageLabel = getPageLabel(pageGroup.pageId, t);
+                                const showPageLabel =
+                                  pageLabel.trim().toLowerCase() !== sectionLabel.trim().toLowerCase();
+                                const pageKey = `${sectionGroup.sectionId}:${pageGroup.pageId}`;
+                                const pageCollapsed = showPageLabel ? isPageCollapsed(pageKey) : false;
 
-                              return (
-                                <Card
-                                  key={`${sectionGroup.sectionId}-${pageGroup.pageId}`}
-                                  className="overflow-hidden rounded-3xl border-border/60 shadow-none"
-                                >
-                                  {showPageLabel ? (
-                                    <div className="border-b border-border/60 px-4 py-3">
-                                      <button
-                                        type="button"
-                                        onClick={() => togglePageVisibility(pageKey)}
-                                        className="flex w-full items-center gap-2 text-left"
-                                        aria-expanded={!pageCollapsed}
-                                        data-testid={`permissions-page-toggle-${pageKey}`}
-                                      >
-                                        {pageCollapsed ? (
-                                          <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-                                        ) : (
-                                          <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
-                                        )}
-                                        <h4 className="text-sm font-semibold text-foreground">{pageLabel}</h4>
-                                      </button>
-                                    </div>
-                                  ) : null}
-
-                                  {!pageCollapsed ? (
-                                    <div className="divide-y divide-border/60">
-                                      {pageGroup.items.map((entry) => (
-                                        <div
-                                          key={entry.permission}
-                                          className="grid items-center gap-2.5 rounded-2xl px-4 py-2 transition-[background-color,box-shadow] hover:bg-background/40 hover:ring-1 hover:ring-primary/20"
-                                          style={{ gridTemplateColumns: matrixGridTemplate }}
+                                return (
+                                  <Card
+                                    key={`${sectionGroup.sectionId}-${pageGroup.pageId}`}
+                                    className="overflow-hidden rounded-3xl border-border/60 shadow-none"
+                                  >
+                                    {showPageLabel ? (
+                                      <div className="border-b border-border/60 px-4 py-3">
+                                        <button
+                                          type="button"
+                                          onClick={() => togglePageVisibility(pageKey)}
+                                          className="flex w-full items-center text-left"
+                                          aria-expanded={!pageCollapsed}
+                                          data-testid={`permissions-page-toggle-${pageKey}`}
                                         >
-                                          <div className="min-w-0">
-                                            <TooltipProvider delayDuration={120}>
-                                              <Tooltip>
-                                                <TooltipTrigger asChild>
+                                          <h4 className="text-sm font-semibold text-foreground">{pageLabel}</h4>
+                                        </button>
+                                      </div>
+                                    ) : null}
+
+                                    {!pageCollapsed ? (
+                                      <div className="divide-y divide-border/60">
+                                        {pageGroup.items.map((entry) => (
+                                          <div
+                                            key={entry.permission}
+                                            className="grid items-center gap-2.5 rounded-2xl px-4 py-2 transition-[background-color,box-shadow] hover:bg-background/40 hover:ring-1 hover:ring-primary/20"
+                                            style={{ gridTemplateColumns: matrixGridTemplate }}
+                                          >
+                                            <div className="min-w-0">
+                                              <TooltipProvider delayDuration={120}>
+                                                <Tooltip>
+                                                  <TooltipTrigger asChild>
+                                                    <button
+                                                      type="button"
+                                                      className="inline-flex max-w-full items-center gap-1 text-left font-medium text-foreground"
+                                                    >
+                                                      <span className="truncate">{t(entry.titleKey)}</span>
+                                                      <CircleHelp className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                                                    </button>
+                                                  </TooltipTrigger>
+                                                  <TooltipContent side="top" align="start" className="max-w-xs text-sm">
+                                                    {t(entry.descriptionKey)}
+                                                  </TooltipContent>
+                                                </Tooltip>
+                                              </TooltipProvider>
+                                            </div>
+                                            {visibleRoles.map((role) => {
+                                              const enabled = (rolePermissions[role] || []).includes(entry.permission);
+                                              const key = `${role}:${entry.permission}`;
+                                              const isSaving = savingKey === key;
+                                              const isReadOnly = role === 'system';
+                                              return (
+                                                <div key={key} className="flex justify-center">
                                                   <button
                                                     type="button"
-                                                    className="inline-flex max-w-full items-center gap-1 text-left font-medium text-foreground"
+                                                    disabled={isReadOnly || isSaving}
+                                                    onClick={() => handleTogglePermission(role, entry.permission)}
+                                                    className={cn(
+                                                      'inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors',
+                                                      enabled
+                                                        ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300'
+                                                        : 'border-border bg-muted text-muted-foreground',
+                                                      !isReadOnly &&
+                                                        'hover:border-primary/30 hover:bg-primary/10 hover:text-primary',
+                                                      (isReadOnly || isSaving) && 'cursor-not-allowed opacity-70',
+                                                    )}
+                                                    aria-label={`${t(`admin.roles.${role}`)} ${t(entry.titleKey)}`}
                                                   >
-                                                    <span className="truncate">{t(entry.titleKey)}</span>
-                                                    <CircleHelp className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                                                    {isSaving ? (
+                                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                                    ) : enabled ? (
+                                                      <Check className="h-4 w-4" />
+                                                    ) : (
+                                                      <X className="h-4 w-4" />
+                                                    )}
                                                   </button>
-                                                </TooltipTrigger>
-                                                <TooltipContent side="top" align="start" className="max-w-xs text-sm">
-                                                  {t(entry.descriptionKey)}
-                                                </TooltipContent>
-                                              </Tooltip>
-                                            </TooltipProvider>
+                                                </div>
+                                              );
+                                            })}
                                           </div>
-                                          {visibleRoles.map((role) => {
-                                            const enabled = (rolePermissions[role] || []).includes(entry.permission);
-                                            const key = `${role}:${entry.permission}`;
-                                            const isSaving = savingKey === key;
-                                            const isReadOnly = role === 'system';
-                                            return (
-                                              <div key={key} className="flex justify-center">
-                                                <button
-                                                  type="button"
-                                                  disabled={isReadOnly || isSaving}
-                                                  onClick={() => handleTogglePermission(role, entry.permission)}
-                                                  className={cn(
-                                                    'inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors',
-                                                    enabled
-                                                      ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300'
-                                                      : 'border-border bg-muted text-muted-foreground',
-                                                    !isReadOnly &&
-                                                      'hover:border-primary/30 hover:bg-primary/10 hover:text-primary',
-                                                    (isReadOnly || isSaving) && 'cursor-not-allowed opacity-70',
-                                                  )}
-                                                  aria-label={`${t(`admin.roles.${role}`)} ${t(entry.titleKey)}`}
-                                                >
-                                                  {isSaving ? (
-                                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                                  ) : enabled ? (
-                                                    <Check className="h-4 w-4" />
-                                                  ) : (
-                                                    <X className="h-4 w-4" />
-                                                  )}
-                                                </button>
-                                              </div>
-                                            );
-                                          })}
-                                        </div>
-                                      ))}
-                                    </div>
-                                  ) : null}
-                                </Card>
-                              );
-                            })
-                          : null}
-                      </div>
-                    );
-                  })}
+                                        ))}
+                                      </div>
+                                    ) : null}
+                                  </Card>
+                                );
+                              })
+                            : null}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            )}
-          </Card>
-        </motion.div>
+              )}
+            </Card>
+          </motion.div>
+        ) : null}
       </div>
     </AppLayout>
   );

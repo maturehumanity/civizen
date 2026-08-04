@@ -1,11 +1,11 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
-import { type ReactNode } from 'react';
+import { type HTMLAttributes, type ReactNode } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import PermissionsAdmin from '@/pages/settings/PermissionsAdmin';
 
-const { supabaseMock, fromMock } = vi.hoisted(() => {
+const { supabaseMock, fromMock, MotionPassthrough } = vi.hoisted(() => {
   const result = { data: [] as unknown[], error: null as null | { message: string } };
   const builder: Record<string, unknown> = {};
   const chain = () => builder;
@@ -29,8 +29,17 @@ const { supabaseMock, fromMock } = vi.hoisted(() => {
 
   const fromMock = vi.fn(() => builder);
 
+  function MotionPassthrough({
+    children,
+    ...props
+  }: HTMLAttributes<HTMLElement> & Record<string, unknown>) {
+    const { initial: _i, animate: _a, transition: _t, ...rest } = props;
+    return <div {...(rest as HTMLAttributes<HTMLElement>)}>{children}</div>;
+  }
+
   return {
     fromMock,
+    MotionPassthrough,
     supabaseMock: {
       from: fromMock,
       auth: {
@@ -42,16 +51,9 @@ const { supabaseMock, fromMock } = vi.hoisted(() => {
 });
 
 vi.mock('framer-motion', () => ({
-  motion: new Proxy(
-    {},
-    {
-      get: () =>
-        ({ children, ...props }: React.HTMLAttributes<HTMLElement> & Record<string, unknown>) => {
-          const { initial: _i, animate: _a, transition: _t, ...rest } = props;
-          return <div {...(rest as React.HTMLAttributes<HTMLElement>)}>{children}</div>;
-        },
-    },
-  ),
+  motion: {
+    div: MotionPassthrough,
+  },
 }));
 
 vi.mock('@/components/layout/AppLayout', () => ({
@@ -99,7 +101,7 @@ describe('PermissionsAdmin page', () => {
     fromMock.mockClear();
   });
 
-  it('mounts and starts with permission groups folded', async () => {
+  it('keeps the matrix folded behind the Permissions title chevron', async () => {
     render(
       <MemoryRouter>
         <PermissionsAdmin />
@@ -107,20 +109,26 @@ describe('PermissionsAdmin page', () => {
     );
 
     expect(await screen.findByTestId('permissions-admin-layout')).toBeInTheDocument();
-    const homeToggle = await screen.findByTestId('permissions-section-toggle-home');
-    expect(homeToggle).toHaveAttribute('aria-expanded', 'false');
-    expect(screen.queryByRole('button', { name: /^Create$/ })).not.toBeInTheDocument();
-    expect(screen.queryByTestId('permissions-page-toggle-home:messaging')).not.toBeInTheDocument();
+    const pageToggle = screen.getByTestId('permissions-matrix-toggle');
+    expect(pageToggle).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByTestId('permissions-section-toggle-home')).not.toBeInTheDocument();
+    expect(screen.queryByText('Feature')).not.toBeInTheDocument();
   });
 
-  it('unfolds a section, then individual nested folders', async () => {
+  it('unlocks the matrix from the title, then folds groups by clicking their names', async () => {
     render(
       <MemoryRouter>
         <PermissionsAdmin />
       </MemoryRouter>,
     );
 
-    fireEvent.click(await screen.findByTestId('permissions-section-toggle-home'));
+    fireEvent.click(await screen.findByTestId('permissions-matrix-toggle'));
+
+    expect(screen.getByTestId('permissions-matrix-toggle')).toHaveAttribute('aria-expanded', 'true');
+    expect(await screen.findByTestId('permissions-section-toggle-home')).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('button', { name: /^Create$/ })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('permissions-section-toggle-home'));
 
     expect(screen.getByTestId('permissions-section-toggle-home')).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByRole('button', { name: /^Create$/ })).toBeInTheDocument();
