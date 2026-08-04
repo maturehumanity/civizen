@@ -1,5 +1,5 @@
 import { FileSignature, ListFilter, Search, Coins } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 
 import { MarketFiltersSheet } from '@/components/market/MarketFiltersSheet';
@@ -15,6 +15,10 @@ import { Input } from '@/components/ui/input';
 import { usePageSecondaryNav } from '@/hooks/usePageSecondaryNav';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+
+const UserPageMenu = lazy(() =>
+  import('@/components/layout/UserPageMenu').then((module) => ({ default: module.UserPageMenu })),
+);
 import {
   isMarketBrowseCategoryId,
   isMarketSectionId,
@@ -185,7 +189,7 @@ export default function Market() {
   const showListingsGrid = !inlineSearchOpen && !isJobs && !isSaved;
 
   return (
-    <AppLayout>
+    <AppLayout hideTopChrome>
       <div
         className="flex min-h-0 flex-col pb-28"
         data-build-key="marketPage"
@@ -266,6 +270,9 @@ export default function Market() {
                 >
                   <Search className="h-4 w-4" aria-hidden />
                 </Button>
+                <Suspense fallback={<div className="h-12 w-12 shrink-0 rounded-full border border-border/60 bg-card/60" />}>
+                  <UserPageMenu />
+                </Suspense>
                 </>
               ) : null}
             </div>

@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Market header chrome overlap (2026-08-04):** Floating AppTopChrome Search + Profile sat on top of Market’s Agreements and Prototype credits shortcuts. Market now uses `AppLayout hideTopChrome` and keeps Search + Profile in the page header (with Agreements · Credits). **Testing** bump pending after verify.
+
 **Hide Endorse from Profile menu (2026-08-04):** Endorse remains on Search results and profile pages; Profile menu no longer lists it (`PROFILE_MENU_EXCLUDED_PAGE_IDS`). **Testing v0.1.164** (build 166).
 
 **Public language flag (2026-08-04):** `PublicLanguageSelect` is flag-only — removed the redundant `ChevronDown` beside the flag (hover/click still opens the list). **Testing v0.1.163** (build 165).
