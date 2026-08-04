@@ -5,7 +5,7 @@ import { CivizenScore } from '@/components/ui/CivizenScore';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePageSecondaryNav } from '@/hooks/usePageSecondaryNav';
 import { supabase } from '@/integrations/supabase/client';
 import { type Endorsement } from '@/lib/scoring';
@@ -210,20 +210,44 @@ export default function Home() {
     };
   }, [isCivizenOrgAccount, posts, profile?.id]);
 
-  useEffect(() => {
+  const resizePostTextarea = useCallback(() => {
     const textarea = postTextareaRef.current;
     if (!textarea) return;
 
     // Empty: keep the single-line min height so Post stays on the same row.
-    if (!postContent) {
+    if (!postContentRef.current) {
       textarea.style.height = '';
       return;
     }
 
-    // Grow with content so the full draft stays visible (no fixed max clip).
-    textarea.style.height = 'auto';
-    textarea.style.height = `${textarea.scrollHeight}px`;
-  }, [postContent]);
+    // Collapse first so scrollHeight reflects the current width (avoids clipping
+    // when layout width changes after draft restore or button row moves).
+    textarea.style.height = '0px';
+    const nextHeight = Math.max(textarea.scrollHeight, 44);
+    textarea.style.height = `${nextHeight}px`;
+  }, []);
+
+  useEffect(() => {
+    resizePostTextarea();
+    const frame = window.requestAnimationFrame(() => resizePostTextarea());
+    return () => window.cancelAnimationFrame(frame);
+  }, [postContent, resizePostTextarea]);
+
+  useEffect(() => {
+    const textarea = postTextareaRef.current;
+    const parent = textarea?.parentElement;
+    if (!parent || typeof ResizeObserver === 'undefined') return;
+
+    let lastWidth = parent.getBoundingClientRect().width;
+    const observer = new ResizeObserver((entries) => {
+      const width = entries[0]?.contentRect.width ?? 0;
+      if (Math.abs(width - lastWidth) < 1) return;
+      lastWidth = width;
+      resizePostTextarea();
+    });
+    observer.observe(parent);
+    return () => observer.disconnect();
+  }, [resizePostTextarea]);
 
   const normalizePost = (raw: RawPostRecord): Post => ({
     id: raw.id,
@@ -1367,13 +1391,17 @@ export default function Home() {
                         ref={postTextareaRef}
                         rows={1}
                         aria-label={composerPlaceholder}
-                        className={`min-h-[44px] w-full overflow-hidden resize-none rounded-2xl border px-3 py-2.5 text-sm leading-6 text-foreground outline-none transition-all focus:border-primary/60 focus:ring-2 focus:ring-primary/10 sm:min-h-[48px] sm:px-4 sm:py-3 ${
+                        className={`min-h-[44px] w-full resize-none overflow-x-hidden overflow-y-hidden whitespace-pre-wrap break-words rounded-2xl border px-3 py-2.5 text-sm leading-6 text-foreground outline-none transition-[border-color,box-shadow,background-color] focus:border-primary/60 focus:ring-2 focus:ring-primary/10 sm:min-h-[48px] sm:px-4 sm:py-3 ${
                           canPost
                             ? 'border-primary/30 bg-primary/5 shadow-sm'
                             : 'border-border bg-background'
                         }`}
                         value={postContent}
-                        onChange={(e) => setPostContent(e.target.value)}
+                        onChange={(e) => {
+                          setPostContent(e.target.value);
+                          // Immediate resize so typing never clips mid-keystroke.
+                          window.requestAnimationFrame(() => resizePostTextarea());
+                        }}
                         onFocus={() => setIsComposerFocused(true)}
                         onBlur={() => {
                           setIsComposerFocused(false);

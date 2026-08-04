@@ -2,6 +2,10 @@
 
 ## Current focus
 
+**Testing v0.1.127 (2026-08-03):** Build 129 (`20260803-v0.1.127`). Live/Production remains on prior soak build. Composer remeasures so full draft text stays visible.
+
+**Home composer clip fix (2026-08-03):** Draft field remeasures height after width settles (rAF + width ResizeObserver) so restored/long drafts wrap fully instead of clipping under overflow.
+
 **Testing v0.1.126 (2026-08-03):** Build 128 (`20260803-v0.1.126`). Live/Production remains on prior soak build. Composer field full-width while drafting; actions below.
 
 **Home composer width fix (2026-08-03):** With draft text, the field uses full width and Cancel/Post sit below — buttons no longer squeeze the textarea into a narrow column.
