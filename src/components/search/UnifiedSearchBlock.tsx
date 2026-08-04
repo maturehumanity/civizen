@@ -6,11 +6,18 @@ import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
-import { Building2, CheckCircle, Package, Search as SearchIcon, UserRound, Wrench } from 'lucide-react';
+import { BookOpen, Building2, CheckCircle, FileText, Package, Search as SearchIcon, UserRound, Wrench } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import {
+  buildSearchContentsCatalog,
+  filterSearchContents,
+  parseSearchTabParam,
+  searchContentKindLabelKey,
+  type SearchFilterTab,
+  type SearchTabSelection,
+} from '@/lib/search-contents';
 import {
   parseSearchDirectoryPayload,
   type SearchDirectoryCompany,
@@ -24,15 +31,24 @@ interface UnifiedSearchBlockProps {
   syncUrlParams?: boolean;
   className?: string;
   initialQuery?: string;
-  initialTab?: 'all' | 'people' | 'companies' | 'products' | 'services';
+  /** Specific filter, or omit/`null` to search all categories. */
+  initialTab?: SearchFilterTab | null;
 }
+
+const FILTER_TAB_LABEL_KEYS: Record<SearchFilterTab, string> = {
+  people: 'search.tabPeople',
+  companies: 'search.tabCompanies',
+  products: 'search.tabProducts',
+  services: 'search.tabServices',
+  contents: 'search.tabContents',
+};
 
 export function UnifiedSearchBlock({
   showTitle = true,
   syncUrlParams = true,
   className,
   initialQuery = '',
-  initialTab = 'all',
+  initialTab = null,
 }: UnifiedSearchBlockProps) {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -44,12 +60,9 @@ export function UnifiedSearchBlock({
   const [companyResults, setCompanyResults] = useState<SearchDirectoryCompany[]>([]);
   const [directoryError, setDirectoryError] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [tab, setTab] = useState<'all' | 'people' | 'companies' | 'products' | 'services'>(() => {
+  const [tab, setTab] = useState<SearchTabSelection>(() => {
     if (!syncUrlParams) return initialTab;
-    const incoming = searchParams.get('tab');
-    return incoming === 'all' || incoming === 'people' || incoming === 'companies' || incoming === 'products' || incoming === 'services'
-      ? incoming
-      : 'all';
+    return parseSearchTabParam(searchParams.get('tab'));
   });
 
   // Adopt URL → local only when the URL itself changes (back/forward, deep link).
@@ -57,12 +70,7 @@ export function UnifiedSearchBlock({
   useEffect(() => {
     if (!syncUrlParams) return;
 
-    const incomingTab = searchParams.get('tab');
-    setTab(
-      incomingTab === 'all' || incomingTab === 'people' || incomingTab === 'companies' || incomingTab === 'products' || incomingTab === 'services'
-        ? incomingTab
-        : 'all',
-    );
+    setTab(parseSearchTabParam(searchParams.get('tab')));
     setQuery(searchParams.get('q') ?? '');
   }, [searchParams, syncUrlParams]);
 
@@ -76,7 +84,11 @@ export function UnifiedSearchBlock({
       } else {
         next.delete('q');
       }
-      next.set('tab', tab);
+      if (tab) {
+        next.set('tab', tab);
+      } else {
+        next.delete('tab');
+      }
       if (next.toString() === current.toString()) return current;
       return next;
     }, { replace: true });
@@ -88,6 +100,15 @@ export function UnifiedSearchBlock({
         setPeopleResults([]);
         setCompanyResults([]);
         setDirectoryError(false);
+        return;
+      }
+
+      // Skip network directory when filtering to listing/contents-only tabs.
+      if (tab === 'products' || tab === 'services' || tab === 'contents') {
+        setPeopleResults([]);
+        setCompanyResults([]);
+        setDirectoryError(false);
+        setLoading(false);
         return;
       }
 
@@ -116,7 +137,17 @@ export function UnifiedSearchBlock({
 
     const debounce = setTimeout(searchDirectory, 250);
     return () => clearTimeout(debounce);
-  }, [query, currentProfile?.id]);
+  }, [query, currentProfile?.id, tab]);
+
+  const contentsCatalog = useMemo(
+    () => buildSearchContentsCatalog(t, currentProfile?.effective_permissions ?? []),
+    [t, currentProfile?.effective_permissions],
+  );
+
+  const contentResults = useMemo(
+    () => filterSearchContents(contentsCatalog, query),
+    [contentsCatalog, query],
+  );
 
   const matchingListings = useMemo(() => {
     if (query.length < 2) return [];
@@ -153,11 +184,21 @@ export function UnifiedSearchBlock({
     })} Luma`;
   };
 
-  const showPeople = tab === 'all' || tab === 'people';
-  const showCompanies = tab === 'all' || tab === 'companies';
-  const showProducts = tab === 'all' || tab === 'products';
-  const showServices = tab === 'all' || tab === 'services';
-  const hasAnyResults = peopleResults.length > 0 || companyResults.length > 0 || productResults.length > 0 || serviceResults.length > 0;
+  const showPeople = tab === null || tab === 'people';
+  const showCompanies = tab === null || tab === 'companies';
+  const showProducts = tab === null || tab === 'products';
+  const showServices = tab === null || tab === 'services';
+  const showContents = tab === null || tab === 'contents';
+  const hasAnyResults =
+    (showPeople && peopleResults.length > 0)
+    || (showCompanies && companyResults.length > 0)
+    || (showProducts && productResults.length > 0)
+    || (showServices && serviceResults.length > 0)
+    || (showContents && contentResults.length > 0);
+
+  const toggleFilterTab = (next: SearchFilterTab) => {
+    setTab((current) => (current === next ? null : next));
+  };
 
   return (
     <div className={cn('space-y-3', className)}>
@@ -176,22 +217,34 @@ export function UnifiedSearchBlock({
           className="pl-10"
         />
       </div>
-      <Tabs
-        value={tab}
-        onValueChange={(value) => {
-          if (value === 'all' || value === 'people' || value === 'companies' || value === 'products' || value === 'services') {
-            setTab(value);
-          }
-        }}
+      <div
+        className="flex h-10 w-full items-center gap-1 overflow-x-auto rounded-md bg-muted p-1 text-muted-foreground [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        role="tablist"
+        aria-label={t('search.title')}
       >
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="all">{t('search.tabAll')}</TabsTrigger>
-          <TabsTrigger value="people">{t('search.tabPeople')}</TabsTrigger>
-          <TabsTrigger value="companies">{t('search.tabCompanies')}</TabsTrigger>
-          <TabsTrigger value="products">{t('search.tabProducts')}</TabsTrigger>
-          <TabsTrigger value="services">{t('search.tabServices')}</TabsTrigger>
-        </TabsList>
-      </Tabs>
+        {(Object.keys(FILTER_TAB_LABEL_KEYS) as SearchFilterTab[]).map((filterTab) => {
+          const selected = tab === filterTab;
+          return (
+            <button
+              key={filterTab}
+              type="button"
+              role="tab"
+              aria-selected={selected}
+              data-state={selected ? 'active' : 'inactive'}
+              className={cn(
+                'inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium transition-all',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                selected
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'hover:text-foreground',
+              )}
+              onClick={() => toggleFilterTab(filterTab)}
+            >
+              {t(FILTER_TAB_LABEL_KEYS[filterTab])}
+            </button>
+          );
+        })}
+      </div>
 
       <div className="space-y-3">
         {loading && (
@@ -200,17 +253,17 @@ export function UnifiedSearchBlock({
           </p>
         )}
 
-        {!loading && query.length >= 2 && directoryError && (
+        {!loading && query.length >= 2 && directoryError && (showPeople || showCompanies) && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-center py-12"
+            className="text-center py-4"
           >
-            <p className="text-muted-foreground">{t('search.directoryError')}</p>
+            <p className="text-sm text-muted-foreground">{t('search.directoryError')}</p>
           </motion.div>
         )}
 
-        {!loading && query.length >= 2 && !directoryError && !hasAnyResults && (
+        {!loading && query.length >= 2 && !hasAnyResults && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -413,6 +466,44 @@ export function UnifiedSearchBlock({
                     </div>
                     <Button size="sm" variant="outline" onClick={() => navigate('/market?entity=services')}>
                       {t('search.openInMarket')}
+                    </Button>
+                  </div>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {query.length >= 2 && showContents && contentResults.length > 0 && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 px-1">
+              <FileText className="h-4 w-4 text-muted-foreground" />
+              <h2 className="text-sm font-semibold text-foreground">{t('search.tabContents')}</h2>
+            </div>
+            {contentResults.map((hit, index) => (
+              <motion.div
+                key={hit.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.03 }}
+              >
+                <Card className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <BookOpen className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        <p className="truncate text-sm font-semibold text-foreground">{hit.title}</p>
+                      </div>
+                      <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
+                        {hit.summary || t('search.noDescription')}
+                      </p>
+                      <div className="mt-2 flex items-center gap-2">
+                        <Badge variant="outline">{t(searchContentKindLabelKey(hit.kind))}</Badge>
+                        <span className="truncate text-xs text-muted-foreground">{hit.path}</span>
+                      </div>
+                    </div>
+                    <Button size="sm" variant="outline" onClick={() => navigate(hit.path)}>
+                      {t('search.openContent')}
                     </Button>
                   </div>
                 </Card>

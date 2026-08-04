@@ -22,7 +22,12 @@ vi.mock('@/integrations/supabase/client', () => ({
 
 vi.mock('@/contexts/AuthContext', () => ({
   useAuth: () => ({
-    profile: { id: 'user-1', full_name: 'Test User', username: 'test' },
+    profile: {
+      id: 'user-1',
+      full_name: 'Test User',
+      username: 'test',
+      effective_permissions: ['profile.read', 'law.read'],
+    },
   }),
 }));
 
@@ -50,7 +55,7 @@ function LocationProbe() {
   return <div data-testid="location-search">{location.search}</div>;
 }
 
-function renderSearch(initialEntry = '/search?tab=all') {
+function renderSearch(initialEntry = '/search') {
   return render(
     <MemoryRouter initialEntries={[initialEntry]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Routes>
@@ -129,5 +134,33 @@ describe('UnifiedSearchBlock', () => {
     expect(screen.queryByRole('heading', { name: 'People' })).not.toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: /^endorse$/i }).length).toBeGreaterThan(0);
     expect(screen.getByRole('button', { name: /view profile for armen yeremyan/i })).toBeInTheDocument();
+  });
+
+  it('adds Contents filter on the right and defaults to search-all with no tab selected', async () => {
+    renderSearch();
+
+    const tabs = screen.getAllByRole('tab');
+    expect(tabs.map((tab) => tab.textContent)).toEqual([
+      'People',
+      'Companies',
+      'Products',
+      'Services',
+      'Contents',
+    ]);
+    expect(tabs.every((tab) => tab.getAttribute('aria-selected') === 'false')).toBe(true);
+
+    const input = screen.getByPlaceholderText(/search/i);
+    fireEvent.change(input, { target: { value: 'Roles' } });
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Contents' })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Contents' }));
+    expect(screen.getByRole('tab', { name: 'Contents' })).toHaveAttribute('aria-selected', 'true');
+
+    await waitFor(() => {
+      expect(screen.getByTestId('location-search').textContent).toMatch(/tab=contents/);
+    });
   });
 });

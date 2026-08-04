@@ -637,7 +637,7 @@ export default function Law() {
                 size="icon"
                 variant="outline"
                 className="h-9 w-9"
-                onClick={() => navigate('/search?tab=all')}
+                onClick={() => navigate('/search')}
                 aria-label={t('common.search')}
               >
                 <Search className="h-4 w-4" />

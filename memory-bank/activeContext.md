@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Search Contents + no All tab (2026-08-04):** Search filters are People · Companies · Products · Services · Contents. No All chip — with nothing selected, every category is searched. Contents covers app pages, features, Study, Law, institutional docs, and Contribute lanes. Legacy `?tab=all` maps to search-everything. LANGUAGE_PACK_VERSION 122. **Testing v0.1.165** (build 167).
+
 **Market header chrome overlap (2026-08-04):** Floating AppTopChrome Search + Profile sat on top of Market’s Agreements and Prototype credits shortcuts. Market now uses `AppLayout hideTopChrome` and keeps Search + Profile in the page header (with Agreements · Credits). **Testing v0.1.165** (build 167).
 
 **Hide Endorse from Profile menu (2026-08-04):** Endorse remains on Search results and profile pages; Profile menu no longer lists it (`PROFILE_MENU_EXCLUDED_PAGE_IDS`). **Testing v0.1.164** (build 166).
