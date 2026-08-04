@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,10 @@ type FundingInterestFormProps = {
   submitLabelKey?: string;
 };
 
+function trimOrEmpty(value: string | null | undefined): string {
+  return value?.trim() || '';
+}
+
 export function FundingInterestForm({
   lane,
   requireRiskDisclosure = false,
@@ -29,11 +33,11 @@ export function FundingInterestForm({
   submitLabelKey,
 }: FundingInterestFormProps) {
   const { t } = useLanguage();
-  const { user } = useAuth();
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
+  const { user, profile } = useAuth();
+  const [fullName, setFullName] = useState(() => trimOrEmpty(profile?.full_name));
+  const [email, setEmail] = useState(() => trimOrEmpty(user?.email));
   const [organization, setOrganization] = useState('');
-  const [country, setCountry] = useState('');
+  const [country, setCountry] = useState(() => trimOrEmpty(profile?.country));
   const [amount, setAmount] = useState('');
   const [message, setMessage] = useState('');
   const [accredited, setAccredited] = useState(false);
@@ -41,6 +45,16 @@ export function FundingInterestForm({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  // Prefill from the signed-in session once auth/profile resolve; never overwrite edits.
+  useEffect(() => {
+    const nextName = trimOrEmpty(profile?.full_name);
+    const nextEmail = trimOrEmpty(user?.email);
+    const nextCountry = trimOrEmpty(profile?.country);
+    if (nextName) setFullName((current) => trimOrEmpty(current) || nextName);
+    if (nextEmail) setEmail((current) => trimOrEmpty(current) || nextEmail);
+    if (nextCountry) setCountry((current) => trimOrEmpty(current) || nextCountry);
+  }, [profile?.full_name, profile?.country, user?.email]);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
