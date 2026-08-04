@@ -254,9 +254,10 @@ Secondary UI focus remains **NavSecondaryCarousel / Market arc menu** — geomet
 
 1. `docs/04-operations/dev/AGENTS.md` (especially §0 and post-dev verification)
 2. `docs/04-operations/dev/nav-secondary-carousel.md` when touching secondary nav or Market bottom carousel
-3. `memory-bank/systemPatterns.md` for component map
-4. `docs/02-moderated/policies/institutional/README.md` (and funding integrity / legal status) when touching funding pages or institutional copy
-5. `docs/02-moderated/policies/foundation/recognized-planetary-citizenship-pathway.md` when touching onboarding, identity, citizenship, governance, elections, legal status, partnerships, or public mission copy
+3. `docs/04-operations/dev/contribute-page.md` when touching `/contribute` or contribution hub lanes
+4. `memory-bank/systemPatterns.md` for component map
+5. `docs/02-moderated/policies/institutional/README.md` (and funding integrity / legal status) when touching funding pages or institutional copy
+6. `docs/02-moderated/policies/foundation/recognized-planetary-citizenship-pathway.md` when touching onboarding, identity, citizenship, governance, elections, legal status, partnerships, or public mission copy
 
 ## Verification
 
