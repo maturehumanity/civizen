@@ -9,7 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { getAccessiblePageLinks } from '@/lib/app-pages';
+import { permissionListHasAny } from '@/lib/access-control';
+import { getProfileMenuPageLinks } from '@/lib/app-pages';
 import {
   isDuplicateLinkError,
   isMissingBusinessAccessRequestsTableError,
@@ -19,7 +20,7 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
-import { Briefcase, LogIn, Plus, RefreshCcw } from 'lucide-react';
+import { Briefcase, LogIn, Pencil, Plus, RefreshCcw } from 'lucide-react';
 
 type LinkedAccountRow = {
   id: string;
@@ -130,11 +131,13 @@ export function UserPageMenu() {
 
   const pageLinks = useMemo(
     () =>
-      [...getAccessiblePageLinks(profile?.effective_permissions || [])].sort((a, b) =>
+      [...getProfileMenuPageLinks(profile?.effective_permissions || [])].sort((a, b) =>
         t(a.labelKey).localeCompare(t(b.labelKey), undefined, { sensitivity: 'base' }),
       ),
     [profile?.effective_permissions, t],
   );
+
+  const canEditProfile = permissionListHasAny(profile?.effective_permissions || [], ['profile.update_self']);
 
   const accountSessionByProfileId = useMemo(() => {
     const map = new Map<string, typeof knownAccountSessions[number]>();
@@ -733,6 +736,33 @@ export function UserPageMenu() {
                                   {t('home.accountSwitchAction')}
                                 </Button>
                               )}
+                              {canEditProfile &&
+                                (account.accountType === 'personal' || account.accountType === 'business') && (
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <span className="inline-flex">
+                                        <button
+                                          type="button"
+                                          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40"
+                                          aria-label={t('features.pages.editProfile')}
+                                          data-testid={`user-page-menu-edit-profile-${account.profileId}`}
+                                          disabled={!isCurrent}
+                                          onClick={(event) => {
+                                            event.preventDefault();
+                                            event.stopPropagation();
+                                            navigate('/settings/profile');
+                                            setOpen(false);
+                                          }}
+                                        >
+                                          <Pencil className="h-4 w-4" aria-hidden />
+                                        </button>
+                                      </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="left">
+                                      {t('features.pages.editProfile')}
+                                    </TooltipContent>
+                                  </Tooltip>
+                                )}
                             </div>
                           </div>
                         );

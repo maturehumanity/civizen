@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Profile menu + main nav chrome (2026-08-04):** Bottom nav is Home · Study · Contribute · Market · Messaging (Settings removed from nav; stays in Profile menu). Profile menu hides main-nav duplicates plus Search, Download, Edit Profile, and Contribute. Edit Profile is a pencil on personal/business account rows. Download Civizen is public-only (toolbar when logged out). App-wide Search + Profile chrome on AppLayout (hide on scroll down / show on scroll up). LANGUAGE_PACK_VERSION 116.
+
 **Profile menu Accounts add control (2026-08-04):** `UserPageMenu` Accounts `+` is always clickable (opens create-business dialog); hover label “Add business account”; bottom add row removed. **Testing v0.1.142** (build 144).
 
 **Profile Earnings page (2026-08-03 / 2026-08-04):** `/earnings` in the Home avatar menu shows seller product/service activity from agreements (signed = sold; pending listed separately). Illustrative Lumen totals only — settlement not active. Notice describes earnings from work, services, and products (no registration/banking roadmap language). Filters use a single-line scrollable underline tab strip (not pills). Home removed from that menu (bottom nav covers it); `pageRegistry.home` icon aligned to Lucide `Home`. LANGUAGE_PACK_VERSION 115. **Testing v0.1.140** (build 142).

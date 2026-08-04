@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Home, BookOpen, Store, Settings, MessageCircle, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -7,30 +7,10 @@ import { NavSecondaryCarousel } from '@/components/layout/NavSecondaryCarousel';
 import { NavSecondaryStrip } from '@/components/layout/NavSecondaryStrip';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePageSecondaryNavContext } from '@/contexts/PageSecondaryNavContext';
-
-const navItems = [
-  { path: '/', icon: Home, label: 'Home' },
-  { path: '/study', icon: BookOpen, label: 'Study' },
-  { path: '/market', icon: Store, label: 'Market' },
-  { path: '/messaging', icon: MessageCircle, label: 'Messaging' },
-  { path: '/settings', icon: Settings, label: 'Settings' },
-];
-
-function isNavItemActive(pathname: string, itemPath: string) {
-  if (itemPath === '/messaging') {
-    return pathname === '/messaging' || pathname.startsWith('/messaging/');
-  }
-  if (itemPath === '/study') {
-    return pathname === '/study' || pathname.startsWith('/study/');
-  }
-  if (itemPath === '/market') {
-    return pathname === '/market' || pathname.startsWith('/market/');
-  }
-  return pathname === itemPath;
-}
+import { MAIN_NAV_ITEMS, isMainNavItemActive } from '@/lib/main-nav';
 
 function matchesSecondaryNavRoute(pathname: string, itemPath: string) {
-  return isNavItemActive(pathname, itemPath);
+  return isMainNavItemActive(pathname, itemPath);
 }
 
 const ACTIVE_NAV_DOUBLE_TAP_MS = 400;
@@ -127,20 +107,10 @@ export function MobileNav() {
           </svg>
         ) : null}
         <div className="grid w-full grid-cols-5 pt-2 pb-[env(safe-area-inset-bottom,0px)]">
-          {navItems.map((item) => {
-            const isActive = isNavItemActive(location.pathname, item.path);
+          {MAIN_NAV_ITEMS.map((item) => {
+            const isActive = isMainNavItemActive(location.pathname, item.path);
             const hasSecondaryNav = Boolean(config) && matchesSecondaryNavRoute(location.pathname, item.path);
             const Icon = item.icon;
-            const labelKey =
-              item.label === 'Home'
-                ? 'common.home'
-                : item.label === 'Study'
-                  ? 'common.study'
-                  : item.label === 'Messaging'
-                    ? 'common.messaging'
-                    : item.label === 'Market'
-                      ? 'common.market'
-                      : 'common.settings';
 
             return (
               <motion.button
@@ -174,7 +144,7 @@ export function MobileNav() {
               >
                 <Icon className="h-6 w-6 shrink-0" aria-hidden />
                 <span className="max-w-full truncate text-center text-[10px] font-medium leading-tight">
-                  {t(labelKey)}
+                  {t(item.labelKey)}
                 </span>
               </motion.button>
             );

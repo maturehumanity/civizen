@@ -25,7 +25,7 @@ import {
 } from '@/lib/civizen-performance';
 import { type PillarId } from '@/lib/constants';
 import { useNavigate } from 'react-router-dom';
-import { BadgeCheck, BadgeX, Briefcase, Check, ChevronDown, Eye, Landmark, Loader2, MessageCircle, Search, Share2, Sparkles, Star, ThumbsUp, TrendingUp, Users } from 'lucide-react';
+import { BadgeCheck, BadgeX, Briefcase, Check, ChevronDown, Eye, Landmark, Loader2, MessageCircle, Share2, Sparkles, Star, ThumbsUp, TrendingUp, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -63,10 +63,6 @@ import {
   rephrasedAddsUniqueDetail,
   type CuratedStoryListItem,
 } from '@/lib/development-story-curation';
-const UserPageMenu = lazy(() => import('@/components/layout/UserPageMenu').then((module) => ({ default: module.UserPageMenu })));
-const UnifiedSearchBlock = lazy(() =>
-  import('@/components/search/UnifiedSearchBlock').then((module) => ({ default: module.UnifiedSearchBlock })),
-);
 
 interface RecentEndorsement {
   id: string;
@@ -156,7 +152,6 @@ export default function Home() {
   const [feedBackendUnavailable, setFeedBackendUnavailable] = useState(false);
   const [optimisticLikeStates, setOptimisticLikeStates] = useState<Record<string, boolean>>({});
   const [isComposerFocused, setIsComposerFocused] = useState(false);
-  const [isInlineSearchOpen, setIsInlineSearchOpen] = useState(false);
   const [isCivizenOrgAccount, setIsCivizenOrgAccount] = useState(false);
   const [socialConnections, setSocialConnections] = useState<SocialConnectionStatus[]>([]);
   const [socialCrossposts, setSocialCrossposts] = useState<Record<string, SocialCrosspostStatus[]>>({});
@@ -1183,7 +1178,7 @@ export default function Home() {
       <div className="px-4 py-6 space-y-6">
         {/* Header */}
         <motion.div
-          className="flex items-center justify-between"
+          className="flex items-center justify-between gap-4 pr-[5.75rem]"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
         >
@@ -1214,18 +1209,6 @@ export default function Home() {
                 </Tooltip>
               </TooltipProvider>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-10 w-10 rounded-full border border-border/60 bg-card/60"
-              onClick={() => setIsInlineSearchOpen((prev) => !prev)}
-              aria-label={t('home.openSearch')}
-            >
-              <Search className="h-4 w-4" />
-            </Button>
-            <Suspense fallback={<div className="h-10 w-10 rounded-full border border-border/60 bg-card/60" />}><UserPageMenu /></Suspense>
           </div>
         </motion.div>
 
@@ -1371,20 +1354,6 @@ export default function Home() {
                   </div>
                 </div>
               </TooltipProvider>
-            </Card>
-          </motion.div>
-        ) : null}
-
-        {isInlineSearchOpen ? (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.12 }}
-          >
-            <Card className="border-border/70 bg-card/95 p-4 shadow-sm sm:p-5">
-              <Suspense fallback={<div className="h-24 animate-pulse rounded-xl bg-muted/40" />}>
-                <UnifiedSearchBlock showTitle={false} syncUrlParams={false} />
-              </Suspense>
             </Card>
           </motion.div>
         ) : null}

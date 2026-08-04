@@ -4,7 +4,8 @@ import { APP_PERMISSIONS } from '@/lib/access-control';
 import { pageRegistry, sectionRegistry } from '@/lib/feature-registry';
 import { permissionMetadata } from '@/lib/permission-metadata';
 import { APP_RELEASE_ID, APP_VERSION, APP_VERSION_TAG, ANDROID_VERSION_CODE } from '@/lib/app-release';
-import { appPageLinks, getAccessiblePageLinks } from '@/lib/app-pages';
+import { appPageLinks, getAccessiblePageLinks, getProfileMenuPageLinks } from '@/lib/app-pages';
+import { MAIN_NAV_ITEMS, PROFILE_MENU_EXCLUDED_PAGE_IDS } from '@/lib/main-nav';
 import { manageableRoles } from '@/lib/users-admin';
 
 describe('feature-registry', () => {
@@ -41,6 +42,22 @@ describe('app-pages', () => {
     expect(appPageLinks.some((page) => page.id === 'earnings')).toBe(true);
     const filtered = getAccessiblePageLinks(['settings.manage', 'role.assign']);
     expect(filtered.some((page) => page.id === 'adminUsers')).toBe(true);
+  });
+
+  it('omits main-nav, Search, Download, and Edit Profile from the profile menu', () => {
+    const menu = getProfileMenuPageLinks(['profile.read', 'profile.update_self', 'content.read']);
+    for (const id of PROFILE_MENU_EXCLUDED_PAGE_IDS) {
+      if (id === 'home') continue;
+      expect(menu.some((page) => page.id === id)).toBe(false);
+    }
+    expect(menu.some((page) => page.id === 'settings')).toBe(true);
+    expect(MAIN_NAV_ITEMS.map((item) => item.path)).toEqual([
+      '/',
+      '/study',
+      '/contribute',
+      '/market',
+      '/messaging',
+    ]);
   });
 });
 

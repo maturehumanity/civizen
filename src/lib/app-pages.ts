@@ -3,6 +3,7 @@ import { permissionListHasAny } from '@/lib/access-control';
 import type { LucideIcon } from 'lucide-react';
 import { Award, BookOpen, FileSignature, Landmark, LayoutGrid } from 'lucide-react';
 import { pageRegistry } from '@/lib/feature-registry';
+import { PROFILE_MENU_EXCLUDED_PAGE_IDS } from '@/lib/main-nav';
 
 export type NavigablePageId =
   | 'study'
@@ -138,5 +139,12 @@ export const appPageLinks: AppPageLink[] = [
 export function getAccessiblePageLinks(effectivePermissions: AppPermission[] = []) {
   return appPageLinks.filter(
     (page) => !page.requiredPermissions || permissionListHasAny(effectivePermissions, page.requiredPermissions),
+  );
+}
+
+/** Profile avatar menu links — excludes main-nav duplicates, Search/Download chrome entries, and Edit Profile (account-row control). */
+export function getProfileMenuPageLinks(effectivePermissions: AppPermission[] = []) {
+  return getAccessiblePageLinks(effectivePermissions).filter(
+    (page) => !PROFILE_MENU_EXCLUDED_PAGE_IDS.has(page.id),
   );
 }

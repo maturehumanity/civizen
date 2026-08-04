@@ -1613,7 +1613,7 @@ export const baseTranslations = {
       "home": "Home",
       "features": "Study",
       "study": "Study hub",
-      "downloads": "Download",
+      "downloads": "Download Civizen",
       "law": "Law",
       "login": "Login",
       "terms": "Terms of Use",

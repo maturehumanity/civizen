@@ -32,7 +32,7 @@ vi.mock('@/contexts/AuthContext', () => ({
       full_name: 'Civizen',
       username: 'civizen',
       avatar_url: null,
-      effective_permissions: [],
+      effective_permissions: ['profile.update_self', 'profile.read', 'content.read'],
     },
     knownAccountSessions: [
       {
@@ -99,10 +99,33 @@ describe('UserPageMenu account switcher', () => {
     expect(addBusiness).toBeInTheDocument();
     expect(addBusiness).toBeEnabled();
     expect(addBusiness).toHaveAttribute('aria-label', 'Add business account');
-    // Bottom-row label text is gone; only the header icon remains until the dialog opens.
     expect(screen.queryByText('Add business account')).not.toBeInTheDocument();
 
     fireEvent.click(addBusiness);
     expect(screen.getByRole('heading', { name: /add business account/i })).toBeInTheDocument();
+  });
+
+  it('omits main-nav, Search, Download, and Edit Profile list rows', () => {
+    renderMenu();
+    fireEvent.click(screen.getByTestId('user-page-menu-trigger'));
+
+    expect(screen.queryByRole('button', { name: /^study$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^market$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^messaging$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^contribute$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^search$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^download civizen$/i })).not.toBeInTheDocument();
+    // Edit Profile remains as an account-row icon (aria-label), not a page-list row.
+    expect(screen.queryByText('Edit Profile', { selector: 'span' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^settings$/i })).toBeInTheDocument();
+  });
+
+  it('shows Edit Profile on the current account row', () => {
+    renderMenu();
+    fireEvent.click(screen.getByTestId('user-page-menu-trigger'));
+
+    const edit = screen.getByTestId('user-page-menu-edit-profile-biz-profile');
+    expect(edit).toBeEnabled();
+    expect(edit).toHaveAttribute('aria-label', 'Edit Profile');
   });
 });
