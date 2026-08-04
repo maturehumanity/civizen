@@ -97,6 +97,7 @@ describe('UserPageMenu account switcher', () => {
 
     const addBusiness = screen.getByTestId('user-page-menu-add-business');
     expect(addBusiness).toBeInTheDocument();
+    expect(addBusiness).toBeEnabled();
     expect(addBusiness).toHaveAttribute('aria-label', 'Add business account');
     // Bottom-row label text is gone; only the header icon remains until the dialog opens.
     expect(screen.queryByText('Add business account')).not.toBeInTheDocument();

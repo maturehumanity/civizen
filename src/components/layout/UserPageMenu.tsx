@@ -252,18 +252,6 @@ export function UserPageMenu() {
     t,
   ]);
 
-  const hasBusinessLink = useMemo(
-    () =>
-    linkedAccounts.some(
-        (row) =>
-          row.relationship_type === 'business' &&
-          !row.owner?.deleted_at &&
-          !row.linked?.deleted_at &&
-          (row.owner_profile_id === profile?.id || row.linked_profile_id === profile?.id),
-      ),
-    [linkedAccounts, profile?.id],
-  );
-
   useEffect(() => {
     const handlePointerDown = (event: PointerEvent) => {
       if (!panelRef.current?.contains(event.target as Node)) {
@@ -670,23 +658,22 @@ export function UserPageMenu() {
                     </p>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button
+                        <button
                           type="button"
-                          size="icon"
-                          variant="ghost"
-                          className="h-6 w-6 shrink-0 text-muted-foreground hover:text-foreground"
+                          className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                           aria-label={t('home.accountSwitchAddBusiness')}
-                          onClick={() => setCreateBusinessOpen(true)}
-                          disabled={hasBusinessLink}
+                          onClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            setCreateBusinessOpen(true);
+                          }}
                           data-testid="user-page-menu-add-business"
                         >
-                          <Plus className="h-4 w-4" />
-                        </Button>
+                          <Plus className="h-4 w-4" aria-hidden />
+                        </button>
                       </TooltipTrigger>
                       <TooltipContent side="left">
-                        {hasBusinessLink
-                          ? t('home.accountSwitchAlreadyLinked')
-                          : t('home.accountSwitchAddBusiness')}
+                        {t('home.accountSwitchAddBusiness')}
                       </TooltipContent>
                     </Tooltip>
                   </div>
