@@ -4,9 +4,8 @@ import type { Database } from '@/integrations/supabase/types';
 import { loadSupabaseClient } from '@/integrations/supabase/load-client';
 import { type LanguageCode } from '@/lib/i18n';
 import {
+  coalesceRpcEffectivePermissions,
   permissionListHasAny,
-  resolveEffectivePermissions,
-  rolePermissionMap,
   type AppPermission,
   type AppRole,
 } from '@/lib/access-control';
@@ -304,15 +303,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    const effectivePermissions = Array.isArray(effectivePermissionRows)
-      ? (effectivePermissionRows as AppPermission[])
-      : resolveEffectivePermissions(
-          typedProfile.role,
-          rolePermissionMap[typedProfile.role],
-          typedProfile.granted_permissions || [],
-          typedProfile.denied_permissions || [],
-          typedProfile.custom_permissions || [],
-        );
+    const effectivePermissions = coalesceRpcEffectivePermissions(
+      typedProfile.role,
+      Array.isArray(effectivePermissionRows)
+        ? (effectivePermissionRows as AppPermission[])
+        : null,
+      {
+        rpcFailed: Boolean(effectivePermissionsError),
+        grantedPermissions: typedProfile.granted_permissions || [],
+        deniedPermissions: typedProfile.denied_permissions || [],
+        legacyGrantedPermissions: typedProfile.custom_permissions || [],
+      },
+    );
 
     return {
       ...typedProfile,

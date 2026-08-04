@@ -34,7 +34,9 @@ export function ProtectedRoute({
 
   if (
     requiredPermissions?.length &&
-    (!profile || !permissionListHasAny(profile.effective_permissions || [], requiredPermissions))
+    (!profile ||
+      (!(profile.role === 'founder' || profile.role === 'system') &&
+        !permissionListHasAny(profile.effective_permissions || [], requiredPermissions)))
   ) {
     return <Navigate to={redirectTo} replace />;
   }

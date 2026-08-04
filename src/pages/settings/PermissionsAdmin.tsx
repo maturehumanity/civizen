@@ -47,17 +47,23 @@ export default function PermissionsAdmin() {
     () => (profile?.role === 'admin' ? APP_ROLES.filter((role) => role !== 'founder') : APP_ROLES),
     [profile?.role],
   );
+  const FEATURE_COL = '8.5rem';
+  const ROLE_COL_MIN = '4.75rem';
+  const matrixMinWidth = useMemo(
+    () => `calc(${FEATURE_COL} + (${visibleRoles.length} * ${ROLE_COL_MIN}))`,
+    [visibleRoles.length],
+  );
   const matrixGridTemplate = useMemo(
-    () => `minmax(6.75rem, 8.25rem) repeat(${visibleRoles.length}, 3.5rem)`,
+    () => `${FEATURE_COL} repeat(${visibleRoles.length}, minmax(${ROLE_COL_MIN}, 1fr))`,
     [visibleRoles.length],
   );
   const matrixRowStyle = useMemo(
     () => ({
       gridTemplateColumns: matrixGridTemplate,
-      width: 'max-content',
-      minWidth: '100%',
+      width: '100%',
+      minWidth: matrixMinWidth,
     }),
-    [matrixGridTemplate],
+    [matrixGridTemplate, matrixMinWidth],
   );
 
   useEffect(() => {
@@ -264,6 +270,11 @@ export default function PermissionsAdmin() {
                 className="min-h-0 flex-1 overflow-auto overscroll-contain touch-pan-x touch-pan-y [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
               >
                 <div
+                  data-testid="permissions-matrix-canvas"
+                  className="min-w-full"
+                  style={{ minWidth: matrixMinWidth }}
+                >
+                <div
                   className="sticky top-0 z-20 grid items-center gap-1 border-b border-border/60 bg-card/95 px-2 py-3 backdrop-blur supports-[backdrop-filter]:bg-card/80"
                   style={matrixRowStyle}
                   data-testid="permissions-matrix-header"
@@ -275,9 +286,9 @@ export default function PermissionsAdmin() {
                     <div
                       key={role}
                       title={t(`admin.roles.${role}`)}
-                      className="truncate px-0.5 text-center text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground sm:text-xs sm:tracking-[0.12em]"
+                      className="px-0.5 text-center text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground sm:text-xs sm:tracking-[0.12em]"
                     >
-                      {t(`admin.roles.${role}`)}
+                      <span className="block truncate">{t(`admin.roles.${role}`)}</span>
                     </div>
                   ))}
                 </div>
@@ -310,7 +321,7 @@ export default function PermissionsAdmin() {
                               return (
                                 <Card
                                   key={`${sectionGroup.sectionId}-${pageGroup.pageId}`}
-                                  className="w-max min-w-full overflow-hidden rounded-2xl border-border/60 shadow-none"
+                                  className="min-w-full rounded-2xl border-border/60 shadow-none"
                                 >
                                   {showPageLabel ? (
                                     <div className="border-b border-border/60 px-2 py-2.5">
@@ -396,6 +407,7 @@ export default function PermissionsAdmin() {
                       </div>
                     );
                   })}
+                </div>
                 </div>
               </div>
             )}

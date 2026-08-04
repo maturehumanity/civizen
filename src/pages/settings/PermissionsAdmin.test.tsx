@@ -121,9 +121,12 @@ describe('PermissionsAdmin page', () => {
     expect(matrixScroll.className).not.toContain('max-h-[72vh]');
 
     const matrixHeader = screen.getByTestId('permissions-matrix-header');
-    expect(matrixHeader.getAttribute('style') || '').toContain('max-content');
-    expect(matrixHeader.getAttribute('style') || '').toContain('3.5rem');
-    expect(matrixHeader.getAttribute('style') || '').not.toContain('fr');
+    const headerStyle = matrixHeader.getAttribute('style') || '';
+    expect(headerStyle).toContain('minmax(4.75rem, 1fr)');
+    expect(headerStyle).toContain('min-width');
+
+    const matrixCanvas = screen.getByTestId('permissions-matrix-canvas');
+    expect(matrixCanvas.getAttribute('style') || '').toContain('min-width');
   });
 
   it('expands all folders from the title chevron, and still unfolds one folder by name', async () => {

@@ -240,6 +240,44 @@ export function resolveEffectivePermissions(
   ).filter((permission) => !denied.has(permission));
 }
 
+/**
+ * Prefer live RPC permissions when present. If the RPC fails or returns an empty
+ * list for bootstrap authority roles, keep role-derived access so a flaky RPC
+ * cannot kick founders/admins out of protected admin routes.
+ */
+export function coalesceRpcEffectivePermissions(
+  role: AppRole,
+  rpcPermissions: AppPermission[] | null | undefined,
+  options: {
+    rpcFailed?: boolean;
+    grantedPermissions?: AppPermission[];
+    deniedPermissions?: AppPermission[];
+    legacyGrantedPermissions?: AppPermission[];
+  } = {},
+): AppPermission[] {
+  const fallback = resolveEffectivePermissions(
+    role,
+    rolePermissionMap[role],
+    options.grantedPermissions || [],
+    options.deniedPermissions || [],
+    options.legacyGrantedPermissions || [],
+  );
+
+  if (options.rpcFailed || !Array.isArray(rpcPermissions)) {
+    return fallback;
+  }
+
+  if (
+    rpcPermissions.length === 0 &&
+    fallback.length > 0 &&
+    (role === 'founder' || role === 'admin' || role === 'system')
+  ) {
+    return fallback;
+  }
+
+  return rpcPermissions;
+}
+
 export function getRolePermissions(
   role: AppRole,
   grantedPermissions: AppPermission[] = [],
