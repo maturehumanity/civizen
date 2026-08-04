@@ -102,7 +102,7 @@ function isNetworkFetchError(error: { message?: string | null; details?: string 
   return message.includes('failed to fetch') || message.includes('network');
 }
 
-export function UserPageMenu() {
+export function UserPageMenu({ size = 'md' }: { size?: 'sm' | 'md' } = {}) {
   const navigate = useNavigate();
   const location = useLocation();
   const {
@@ -128,6 +128,9 @@ export function UserPageMenu() {
   const [creatingBusiness, setCreatingBusiness] = useState(false);
   const [businessError, setBusinessError] = useState<string | null>(null);
   const [switchingAccountId, setSwitchingAccountId] = useState<string | null>(null);
+
+  const triggerSizeClass = size === 'sm' ? 'h-8 w-8' : 'h-10 w-10';
+  const avatarSizeClass = size === 'sm' ? 'h-8 w-8 border' : 'h-10 w-10 border-2';
 
   const pageLinks = useMemo(
     () =>
@@ -629,14 +632,18 @@ export function UserPageMenu() {
       <button
         type="button"
         data-testid="user-page-menu-trigger"
+        data-size={size}
         aria-label={t('home.profileMenuButton')}
         aria-expanded={open}
         onClick={() => setOpen((current) => !current)}
-        className="inline-flex h-12 w-12 items-center justify-center rounded-full outline-none ring-offset-background transition-colors hover:bg-accent/40 focus-visible:ring-2 focus-visible:ring-primary"
+        className={cn(
+          'inline-flex items-center justify-center rounded-full outline-none ring-offset-background transition-colors hover:bg-accent/40 focus-visible:ring-2 focus-visible:ring-primary',
+          triggerSizeClass,
+        )}
       >
-        <Avatar className="h-12 w-12 shrink-0 border-2 border-border">
+        <Avatar className={cn('shrink-0 border-border', avatarSizeClass)}>
           <AvatarImage src={profile?.avatar_url || undefined} />
-          <AvatarFallback className="bg-primary/10 text-primary">
+          <AvatarFallback className={cn('bg-primary/10 text-primary', size === 'sm' && 'text-[10px]')}>
             {getInitials(profile?.full_name, profile?.username)}
           </AvatarFallback>
         </Avatar>

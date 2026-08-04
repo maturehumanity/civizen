@@ -2,6 +2,10 @@
 
 ## Current focus
 
+**Profile avatar header sizing (2026-08-04):** `UserPageMenu` supports `size="sm"` (32px) and defaults to `md` (40px, matches AppTopChrome Search). Messaging/Market use `sm`. Messaging inbox filter row uses `items-center` + `overflow-y-hidden` (and hidden horizontal scrollbar chrome) so a tall avatar cannot create a vertical header scrollbar.
+
+**Permissions header + matrix scroll (2026-08-04):** Permissions uses `AppLayout hideTopChrome` so Back · Permissions › · Search · Profile share one `items-center` header row. Matrix scroll parent uses `min-w-0` + `overflow-x-auto` (flex default `min-width: auto` was blocking horizontal swipe); canvas is `width: max(100%, calc(...))` so roles expand on wide screens and scroll on narrow.
+
 **Messaging header chrome overlap (2026-08-04):** Same as Market — floating AppTopChrome Search + Profile duplicated Messaging’s inbox Search. Messaging uses `AppLayout hideTopChrome`; Profile lives in the ChatBar page header (inbox + thread). **Testing v0.1.167** (build 169).
 
 **Search Contents + no All tab (2026-08-04):** Search filters are People · Companies · Products · Services · Contents. No All chip — with nothing selected, every category is searched. Contents covers app pages, features, Study, Law, institutional docs, and Contribute lanes. Legacy `?tab=all` maps to search-everything. LANGUAGE_PACK_VERSION 122. **Testing v0.1.165** (build 167).

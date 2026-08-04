@@ -68,17 +68,26 @@ vi.mock('@/contexts/LanguageContext', async () => {
   };
 });
 
-function renderMenu() {
+function renderMenu(size?: 'sm' | 'md') {
   return render(
     <TooltipProvider>
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <UserPageMenu />
+        <UserPageMenu size={size} />
       </MemoryRouter>
     </TooltipProvider>,
   );
 }
 
 describe('UserPageMenu account switcher', () => {
+  it('defaults to md trigger size and supports compact sm for dense headers', () => {
+    const { unmount } = renderMenu();
+    expect(screen.getByTestId('user-page-menu-trigger')).toHaveAttribute('data-size', 'md');
+    unmount();
+
+    renderMenu('sm');
+    expect(screen.getByTestId('user-page-menu-trigger')).toHaveAttribute('data-size', 'sm');
+  });
+
   it('keeps per-card Switch and omits the header Switch back control', () => {
     renderMenu();
 

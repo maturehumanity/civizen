@@ -81,8 +81,8 @@ const UserPageMenu = lazy(() =>
 function MessagingPageProfile() {
   return (
     <div data-testid="messaging-page-profile" className="shrink-0">
-      <Suspense fallback={<div className="h-12 w-12 shrink-0 rounded-full border border-border/60 bg-card/60" />}>
-        <UserPageMenu />
+      <Suspense fallback={<div className="h-8 w-8 shrink-0 rounded-full border border-border/60 bg-card/60" />}>
+        <UserPageMenu size="sm" />
       </Suspense>
     </div>
   );
@@ -3482,7 +3482,7 @@ export function ChatBar({
 
             {showMessagingTabs && isMessagingInbox ? (
                 <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-                  <div className="flex shrink-0 gap-1 overflow-x-auto border-b border-border bg-muted/15 px-2 py-2">
+                  <div className="flex shrink-0 items-center gap-1 overflow-x-auto overflow-y-hidden border-b border-border bg-muted/15 px-2 py-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                     {(['all', 'unread', 'favourites'] as const).map((filterKey) => (
                       <Button
                         key={filterKey}

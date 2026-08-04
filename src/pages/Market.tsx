@@ -270,8 +270,8 @@ export default function Market() {
                 >
                   <Search className="h-4 w-4" aria-hidden />
                 </Button>
-                <Suspense fallback={<div className="h-12 w-12 shrink-0 rounded-full border border-border/60 bg-card/60" />}>
-                  <UserPageMenu />
+                <Suspense fallback={<div className="h-8 w-8 shrink-0 rounded-full border border-border/60 bg-card/60" />}>
+                  <UserPageMenu size="sm" />
                 </Suspense>
                 </>
               ) : null}
