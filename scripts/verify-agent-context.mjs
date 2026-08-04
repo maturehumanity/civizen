@@ -36,6 +36,17 @@ if (!agents.includes('memory-bank/activeContext.md')) {
 if (!agents.includes('verify:agent-context')) {
   fail('AGENTS.md must reference verify:agent-context in post-dev sequence');
 }
+if (!agents.includes('verify:ci')) {
+  fail('AGENTS.md must reference verify:ci after push');
+}
+if (!existsSync('scripts/verify-ci.mjs')) {
+  fail('missing scripts/verify-ci.mjs');
+}
+
+const cursorRule = readFileSync('.cursor/rules/civizen-project.mdc', 'utf8');
+if (!cursorRule.includes('verify:ci')) {
+  fail('.cursor/rules/civizen-project.mdc must require verify:ci after push');
+}
 
 const spec = readFileSync('docs/04-operations/dev/nav-secondary-carousel.md', 'utf8');
 if (!spec.includes('Sell') || !spec.includes('Jobs') || !spec.includes('390px')) {

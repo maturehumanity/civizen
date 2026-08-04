@@ -2,9 +2,11 @@
 
 ## Current focus
 
+**Post-push CI watch (2026-08-04):** Agents must run `npm run verify:ci` after every GitHub push (`scripts/verify-ci.mjs` waits for the `CI` workflow on `HEAD`). Encoded in AGENTS.md §10 and `.cursor/rules/civizen-project.mdc`.
+
 **CI Download/Onboarding Auth mocks (2026-08-04):** All main pushes after Profile menu chrome failed Vitest: `PublicPageToolbar` calls `useAuth`, but Download/Onboarding tests had no AuthContext mock. Fixed with logged-out mocks. Yesterday’s green CI was the `npm audit` fix — this was a separate same-day regression.
 
-**Permissions matrix folded groups (2026-08-04):** `/settings/admin/permissions` opens with section and nested page folders collapsed (`>` chevron). Click a section to unfold; nested folders (e.g. Messaging under Home) stay folded until opened individually. Co-located `PermissionsAdmin.test.tsx`. **Testing v0.1.154** (build 156).
+**Permissions matrix folded groups (2026-08-04):** `/settings/admin/permissions` starts folded behind a `>` next to the Permissions title. Unlocking the title reveals section/page group names (no per-group chevrons); click a group name to unfold/fold its rows. Co-located `PermissionsAdmin.test.tsx`. **Testing v0.1.154** (build 156).
 
 **App-wide chrome back (2026-08-04):** Back chevron lives in `AppTopChrome` (left), not before each page title. Shown on every AppLayout route except bottom-nav hubs (Home/Study/Contribute/Market/Messaging). Uses history pop when available, otherwise section fallback (e.g. `/settings/*` → `/settings`). Chrome reserves header height so titles no longer sit under Search/Profile. **Testing v0.1.153** (build 155).
 

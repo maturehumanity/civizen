@@ -26,6 +26,16 @@ npm run verify:post-dev
 
 Do not tell the user a UI fix is done until `verify:post-dev` passes **and** the change matches the relevant spec (not just scripts).
 
+## After every push to GitHub
+
+Run:
+
+```bash
+npm run verify:ci
+```
+
+Do not report a push complete until `verify:ci` exits 0 (CI green on `HEAD`). If it fails, fix and push again in the same session.
+
 ## Arc carousel
 
 - Reference: approved Marketplace screenshot — wide shallow arc, **Sell · For you · Local · Jobs** visible at 390px.
