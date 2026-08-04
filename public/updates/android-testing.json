@@ -1,12 +1,12 @@
 {
   "platform": "android",
-  "version": "0.1.145",
-  "versionTag": "v0.1.145",
-  "buildNumber": 147,
-  "releaseId": "20260804-v0.1.145",
-  "downloadPath": "/downloads/civizen-debug-testing-20260804-v0.1.145.apk",
-  "downloadUrl": "https://civizen.world/downloads/civizen-debug-testing-20260804-v0.1.145.apk?v=20260804-v0.1.145",
-  "publishedAt": "2026-08-04T18:19:30Z",
+  "version": "0.1.146",
+  "versionTag": "v0.1.146",
+  "buildNumber": 148,
+  "releaseId": "20260804-v0.1.146",
+  "downloadPath": "/downloads/civizen-debug-testing-20260804-v0.1.146.apk",
+  "downloadUrl": "https://civizen.world/downloads/civizen-debug-testing-20260804-v0.1.146.apk?v=20260804-v0.1.146",
+  "publishedAt": "2026-08-04T18:23:45Z",
   "notes": [
     "Latest Civizen Android release built from the current application.",
     "Open Settings to confirm the installed version and build number."

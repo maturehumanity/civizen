@@ -2559,6 +2559,7 @@ export const baseTranslations = {
     "totalEndorsements": "{count} total endorsements",
     "viewDetails": "View details",
     "viewScoreDetails": "View Score Details",
+    "viewScoreDetailsFormationNote": "The Rating system is still in formation stage, so it may not reflect the correct or actual rating.",
     "scoreBuildingHint": "Complete your profile and begin participating to establish your Civizen Score.",
     "noActivityYet": "No activity yet",
     "activityBuildingHint": "Add learning, experience, skills, assignments, or contributions to begin building your Civizen profile.",

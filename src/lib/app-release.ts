@@ -1,4 +1,4 @@
-export const APP_VERSION = '0.1.145';
+export const APP_VERSION = '0.1.146';
 export const APP_VERSION_TAG = `v${APP_VERSION}`;
-export const ANDROID_VERSION_CODE = 147;
-export const APP_RELEASE_ID = '20260804-v0.1.145';
+export const ANDROID_VERSION_CODE = 148;
+export const APP_RELEASE_ID = '20260804-v0.1.146';

@@ -1294,7 +1294,10 @@ export default function Home() {
                                 <TrendingUp className="h-3.5 w-3.5" aria-hidden />
                               </button>
                             </TooltipTrigger>
-                            <TooltipContent side="bottom">{t('home.viewScoreDetails')}</TooltipContent>
+                            <TooltipContent side="bottom" className="max-w-[16rem] space-y-1">
+                              <p>{t('home.viewScoreDetails')}</p>
+                              <p className="text-xs opacity-90">{t('home.viewScoreDetailsFormationNote')}</p>
+                            </TooltipContent>
                           </Tooltip>
                         </div>
                         <p className="mt-2 text-sm text-muted-foreground">
@@ -1318,7 +1321,10 @@ export default function Home() {
                                 <TrendingUp className="h-3.5 w-3.5" aria-hidden />
                               </button>
                             </TooltipTrigger>
-                            <TooltipContent side="bottom">{t('home.viewScoreDetails')}</TooltipContent>
+                            <TooltipContent side="bottom" className="max-w-[16rem] space-y-1">
+                              <p>{t('home.viewScoreDetails')}</p>
+                              <p className="text-xs opacity-90">{t('home.viewScoreDetailsFormationNote')}</p>
+                            </TooltipContent>
                           </Tooltip>
                         </div>
                         {score.tier.finalTier ? (
