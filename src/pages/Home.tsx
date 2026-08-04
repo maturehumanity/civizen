@@ -1346,69 +1346,79 @@ export default function Home() {
                     {getInitials(profile?.full_name)}
                   </AvatarFallback>
                 </Avatar>
-                <div
-                  className={cn(
-                    'flex min-w-0 flex-1 gap-2 sm:gap-3',
-                    postContent.trim() ? 'items-end' : 'items-center',
-                  )}
-                >
-                  <div className="relative min-w-0 flex-1">
-                    {!postContent ? (
-                      <div className="pointer-events-none absolute inset-0 z-[1] flex items-center px-3 sm:px-4">
-                        <SlowRunningText
-                          text={composerPlaceholder}
-                          onlyWhenOverflow
-                          className="min-w-0 flex-1 text-sm leading-6 text-muted-foreground"
-                        />
-                      </div>
-                    ) : null}
-                    <textarea
-                      ref={postTextareaRef}
-                      rows={1}
-                      aria-label={composerPlaceholder}
-                      className={`min-h-[44px] w-full overflow-hidden resize-none rounded-2xl border px-3 py-2.5 text-sm leading-6 text-foreground outline-none transition-all focus:border-primary/60 focus:ring-2 focus:ring-primary/10 sm:min-h-[48px] sm:px-4 sm:py-3 ${
-                        canPost
-                          ? 'border-primary/30 bg-primary/5 shadow-sm'
-                          : 'border-border bg-background'
-                      }`}
-                      value={postContent}
-                      onChange={(e) => setPostContent(e.target.value)}
-                      onFocus={() => setIsComposerFocused(true)}
-                      onBlur={() => {
-                        setIsComposerFocused(false);
-                        persistPostDraft(postContentRef.current);
-                      }}
-                      onKeyDown={(event) => {
-                        if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
-                          event.preventDefault();
-                          createPost();
-                        }
-                      }}
-                    />
-                  </div>
-                  {canPost ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-11 shrink-0 rounded-2xl px-3 sm:h-12 sm:px-4"
-                      onClick={clearPostComposerDraft}
-                      disabled={isPosting}
-                    >
-                      {t('common.cancel')}
-                    </Button>
-                  ) : null}
-                  <Button
-                    size="sm"
-                    className={`h-11 shrink-0 rounded-2xl px-4 transition-all sm:h-12 sm:px-5 disabled:border disabled:border-border disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100 ${
-                      canPost
-                        ? 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 hover:shadow-md'
-                        : ''
-                    }`}
-                    onClick={createPost}
-                    disabled={isPosting || !canPost}
+                <div className="flex min-w-0 flex-1 flex-col gap-2">
+                  <div
+                    className={cn(
+                      'flex min-w-0 gap-2 sm:gap-3',
+                      postContent.trim() ? 'w-full' : 'items-center',
+                    )}
                   >
-                    {isPosting ? t('home.posting') : t('home.post')}
-                  </Button>
+                    <div className="relative min-w-0 flex-1">
+                      {!postContent ? (
+                        <div className="pointer-events-none absolute inset-0 z-[1] flex items-center px-3 sm:px-4">
+                          <SlowRunningText
+                            text={composerPlaceholder}
+                            onlyWhenOverflow
+                            className="min-w-0 flex-1 text-sm leading-6 text-muted-foreground"
+                          />
+                        </div>
+                      ) : null}
+                      <textarea
+                        ref={postTextareaRef}
+                        rows={1}
+                        aria-label={composerPlaceholder}
+                        className={`min-h-[44px] w-full overflow-hidden resize-none rounded-2xl border px-3 py-2.5 text-sm leading-6 text-foreground outline-none transition-all focus:border-primary/60 focus:ring-2 focus:ring-primary/10 sm:min-h-[48px] sm:px-4 sm:py-3 ${
+                          canPost
+                            ? 'border-primary/30 bg-primary/5 shadow-sm'
+                            : 'border-border bg-background'
+                        }`}
+                        value={postContent}
+                        onChange={(e) => setPostContent(e.target.value)}
+                        onFocus={() => setIsComposerFocused(true)}
+                        onBlur={() => {
+                          setIsComposerFocused(false);
+                          persistPostDraft(postContentRef.current);
+                        }}
+                        onKeyDown={(event) => {
+                          if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+                            event.preventDefault();
+                            createPost();
+                          }
+                        }}
+                      />
+                    </div>
+                    {!postContent.trim() ? (
+                      <Button
+                        size="sm"
+                        className="h-11 shrink-0 rounded-2xl px-4 transition-all sm:h-12 sm:px-5 disabled:border disabled:border-border disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
+                        onClick={createPost}
+                        disabled={isPosting || !canPost}
+                      >
+                        {isPosting ? t('home.posting') : t('home.post')}
+                      </Button>
+                    ) : null}
+                  </div>
+                  {postContent.trim() ? (
+                    <div className="flex justify-end gap-2 sm:gap-3">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-11 shrink-0 rounded-2xl px-3 sm:h-12 sm:px-4"
+                        onClick={clearPostComposerDraft}
+                        disabled={isPosting}
+                      >
+                        {t('common.cancel')}
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="h-11 shrink-0 rounded-2xl bg-primary px-4 text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md sm:h-12 sm:px-5"
+                        onClick={createPost}
+                        disabled={isPosting || !canPost}
+                      >
+                        {isPosting ? t('home.posting') : t('home.post')}
+                      </Button>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             </Card>

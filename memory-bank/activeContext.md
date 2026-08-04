@@ -2,6 +2,10 @@
 
 ## Current focus
 
+**Testing v0.1.126 (2026-08-03):** Build 128 (`20260803-v0.1.126`). Live/Production remains on prior soak build. Composer field full-width while drafting; actions below.
+
+**Home composer width fix (2026-08-03):** With draft text, the field uses full width and Cancel/Post sit below — buttons no longer squeeze the textarea into a narrow column.
+
 **Testing v0.1.125 (2026-08-03):** Build 127 (`20260803-v0.1.125`). Live/Production remains on prior soak build. Empty composer: Post same row; placeholder vertically centered.
 
 **Home composer empty-state align (2026-08-03):** Empty field keeps single-line height so Post stays on the same row; placeholder marquee is flex-centered in the field.
