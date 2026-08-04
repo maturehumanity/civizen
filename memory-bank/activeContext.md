@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Funding interest autofill (2026-08-04):** Logged-in users get Full name / Email / Country pre-filled on `FundingInterestForm` (Support, Invest, Institutional, Contribute) from auth profile/session; edits are not overwritten. Inquiries land in Settings → Funding → Interest (`funding_interest_inquiries`). Standing rule in AGENTS.md: known-field autofill.
+
 **Same-line page Back (2026-08-04):** Removed chrome Back row + header spacer. `AppPageHeader` puts Back chevron on the same line as the page title; Search/Profile stay floating top-right. Applied on Settings, Earnings, Users admin. **Testing v0.1.157** (build 159).
 
 **Contribute hub redesign Phase 1 (2026-08-04):** `/contribute` is no longer profile/messaging/score/endorse shortcuts. It is the participation gateway (“How would you like to contribute today?”) with sections Ways · Community · Knowledge · Your Impact. Volunteer → `/fund/contribute`, Financial → `/fund`, Organization → `/partners`; other lanes use `/contribute/:laneId` placeholders. Spec: `docs/04-operations/dev/contribute-page.md`. Endorsement stays on Search + profiles. LANGUAGE_PACK_VERSION 120. **Testing v0.1.156** (build 158).
@@ -10,7 +12,7 @@
 
 **CI Download/Onboarding Auth mocks (2026-08-04):** All main pushes after Profile menu chrome failed Vitest: `PublicPageToolbar` calls `useAuth`, but Download/Onboarding tests had no AuthContext mock. Fixed with logged-out mocks. Yesterday’s green CI was the `npm audit` fix — this was a separate same-day regression.
 
-**Permissions expand-all title chevron (2026-08-04):** Title reads `Permissions >`. Main folders stay visible (folded). Title `>` expands/collapses all groups; clicking a folder name still toggles that folder only.
+**Permissions expand-all title chevron (2026-08-04):** Title reads `Permissions >`. Main folders stay visible (folded). Title `>` expands/collapses all groups; clicking a folder name still toggles that folder only. **Testing v0.1.158** (build 160).
 
 **App-wide chrome back (2026-08-04, superseded):** Briefly lived in `AppTopChrome` with a height spacer; rejected for wasted vertical space. Replaced by same-line `AppPageHeader` Back + title (see Current focus).
 
