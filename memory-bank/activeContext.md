@@ -2,7 +2,7 @@
 
 ## Current focus
 
-**Admin Users startup crash (2026-08-03):** `/settings/admin/users` threw `Select is not defined` (emergency-status filter used `<Select>` without importing `@/components/ui/select`), which triggered the boot-recovery modal; Reset local cache cleared the session (expected sign-out). Import restored. **Testing v0.1.129** (build 131); Live/Production remains on prior soak build.
+**Admin Users startup crash (2026-08-03):** `/settings/admin/users` hit sequential ReferenceErrors after a partial split: missing `Select` import, then missing `manageableRoles` import for Create User. Both restored. Boot-recovery / cache reset signs out (expected). **Testing v0.1.130** (build 132); Live/Production remains on prior soak build.
 
 **Testing v0.1.128 (2026-08-03):** Build 130 (`20260803-v0.1.128`). Live/Production remains on prior soak build. Composer wraps under avatar with curved shape-outside.
 

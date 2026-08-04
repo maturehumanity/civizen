@@ -40,6 +40,7 @@ import {
 import {
   getEffectiveCitizenshipStatus,
   getNextUserExperienceLevel,
+  manageableRoles,
   type OverrideMode,
   type ProfessionRow,
   type ProfessionStatusMode,
