@@ -1477,7 +1477,6 @@ export default function UsersAdmin() {
           search={search}
           stats={stats}
           t={t}
-          onBack={() => navigate('/settings')}
           onSearchChange={setSearch}
         />
 

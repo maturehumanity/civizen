@@ -1,6 +1,6 @@
 /**
- * Shared back-navigation rules for AppTopChrome.
- * Bottom-nav hubs rely on tab switching; every other AppLayout route gets a chrome back control.
+ * Shared back-navigation rules for `AppPageHeader` (same-line Back + title).
+ * Bottom-nav hubs rely on tab switching; other AppLayout routes show Back beside the title.
  */
 
 const MAIN_NAV_HUB_PATHS = new Set(['/', '/study', '/contribute', '/market', '/messaging']);

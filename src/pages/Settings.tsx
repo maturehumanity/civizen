@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -391,9 +392,7 @@ export default function Settings() {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="text-2xl font-display font-bold text-foreground">
-            {t('settings.title')}
-          </h1>
+          <AppPageHeader title={t('settings.title')} />
         </motion.div>
 
         {/* Primary settings (alphabetical by title) */}

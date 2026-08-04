@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 
 import { UsersAdminCreateUserDialog } from '@/components/admin/UsersAdminCreateUserDialog';
@@ -95,7 +96,11 @@ const sampleOrg = {
 } as ProfileRow;
 
 function wrap(node: React.ReactNode) {
-  return <TooltipProvider>{node}</TooltipProvider>;
+  return (
+    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <TooltipProvider>{node}</TooltipProvider>
+    </MemoryRouter>
+  );
 }
 
 describe('UsersAdmin components', () => {
@@ -126,15 +131,13 @@ describe('UsersAdmin components', () => {
           search=""
           stats={{ total: 1, admins: 0, staff: 0 }}
           t={t}
-          onBack={() => {}}
           onSearchChange={() => {}}
         />,
       ),
     );
 
     expect(screen.getByText('admin.users.title')).toBeInTheDocument();
-    expect(screen.getByLabelText('common.back')).toBeInTheDocument();
-    expect(screen.queryByText('common.back')).not.toBeInTheDocument();
+    expect(screen.getByTestId('app-page-header-back')).toBeInTheDocument();
     expect(screen.queryByText('admin.users.createUser')).not.toBeInTheDocument();
   });
 

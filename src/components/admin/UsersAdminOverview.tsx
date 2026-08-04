@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
-import { ChevronLeft, Search, Shield, Users } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Search, Shield, Users } from 'lucide-react';
+
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 
@@ -12,7 +13,6 @@ type UsersAdminOverviewProps = {
     staff: number;
   };
   t: (key: string) => string;
-  onBack: () => void;
   onSearchChange: (value: string) => void;
 };
 
@@ -20,27 +20,12 @@ export function UsersAdminOverview({
   search,
   stats,
   t,
-  onBack,
   onSearchChange,
 }: UsersAdminOverviewProps) {
   return (
     <>
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
-        <div className="flex items-center gap-1">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={onBack}
-            className="h-10 w-10 shrink-0"
-            aria-label={t('common.back')}
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="min-w-0 truncate text-2xl font-display font-bold text-foreground">
-            {t('admin.users.title')}
-          </h1>
-        </div>
+        <AppPageHeader title={t('admin.users.title')} showBack fallbackPath="/settings" />
       </motion.div>
 
       <motion.div

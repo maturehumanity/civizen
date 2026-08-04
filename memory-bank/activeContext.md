@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Same-line page Back (2026-08-04):** Removed chrome Back row + header spacer. `AppPageHeader` puts Back chevron on the same line as the page title; Search/Profile stay floating top-right. Applied on Settings, Earnings, Users admin. **Testing v0.1.157** (build 159).
+
 **Contribute hub redesign Phase 1 (2026-08-04):** `/contribute` is no longer profile/messaging/score/endorse shortcuts. It is the participation gateway (“How would you like to contribute today?”) with sections Ways · Community · Knowledge · Your Impact. Volunteer → `/fund/contribute`, Financial → `/fund`, Organization → `/partners`; other lanes use `/contribute/:laneId` placeholders. Spec: `docs/04-operations/dev/contribute-page.md`. Endorsement stays on Search + profiles. LANGUAGE_PACK_VERSION 120. **Testing v0.1.156** (build 158).
 
 **Post-push CI watch (2026-08-04):** Agents must run `npm run verify:ci` after every GitHub push (`scripts/verify-ci.mjs` waits for the `CI` workflow on `HEAD`). Encoded in AGENTS.md §10 and `.cursor/rules/civizen-project.mdc`.
@@ -10,7 +12,7 @@
 
 **Permissions matrix folded groups (2026-08-04):** `/settings/admin/permissions` starts folded behind a `>` next to the Permissions title. Unlocking the title reveals section/page group names (no per-group chevrons); click a group name to unfold/fold its rows. Co-located `PermissionsAdmin.test.tsx`. **Testing v0.1.155** (build 157).
 
-**App-wide chrome back (2026-08-04):** Back chevron lives in `AppTopChrome` (left), not before each page title. Shown on every AppLayout route except bottom-nav hubs (Home/Study/Contribute/Market/Messaging). Uses history pop when available, otherwise section fallback (e.g. `/settings/*` → `/settings`). Chrome reserves header height so titles no longer sit under Search/Profile. **Testing v0.1.153** (build 155).
+**App-wide chrome back (2026-08-04, superseded):** Briefly lived in `AppTopChrome` with a height spacer; rejected for wasted vertical space. Replaced by same-line `AppPageHeader` Back + title (see Current focus).
 
 **Endorse vs credentials icons (2026-08-04):** Endorse uses Lucide `ThumbsUp`; Professional credentials keeps `Award`, so Profile menu / Contribute / Settings no longer share the same medal icon. **Testing v0.1.152** (build 154).
 
