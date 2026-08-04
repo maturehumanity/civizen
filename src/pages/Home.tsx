@@ -1574,24 +1574,27 @@ export default function Home() {
                               {formatRelativeTime(post.created_at)}
                             </p>
                           </div>
-                          <Tooltip>
+                          <Tooltip delayDuration={200}>
                             <TooltipTrigger asChild>
-                              <div
-                                className="inline-flex shrink-0 items-center gap-1 pt-0.5 text-xs text-muted-foreground"
-                                aria-label={t('home.viewsTooltip', {
-                                  unique: String(viewStats.uniqueVisitors),
-                                  total: String(Math.max(viewStats.totalViews, viewStats.uniqueVisitors)),
-                                })}
+                              <button
+                                type="button"
+                                className="inline-flex shrink-0 items-center justify-center rounded-md p-1 text-muted-foreground outline-none transition-colors hover:bg-muted/70 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                                aria-label={t('home.views')}
                               >
                                 <Eye className="h-3.5 w-3.5" strokeWidth={1.75} />
-                                <span className="tabular-nums">{viewStats.uniqueVisitors}</span>
-                              </div>
+                              </button>
                             </TooltipTrigger>
-                            <TooltipContent side="top" className="text-xs">
-                              {t('home.viewsTooltip', {
-                                unique: String(viewStats.uniqueVisitors),
-                                total: String(Math.max(viewStats.totalViews, viewStats.uniqueVisitors)),
-                              })}
+                            <TooltipContent side="top" className="space-y-0.5 text-xs">
+                              <p>
+                                {t('home.viewsUniqueLabel', {
+                                  count: String(viewStats.uniqueVisitors),
+                                })}
+                              </p>
+                              <p>
+                                {t('home.viewsTotalLabel', {
+                                  count: String(Math.max(viewStats.totalViews, viewStats.uniqueVisitors)),
+                                })}
+                              </p>
                             </TooltipContent>
                           </Tooltip>
                         </div>
