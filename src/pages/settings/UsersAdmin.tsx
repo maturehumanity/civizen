@@ -40,7 +40,6 @@ import {
 } from '@/lib/governance-public-audit-automation';
 import {
   getEffectiveCitizenshipStatus,
-  getNextUserExperienceLevel,
   groupUsersWithOrganizations,
   manageableRoles,
   type LinkedAccountLink,
@@ -49,6 +48,7 @@ import {
   type ProfessionStatusMode,
   type ProfileProfessionRow,
   type ProfileRow,
+  type UserExperienceLevel,
   userExperienceLevelLabelMap,
   type VerificationCaseRow,
   type GovernanceSanctionAppealRow,
@@ -1124,8 +1124,8 @@ export default function UsersAdmin() {
     setRoleSavingUserId(null);
   };
 
-  const handleCycleExperienceLevel = async (target: ProfileRow) => {
-    const nextLevel = getNextUserExperienceLevel(target.experience_level);
+  const handleExperienceLevelChange = async (target: ProfileRow, nextLevel: UserExperienceLevel) => {
+    if (target.experience_level === nextLevel) return;
     const previousLevel = target.experience_level;
 
     setLevelSavingUserId(target.id);
@@ -1518,7 +1518,7 @@ export default function UsersAdmin() {
                     formatRelativeTime={formatRelativeTime}
                     getActivityTimestamp={getActivityTimestamp}
                     isUserOnline={isUserOnline}
-                    onCycleExperienceLevel={(user) => void handleCycleExperienceLevel(user)}
+                    onExperienceLevelChange={(user, nextLevel) => void handleExperienceLevelChange(user, nextLevel)}
                     onLoginAsUser={(user) => void handleLoginAsUser(user)}
                     onRoleChange={(user, nextRole) => void handleRoleChange(user, nextRole)}
                     onSelectUser={setSelectedUserId}
@@ -1541,7 +1541,7 @@ export default function UsersAdmin() {
                     formatRelativeTime={formatRelativeTime}
                     getActivityTimestamp={getActivityTimestamp}
                     isUserOnline={isUserOnline}
-                    onCycleExperienceLevel={(user) => void handleCycleExperienceLevel(user)}
+                    onExperienceLevelChange={(user, nextLevel) => void handleExperienceLevelChange(user, nextLevel)}
                     onLoginAsUser={(user) => void handleLoginAsUser(user)}
                     onRoleChange={(user, nextRole) => void handleRoleChange(user, nextRole)}
                     onSelectUser={setSelectedUserId}

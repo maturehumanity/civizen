@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**UsersAdmin level under avatar (2026-08-04):** Experience level (Entry/Junior/…) sits under the photo/logo on the same left column; hover/click opens a level menu like the role pill. **Testing pending release bump.**
+
 **UsersAdmin add-user chrome (2026-08-04):** Create user is a `+` icon in AppTopChrome immediately before Search (not a text button beside the title). **Testing v0.1.148** (build 150).
 
 **UsersAdmin username on avatar hover (2026-08-04):** Mobile user cards hide `@username` from the card body; hovering the photo/logo shows it. Status pills stay on one scrollable row so cards remain 3 lines. **Testing v0.1.147** (build 149).

@@ -159,7 +159,7 @@ describe('UsersAdmin components', () => {
           formatRelativeTime={() => 'now'}
           getActivityTimestamp={() => new Date().toISOString()}
           isUserOnline={() => true}
-          onCycleExperienceLevel={() => {}}
+          onExperienceLevelChange={() => {}}
           onLoginAsUser={() => {}}
           onRoleChange={() => {}}
           onSelectUser={() => {}}
@@ -195,7 +195,7 @@ describe('UsersAdmin components', () => {
           formatRelativeTime={() => 'now'}
           getActivityTimestamp={() => new Date().toISOString()}
           isUserOnline={() => true}
-          onCycleExperienceLevel={() => {}}
+          onExperienceLevelChange={() => {}}
           onLoginAsUser={() => {}}
           onRoleChange={() => {}}
           onSelectUser={() => {}}
@@ -210,6 +210,7 @@ describe('UsersAdmin components', () => {
     expect(screen.queryByText('@ada')).not.toBeInTheDocument();
     expect(screen.getByLabelText('@ada')).toBeInTheDocument();
     expect(screen.getByLabelText('@biz_arts')).toBeInTheDocument();
+    expect(screen.getAllByLabelText('Mid').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByLabelText('admin.users.userIsVerified')).toBeInTheDocument();
     expect(screen.getByLabelText('admin.users.userIsUnverified')).toBeInTheDocument();
   });

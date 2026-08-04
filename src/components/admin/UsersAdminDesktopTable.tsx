@@ -11,9 +11,7 @@ import {
   getInitials,
   type ProfileRow,
   type UserAdminGroup,
-  userExperienceLevelClassMap,
-  userExperienceLevelIconMap,
-  userExperienceLevelLabelMap,
+  type UserExperienceLevel,
   type VerificationCaseRow,
 } from '@/lib/users-admin';
 import { cn } from '@/lib/utils';
@@ -22,6 +20,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { UsersAdminExperienceLevelPill } from '@/components/admin/UsersAdminExperienceLevelPill';
 import { UsersAdminRolePill } from '@/components/admin/UsersAdminRolePill';
 
 type UsersAdminDesktopTableProps = {
@@ -39,7 +38,7 @@ type UsersAdminDesktopTableProps = {
   formatRelativeTime: (value?: string | null) => string;
   getActivityTimestamp: (user: ProfileRow) => string;
   isUserOnline: (user: ProfileRow) => boolean;
-  onCycleExperienceLevel: (user: ProfileRow) => void;
+  onExperienceLevelChange: (user: ProfileRow, nextLevel: UserExperienceLevel) => void;
   onLoginAsUser: (user: ProfileRow) => void;
   onRoleChange: (user: ProfileRow, nextRole: AppRole) => void;
   onSelectUser: (userId: string) => void;
@@ -59,7 +58,7 @@ export function UsersAdminDesktopTable({
   getActivityTimestamp,
   isUserOnline,
   levelSavingUserId,
-  onCycleExperienceLevel,
+  onExperienceLevelChange,
   onLoginAsUser,
   onRoleChange,
   onSelectUser,
@@ -83,13 +82,19 @@ export function UsersAdminDesktopTable({
     const displayName = getDisplayNameParts(user);
     const cardTitle =
       getAdminCardTitle(user, { isOrganization, organizationName }) || t('common.anonymousUser');
-    const userLevel = user.experience_level in userExperienceLevelIconMap ? user.experience_level : 'entry';
-    const LevelIcon = userExperienceLevelIconMap[userLevel];
+    const userLevel: UserExperienceLevel =
+      user.experience_level === 'junior'
+      || user.experience_level === 'mid'
+      || user.experience_level === 'senior'
+      || user.experience_level === 'professional'
+        ? user.experience_level
+        : 'entry';
     const shouldShowProBadge = displayName.hasProfessionalSuffix || userLevel === 'professional';
     const effectiveCitizenshipStatus = getEffectiveCitizenshipStatus(user);
     const verificationCase = verificationCasesByProfile[user.id] || null;
     const verificationStatus = getEffectiveVerificationStatus(user, verificationCase);
     const isVerified = Boolean(user.is_verified);
+    const usernameLabel = user.username ? `@${user.username}` : t('admin.users.noUsername');
 
     return (
       <TableRow
@@ -97,15 +102,28 @@ export function UsersAdminDesktopTable({
         className={cn('group hover:bg-accent/40', isSelected && 'bg-primary/5 hover:bg-primary/5')}
       >
         <TableCell>
-          <div className={cn('flex items-center gap-3 text-left', nestLevel > 0 && 'ml-6')}>
-            <button type="button" className="shrink-0" onClick={() => onSelectUser(user.id)} aria-label={cardTitle}>
-              <Avatar className="h-10 w-10 rounded-2xl border border-border/60">
-                <AvatarImage src={user.avatar_url || undefined} alt="" className="rounded-2xl object-cover" />
-                <AvatarFallback className="rounded-2xl bg-primary/10 text-sm font-semibold text-primary">
-                  {getInitials(cardTitle, user.username)}
-                </AvatarFallback>
-              </Avatar>
-            </button>
+          <div className={cn('flex items-start gap-3 text-left', nestLevel > 0 && 'ml-6')}>
+            <div className="flex shrink-0 flex-col items-start gap-1.5">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button type="button" className="shrink-0" onClick={() => onSelectUser(user.id)} aria-label={usernameLabel}>
+                    <Avatar className="h-10 w-10 rounded-2xl border border-border/60">
+                      <AvatarImage src={user.avatar_url || undefined} alt={usernameLabel} className="rounded-2xl object-cover" />
+                      <AvatarFallback className="rounded-2xl bg-primary/10 text-sm font-semibold text-primary">
+                        {getInitials(cardTitle, user.username)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>{usernameLabel}</TooltipContent>
+              </Tooltip>
+              <UsersAdminExperienceLevelPill
+                level={userLevel}
+                saving={isLevelSaving}
+                t={t}
+                onLevelChange={(nextLevel) => onExperienceLevelChange(user, nextLevel)}
+              />
+            </div>
             <div className="min-w-0">
               <button
                 type="button"
@@ -114,41 +132,12 @@ export function UsersAdminDesktopTable({
               >
                 {cardTitle}
               </button>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  className="min-w-0 truncate text-left text-sm text-muted-foreground"
-                  onClick={() => onSelectUser(user.id)}
-                >
-                  {user.username ? `@${user.username}` : t('admin.users.noUsername')}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onCycleExperienceLevel(user)}
-                  disabled={isLevelSaving}
-                  className={cn(
-                    'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] transition-colors',
-                    userExperienceLevelClassMap[userLevel],
-                    'hover:opacity-90',
-                  )}
-                  title={t('admin.users.levelCycleHint')}
-                >
-                  {isLevelSaving ? (
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                  ) : (
-                    <>
-                      <LevelIcon className="h-3 w-3" />
-                      {userExperienceLevelLabelMap[userLevel]}
-                    </>
-                  )}
-                </button>
-                {shouldShowProBadge && (
-                  <span className="inline-flex items-center gap-1 rounded-full border border-teal-500/20 bg-teal-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-teal-700 dark:text-teal-300">
-                    <Award className="h-3 w-3" />
-                    Pro
-                  </span>
-                )}
-              </div>
+              {shouldShowProBadge && userLevel !== 'professional' && (
+                <span className="mt-1 inline-flex items-center gap-1 rounded-full border border-teal-500/20 bg-teal-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-teal-700 dark:text-teal-300">
+                  <Award className="h-3 w-3" />
+                  Pro
+                </span>
+              )}
               <div className="mt-2 flex flex-wrap gap-2">
                 <Badge
                   className={cn('rounded-full border', citizenshipBadgeClassName[effectiveCitizenshipStatus])}

@@ -12,9 +12,7 @@ import {
   type OrganizationMembership,
   type ProfileRow,
   type UserAdminGroup,
-  userExperienceLevelClassMap,
-  userExperienceLevelIconMap,
-  userExperienceLevelLabelMap,
+  type UserExperienceLevel,
   type VerificationCaseRow,
 } from '@/lib/users-admin';
 import { cn } from '@/lib/utils';
@@ -22,6 +20,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { UsersAdminExperienceLevelPill } from '@/components/admin/UsersAdminExperienceLevelPill';
 import { UsersAdminRolePill } from '@/components/admin/UsersAdminRolePill';
 
 type UsersAdminMobileListProps = {
@@ -39,7 +38,7 @@ type UsersAdminMobileListProps = {
   formatRelativeTime: (value?: string | null) => string;
   getActivityTimestamp: (user: ProfileRow) => string;
   isUserOnline: (user: ProfileRow) => boolean;
-  onCycleExperienceLevel: (user: ProfileRow) => void;
+  onExperienceLevelChange: (user: ProfileRow, nextLevel: UserExperienceLevel) => void;
   onLoginAsUser: (user: ProfileRow) => void;
   onRoleChange: (user: ProfileRow, nextRole: AppRole) => void;
   onSelectUser: (userId: string) => void;
@@ -60,7 +59,7 @@ export function UsersAdminMobileList({
   getActivityTimestamp,
   isUserOnline,
   levelSavingUserId,
-  onCycleExperienceLevel,
+  onExperienceLevelChange,
   onLoginAsUser,
   onRoleChange,
   onSelectUser,
@@ -87,8 +86,13 @@ export function UsersAdminMobileList({
     const cardTitle =
       getAdminCardTitle(user, { isOrganization, organizationName }) || t('common.anonymousUser');
     const usernameLabel = user.username ? `@${user.username}` : t('admin.users.noUsername');
-    const userLevel = user.experience_level in userExperienceLevelIconMap ? user.experience_level : 'entry';
-    const LevelIcon = userExperienceLevelIconMap[userLevel];
+    const userLevel: UserExperienceLevel =
+      user.experience_level === 'junior'
+      || user.experience_level === 'mid'
+      || user.experience_level === 'senior'
+      || user.experience_level === 'professional'
+        ? user.experience_level
+        : 'entry';
     const shouldShowProBadge = displayName.hasProfessionalSuffix || userLevel === 'professional';
     const effectiveCitizenshipStatus = getEffectiveCitizenshipStatus(user);
     const verificationCase = verificationCasesByProfile[user.id] || null;
@@ -113,160 +117,149 @@ export function UsersAdminMobileList({
           }
         }}
       >
-        {/* Line 1: avatar (username on hover) + name + action icons */}
-        <div className="flex w-full items-center gap-2.5 text-left">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span
-                className="inline-flex shrink-0"
-                onClick={(event) => event.stopPropagation()}
-                onKeyDown={(event) => event.stopPropagation()}
-              >
-                <Avatar
-                  className="h-10 w-10 rounded-2xl border border-border/60"
-                  aria-label={usernameLabel}
+        <div className="flex w-full items-start gap-2.5 text-left">
+          {/* Avatar column: photo + experience level under it (same left edge) */}
+          <div className="flex shrink-0 flex-col items-start gap-1.5">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span
+                  className="inline-flex"
+                  onClick={(event) => event.stopPropagation()}
+                  onKeyDown={(event) => event.stopPropagation()}
                 >
-                  <AvatarImage src={user.avatar_url || undefined} alt={usernameLabel} className="rounded-2xl object-cover" />
-                  <AvatarFallback className="rounded-2xl bg-primary/10 text-sm font-semibold text-primary">
-                    {getInitials(cardTitle, user.username)}
-                  </AvatarFallback>
-                </Avatar>
-              </span>
-            </TooltipTrigger>
-            <TooltipContent side="top" onClick={(event) => event.stopPropagation()}>
-              {usernameLabel}
-            </TooltipContent>
-          </Tooltip>
-          <p className="min-w-0 flex-1 truncate font-medium text-foreground">{cardTitle}</p>
-          <div className="flex shrink-0 items-center gap-1">
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8 border-border/70 bg-background/60 hover:border-border hover:bg-accent/70"
-              onClick={(event) => {
-                event.stopPropagation();
-                onSelectUser(user.id);
-              }}
-              aria-label={t('admin.users.manageAccess')}
-              title={t('admin.users.manageAccess')}
-            >
-              <Settings2 className="h-4 w-4" />
-            </Button>
-            <button
-              type="button"
-              onClick={(event) => {
-                event.stopPropagation();
-                onVerificationToggle(user);
-              }}
-              disabled={isSaving}
-              className={cn(
-                'inline-flex h-8 w-8 items-center justify-center rounded-full border transition-colors',
-                isVerified
-                  ? 'border-sky-500/20 bg-sky-500/10 text-sky-700 hover:bg-sky-500/20 dark:text-sky-300'
-                  : 'border-border bg-muted text-muted-foreground hover:bg-muted/80',
-                isSaving && 'opacity-70',
-              )}
-              aria-label={isVerified ? t('admin.users.userIsVerified') : t('admin.users.userIsUnverified')}
-              title={isVerified ? t('admin.users.userIsVerified') : t('admin.users.userIsUnverified')}
-            >
-              {isVerified ? <BadgeCheck className="h-3.5 w-3.5" /> : <BadgeX className="h-3.5 w-3.5" />}
-            </button>
-            {canLoginAsFromAdmin && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 border border-border/70 bg-background/60 hover:border-border hover:bg-accent/70"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  onLoginAsUser(user);
-                }}
-                disabled={isCurrentUser || loginBusy}
-                aria-label="Request emergency access"
-                title={isCurrentUser ? t('admin.users.cannotEditSelf') : 'Request emergency access'}
-              >
-                {loginBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogIn className="h-4 w-4" />}
-              </Button>
-            )}
+                  <Avatar
+                    className="h-10 w-10 rounded-2xl border border-border/60"
+                    aria-label={usernameLabel}
+                  >
+                    <AvatarImage src={user.avatar_url || undefined} alt={usernameLabel} className="rounded-2xl object-cover" />
+                    <AvatarFallback className="rounded-2xl bg-primary/10 text-sm font-semibold text-primary">
+                      {getInitials(cardTitle, user.username)}
+                    </AvatarFallback>
+                  </Avatar>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="top" onClick={(event) => event.stopPropagation()}>
+                {usernameLabel}
+              </TooltipContent>
+            </Tooltip>
+            <UsersAdminExperienceLevelPill
+              level={userLevel}
+              saving={isLevelSaving}
+              t={t}
+              onLevelChange={(nextLevel) => onExperienceLevelChange(user, nextLevel)}
+            />
           </div>
-        </div>
 
-        {/* Line 2: level + activity (username lives on avatar hover) */}
-        <div className="flex min-w-0 items-center gap-2 pl-[3.25rem]">
-          <button
-            type="button"
-            onClick={(event) => {
-              event.stopPropagation();
-              onCycleExperienceLevel(user);
-            }}
-            disabled={isLevelSaving}
-            className={cn(
-              'inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] transition-colors',
-              userExperienceLevelClassMap[userLevel],
-              'hover:opacity-90',
-            )}
-            title={t('admin.users.levelCycleHint')}
-          >
-            {isLevelSaving ? (
-              <Loader2 className="h-3 w-3 animate-spin" />
-            ) : (
-              <>
-                <LevelIcon className="h-3 w-3" />
-                {userExperienceLevelLabelMap[userLevel]}
-              </>
-            )}
-          </button>
-          {shouldShowProBadge && (
-            <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-teal-500/20 bg-teal-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-teal-700 dark:text-teal-300">
-              <Award className="h-3 w-3" />
-              Pro
-            </span>
-          )}
-          <span
-            className={cn(
-              'ml-auto shrink-0 text-xs',
-              isOnline && 'font-medium text-emerald-600 dark:text-emerald-300',
-            )}
-          >
-            {isOnline ? t('admin.users.onlineNow') : formatRelativeTime(getActivityTimestamp(user))}
-          </span>
-        </div>
+          <div className="min-w-0 flex-1 space-y-2">
+            {/* Line 1: name + actions */}
+            <div className="flex w-full items-center gap-2">
+              <p className="min-w-0 flex-1 truncate font-medium text-foreground">{cardTitle}</p>
+              {shouldShowProBadge && userLevel !== 'professional' && (
+                <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-teal-500/20 bg-teal-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-teal-700 dark:text-teal-300">
+                  <Award className="h-3 w-3" />
+                  Pro
+                </span>
+              )}
+              <div className="flex shrink-0 items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8 border-border/70 bg-background/60 hover:border-border hover:bg-accent/70"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onSelectUser(user.id);
+                  }}
+                  aria-label={t('admin.users.manageAccess')}
+                  title={t('admin.users.manageAccess')}
+                >
+                  <Settings2 className="h-4 w-4" />
+                </Button>
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onVerificationToggle(user);
+                  }}
+                  disabled={isSaving}
+                  className={cn(
+                    'inline-flex h-8 w-8 items-center justify-center rounded-full border transition-colors',
+                    isVerified
+                      ? 'border-sky-500/20 bg-sky-500/10 text-sky-700 hover:bg-sky-500/20 dark:text-sky-300'
+                      : 'border-border bg-muted text-muted-foreground hover:bg-muted/80',
+                    isSaving && 'opacity-70',
+                  )}
+                  aria-label={isVerified ? t('admin.users.userIsVerified') : t('admin.users.userIsUnverified')}
+                  title={isVerified ? t('admin.users.userIsVerified') : t('admin.users.userIsUnverified')}
+                >
+                  {isVerified ? <BadgeCheck className="h-3.5 w-3.5" /> : <BadgeX className="h-3.5 w-3.5" />}
+                </button>
+                {canLoginAsFromAdmin && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 border border-border/70 bg-background/60 hover:border-border hover:bg-accent/70"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onLoginAsUser(user);
+                    }}
+                    disabled={isCurrentUser || loginBusy}
+                    aria-label="Request emergency access"
+                    title={isCurrentUser ? t('admin.users.cannotEditSelf') : 'Request emergency access'}
+                  >
+                    {loginBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogIn className="h-4 w-4" />}
+                  </Button>
+                )}
+              </div>
+            </div>
 
-        {/* Line 3: status pills — role pill is also the role dropdown; keep one row */}
-        <div className="flex flex-nowrap items-center gap-1.5 overflow-x-auto pl-[3.25rem] scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <Badge
-            className={cn('shrink-0 rounded-full border', citizenshipBadgeClassName[effectiveCitizenshipStatus])}
-            variant="outline"
-          >
-            {t(getCitizenStatusLabelKey(effectiveCitizenshipStatus))}
-          </Badge>
-          <Badge
-            className={cn('shrink-0 rounded-full border', getVerificationCaseBadgeClassName(verificationStatus))}
-            variant="outline"
-          >
-            {t(getVerificationCaseStatusLabelKey(verificationStatus))}
-          </Badge>
-          <UsersAdminRolePill
-            role={user.role}
-            disabled={isCurrentUser || isSaving}
-            t={t}
-            onRoleChange={(nextRole) => onRoleChange(user, nextRole)}
-          />
-          {user.is_active_citizen && (
-            <Badge
-              variant="outline"
-              className="shrink-0 rounded-full border border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-            >
-              {t('admin.users.activeCitizenBadge')}
-            </Badge>
-          )}
-          {user.is_governance_eligible && (
-            <Badge
-              variant="outline"
-              className="shrink-0 rounded-full border border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300"
-            >
-              {t('admin.users.governanceEligibleBadge')}
-            </Badge>
-          )}
+            {/* Line 2: status pills + activity — role pill is the role dropdown */}
+            <div className="flex min-w-0 items-center gap-1.5">
+              <div className="flex min-w-0 flex-1 flex-nowrap items-center gap-1.5 overflow-x-auto scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <Badge
+                  className={cn('shrink-0 rounded-full border', citizenshipBadgeClassName[effectiveCitizenshipStatus])}
+                  variant="outline"
+                >
+                  {t(getCitizenStatusLabelKey(effectiveCitizenshipStatus))}
+                </Badge>
+                <Badge
+                  className={cn('shrink-0 rounded-full border', getVerificationCaseBadgeClassName(verificationStatus))}
+                  variant="outline"
+                >
+                  {t(getVerificationCaseStatusLabelKey(verificationStatus))}
+                </Badge>
+                <UsersAdminRolePill
+                  role={user.role}
+                  disabled={isCurrentUser || isSaving}
+                  t={t}
+                  onRoleChange={(nextRole) => onRoleChange(user, nextRole)}
+                />
+                {user.is_active_citizen && (
+                  <Badge
+                    variant="outline"
+                    className="shrink-0 rounded-full border border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                  >
+                    {t('admin.users.activeCitizenBadge')}
+                  </Badge>
+                )}
+                {user.is_governance_eligible && (
+                  <Badge
+                    variant="outline"
+                    className="shrink-0 rounded-full border border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300"
+                  >
+                    {t('admin.users.governanceEligibleBadge')}
+                  </Badge>
+                )}
+              </div>
+              <span
+                className={cn(
+                  'shrink-0 text-xs',
+                  isOnline && 'font-medium text-emerald-600 dark:text-emerald-300',
+                )}
+              >
+                {isOnline ? t('admin.users.onlineNow') : formatRelativeTime(getActivityTimestamp(user))}
+              </span>
+            </div>
+          </div>
         </div>
 
         {isSelected && (
