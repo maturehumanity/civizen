@@ -5,7 +5,6 @@ import { Award, BookOpen, FileSignature, Landmark, LayoutGrid } from 'lucide-rea
 import { pageRegistry } from '@/lib/feature-registry';
 
 export type NavigablePageId =
-  | 'home'
   | 'study'
   | 'downloads'
   | 'law'
@@ -14,6 +13,7 @@ export type NavigablePageId =
   | 'messaging'
   | 'market'
   | 'agreements'
+  | 'earnings'
   | 'search'
   | 'endorse'
   | 'profile'
@@ -36,7 +36,6 @@ export type AppPageLink = {
 };
 
 export const appPageLinks: AppPageLink[] = [
-  { id: 'home', path: '/', labelKey: pageRegistry.home.labelKey, icon: pageRegistry.home.icon },
   { id: 'study', path: '/study', labelKey: 'common.study', icon: BookOpen },
   { id: 'downloads', path: '/download', labelKey: pageRegistry.downloads.labelKey, icon: pageRegistry.downloads.icon },
   {
@@ -51,6 +50,7 @@ export const appPageLinks: AppPageLink[] = [
   { id: 'messaging', path: '/messaging', labelKey: pageRegistry.messaging.labelKey, icon: pageRegistry.messaging.icon },
   { id: 'market', path: '/market', labelKey: pageRegistry.market.labelKey, icon: pageRegistry.market.icon },
   { id: 'agreements', path: '/agreements', labelKey: pageRegistry.agreements.labelKey, icon: FileSignature },
+  { id: 'earnings', path: '/earnings', labelKey: pageRegistry.earnings.labelKey, icon: pageRegistry.earnings.icon },
   {
     id: 'search',
     path: '/search',

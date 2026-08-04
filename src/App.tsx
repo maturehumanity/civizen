@@ -56,6 +56,7 @@ const Market = lazyWithChunkReload(() => import('@/pages/Market'));
 const MarketTaxonomy = lazyWithChunkReload(() => import('@/pages/MarketTaxonomy'));
 const Agreements = lazyWithChunkReload(() => import('@/pages/Agreements'));
 const AgreementDetail = lazyWithChunkReload(() => import('@/pages/AgreementDetail'));
+const Earnings = lazyWithChunkReload(() => import('@/pages/Earnings'));
 const TermsOfUse = lazyWithChunkReload(() => import('@/pages/TermsOfUse'));
 const Search = lazyWithChunkReload(() => import('@/pages/Search'));
 const Profile = lazyWithChunkReload(() => import('@/pages/Profile'));
@@ -293,6 +294,7 @@ const App = () => (
                   <Route path="/market/taxonomy" element={<ProtectedRoute><MarketTaxonomy /></ProtectedRoute>} />
                   <Route path="/agreements/:agreementId" element={<ProtectedRoute><AgreementDetail /></ProtectedRoute>} />
                   <Route path="/agreements" element={<ProtectedRoute><Agreements /></ProtectedRoute>} />
+                  <Route path="/earnings" element={<ProtectedRoute><Earnings /></ProtectedRoute>} />
                   <Route
                     path="/profile"
                     element={

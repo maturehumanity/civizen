@@ -12,6 +12,7 @@ import {
   FileText,
   Globe,
   GraduationCap,
+  Home,
   LogIn,
   ArrowLeftRight,
   Search,
@@ -22,6 +23,7 @@ import {
   Hammer,
   PiggyBank,
   PlusCircle,
+  CircleDollarSign,
   Settings2,
   Shield,
   KeyRound,
@@ -67,6 +69,7 @@ export type PageId =
   | 'endorse'
   | 'market'
   | 'agreements'
+  | 'earnings'
   | 'profile'
   | 'editProfile'
   | 'settings'
@@ -142,7 +145,7 @@ export type FeatureEntry = {
 
 export const sectionRegistry: Record<SectionId, RegistryEntry<SectionId>> = {
   administration: { id: 'administration', icon: Shield, labelKey: 'features.sections.administration' },
-  home: { id: 'home', icon: LayoutGrid, labelKey: 'features.sections.home' },
+  home: { id: 'home', icon: Home, labelKey: 'features.sections.home' },
   discovery: { id: 'discovery', icon: Compass, labelKey: 'features.sections.discovery' },
   knowledge: { id: 'knowledge', icon: BookOpen, labelKey: 'features.sections.knowledge' },
   contribution: { id: 'contribution', icon: PlusCircle, labelKey: 'features.sections.contribution' },
@@ -153,7 +156,7 @@ export const sectionRegistry: Record<SectionId, RegistryEntry<SectionId>> = {
 
 export const pageRegistry: Record<PageId, RegistryEntry<PageId>> = {
   contribute: { id: 'contribute', icon: PlusCircle, labelKey: 'features.pages.contribute' },
-  home: { id: 'home', icon: LayoutGrid, labelKey: 'features.pages.home' },
+  home: { id: 'home', icon: Home, labelKey: 'features.pages.home' },
   study: { id: 'study', icon: BookOpen, labelKey: 'features.pages.study' },
   features: { id: 'features', icon: BookOpen, labelKey: 'features.pages.features' },
   downloads: { id: 'downloads', icon: Download, labelKey: 'features.pages.downloads' },
@@ -163,6 +166,7 @@ export const pageRegistry: Record<PageId, RegistryEntry<PageId>> = {
   endorse: { id: 'endorse', icon: Award, labelKey: 'features.pages.endorse' },
   market: { id: 'market', icon: Store, labelKey: 'features.pages.market' },
   agreements: { id: 'agreements', icon: FileSignature, labelKey: 'features.pages.agreements' },
+  earnings: { id: 'earnings', icon: CircleDollarSign, labelKey: 'features.pages.earnings' },
   profile: { id: 'profile', icon: UserRound, labelKey: 'features.pages.profile' },
   editProfile: { id: 'editProfile', icon: Edit3, labelKey: 'features.pages.editProfile' },
   settings: { id: 'settings', icon: Settings2, labelKey: 'features.pages.settings' },

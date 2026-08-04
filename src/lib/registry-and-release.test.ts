@@ -10,6 +10,7 @@ import { manageableRoles } from '@/lib/users-admin';
 describe('feature-registry', () => {
   it('registers core pages used by admin and navigation', () => {
     expect(pageRegistry.home).toBeTruthy();
+    expect(pageRegistry.earnings).toBeTruthy();
     expect(pageRegistry.adminUsers).toBeTruthy();
     expect(pageRegistry.settings).toBeTruthy();
     expect(Object.keys(sectionRegistry).length).toBeGreaterThan(0);
@@ -36,7 +37,8 @@ describe('app-release', () => {
 
 describe('app-pages', () => {
   it('exposes navigable links and filters by permissions', () => {
-    expect(appPageLinks.some((page) => page.id === 'home')).toBe(true);
+    expect(appPageLinks.some((page) => page.id === 'home')).toBe(false);
+    expect(appPageLinks.some((page) => page.id === 'earnings')).toBe(true);
     const filtered = getAccessiblePageLinks(['settings.manage', 'role.assign']);
     expect(filtered.some((page) => page.id === 'adminUsers')).toBe(true);
   });
