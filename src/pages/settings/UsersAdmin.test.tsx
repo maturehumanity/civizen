@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { Suspense, type ReactNode } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -6,8 +6,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import UsersAdmin from '@/pages/settings/UsersAdmin';
 import { manageableRoles } from '@/lib/users-admin';
 
-const { supabaseMock } = vi.hoisted(() => {
-  const result = { data: [], error: null };
+const { supabaseMock, rpcMock, fromMock } = vi.hoisted(() => {
+  const result = { data: [] as unknown[], error: null as null | { message: string } };
   const builder: Record<string, unknown> = {};
   const chain = () => builder;
   Object.assign(builder, {
@@ -28,10 +28,69 @@ const { supabaseMock } = vi.hoisted(() => {
     then: (resolve: (value: typeof result) => unknown) => Promise.resolve(result).then(resolve),
   });
 
+  const fromMock = vi.fn(() => builder);
+  const rpcMock = vi.fn(async (name: string) => {
+    if (name === 'governance_emergency_access_ops_policy_summary') {
+      return {
+        data: [
+          {
+            policy_key: 'default',
+            policy_name: 'Default',
+            pending_max_age_hours: 24,
+            approved_max_age_minutes: 120,
+            near_expiry_window_minutes: 15,
+            escalation_enabled: true,
+            oncall_channel: 'public_audit_ops',
+            updated_at: '2026-04-25T00:00:00.000Z',
+          },
+        ],
+        error: null,
+      };
+    }
+    if (name === 'governance_emergency_access_event_summary') {
+      return {
+        data: [
+          {
+            lookback_hours: 168,
+            request_count: 0,
+            approved_count: 0,
+            rejected_count: 0,
+            expired_count: 0,
+            consumed_count: 0,
+            pending_count: 0,
+            latest_event_at: null,
+          },
+        ],
+        error: null,
+      };
+    }
+    if (name === 'governance_emergency_access_ops_summary') {
+      return {
+        data: [
+          {
+            pending_count: 0,
+            stale_pending_count: 0,
+            approved_unconsumed_count: 0,
+            near_expiry_approved_count: 0,
+            consumed_count: 0,
+            rejected_count: 0,
+            expired_count: 0,
+            latest_request_at: null,
+            latest_event_at: null,
+          },
+        ],
+        error: null,
+      };
+    }
+    return { data: [], error: null };
+  });
+
   return {
+    fromMock,
+    rpcMock,
     supabaseMock: {
-      from: () => builder,
-      rpc: async () => ({ data: [], error: null }),
+      from: fromMock,
+      rpc: rpcMock,
       auth: {
         getSession: async () => ({ data: { session: null }, error: null }),
         getUser: async () => ({ data: { user: null }, error: null }),
@@ -106,6 +165,8 @@ vi.mock('@/integrations/supabase/client', () => ({
 describe('UsersAdmin page', () => {
   beforeEach(() => {
     window.localStorage.clear();
+    rpcMock.mockClear();
+    fromMock.mockClear();
   });
 
   it('exports manageableRoles for create-user dialog wiring', () => {
@@ -123,5 +184,33 @@ describe('UsersAdmin page', () => {
     );
 
     expect(await screen.findByTestId('users-admin-layout')).toBeInTheDocument();
+  });
+
+  it('loads emergency access data once without policy-driven reload loop', async () => {
+    render(
+      <MemoryRouter>
+        <Suspense fallback={<div>loading</div>}>
+          <UsersAdmin />
+        </Suspense>
+      </MemoryRouter>,
+    );
+
+    await screen.findByTestId('users-admin-layout');
+
+    await waitFor(() => {
+      expect(rpcMock).toHaveBeenCalledWith(
+        'governance_emergency_access_event_summary',
+        expect.objectContaining({ requested_lookback_hours: 168 }),
+      );
+    });
+
+    const eventSummaryCalls = () =>
+      rpcMock.mock.calls.filter((call) => call[0] === 'governance_emergency_access_event_summary').length;
+
+    const firstCount = eventSummaryCalls();
+    expect(firstCount).toBeGreaterThanOrEqual(1);
+
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    expect(eventSummaryCalls()).toBe(firstCount);
   });
 });

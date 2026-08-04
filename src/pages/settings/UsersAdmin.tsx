@@ -255,9 +255,15 @@ export default function UsersAdmin() {
   const [emergencyAccessOpsPolicyEvents, setEmergencyAccessOpsPolicyEvents] = useState<EmergencyAccessOpsPolicyEventRow[]>([]);
   const [rollingBackEmergencyAccessOpsPolicyEventId, setRollingBackEmergencyAccessOpsPolicyEventId] = useState<string | null>(null);
   const latestOverrideSignatureRef = useRef<string | null>(null);
+  const emergencyAccessOpsPolicyRef = useRef<EmergencyAccessOpsPolicyRow | null>(null);
+  const tRef = useRef(t);
+  emergencyAccessOpsPolicyRef.current = emergencyAccessOpsPolicy;
+  tRef.current = t;
 
   const loadData = useCallback(async () => {
     setLoading(true);
+    const translate = tRef.current;
+    const policyForOps = emergencyAccessOpsPolicyRef.current;
 
     const [
       { data: usersData, error: usersError },
@@ -290,8 +296,8 @@ export default function UsersAdmin() {
         requested_lookback_hours: 168,
       }),
       supabase.rpc('governance_emergency_access_ops_summary', {
-        requested_pending_max_age_hours: emergencyAccessOpsPolicy ? emergencyAccessOpsPolicy.pending_max_age_hours : 24,
-        requested_near_expiry_window_minutes: emergencyAccessOpsPolicy ? emergencyAccessOpsPolicy.near_expiry_window_minutes : 15,
+        requested_pending_max_age_hours: policyForOps ? policyForOps.pending_max_age_hours : 24,
+        requested_near_expiry_window_minutes: policyForOps ? policyForOps.near_expiry_window_minutes : 15,
       }),
       supabase.rpc('governance_emergency_access_ops_policy_summary', {
         requested_policy_key: 'default',
@@ -315,37 +321,37 @@ export default function UsersAdmin() {
 
     if (usersError) {
       console.error('Error loading users:', usersError);
-      toast.error(t('admin.users.loadFailed'));
+      toast.error(translate('admin.users.loadFailed'));
     }
 
     if (matrixError) {
       console.error('Error loading role permissions:', matrixError);
-      toast.error(t('admin.users.permissionsLoadFailed'));
+      toast.error(translate('admin.users.permissionsLoadFailed'));
     }
 
     if (professionsError) {
       console.error('Error loading professions:', professionsError);
-      toast.error(t('admin.users.professionsLoadFailed'));
+      toast.error(translate('admin.users.professionsLoadFailed'));
     }
 
     if (profileProfessionsError) {
       console.error('Error loading user professions:', profileProfessionsError);
-      toast.error(t('admin.users.professionAssignmentsLoadFailed'));
+      toast.error(translate('admin.users.professionAssignmentsLoadFailed'));
     }
 
     if (verificationCasesError) {
       console.error('Error loading identity verification cases:', verificationCasesError);
-      toast.error(t('admin.users.verificationCasesLoadFailed'));
+      toast.error(translate('admin.users.verificationCasesLoadFailed'));
     }
 
     if (sanctionsError) {
       console.error('Error loading governance sanctions:', sanctionsError);
-      toast.error(t('admin.users.sanctionsLoadFailed'));
+      toast.error(translate('admin.users.sanctionsLoadFailed'));
     }
 
     if (appealsError) {
       console.error('Error loading governance sanction appeals:', appealsError);
-      toast.error(t('admin.users.appealsLoadFailed'));
+      toast.error(translate('admin.users.appealsLoadFailed'));
     }
     if (emergencyAccessError) {
       console.error('Error loading emergency access requests:', emergencyAccessError);
@@ -434,7 +440,23 @@ export default function UsersAdmin() {
     setEmergencyAccessSummary(((emergencyAccessSummaryData ?? [])[0] ?? null) as EmergencyAccessEventSummaryRow | null);
     setEmergencyAccessOpsSummary(((emergencyAccessOpsSummaryData ?? [])[0] ?? null) as EmergencyAccessOpsSummaryRow | null);
     const nextPolicy = ((emergencyAccessOpsPolicyData ?? [])[0] ?? null) as EmergencyAccessOpsPolicyRow | null;
-    setEmergencyAccessOpsPolicy(nextPolicy);
+    setEmergencyAccessOpsPolicy((current) => {
+      if (!nextPolicy && !current) return current;
+      if (
+        current &&
+        nextPolicy &&
+        current.policy_key === nextPolicy.policy_key &&
+        current.pending_max_age_hours === nextPolicy.pending_max_age_hours &&
+        current.approved_max_age_minutes === nextPolicy.approved_max_age_minutes &&
+        current.near_expiry_window_minutes === nextPolicy.near_expiry_window_minutes &&
+        current.escalation_enabled === nextPolicy.escalation_enabled &&
+        current.oncall_channel === nextPolicy.oncall_channel &&
+        current.updated_at === nextPolicy.updated_at
+      ) {
+        return current;
+      }
+      return nextPolicy;
+    });
     if (nextPolicy) {
       setEmergencyAccessOpsPolicyDraft({
         pendingMaxAgeHours: String(nextPolicy.pending_max_age_hours),
@@ -455,7 +477,7 @@ export default function UsersAdmin() {
       return nextUsers.some((user) => user.id === current) ? current : null;
     });
     setLoading(false);
-  }, [emergencyAccessOpsPolicy, t]);
+  }, []);
 
   useEffect(() => {
     void loadData();
