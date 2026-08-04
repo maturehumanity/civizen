@@ -2,7 +2,7 @@
 
 ## Current focus
 
-**Market header UX (2026-08-04):** All Market header icons show names on hover (Filters · Products · Services · Agreements · Prototype credits · Search · Profile). Prototype credits hover also shows the Luma notice (banner removed). Search icon toggles the listing search bar (Study-style). `/market` restores the last section unless For you has unseen listings. Spec: `nav-secondary-carousel.md`.
+**Market header UX (2026-08-04):** All Market header icons show names on hover (Filters · Products · Services · Agreements · Prototype credits · Search · Profile). Prototype credits hover also shows the Luma notice (banner removed). Search icon toggles the listing search bar (Study-style). `/market` restores the last section unless For you has unseen listings. Spec: `nav-secondary-carousel.md`. **Testing v0.1.170** (build 172).
 
 **Market Jobs default + Services icon (2026-08-04):** `/market` defaults to **Jobs** (specialists lane with content) instead of empty For you. Products/Services header toggle uses Package + Handshake with on-hover tooltips. Spec: `nav-secondary-carousel.md`. **Testing v0.1.169** (build 171).
 
