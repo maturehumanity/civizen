@@ -1,12 +1,12 @@
 import { motion } from 'framer-motion';
-import { Award, Edit3, MessageCircle, PlusCircle, TrendingUp } from 'lucide-react';
+import { Edit3, MessageCircle, PlusCircle, ThumbsUp, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const actionMeta = [
-  { key: 'endorse', icon: Award, path: '/endorse', iconClassName: 'text-accent' },
+  { key: 'endorse', icon: ThumbsUp, path: '/endorse', iconClassName: 'text-accent' },
   { key: 'profile', icon: Edit3, path: '/settings/profile', iconClassName: 'text-primary' },
   { key: 'share', icon: MessageCircle, path: '/messaging', iconClassName: 'text-primary' },
   { key: 'score', icon: TrendingUp, path: '/profile', iconClassName: 'text-accent' },

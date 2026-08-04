@@ -16,6 +16,12 @@ describe('feature-registry', () => {
     expect(pageRegistry.settings).toBeTruthy();
     expect(Object.keys(sectionRegistry).length).toBeGreaterThan(0);
   });
+
+  it('gives Endorse a distinct icon from Professional credentials', () => {
+    const professions = appPageLinks.find((page) => page.id === 'professions');
+    expect(professions).toBeTruthy();
+    expect(pageRegistry.endorse.icon).not.toBe(professions!.icon);
+  });
 });
 
 describe('permission-metadata', () => {
