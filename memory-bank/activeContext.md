@@ -12,7 +12,7 @@
 
 **CI Download/Onboarding Auth mocks (2026-08-04):** All main pushes after Profile menu chrome failed Vitest: `PublicPageToolbar` calls `useAuth`, but Download/Onboarding tests had no AuthContext mock. Fixed with logged-out mocks. Yesterday’s green CI was the `npm audit` fix — this was a separate same-day regression.
 
-**Permissions full-bleed matrix (2026-08-04):** Permissions matrix fills the viewport below the title (no `72vh` inset card); vertical/horizontal scrollbars are hidden while scrolling still works.
+**Permissions full-bleed matrix (2026-08-04):** Permissions matrix fills the viewport below the title (no `72vh` inset card); vertical/horizontal scrollbars are hidden while scrolling still works. **Testing v0.1.160** (build 162).
 
 **Permissions expand-all title chevron (2026-08-04):** Title reads `Permissions >`. Main folders stay visible (folded). Title `>` expands/collapses all groups; clicking a folder name still toggles that folder only. **Testing v0.1.158** (build 160).
 
