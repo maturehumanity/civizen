@@ -631,54 +631,105 @@ export function mapContributionEventRow(row: Record<string, unknown>): Contribut
   };
 }
 
+/** Skip full domain recollect within this window (Home/Profile remounts). */
+export const CONTRIBUTION_SYNC_TTL_MS = 90_000;
+
+const contributionSyncState = new Map<
+  string,
+  { at: number; promise: Promise<ContributionEvent[]> | null }
+>();
+
 /**
  * Collect domain activity, upsert into the ledger, return estimated events.
+ * Dedupes in-flight work and skips full recollect within {@link CONTRIBUTION_SYNC_TTL_MS}
+ * unless `force` is set — callers should prefer {@link loadContributionEvents} for first paint.
  */
 export async function syncContributionEvents(
   profileId: string,
   userId?: string | null,
   client: DbClient = supabase,
+  options?: { force?: boolean },
 ): Promise<ContributionEvent[]> {
-  const events = await collectContributionSources(profileId, userId, client);
-  const db = client as any;
+  const existing = contributionSyncState.get(profileId);
+  if (existing?.promise) {
+    return existing.promise;
+  }
 
-  if (events.length === 0) {
+  const now = Date.now();
+  if (!options?.force && existing && now - existing.at < CONTRIBUTION_SYNC_TTL_MS) {
+    return loadContributionEvents(profileId, client);
+  }
+
+  const promise = (async () => {
+    const events = await collectContributionSources(profileId, userId, client);
+    const db = client as any;
+
+    if (events.length === 0) {
+      const { data } = await db
+        .from('profile_contribution_events')
+        .select('*')
+        .eq('profile_id', profileId)
+        .order('occurred_at', { ascending: false });
+      return (data ?? []).map((row: Record<string, unknown>) => mapContributionEventRow(row));
+    }
+
+    const rows = events.map(eventToRow);
+    const chunkSize = 100;
+    for (let i = 0; i < rows.length; i += chunkSize) {
+      const chunk = rows.slice(i, i + chunkSize);
+      const { error } = await db
+        .from('profile_contribution_events')
+        .upsert(chunk, { onConflict: 'source_table,source_id' });
+      if (error) {
+        console.error('syncContributionEvents upsert failed', error);
+        break;
+      }
+    }
+
+    // Drop chat-mirror content_items that were backfilled before the skip list.
+    await db
+      .from('profile_contribution_events')
+      .delete()
+      .eq('profile_id', profileId)
+      .eq('source_table', 'content_items')
+      .filter('raw_meta->>source_table', 'in', '("private_messages","messages")');
+
     const { data } = await db
       .from('profile_contribution_events')
       .select('*')
       .eq('profile_id', profileId)
       .order('occurred_at', { ascending: false });
+
     return (data ?? []).map((row: Record<string, unknown>) => mapContributionEventRow(row));
+  })();
+
+  contributionSyncState.set(profileId, { at: now, promise });
+  try {
+    const result = await promise;
+    contributionSyncState.set(profileId, { at: Date.now(), promise: null });
+    return result;
+  } catch (error) {
+    contributionSyncState.set(profileId, { at: 0, promise: null });
+    throw error;
   }
+}
 
-  const rows = events.map(eventToRow);
-  const chunkSize = 100;
-  for (let i = 0; i < rows.length; i += chunkSize) {
-    const chunk = rows.slice(i, i + chunkSize);
-    const { error } = await db
-      .from('profile_contribution_events')
-      .upsert(chunk, { onConflict: 'source_table,source_id' });
-    if (error) {
-      console.error('syncContributionEvents upsert failed', error);
-      break;
-    }
-  }
-
-  // Drop chat-mirror content_items that were backfilled before the skip list.
-  await db
-    .from('profile_contribution_events')
-    .delete()
-    .eq('profile_id', profileId)
-    .eq('source_table', 'content_items')
-    .filter('raw_meta->>source_table', 'in', '("private_messages","messages")');
-
-  const { data } = await db
-    .from('profile_contribution_events')
-    .select('*')
-    .eq('profile_id', profileId)
-    .order('occurred_at', { ascending: false });
-
-  return (data ?? []).map((row: Record<string, unknown>) => mapContributionEventRow(row));
+/** Fast ledger read, then optional background sync (does not await sync). */
+export async function loadContributionEventsThenSync(
+  profileId: string,
+  userId?: string | null,
+  client: DbClient = supabase,
+  onSynced?: (events: ContributionEvent[]) => void,
+): Promise<ContributionEvent[]> {
+  const events = await loadContributionEvents(profileId, client);
+  void syncContributionEvents(profileId, userId, client)
+    .then((synced) => {
+      onSynced?.(synced);
+    })
+    .catch((error) => {
+      console.error('Background contribution sync failed', error);
+    });
+  return events;
 }
 
 /** Ledger display: group high-volume types; keep recent individuals. */

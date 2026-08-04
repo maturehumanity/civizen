@@ -79,8 +79,12 @@ async function bootstrapApp() {
       throw new Error("Root container #root was not found.");
     }
 
-    const appModule = await import("./App.tsx");
-    const App = appModule.default;
+    // Prefetch English base strings while the App chunk downloads so LanguageProvider
+    // can paint without a full-screen gate or raw translation keys.
+    const [{ default: App }] = await Promise.all([
+      import("./App.tsx"),
+      import("@/lib/i18n.runtime").then((mod) => mod.loadBaseTranslations()),
+    ]);
     // Signal boot progress before first paint so the HTML watchdog does not fire
     // while React commits a large tree on slow phones.
     markBootReady();

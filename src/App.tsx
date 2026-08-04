@@ -79,7 +79,14 @@ const PrivacySettings = lazyWithChunkReload(() => import('@/pages/settings/Priva
 const SocialAccountsSettings = lazyWithChunkReload(() => import('@/pages/settings/SocialAccountsSettings'));
 const NotFound = lazyWithChunkReload(() => import('@/pages/NotFound'));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60_000,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 const BUILD_OVERLAY_STORAGE_KEY = 'civizen-build-overlay-enabled-v1';
 
 function AuthRedirect({ children }: { children: React.ReactNode }) {

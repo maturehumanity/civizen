@@ -52,17 +52,23 @@ function mapRowsToStories(rows: unknown[]): DevelopmentStory[] {
   return out;
 }
 
-export function useDevelopmentStories() {
+type UseDevelopmentStoriesOptions = {
+  /** When false, skip seed ingest + list fetch (Home All tab should not pay this cost). */
+  enabled?: boolean;
+};
+
+export function useDevelopmentStories(options: UseDevelopmentStoriesOptions = {}) {
+  const enabled = options.enabled !== false;
   const { profile } = useAuth();
   const [stories, setStories] = useState<DevelopmentStory[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
 
   const seedStories = useMemo(() => getSeedDevelopmentStories(), []);
 
   // Seed upserts must not share try/catch with list fetch — a thrown ingest error
   // would previously wipe the full list back to the four local seeds.
   useEffect(() => {
-    if (!profile?.id) return;
+    if (!enabled || !profile?.id) return;
 
     let cancelled = false;
     (async () => {
@@ -94,9 +100,14 @@ export function useDevelopmentStories() {
     return () => {
       cancelled = true;
     };
-  }, [profile?.id, seedStories]);
+  }, [enabled, profile?.id, seedStories]);
 
   useEffect(() => {
+    if (!enabled) {
+      setLoading(false);
+      return;
+    }
+
     let cancelled = false;
 
     const loadStories = async () => {
@@ -159,7 +170,7 @@ export function useDevelopmentStories() {
     return () => {
       cancelled = true;
     };
-  }, [seedStories]);
+  }, [enabled, seedStories]);
 
   return { stories, loading };
 }

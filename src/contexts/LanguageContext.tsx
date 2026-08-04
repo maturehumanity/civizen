@@ -9,6 +9,7 @@ import {
   isRtlLanguage,
   loadBaseTranslations,
   loadLanguagePack,
+  peekBaseTranslations,
   translateMessage,
   type LanguageCode,
   type TranslationTree,
@@ -38,8 +39,11 @@ function getInitialLanguage(): LanguageCode {
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const { profile, refreshProfile } = useAuth();
   const [language, setLanguageState] = useState<LanguageCode>(() => getInitialLanguage());
-  const [messages, setMessages] = useState<TranslationTree>(bootstrapTranslations);
-  const [isLoadingLanguage, setIsLoadingLanguage] = useState(true);
+  const [messages, setMessages] = useState<TranslationTree>(
+    () => peekBaseTranslations() ?? bootstrapTranslations,
+  );
+  // Prefer non-blocking shell: base pack is prefetched in main.tsx; packs swap in.
+  const [isLoadingLanguage, setIsLoadingLanguage] = useState(() => !peekBaseTranslations());
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
@@ -130,16 +134,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     [language, messages, isLoadingLanguage, setLanguage]
   );
 
-  if (isLoadingLanguage) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-pulse-soft text-muted-foreground">
-          {bootstrapTranslations.common.loading}
-        </div>
-      </div>
-    );
-  }
-
+  // Never block the router/shell on the English base pack — bootstrap strings
+  // cover critical chrome; full messages swap in when ready.
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
 }
 

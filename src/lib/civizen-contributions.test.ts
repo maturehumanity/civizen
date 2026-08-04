@@ -3,12 +3,14 @@ import { describe, expect, it } from 'vitest';
 import {
   applyVerifiedImpactBoost,
   buildContributionLedgerItems,
+  CONTRIBUTION_SYNC_TTL_MS,
   contentSizeFactor,
   estimateContributionEvent,
   scoreContributionsFromEvents,
   type ContributionEvent,
 } from '@/lib/civizen-contributions';
 import { diminishingQuantityScore } from '@/lib/civizen-score';
+import { peekBaseTranslations, loadBaseTranslations } from '@/lib/i18n.runtime';
 
 function makeEvent(
   overrides: Partial<ContributionEvent> & Pick<ContributionEvent, 'eventType'>,
@@ -263,5 +265,18 @@ describe('civizen contributions estimator', () => {
       makeEvent({ eventType: 'post', sourceId: '4', impactEstimate: 20, capacityEstimate: 25 }),
     ]);
     expect(diverse!.score!).toBeGreaterThan(sameType!.score!);
+  });
+
+  it('keeps a contribution sync TTL so remounts do not recollect every visit', () => {
+    expect(CONTRIBUTION_SYNC_TTL_MS).toBeGreaterThanOrEqual(60_000);
+  });
+});
+
+describe('i18n base prefetch helpers', () => {
+  it('exposes a sync peek after loadBaseTranslations resolves', async () => {
+    await loadBaseTranslations();
+    const peeked = peekBaseTranslations();
+    expect(peeked).toBeTruthy();
+    expect((peeked as { common?: { loading?: string } })?.common?.loading).toBeTruthy();
   });
 });

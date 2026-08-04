@@ -277,12 +277,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchProfile = useCallback(async (userId: string) => {
     const supabase = await getSupabase();
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('user_id', userId)
-      .is('deleted_at', null)
-      .single();
+    // Profile row + permissions in parallel — do not serialize two round-trips.
+    const [{ data, error }, permissionsResult] = await Promise.all([
+      supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .is('deleted_at', null)
+        .single(),
+      supabase.rpc('current_app_permissions'),
+    ]);
 
     if (error) {
       if (!isAbortLikeError(error)) {
@@ -292,10 +296,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const typedProfile = data as Omit<Profile, 'effective_permissions'>;
-
-    const { data: effectivePermissionRows, error: effectivePermissionsError } = await supabase.rpc(
-      'current_app_permissions',
-    );
+    const { data: effectivePermissionRows, error: effectivePermissionsError } = permissionsResult;
 
     if (effectivePermissionsError) {
       if (!isAbortLikeError(effectivePermissionsError)) {
@@ -356,18 +357,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const nextRefresh = (async () => {
       const profileData = await fetchProfile(userId);
       if (profileData) {
-        if (permissionListHasAny(profileData.effective_permissions || [], ['message.create'])) {
-          try {
-            const sb = await getSupabase();
-            await ensureDefaultMessagingEncryption(sb, profileData.id);
-          } catch (e) {
-            const err = e instanceof Error ? e : null;
-            if (err && !isAbortLikeError({ message: err.message, details: null })) {
-              console.warn('ensureDefaultMessagingEncryption failed', e);
-            }
-          }
-        }
+        // Publish profile immediately so ProtectedRoute / Home can paint.
+        // Messaging key bootstrap is unrelated to auth readiness.
         setProfile(profileData);
+        if (permissionListHasAny(profileData.effective_permissions || [], ['message.create'])) {
+          void (async () => {
+            try {
+              const sb = await getSupabase();
+              await ensureDefaultMessagingEncryption(sb, profileData.id);
+            } catch (e) {
+              const err = e instanceof Error ? e : null;
+              if (err && !isAbortLikeError({ message: err.message, details: null })) {
+                console.warn('ensureDefaultMessagingEncryption failed', e);
+              }
+            }
+          })();
+        }
       }
       return profileData;
     })();
@@ -411,10 +416,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             clearAccountSwitchState();
           }
 
+          // INITIAL_SESSION is handled by getSession below to avoid a double
+          // profile/permissions waterfall on every cold start.
           const shouldRefreshProfile =
             event === 'SIGNED_IN' ||
-            event === 'USER_UPDATED' ||
-            event === 'INITIAL_SESSION';
+            event === 'USER_UPDATED';
 
           if (currentSession?.user && shouldRefreshProfile) {
             void refreshProfileForUser(currentSession.user.id, true).finally(() => {
@@ -445,9 +451,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (currentSession?.user) {
-        void refreshProfileForUser(currentSession.user.id, true).finally(() => {
-          if (active) setLoading(false);
-        });
+        // Unblock the router as soon as the session is known; TermsReconsentGate
+        // still waits for profile, but we no longer serialize session→profile→E2EE
+        // behind a single Auth loading spinner for public routes.
+        if (active) setLoading(false);
+        void refreshProfileForUser(currentSession.user.id, true);
       } else {
         setLoading(false);
       }
@@ -473,13 +481,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         void touchProfileActivity(user.id);
-        void refreshProfileForUser(user.id, true);
+        // Soft refresh (1.5s throttle) — forcing on every tab focus stacked
+        // profile + permissions round-trips behind every page visit.
+        void refreshProfileForUser(user.id, false);
       }
     };
 
     const handleFocus = () => {
       void touchProfileActivity(user.id);
-      void refreshProfileForUser(user.id, true);
+      void refreshProfileForUser(user.id, false);
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);

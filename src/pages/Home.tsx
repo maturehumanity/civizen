@@ -15,8 +15,9 @@ import { countSkillsFromEntry } from '@/lib/profile-skills';
 import { countTrainingsFromEntry } from '@/lib/profile-trainings';
 import { parseExperienceEntries } from '@/lib/profile-experience';
 import {
+  loadContributionEventsThenSync,
   scoreContributionsFromEvents,
-  syncContributionEvents,
+  type ContributionEvent,
 } from '@/lib/civizen-contributions';
 import {
   loadPerformanceRatings,
@@ -50,7 +51,6 @@ import {
   type PostViewStats,
 } from '@/lib/post-views';
 import { cn } from '@/lib/utils';
-import { UnifiedSearchBlock } from '@/components/search/UnifiedSearchBlock';
 import { Badge } from '@/components/ui/badge';
 import { SlowRunningText } from '@/components/ui/slow-running-text';
 import { useDevelopmentStories } from '@/lib/use-development-stories';
@@ -64,6 +64,9 @@ import {
   type CuratedStoryListItem,
 } from '@/lib/development-story-curation';
 const UserPageMenu = lazy(() => import('@/components/layout/UserPageMenu').then((module) => ({ default: module.UserPageMenu })));
+const UnifiedSearchBlock = lazy(() =>
+  import('@/components/search/UnifiedSearchBlock').then((module) => ({ default: module.UnifiedSearchBlock })),
+);
 
 interface RecentEndorsement {
   id: string;
@@ -163,7 +166,9 @@ export default function Home() {
   const [storySectionFilter, setStorySectionFilter] = useState<string>('all');
   const [storyAreaFilter, setStoryAreaFilter] = useState<string>('all');
   const [selectedStoryId, setSelectedStoryId] = useState<string | null>(null);
-  const { stories: developmentStories, loading: storiesLoading } = useDevelopmentStories();
+  const { stories: developmentStories, loading: storiesLoading } = useDevelopmentStories({
+    enabled: homeTab === 'stories',
+  });
   const postEditorRef = useRef<HTMLDivElement | null>(null);
   const postDraftHydratedRef = useRef(false);
   const postContentRef = useRef(postContent);
@@ -556,16 +561,79 @@ export default function Home() {
 
   const fetchData = async () => {
     if (!profile?.id) return;
-    setLoading(true);
     setFeedBackendUnavailable(false);
 
     try {
-      // Fetch endorsements for score
-      const { data: endorsementData } = await supabase
-        .from('endorsements')
-        .select('*')
-        .eq('endorsed_id', profile.id)
-        .eq('is_hidden', false);
+      const applyContributionEvents = (events: ContributionEvent[]) => {
+        setContributionInput(scoreContributionsFromEvents(events));
+        void loadPerformanceRatings(profile.id).then((ratings) => {
+          setPerformanceInput(scorePerformanceFromEvents(events, ratings, profile.id));
+        });
+      };
+
+      const [
+        { data: endorsementData },
+        { data: educationData },
+        { data: trainingData },
+        { data: skillsData },
+        { data: experienceData },
+        contributionEvents,
+        { data: recentData },
+        postsResult,
+      ] = await Promise.all([
+        supabase
+          .from('endorsements')
+          .select('*')
+          .eq('endorsed_id', profile.id)
+          .eq('is_hidden', false),
+        (supabase as any)
+          .from('profile_education_entries')
+          .select('id, education_level, verification_status')
+          .eq('profile_id', profile.id),
+        (supabase as any)
+          .from('profile_training_entries')
+          .select('training_names')
+          .eq('profile_id', profile.id)
+          .maybeSingle(),
+        (supabase as any)
+          .from('profile_skills_entries')
+          .select('hard_skill_names, soft_skill_names, skill_names')
+          .eq('profile_id', profile.id)
+          .maybeSingle(),
+        (supabase as any)
+          .from('profile_experience_entries')
+          .select('experiences')
+          .eq('profile_id', profile.id)
+          .maybeSingle(),
+        loadContributionEventsThenSync(profile.id, profile.user_id, supabase, applyContributionEvents),
+        supabase
+          .from('endorsements')
+          .select(`
+            id,
+            stars,
+            pillar,
+            comment,
+            created_at,
+            endorser:profiles!endorsements_endorser_id_fkey(id, username, full_name, avatar_url)
+          `)
+          .eq('endorsed_id', profile.id)
+          .eq('is_hidden', false)
+          .order('created_at', { ascending: false })
+          .limit(5),
+        supabase
+          .from('posts')
+          .select(`
+            id,
+            content,
+            created_at,
+            author_id,
+            is_edited,
+            edited_at,
+            author:profiles!posts_author_id_fkey(id, username, full_name, avatar_url)
+          `)
+          .order('created_at', { ascending: false })
+          .limit(50),
+      ]);
 
       if (endorsementData) {
         setEndorsements(endorsementData.map(e => ({
@@ -573,11 +641,6 @@ export default function Home() {
           pillar: e.pillar as PillarId,
         })));
       }
-
-      const { data: educationData } = await (supabase as any)
-        .from('profile_education_entries')
-        .select('id, education_level, verification_status')
-        .eq('profile_id', profile.id);
 
       if (educationData) {
         setEducationCount(educationData.length);
@@ -601,51 +664,10 @@ export default function Home() {
         setEducationLevels([]);
       }
 
-      const { data: trainingData } = await (supabase as any)
-        .from('profile_training_entries')
-        .select('training_names')
-        .eq('profile_id', profile.id)
-        .maybeSingle();
       setTrainingCount(countTrainingsFromEntry(trainingData));
-
-      const { data: skillsData } = await (supabase as any)
-        .from('profile_skills_entries')
-        .select('hard_skill_names, soft_skill_names, skill_names')
-        .eq('profile_id', profile.id)
-        .maybeSingle();
       setSkillCount(countSkillsFromEntry(skillsData));
-
-      const { data: experienceData } = await (supabase as any)
-        .from('profile_experience_entries')
-        .select('experiences')
-        .eq('profile_id', profile.id)
-        .maybeSingle();
       setExperienceCount(parseExperienceEntries(experienceData?.experiences).length);
-
-      try {
-        const events = await syncContributionEvents(profile.id, profile.user_id);
-        setContributionInput(scoreContributionsFromEvents(events));
-        const ratings = await loadPerformanceRatings(profile.id);
-        setPerformanceInput(scorePerformanceFromEvents(events, ratings, profile.id));
-      } catch (error) {
-        console.error('Contribution sync failed', error);
-      }
-
-      // Fetch recent endorsements with endorser info
-      const { data: recentData } = await supabase
-        .from('endorsements')
-        .select(`
-          id,
-          stars,
-          pillar,
-          comment,
-          created_at,
-          endorser:profiles!endorsements_endorser_id_fkey(id, username, full_name, avatar_url)
-        `)
-        .eq('endorsed_id', profile.id)
-        .eq('is_hidden', false)
-        .order('created_at', { ascending: false })
-        .limit(5);
+      applyContributionEvents(contributionEvents);
 
       if (recentData) {
         setRecentEndorsements(recentData.map(e => ({
@@ -655,20 +677,7 @@ export default function Home() {
         })));
       }
 
-      // Fetch posts for feed
-      const { data: postsData, error: postsError } = await supabase
-        .from('posts')
-        .select(`
-          id,
-          content,
-          created_at,
-          author_id,
-          is_edited,
-          edited_at,
-          author:profiles!posts_author_id_fkey(id, username, full_name, avatar_url)
-        `)
-        .order('created_at', { ascending: false })
-        .limit(50);
+      const { data: postsData, error: postsError } = postsResult;
 
       if (postsError) {
         console.error('Error fetching posts:', postsError);
@@ -679,10 +688,12 @@ export default function Home() {
       } else {
         const normalizedPosts = (postsData || []).map(normalizePost);
         setPosts((prev) => mergePostsById(prev, normalizedPosts));
-        const interactionsUnavailable = await fetchPostInteractions(normalizedPosts.map((post) => post.id));
-        if (!interactionsUnavailable) {
-          setFeedBackendUnavailable(false);
-        }
+        // Paint shell + posts first; interactions fill in without blocking.
+        void fetchPostInteractions(normalizedPosts.map((post) => post.id)).then((interactionsUnavailable) => {
+          if (!interactionsUnavailable) {
+            setFeedBackendUnavailable(false);
+          }
+        });
         hydrateLocalFallbackData();
       }
     } finally {
@@ -1157,10 +1168,10 @@ export default function Home() {
     }
   };
 
-  if (loading) {
+  if (!profile?.id) {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center min-h-screen">
+        <div className="flex items-center justify-center min-h-[40vh]">
           <div className="animate-pulse-soft text-muted-foreground">{t('common.loading')}</div>
         </div>
       </AppLayout>
@@ -1371,7 +1382,9 @@ export default function Home() {
             transition={{ delay: 0.12 }}
           >
             <Card className="border-border/70 bg-card/95 p-4 shadow-sm sm:p-5">
-              <UnifiedSearchBlock showTitle={false} syncUrlParams={false} />
+              <Suspense fallback={<div className="h-24 animate-pulse rounded-xl bg-muted/40" />}>
+                <UnifiedSearchBlock showTitle={false} syncUrlParams={false} />
+              </Suspense>
             </Card>
           </motion.div>
         ) : null}
@@ -1529,9 +1542,17 @@ export default function Home() {
 
           {posts.length === 0 ? (
             <Card className="mb-4 border-2 border-dashed border-border/70 bg-card/70 p-6 shadow-sm">
+              {loading ? (
+                <div className="space-y-3" aria-busy="true" aria-label={t('common.loading')}>
+                  <div className="h-4 w-2/3 animate-pulse rounded bg-muted/50" />
+                  <div className="h-4 w-full animate-pulse rounded bg-muted/40" />
+                  <div className="h-4 w-5/6 animate-pulse rounded bg-muted/40" />
+                </div>
+              ) : (
                 <p className="text-sm text-muted-foreground">
-                {t('home.noPostsYet')}
-              </p>
+                  {t('home.noPostsYet')}
+                </p>
+              )}
             </Card>
           ) : (
             <div className="space-y-3">

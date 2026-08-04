@@ -37,8 +37,8 @@ import { countSkillsFromEntry } from '@/lib/profile-skills';
 import { countTrainingsFromEntry } from '@/lib/profile-trainings';
 import { parseExperienceEntries, cumulativeExperienceMonths } from '@/lib/profile-experience';
 import {
+  loadContributionEventsThenSync,
   scoreContributionsFromEvents,
-  syncContributionEvents,
   type ContributionEvent,
 } from '@/lib/civizen-contributions';
 import {
@@ -231,9 +231,25 @@ export default function Profile() {
       setAvatarUrl(avatarRow.avatar_url);
     }
 
+    // Paint dial/categories from profile activity; contributions fill from ledger + background sync.
+    setLoading(false);
+
     setContributionsSyncing(true);
     try {
-      const events = await syncContributionEvents(profile.id, profile.user_id);
+      const events = await loadContributionEventsThenSync(
+        profile.id,
+        profile.user_id,
+        supabase,
+        (synced) => {
+          setContributionEvents(synced);
+          setContributionInput(scoreContributionsFromEvents(synced));
+          void loadPerformanceRatings(profile.id).then((ratings) => {
+            const activities = buildPerformanceActivities(synced, ratings, profile.id);
+            setPerformanceActivities(activities);
+            setPerformanceInput(scorePerformanceFromActivities(activities));
+          });
+        },
+      );
       setContributionEvents(events);
       setContributionInput(scoreContributionsFromEvents(events));
       const ratings = await loadPerformanceRatings(profile.id);
@@ -245,8 +261,6 @@ export default function Profile() {
     } finally {
       setContributionsSyncing(false);
     }
-
-    setLoading(false);
   };
 
   const pillarScore = useMemo(() => calculateCivizenScore(endorsements), [endorsements]);

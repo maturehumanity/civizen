@@ -35,6 +35,13 @@ REMOTE_STAGE="${REMOTE_STAGE:?Set REMOTE_STAGE (environment or .env.local)}"
 ASSET_RETENTION_DAYS="${ASSET_RETENTION_DAYS:-14}"
 STAMP="$(date +%Y%m%d-%H%M%S)"
 TGZ="/tmp/civizen-dist-${STAMP}.tgz"
+# Used remotely to keep the versioned APKs that belong to this deploy.
+APP_RELEASE_ID="$(
+  grep -E "^export const APP_RELEASE_ID" "${ROOT}/src/lib/app-release.ts" \
+    | head -1 \
+    | sed -E "s/.*'([^']+)'.*/\1/"
+)"
+APP_RELEASE_ID="${APP_RELEASE_ID:?Could not read APP_RELEASE_ID from src/lib/app-release.ts}"
 
 if [[ ! -d "$DIST" ]]; then
   echo "Missing dist/. Run a production build first." >&2
@@ -60,12 +67,23 @@ ROOT='${REMOTE_ROOT}'
 STAGE='${REMOTE_STAGE}'
 STAMP='${STAMP}'
 DAYS='${ASSET_RETENTION_DAYS}'
+RELEASE_ID='${APP_RELEASE_ID}'
 mkdir -p "\$ROOT/assets" ~/civizen-backups
 backup=~/civizen-backups/civizen-\${STAMP}.tgz
 sudo tar -C "\$ROOT" -czf "\$backup" . || true
+# Cap backup retention — unbounded full-tree tarballs fill the VPS disk.
+ls -1t ~/civizen-backups/civizen-*.tgz 2>/dev/null | tail -n +3 | xargs -r sudo rm -f || true
 sudo tar -C "\$ROOT" -xzf "\$STAGE/civizen-dist.tgz"
 # Keep recently hashed assets so in-flight clients can still fetch prior chunks.
 sudo find "\$ROOT/assets" -type f -mtime +"\$DAYS" -delete || true
+# Keep release soak APKs, current aliases, and this deploy's versioned APKs.
+if [[ -d "\$ROOT/downloads" ]]; then
+  sudo find "\$ROOT/downloads" -maxdepth 1 -type f -name 'civizen-debug-*.apk' \
+    ! -name 'civizen-debug-release-*.apk' \
+    ! -name "civizen-debug-\${RELEASE_ID}.apk" \
+    ! -name "civizen-debug-testing-\${RELEASE_ID}.apk" \
+    -delete || true
+fi
 rm -f "\$STAGE/civizen-dist.tgz"
 echo "Deploy complete: \$ROOT (backup \$backup)"
 EOF

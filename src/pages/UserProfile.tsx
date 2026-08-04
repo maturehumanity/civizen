@@ -16,8 +16,8 @@ import { countTrainingsFromEntry } from '@/lib/profile-trainings';
 import { parseExperienceEntries } from '@/lib/profile-experience';
 import {
   loadContributionEvents,
+  loadContributionEventsThenSync,
   scoreContributionsFromEvents,
-  syncContributionEvents,
   type ContributionEvent,
 } from '@/lib/civizen-contributions';
 import {
@@ -145,8 +145,23 @@ export default function UserProfile() {
 
     try {
       const isOwn = currentProfile?.id === userId;
+      const applyEvents = (events: ContributionEvent[]) => {
+        setContributionEvents(events);
+        setContributionInput(scoreContributionsFromEvents(events));
+        void loadPerformanceRatings(userId).then((ratings) => {
+          const activities = buildPerformanceActivities(events, ratings, currentProfile?.id);
+          setPerformanceActivities(activities);
+          setPerformanceInput(scorePerformanceFromActivities(activities));
+        });
+      };
+
       const events = isOwn
-        ? await syncContributionEvents(userId, currentProfile?.user_id ?? profileData?.user_id)
+        ? await loadContributionEventsThenSync(
+            userId,
+            currentProfile?.user_id ?? profileData?.user_id,
+            supabase,
+            applyEvents,
+          )
         : await loadContributionEvents(userId);
       setContributionEvents(events);
       setContributionInput(scoreContributionsFromEvents(events));

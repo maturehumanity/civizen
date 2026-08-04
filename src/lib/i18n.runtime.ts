@@ -251,6 +251,11 @@ export async function loadBaseTranslations(): Promise<TranslationTree> {
   return baseTranslationsPromise;
 }
 
+/** Sync peek for first paint after a prefetch in `main.tsx`. */
+export function peekBaseTranslations(): TranslationTree | null {
+  return baseTranslationsCache;
+}
+
 export async function loadLanguageOptions(): Promise<readonly LanguageOption[]> {
   if (languageOptionsCache) return languageOptionsCache;
   if (!languageOptionsPromise) {

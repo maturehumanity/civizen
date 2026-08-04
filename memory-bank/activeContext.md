@@ -2,7 +2,9 @@
 
 ## Current focus
 
-**Account switcher UI (2026-08-03):** Removed the non-working header **Switch back** button from `UserPageMenu`. Account switching stays on each non-current account card via **Switch**.
+**App load performance (2026-08-03):** Home and shared bootstrap were stacking full-screen gates (i18n → auth profile/E2EE → Home sequential fetch including full contribution sync), so sparse pages felt ~5s empty. Fixed: prefetch i18n base with App chunk (no language shell gate); Auth clears loading on session and publishes profile before messaging E2EE; Home/Profile paint from parallel queries + ledger read while contribution sync runs in background with 90s TTL; Stories seed/list deferred until Stories tab. **Testing v0.1.136** (build 138); Live/Production remains on prior soak build. Deploy also caps site backups (≤2) and prunes old testing APKs so the VPS does not fill mid-publish.
+
+**Account switcher UI (2026-08-03):** Removed the non-working header **Switch back** button from `UserPageMenu`. Account switching stays on each non-current account card via **Switch**. **Testing v0.1.135** (build 137).
 
 **UsersAdmin emergency-access reload loop (2026-08-03):** `loadData` depended on `emergencyAccessOpsPolicy` while also `set`ting it, so the page stayed on Loading and re-toasted “Could not load emergency access event summary.” Fixed with a policy ref + stable callback deps; event_summary now returns a zero row on empty lookback. Migration applied. **Testing v0.1.134** (build 136).
 
