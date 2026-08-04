@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronDown } from 'lucide-react';
 
 import { RoundCountryFlag } from '@/components/governance/RoundCountryFlag';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -82,7 +81,7 @@ export function PublicLanguageSelect() {
           type="button"
           aria-label={`${t('auth.language')}: ${selectedOption?.label ?? language}`}
           aria-expanded={open}
-          className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border/60 bg-card/80 px-2 text-xs outline-none ring-offset-background transition-colors hover:bg-card focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border/60 bg-card/80 outline-none ring-offset-background transition-colors hover:bg-card focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           onMouseEnter={() => {
             if (canHoverOpen()) openMenu();
           }}
@@ -91,7 +90,6 @@ export function PublicLanguageSelect() {
           }}
         >
           <RoundCountryFlag countryCode={selectedFlagCountry} locale={language} size="sm" />
-          <ChevronDown className="h-3.5 w-3.5 opacity-50" aria-hidden />
         </button>
       </PopoverTrigger>
       <PopoverContent
