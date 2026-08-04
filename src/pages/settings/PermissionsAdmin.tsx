@@ -48,8 +48,16 @@ export default function PermissionsAdmin() {
     [profile?.role],
   );
   const matrixGridTemplate = useMemo(
-    () => `minmax(140px, 1.2fr) repeat(${visibleRoles.length}, minmax(64px, 1fr))`,
+    () => `minmax(6.75rem, 8.25rem) repeat(${visibleRoles.length}, 3.5rem)`,
     [visibleRoles.length],
+  );
+  const matrixRowStyle = useMemo(
+    () => ({
+      gridTemplateColumns: matrixGridTemplate,
+      width: 'max-content',
+      minWidth: '100%',
+    }),
+    [matrixGridTemplate],
   );
 
   useEffect(() => {
@@ -253,26 +261,28 @@ export default function PermissionsAdmin() {
             ) : (
               <div
                 data-testid="permissions-matrix-scroll"
-                className="min-h-0 flex-1 overflow-auto overscroll-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                className="min-h-0 flex-1 overflow-auto overscroll-contain touch-pan-x touch-pan-y [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
               >
                 <div
-                  className="sticky top-0 z-20 grid items-center gap-2 border-b border-border/60 bg-card/95 px-3 py-3 backdrop-blur supports-[backdrop-filter]:bg-card/80"
-                  style={{ gridTemplateColumns: matrixGridTemplate }}
+                  className="sticky top-0 z-20 grid items-center gap-1 border-b border-border/60 bg-card/95 px-2 py-3 backdrop-blur supports-[backdrop-filter]:bg-card/80"
+                  style={matrixRowStyle}
+                  data-testid="permissions-matrix-header"
                 >
-                  <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                  <div className="sticky left-0 z-30 bg-card/95 px-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground backdrop-blur supports-[backdrop-filter]:bg-card/80">
                     {t('admin.permissions.featureColumn')}
                   </div>
                   {visibleRoles.map((role) => (
                     <div
                       key={role}
-                      className="text-center text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground"
+                      title={t(`admin.roles.${role}`)}
+                      className="truncate px-0.5 text-center text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground sm:text-xs sm:tracking-[0.12em]"
                     >
                       {t(`admin.roles.${role}`)}
                     </div>
                   ))}
                 </div>
 
-                <div className="space-y-4 p-3">
+                <div className="space-y-4 p-2">
                   {groupedPermissions.map((sectionGroup) => {
                     const sectionCollapsed = isSectionCollapsed(sectionGroup.sectionId);
                     const sectionLabel = t(`admin.permissions.sectionNames.${sectionGroup.sectionId}`);
@@ -282,7 +292,7 @@ export default function PermissionsAdmin() {
                         <button
                           type="button"
                           onClick={() => toggleSectionVisibility(sectionGroup.sectionId)}
-                          className="flex w-full items-center text-left"
+                          className="sticky left-0 z-10 flex w-max max-w-[min(100%,12rem)] items-center bg-card/95 px-1 text-left backdrop-blur supports-[backdrop-filter]:bg-card/80"
                           aria-expanded={!sectionCollapsed}
                           data-testid={`permissions-section-toggle-${sectionGroup.sectionId}`}
                         >
@@ -300,14 +310,14 @@ export default function PermissionsAdmin() {
                               return (
                                 <Card
                                   key={`${sectionGroup.sectionId}-${pageGroup.pageId}`}
-                                  className="overflow-hidden rounded-2xl border-border/60 shadow-none"
+                                  className="w-max min-w-full overflow-hidden rounded-2xl border-border/60 shadow-none"
                                 >
                                   {showPageLabel ? (
-                                    <div className="border-b border-border/60 px-3 py-2.5">
+                                    <div className="border-b border-border/60 px-2 py-2.5">
                                       <button
                                         type="button"
                                         onClick={() => togglePageVisibility(pageKey)}
-                                        className="flex w-full items-center text-left"
+                                        className="sticky left-0 z-10 flex w-max max-w-[min(100%,12rem)] items-center bg-card px-1 text-left"
                                         aria-expanded={!pageCollapsed}
                                         data-testid={`permissions-page-toggle-${pageKey}`}
                                       >
@@ -321,10 +331,10 @@ export default function PermissionsAdmin() {
                                       {pageGroup.items.map((entry) => (
                                         <div
                                           key={entry.permission}
-                                          className="grid items-center gap-2 rounded-xl px-3 py-2 transition-[background-color,box-shadow] hover:bg-background/40 hover:ring-1 hover:ring-primary/20"
-                                          style={{ gridTemplateColumns: matrixGridTemplate }}
+                                          className="grid items-center gap-1 rounded-xl px-2 py-2 transition-[background-color,box-shadow] hover:bg-background/40 hover:ring-1 hover:ring-primary/20"
+                                          style={matrixRowStyle}
                                         >
-                                          <div className="min-w-0">
+                                          <div className="sticky left-0 z-10 min-w-0 bg-card px-1">
                                             <TooltipProvider delayDuration={120}>
                                               <Tooltip>
                                                 <TooltipTrigger asChild>

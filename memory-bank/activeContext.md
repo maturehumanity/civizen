@@ -4,13 +4,15 @@
 
 **Funding interest autofill (2026-08-04):** Logged-in users get Full name / Email / Country pre-filled on `FundingInterestForm` (Support, Invest, Institutional, Contribute) from auth profile/session; edits are not overwritten. Inquiries land in Settings → Funding → Interest (`funding_interest_inquiries`). Standing rule in AGENTS.md: known-field autofill.
 
-**Same-line page Back (2026-08-04):** Removed chrome Back row + header spacer. `AppPageHeader` puts Back chevron on the same line as the page title; Search/Profile stay floating top-right. Applied on Settings, Earnings, Users admin. **Testing v0.1.157** (build 159).
+**Same-line page Back (2026-08-04):** Removed chrome Back row + header spacer. `AppPageHeader` puts Back chevron on the same line as the page title; Search/Profile stay floating top-right. Migrated remaining AppLayout headers (settings/admin, contribute lane, profile, endorse, governance, law, terms, features, market taxonomy, etc.). Optional `onBack` for in-flow back (EndorseFlow). Already on Settings, Earnings, Users admin, Permissions. **Testing v0.1.157** (build 159).
 
 **Contribute hub redesign Phase 1 (2026-08-04):** `/contribute` is no longer profile/messaging/score/endorse shortcuts. It is the participation gateway (“How would you like to contribute today?”) with sections Ways · Community · Knowledge · Your Impact. Volunteer → `/fund/contribute`, Financial → `/fund`, Organization → `/partners`; other lanes use `/contribute/:laneId` placeholders. Spec: `docs/04-operations/dev/contribute-page.md`. Endorsement stays on Search + profiles. LANGUAGE_PACK_VERSION 120. **Testing v0.1.156** (build 158).
 
 **Post-push CI watch (2026-08-04):** Agents must run `npm run verify:ci` after every GitHub push (`scripts/verify-ci.mjs` waits for the `CI` workflow on `HEAD`). Encoded in AGENTS.md §10 and `.cursor/rules/civizen-project.mdc`.
 
 **CI Download/Onboarding Auth mocks (2026-08-04):** All main pushes after Profile menu chrome failed Vitest: `PublicPageToolbar` calls `useAuth`, but Download/Onboarding tests had no AuthContext mock. Fixed with logged-out mocks. Yesterday’s green CI was the `npm audit` fix — this was a separate same-day regression.
+
+**Permissions dense columns (2026-08-04):** Feature labels sit in a tight sticky first column next to role checkboxes (no `fr` gap). Role columns are fixed-width and swipe/scroll horizontally on small screens; scrollbars stay hidden.
 
 **Permissions full-bleed matrix (2026-08-04):** Permissions matrix fills the viewport below the title (no `72vh` inset card); vertical/horizontal scrollbars are hidden while scrolling still works. **Testing v0.1.160** (build 162).
 

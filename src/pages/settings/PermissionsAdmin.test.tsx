@@ -117,7 +117,13 @@ describe('PermissionsAdmin page', () => {
     const matrixScroll = screen.getByTestId('permissions-matrix-scroll');
     expect(matrixScroll.className).toContain('[scrollbar-width:none]');
     expect(matrixScroll.className).toContain('[&::-webkit-scrollbar]:hidden');
+    expect(matrixScroll.className).toContain('touch-pan-x');
     expect(matrixScroll.className).not.toContain('max-h-[72vh]');
+
+    const matrixHeader = screen.getByTestId('permissions-matrix-header');
+    expect(matrixHeader.getAttribute('style') || '').toContain('max-content');
+    expect(matrixHeader.getAttribute('style') || '').toContain('3.5rem');
+    expect(matrixHeader.getAttribute('style') || '').not.toContain('fr');
   });
 
   it('expands all folders from the title chevron, and still unfolds one folder by name', async () => {
