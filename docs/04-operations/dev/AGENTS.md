@@ -99,6 +99,12 @@ When restricted ops configuration is available to the agent, perform production 
 - Do not commit or push APK binaries to GitHub for this project. APKs should exist only as local build artifacts on this machine and as deployed download files on production.
 - For Study/Constitution UI changes, preserve all existing user-visible labels/structure unless the user explicitly asks to modify that exact element. Do not remove, rename, or restyle article/sub-article labels when the request is about behavior only (for example open/close interactions).
 - When the user asks to update/publish the application for testing, always perform a real release bump first (new `APP_VERSION`, `ANDROID_VERSION_CODE`, and `APP_RELEASE_ID`) before running the update/deploy flow, so installed clients can detect and prompt for the new update.
+- **Tests with every module/page change:** Whenever you **create or modify** a `src/pages/**` route/page, a user-facing component (especially under `src/components/`), or a non-trivial `src/lib/**` module, **in the same session** add or update Vitest coverage before calling the work done:
+  - **Pages / admin UI:** at minimum a mount/smoke render (or an entry in `src/pages/page-smoke.test.tsx` critical-render set) that would catch missing imports and `ReferenceError`s; prefer co-located `*.test.tsx` for behavior that matters.
+  - **Lib modules:** unit tests for exported helpers/rules used by UI or RPC boundaries; do not treat helper-only tests as enough when the real risk is page JSX.
+  - **Modify path:** update existing tests when behavior changes; do not leave stale assertions.
+  - **Stop condition:** do not report a feature/fix complete if new or changed modules/pages lack corresponding test updates, unless the change is docs-only or an explicit user waiver in that session.
+  - Run the new/updated tests (`npm test` or a focused `vitest run …`) in addition to `npm run verify:post-dev` when UI changed.
 
 ## 4. Application Versioning
 
@@ -158,10 +164,13 @@ When restricted ops configuration is available to the agent, perform production 
 - **2026-07 correction — messaging composer gated on list loading:** Failure pattern: Nela/thread textarea stays `disabled` because `composerDisabled` included `conversationsLoading`, and Nela ensure/`private_list_my_conversations` could hang without `finally`. Mandatory check: composer enablement depends only on selection / block / selection-mode — not inbox loading. Stop condition: do not ship messaging changes that disable typing while a conversation id is already selected.
 - **2026-07 correction — institutional policy supersession:** Failure pattern: treating superseded Funding Constitution, tokenomics, Luma-as-currency, founder-reserve, or contributor-proceeds language as current policy for public copy or agent answers. Mandatory check: read `docs/02-moderated/policies/institutional/` and public routes under `/documents` (and related `/about/*`); do not treat exploratory or superseded materials as current policy unless the user asks for historical material. Stop condition: do not publish fixed investor/contributor/founder percentages, tax-deductibility claims, Luma-as-money, or SSN labels.
 - **2026-07 correction — public ops hygiene:** Failure pattern: documenting production access, host topology, secrets, provider reconfiguration, recovery, or deploy internals in public docs. Mandatory check: keep those procedures in the access-controlled operations store only. Stop condition: do not add production HOW-to detail to public `AGENTS.md`, release notes, or SSH stubs.
+- **2026-08 correction — missing page/UI tests:** Failure pattern: shipping page/component refactors (e.g. UsersAdmin split) with only `src/lib` helper tests; missing imports (`Select`, `manageableRoles`) passed CI until runtime boot crash. Mandatory check: for every new or modified page/module, add or update Vitest in the same session (page smoke/mount and/or co-located `*.test.tsx` / `*.test.ts`); keep high-risk admin routes in `src/pages/page-smoke.test.tsx` render-critical set when applicable. Stop condition: do not close a page/module change without running the new or updated tests successfully.
 
 ## 7. Post-development verification (mandatory after every fix or UI change)
 
 Run this **full sequence** before telling the user a front-end task is done. Do not skip steps because a build passed.
+
+When the change touched pages, components, or lib modules, also run the **new or updated Vitest files** for those modules (or `npm test`) before `verify:post-dev`. Helper-only lib tests are not a substitute for page mount/smoke coverage on UI entry points.
 
 ```bash
 npm run verify:post-dev
