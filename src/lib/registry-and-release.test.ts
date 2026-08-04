@@ -50,12 +50,18 @@ describe('app-pages', () => {
     expect(filtered.some((page) => page.id === 'adminUsers')).toBe(true);
   });
 
-  it('omits main-nav, Search, Download, and Edit Profile from the profile menu', () => {
-    const menu = getProfileMenuPageLinks(['profile.read', 'profile.update_self', 'content.read']);
+  it('omits main-nav, Search, Download, Edit Profile, and Endorse from the profile menu', () => {
+    const menu = getProfileMenuPageLinks([
+      'profile.read',
+      'profile.update_self',
+      'content.read',
+      'endorsement.create',
+    ]);
     for (const id of PROFILE_MENU_EXCLUDED_PAGE_IDS) {
       if (id === 'home') continue;
       expect(menu.some((page) => page.id === id)).toBe(false);
     }
+    expect(menu.some((page) => page.id === 'endorse')).toBe(false);
     expect(menu.some((page) => page.id === 'settings')).toBe(true);
     expect(MAIN_NAV_ITEMS.map((item) => item.path)).toEqual([
       '/',

@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Hide Endorse from Profile menu (2026-08-04):** Endorse remains on Search results and profile pages; Profile menu no longer lists it (`PROFILE_MENU_EXCLUDED_PAGE_IDS`). **Testing v0.1.164** (build 166).
+
 **Public language flag (2026-08-04):** `PublicLanguageSelect` is flag-only — removed the redundant `ChevronDown` beside the flag (hover/click still opens the list). **Testing v0.1.163** (build 165).
 
 **Funding interest autofill (2026-08-04):** Logged-in users get Full name / Email / Country pre-filled on `FundingInterestForm` (Support, Invest, Institutional, Contribute) from auth profile/session; edits are not overwritten. Inquiries land in Settings → Funding → Interest (`funding_interest_inquiries`). Standing rule in AGENTS.md: known-field autofill.

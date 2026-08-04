@@ -20,7 +20,7 @@ export const MAIN_NAV_ITEMS: readonly MainNavItem[] = [
   { path: '/messaging', icon: MessageCircle, labelKey: 'common.messaging', pageId: 'messaging' },
 ] as const;
 
-/** Profile menu must not duplicate main-nav destinations or chrome entry points. */
+/** Profile menu must not duplicate main-nav destinations, chrome entry points, or contextual flows. */
 export const PROFILE_MENU_EXCLUDED_PAGE_IDS = new Set<NavigablePageId | 'home'>([
   'home',
   'study',
@@ -30,6 +30,7 @@ export const PROFILE_MENU_EXCLUDED_PAGE_IDS = new Set<NavigablePageId | 'home'>(
   'downloads',
   'editProfile',
   'search',
+  'endorse',
 ]);
 
 export function isMainNavItemActive(pathname: string, itemPath: string) {
