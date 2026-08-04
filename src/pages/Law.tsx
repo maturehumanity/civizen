@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Check, ExternalLink, Link2, Loader2, Scale, Search, Send, ShieldCheck } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -621,20 +622,28 @@ export default function Law() {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-start justify-between gap-4"
         >
-          <div className="flex items-start gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <Scale className="h-7 w-7" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-display font-bold text-foreground">{t('law.title')}</h1>
-              <p className="text-base text-muted-foreground">{t('law.subtitle')}</p>
-            </div>
-          </div>
-          <Button type="button" size="icon" variant="outline" className="h-9 w-9" onClick={() => navigate('/search?tab=all')} aria-label={t('common.search')}>
-            <Search className="h-4 w-4" />
-          </Button>
+          <AppPageHeader
+            title={t('law.title')}
+            subtitle={t('law.subtitle')}
+            leading={
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                <Scale className="h-7 w-7" />
+              </div>
+            }
+            actions={
+              <Button
+                type="button"
+                size="icon"
+                variant="outline"
+                className="h-9 w-9"
+                onClick={() => navigate('/search?tab=all')}
+                aria-label={t('common.search')}
+              >
+                <Search className="h-4 w-4" />
+              </Button>
+            }
+          />
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.04 }}>

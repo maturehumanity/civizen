@@ -3,6 +3,7 @@ import { Library } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 import { PublicPageFooter } from '@/components/public/PublicPageFooter';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -32,22 +33,18 @@ export default function PublicDocumentsIndex() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8 sm:px-6">
-        <motion.header
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-start gap-3"
-        >
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-            <Library className="h-6 w-6" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-display font-bold text-foreground">
-              {t('institutionalDocs.indexTitle')}
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {t('institutionalDocs.indexDescription')}
-            </p>
-          </div>
+        <motion.header initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
+          <AppPageHeader
+            title={t('institutionalDocs.indexTitle')}
+            subtitle={t('institutionalDocs.indexDescription')}
+            padForChrome={false}
+            fallbackPath="/"
+            leading={
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                <Library className="h-6 w-6" aria-hidden />
+              </div>
+            }
+          />
         </motion.header>
 
         <p className="rounded-2xl border border-border/60 bg-muted/30 p-4 text-sm text-muted-foreground">

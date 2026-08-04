@@ -21,10 +21,17 @@ type AppPageHeaderProps = {
   showBack?: boolean;
   /** Overrides section fallback when history cannot pop. */
   fallbackPath?: string;
+  /** When set, runs instead of history pop / fallback navigation. */
+  onBack?: () => void;
   /** Optional icon or mark between back and title. */
   leading?: ReactNode;
   /** Trailing controls on the title row (kept left of chrome pad). */
   actions?: ReactNode;
+  /**
+   * Reserve space for floating AppTopChrome Search/Profile.
+   * Disable on PublicPageShell routes that do not use that chrome.
+   */
+  padForChrome?: boolean;
   className?: string;
   titleClassName?: string;
 };
@@ -38,8 +45,10 @@ export function AppPageHeader({
   subtitle,
   showBack,
   fallbackPath,
+  onBack,
   leading,
   actions,
+  padForChrome = true,
   className,
   titleClassName,
 }: AppPageHeaderProps) {
@@ -49,6 +58,10 @@ export function AppPageHeader({
   const backVisible = showBack ?? shouldShowAppBack(location.pathname);
 
   const handleBack = () => {
+    if (onBack) {
+      onBack();
+      return;
+    }
     if (canPopAppHistory()) {
       navigate(-1);
       return;
@@ -57,7 +70,13 @@ export function AppPageHeader({
   };
 
   return (
-    <div className={cn('flex items-start gap-1', APP_PAGE_HEADER_CHROME_PAD, className)}>
+    <div
+      className={cn(
+        'flex items-start gap-1',
+        padForChrome && APP_PAGE_HEADER_CHROME_PAD,
+        className,
+      )}
+    >
       {backVisible ? (
         <Button
           type="button"

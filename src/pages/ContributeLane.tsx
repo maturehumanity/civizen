@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 
 import { AppLayout } from '@/components/layout/AppLayout';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -29,28 +29,17 @@ export default function ContributeLane() {
   return (
     <AppLayout>
       <div className="space-y-6 px-4 py-6">
-        <Link
-          to="/contribute"
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          {t('contribute.backToHub')}
-        </Link>
-
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-start gap-4"
-        >
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
-            <Icon className={`h-7 w-7 ${lane.iconClassName}`} />
-          </div>
-          <div>
-            <h1 className="text-2xl font-display font-bold text-foreground">
-              {t(lane.titleKey)}
-            </h1>
-            <p className="text-base text-muted-foreground">{t(lane.descriptionKey)}</p>
-          </div>
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+          <AppPageHeader
+            title={t(lane.titleKey)}
+            subtitle={t(lane.descriptionKey)}
+            fallbackPath="/contribute"
+            leading={
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+                <Icon className={`h-7 w-7 ${lane.iconClassName}`} />
+              </div>
+            }
+          />
         </motion.div>
 
         <Card className="space-y-3 border-border/70 bg-card/95 p-5 shadow-sm">

@@ -1,12 +1,10 @@
 import type { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { PublicPageFooter } from '@/components/public/PublicPageFooter';
 import { PublicPageShell } from '@/components/public/PublicPageShell';
 import { onboardingSectionTitleClass } from '@/components/public/onboarding-styles';
-import { useLanguage } from '@/contexts/LanguageContext';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { cn } from '@/lib/utils';
 
@@ -16,6 +14,11 @@ type FundPageShellProps = {
   pageTitle: string;
   pageDescription: string;
   children: ReactNode;
+  /**
+   * When true, always show Back (lane pages → hub).
+   * When false, use default `shouldShowAppBack` so the hub still gets Back when
+   * opened from Contribute / elsewhere (history pop or `/` fallback).
+   */
   showBackToHub?: boolean;
 };
 
@@ -27,8 +30,6 @@ export function FundPageShell({
   children,
   showBackToHub = true,
 }: FundPageShellProps) {
-  const { t } = useLanguage();
-
   usePageMeta({
     title: pageTitle,
     description: pageDescription,
@@ -47,17 +48,14 @@ export function FundPageShell({
         className="mx-auto max-w-3xl space-y-8"
       >
         <header className="space-y-4 border-b border-border/40 pb-6">
-          {showBackToHub ? (
-            <Link
-              to="/fund"
-              className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              {t('fund.backToHub')}
-            </Link>
-          ) : null}
-          <h1 className={cn(onboardingSectionTitleClass, 'text-3xl sm:text-4xl')}>{title}</h1>
-          <p className="text-base leading-relaxed text-muted-foreground sm:text-lg">{description}</p>
+          <AppPageHeader
+            title={title}
+            subtitle={description}
+            showBack={showBackToHub ? true : undefined}
+            fallbackPath={showBackToHub ? '/fund' : '/'}
+            padForChrome={false}
+            titleClassName={cn(onboardingSectionTitleClass, 'text-3xl sm:text-4xl')}
+          />
         </header>
 
         {children}

@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useState, useEffect } from 'react';
@@ -124,12 +125,10 @@ export default function EndorseSelect() {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="text-2xl font-display font-bold text-foreground mb-2">
-            {t('endorseSelect.title')}
-          </h1>
-          <p className="text-muted-foreground">
-            {t('endorseSelect.subtitle')}
-          </p>
+          <AppPageHeader
+            title={t('endorseSelect.title')}
+            subtitle={t('endorseSelect.subtitle')}
+          />
         </motion.div>
 
         {/* Search */}

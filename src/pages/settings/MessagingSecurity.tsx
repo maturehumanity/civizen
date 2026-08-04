@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,11 +13,10 @@ import {
   getDeviceMessagingSecretKey,
   saveDeviceMessagingSecretKey,
 } from '@/lib/messaging-e2ee';
-import { ArrowLeft, Loader2, Shield } from 'lucide-react';
+import { Loader2, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function MessagingSecurity() {
-  const navigate = useNavigate();
   const { profile } = useAuth();
   const { t } = useLanguage();
   const [busy, setBusy] = useState(false);
@@ -90,20 +89,16 @@ export default function MessagingSecurity() {
   return (
     <AppLayout>
       <div className="mx-auto flex w-full max-w-lg flex-col gap-4 px-4 py-6">
-        <Button type="button" variant="ghost" size="sm" className="w-fit gap-2 px-0" onClick={() => navigate('/settings/messaging')}>
-          <ArrowLeft className="h-4 w-4" />
-          {t('settings.messagingSecurityBack')}
-        </Button>
-
-        <div className="flex items-start gap-3">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-            <Shield className="h-6 w-6" />
-          </div>
-          <div>
-            <h1 className="font-display text-xl font-bold text-foreground">{t('settings.messagingSecurityTitle')}</h1>
-            <p className="text-sm text-muted-foreground">{t('settings.messagingSecuritySubtitle')}</p>
-          </div>
-        </div>
+        <AppPageHeader
+          title={t('settings.messagingSecurityTitle')}
+          subtitle={t('settings.messagingSecuritySubtitle')}
+          fallbackPath="/settings/messaging"
+          leading={
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <Shield className="h-6 w-6" />
+            </div>
+          }
+        />
 
         <Card className="space-y-3 border-border/80 p-4">
           <p className="text-sm text-foreground">{t('settings.messagingSecurityDmBody')}</p>

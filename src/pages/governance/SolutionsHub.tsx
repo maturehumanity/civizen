@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Lightbulb, Loader2, MessageSquareText, Plus } from 'lucide-react';
 
 import { AppLayout } from '@/components/layout/AppLayout';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -122,24 +123,22 @@ export default function SolutionsHub() {
   return (
     <AppLayout>
       <div className="mx-auto max-w-3xl space-y-4 px-3 pb-24 pt-2 sm:px-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 space-y-1">
-            <div className="flex items-center gap-2 text-primary">
-              <Lightbulb className="h-5 w-5 shrink-0" />
-              <h1 className="font-display text-xl font-bold text-foreground">{t('solutions.title')}</h1>
-            </div>
-            <p className="text-sm text-muted-foreground">{t('solutions.subtitle')}</p>
-          </div>
-          <Button
-            type="button"
-            size="sm"
-            onClick={() => setComposerOpen((open) => !open)}
-            disabled={missingBackend}
-          >
-            <Plus className="mr-1 h-4 w-4" />
-            {t('solutions.postProblem')}
-          </Button>
-        </div>
+        <AppPageHeader
+          title={t('solutions.title')}
+          subtitle={t('solutions.subtitle')}
+          leading={<Lightbulb className="h-5 w-5 text-primary" />}
+          actions={
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => setComposerOpen((open) => !open)}
+              disabled={missingBackend}
+            >
+              <Plus className="mr-1 h-4 w-4" />
+              {t('solutions.postProblem')}
+            </Button>
+          }
+        />
 
         <p className="text-xs text-muted-foreground">{t('solutions.disclaimer')}</p>
 

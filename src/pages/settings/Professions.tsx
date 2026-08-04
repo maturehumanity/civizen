@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Award, CheckCircle2, Clock3, Loader2, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { Award, CheckCircle2, Clock3, Loader2, ShieldAlert, ShieldCheck } from 'lucide-react';
 
 import { AppLayout } from '@/components/layout/AppLayout';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -45,7 +45,6 @@ const statusIconMap = {
 } as const;
 
 export default function Professions() {
-  const navigate = useNavigate();
   const { profile } = useAuth();
   const { t, language } = useLanguage();
   const [loading, setLoading] = useState(true);
@@ -181,14 +180,12 @@ export default function Professions() {
   return (
     <AppLayout>
       <div className="space-y-6 px-4 py-6">
-        <Button variant="ghost" size="sm" onClick={() => navigate('/settings')} className="gap-2">
-          <ArrowLeft className="h-4 w-4" />
-          {t('common.back')}
-        </Button>
-
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
-          <h1 className="text-2xl font-display font-bold text-foreground">{t('professions.title')}</h1>
-          <p className="max-w-2xl text-sm text-muted-foreground">{t('professions.subtitle')}</p>
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+          <AppPageHeader
+            title={t('professions.title')}
+            subtitle={t('professions.subtitle')}
+            fallbackPath="/settings"
+          />
         </motion.div>
 
         <motion.div

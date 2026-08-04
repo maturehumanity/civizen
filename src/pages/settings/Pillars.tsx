@@ -1,13 +1,13 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { PILLARS } from '@/lib/constants';
-import { ArrowLeft, Check, Edit3, Save, X, GraduationCap, Heart, Shield, Users, TrendingUp, LucideIcon } from 'lucide-react';
+import { Check, Edit3, Save, X, GraduationCap, Heart, Shield, Users, TrendingUp, LucideIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -31,7 +31,6 @@ interface EditingState {
 }
 
 export default function Pillars() {
-  const navigate = useNavigate();
   const { t } = useLanguage();
   const [pillarCustomizations, setPillarCustomizations] = useState<Record<string, PillarCustomizations>>({});
   const [editing, setEditing] = useState<EditingState | null>(null);
@@ -213,46 +212,29 @@ export default function Pillars() {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between gap-4"
         >
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/settings')}
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-            <h1 className="text-2xl font-display font-bold text-foreground">
-              {t('pillars.title')}
-            </h1>
-          </div>
-          {autoSaveError ? (
-            <Button
-              onClick={handleRetrySave}
-              disabled={saving}
-              size="sm"
-              className="gap-2"
-            >
-              <Save className="w-4 h-4" />
-              {t('pillars.retrySave')}
-            </Button>
-          ) : (
-            <p className="text-right text-sm text-muted-foreground">
-              {saving ? t('pillars.autoSaving') : t('pillars.autoSaveActive')}
-            </p>
-          )}
-        </motion.div>
-
-        {/* Description */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.1 }}
-        >
-          <p className="text-muted-foreground text-sm">
-            {t('pillars.description')}
-          </p>
+          <AppPageHeader
+            title={t('pillars.title')}
+            subtitle={t('pillars.description')}
+            fallbackPath="/settings"
+            actions={
+              autoSaveError ? (
+                <Button
+                  onClick={handleRetrySave}
+                  disabled={saving}
+                  size="sm"
+                  className="gap-2"
+                >
+                  <Save className="w-4 h-4" />
+                  {t('pillars.retrySave')}
+                </Button>
+              ) : (
+                <p className="text-right text-sm text-muted-foreground">
+                  {saving ? t('pillars.autoSaving') : t('pillars.autoSaveActive')}
+                </p>
+              )
+            }
+          />
         </motion.div>
 
         {/* Pillars Grid */}

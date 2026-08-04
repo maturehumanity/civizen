@@ -8,6 +8,7 @@ import {
   Users,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -164,14 +165,11 @@ export default function Features() {
           animate={{ opacity: 1, y: 0 }}
         >
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <h1 className="text-2xl font-display font-bold text-foreground">
-                {t('features.title')}
-              </h1>
-              <p className="text-base text-muted-foreground">
-                {t('features.subtitle')}
-              </p>
-            </div>
+            <AppPageHeader
+              className="min-w-0 flex-1"
+              title={t('features.title')}
+              subtitle={t('features.subtitle')}
+            />
             <div className="flex flex-wrap gap-2 sm:justify-end">
                 <FilterMenu
                   label={t('features.sectionsLabel')}

@@ -5,6 +5,7 @@ import { Landmark, Loader2, Search } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { AppLayout } from '@/components/layout/AppLayout';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -1596,44 +1597,45 @@ export default function Governance() {
     <AppLayout>
       <div className="h-[calc(100vh-6.5rem)] overflow-hidden px-3 py-3">
         <div className="flex h-full flex-col gap-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-3">
-              <div className="rounded-xl bg-primary/10 p-2 text-primary">
-                <Landmark className="h-4 w-4" />
-              </div>
-              <div className="min-w-0 space-y-1">
-                <h1 className="text-xl font-display font-bold text-foreground">{t('governanceHub.title')}</h1>
-                <WorldCitizenshipStatusNotice className="max-w-xl" />
-              </div>
-            </div>
-            <TooltipProvider>
-              <div className="flex gap-2">
-                <Button type="button" size="icon" variant="outline" className="h-8 w-8" asChild>
-                  <Link to="/search?tab=people" aria-label={t('common.search')}>
-                    <Search className="h-4 w-4" />
-                  </Link>
-                </Button>
-                <div className="hidden gap-2 md:flex">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Badge variant={governanceEligibility.eligible ? 'secondary' : 'outline'}>
-                      {governanceEligibility.eligible ? t('governanceHub.eligible') : t('governanceHub.ineligible')}
-                    </Badge>
-                  </TooltipTrigger>
-                  <TooltipContent>{t('governanceHub.requirementsTitle')}</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Badge variant={profile?.is_active_citizen ? 'secondary' : 'outline'}>
-                      {profile?.is_active_citizen ? t('admin.users.activeCitizenBadge') : t('governanceHub.notActiveCitizen')}
-                    </Badge>
-                  </TooltipTrigger>
-                  <TooltipContent>{t('governanceHub.cards.eligibleCitizens')}</TooltipContent>
-                </Tooltip>
+          <AppPageHeader
+              title={t('governanceHub.title')}
+              subtitle={<WorldCitizenshipStatusNotice className="max-w-xl" />}
+              leading={
+                <div className="rounded-xl bg-primary/10 p-2 text-primary">
+                  <Landmark className="h-4 w-4" />
                 </div>
-              </div>
-            </TooltipProvider>
-          </div>
+              }
+              titleClassName="text-xl"
+              actions={
+                <TooltipProvider>
+                  <div className="flex gap-2">
+                    <Button type="button" size="icon" variant="outline" className="h-8 w-8" asChild>
+                      <Link to="/search?tab=people" aria-label={t('common.search')}>
+                        <Search className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                    <div className="hidden gap-2 md:flex">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge variant={governanceEligibility.eligible ? 'secondary' : 'outline'}>
+                            {governanceEligibility.eligible ? t('governanceHub.eligible') : t('governanceHub.ineligible')}
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent>{t('governanceHub.requirementsTitle')}</TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge variant={profile?.is_active_citizen ? 'secondary' : 'outline'}>
+                            {profile?.is_active_citizen ? t('admin.users.activeCitizenBadge') : t('governanceHub.notActiveCitizen')}
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent>{t('governanceHub.cards.eligibleCitizens')}</TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </div>
+                </TooltipProvider>
+              }
+            />
 
           <div className="grid grid-cols-2 gap-2 md:hidden">
             <Button

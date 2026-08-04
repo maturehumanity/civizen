@@ -61,4 +61,27 @@ describe('AppPageHeader', () => {
     expect(screen.queryByTestId('app-page-header-back')).not.toBeInTheDocument();
     expect(screen.getByTestId('app-page-header-title')).toHaveTextContent('Home');
   });
+
+  it('calls onBack instead of navigating when provided', () => {
+    const onBack = vi.fn();
+    render(
+      <MemoryRouter initialEntries={['/endorse/abc']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <Routes>
+          <Route
+            path="*"
+            element={
+              <>
+                <AppPageHeader title="Endorse" onBack={onBack} />
+                <LocationProbe />
+              </>
+            }
+          />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getByTestId('app-page-header-back'));
+    expect(onBack).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId('location-path')).toHaveTextContent('/endorse/abc');
+  });
 });

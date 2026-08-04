@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import { FileSignature } from 'lucide-react';
 
 import { AppLayout } from '@/components/layout/AppLayout';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -64,21 +64,16 @@ export default function Agreements() {
   return (
     <AppLayout>
       <div className="mx-auto flex max-w-3xl flex-col gap-4 px-4 py-6">
-        <div className="flex items-start gap-3">
-          <div className="rounded-2xl bg-primary/10 p-3 text-primary">
-            <FileSignature className="h-5 w-5" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-display font-bold text-foreground">{t('agreements.listTitle')}</h1>
-            <p className="text-sm text-muted-foreground">{t('agreements.listSubtitle')}</p>
-          </div>
-        </div>
-
-        <div className="flex gap-2">
-          <Button type="button" variant="outline" size="sm" asChild>
-            <Link to="/market">{t('agreements.backToMarket')}</Link>
-          </Button>
-        </div>
+        <AppPageHeader
+          title={t('agreements.listTitle')}
+          subtitle={t('agreements.listSubtitle')}
+          fallbackPath="/market"
+          leading={
+            <div className="rounded-2xl bg-primary/10 p-3 text-primary">
+              <FileSignature className="h-5 w-5" aria-hidden />
+            </div>
+          }
+        />
 
         {loading ? (
           <p className="text-sm text-muted-foreground">{t('common.loading')}</p>

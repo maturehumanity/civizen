@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Landmark } from 'lucide-react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Landmark } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { AppLayout } from '@/components/layout/AppLayout';
-import { Button } from '@/components/ui/button';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -48,7 +48,6 @@ import { useGovernanceGuardianMultisig } from '@/lib/use-governance-guardian-mul
 import { useGovernancePublicAuditAnchoring } from '@/lib/use-governance-public-audit-anchoring';
 
 export default function GovernanceAdmin() {
-  const navigate = useNavigate();
   const location = useLocation();
   const { t } = useLanguage();
   const { profile, refreshProfile } = useAuth();
@@ -509,20 +508,16 @@ export default function GovernanceAdmin() {
     <AppLayout>
       <div className="space-y-5 px-4 py-6">
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/settings')} className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            {t('common.back')}
-          </Button>
-
-          <div className="flex items-start gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <Landmark className="h-5 w-5" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-display font-bold text-foreground">{t('governance.title')}</h1>
-              <p className="text-sm text-muted-foreground">{t('governance.subtitle')}</p>
-            </div>
-          </div>
+          <AppPageHeader
+            title={t('governance.title')}
+            subtitle={t('governance.subtitle')}
+            fallbackPath="/settings"
+            leading={
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                <Landmark className="h-5 w-5" />
+              </div>
+            }
+          />
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>

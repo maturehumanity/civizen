@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -17,7 +18,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { permissionListHasAny } from '@/lib/access-control';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, ChevronRight, Cloud, Database, Loader2, MessageCircle, Shield } from 'lucide-react';
+import { ChevronRight, Cloud, Database, Loader2, MessageCircle, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 
 const BACKUP_NONE = 'none' as const;
@@ -291,20 +292,16 @@ export default function MessagingSettings() {
   return (
     <AppLayout>
       <div className="mx-auto flex w-full max-w-lg flex-col gap-4 px-4 py-6">
-        <Button type="button" variant="ghost" size="sm" className="w-fit gap-2 px-0" onClick={() => navigate('/settings')}>
-          <ArrowLeft className="h-4 w-4" />
-          {t('settings.messagingPreferencesBack')}
-        </Button>
-
-        <div className="flex items-start gap-3">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-            <MessageCircle className="h-6 w-6" />
-          </div>
-          <div>
-            <h1 className="font-display text-xl font-bold text-foreground">{t('settings.messagingPreferencesTitle')}</h1>
-            <p className="text-sm text-muted-foreground">{t('settings.messagingPreferencesSubtitle')}</p>
-          </div>
-        </div>
+        <AppPageHeader
+          title={t('settings.messagingPreferencesTitle')}
+          subtitle={t('settings.messagingPreferencesSubtitle')}
+          fallbackPath="/settings"
+          leading={
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <MessageCircle className="h-6 w-6" />
+            </div>
+          }
+        />
 
         <Card className="border-border/80 p-0 overflow-hidden">
           <button

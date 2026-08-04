@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { FileText, Scale, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { Card } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { TERMS_ACCEPTANCE_VERSION } from '@/lib/terms-version';
@@ -30,15 +31,16 @@ export default function TermsOfUse() {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-start gap-4"
         >
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-            <FileText className="h-7 w-7" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-display font-bold text-foreground">{t('terms.title')}</h1>
-            <p className="text-base text-muted-foreground">{t('terms.subtitle')}</p>
-          </div>
+          <AppPageHeader
+            title={t('terms.title')}
+            subtitle={t('terms.subtitle')}
+            leading={
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                <FileText className="h-7 w-7" />
+              </div>
+            }
+          />
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.04 }}>

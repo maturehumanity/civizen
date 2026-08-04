@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { AppLayout } from '@/components/layout/AppLayout';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -195,24 +196,12 @@ export default function AgreementDetail() {
   return (
     <AppLayout>
       <div className="mx-auto flex max-w-3xl flex-col gap-4 px-4 py-6">
-        <div className="flex flex-wrap items-center gap-2">
-          <Button type="button" variant="ghost" size="sm" asChild>
-            <Link to="/agreements">{t('agreements.backToList')}</Link>
-          </Button>
-          <Button type="button" variant="ghost" size="sm" asChild>
-            <Link to="/market">{t('agreements.backToMarket')}</Link>
-          </Button>
-        </div>
-
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h1 className="text-xl font-display font-bold text-foreground">{row.listing_title_snapshot}</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {t('agreements.metaPrice', { price: priceLabel })} · {t('agreements.metaTemplate', { key: row.template_key })}
-            </p>
-          </div>
-          <Badge variant="secondary">{statusText}</Badge>
-        </div>
+        <AppPageHeader
+          title={row.listing_title_snapshot}
+          subtitle={`${t('agreements.metaPrice', { price: priceLabel })} · ${t('agreements.metaTemplate', { key: row.template_key })}`}
+          fallbackPath="/agreements"
+          actions={<Badge variant="secondary">{statusText}</Badge>}
+        />
 
         <Card className="rounded-2xl border-border/60 p-4 text-sm shadow-sm">
           <p>

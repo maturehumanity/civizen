@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,7 +18,7 @@ import {
   startSocialOAuth,
   type SocialConnectionStatus,
 } from '@/lib/social-accounts';
-import { ArrowLeft, Loader2, Share2 } from 'lucide-react';
+import { Loader2, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 function emptyStatuses(): SocialConnectionStatus[] {
@@ -32,7 +33,6 @@ function emptyStatuses(): SocialConnectionStatus[] {
 }
 
 export default function SocialAccountsSettings() {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { profile } = useAuth();
   const { t } = useLanguage();
@@ -113,10 +113,7 @@ export default function SocialAccountsSettings() {
     return (
       <AppLayout>
         <div className="mx-auto flex w-full max-w-lg flex-col gap-4 px-4 py-6">
-          <Button type="button" variant="ghost" size="sm" className="w-fit gap-2 px-0" onClick={() => navigate('/settings')}>
-            <ArrowLeft className="h-4 w-4" />
-            {t('settings.socialAccountsBack')}
-          </Button>
+          <AppPageHeader title={t('settings.socialAccounts')} fallbackPath="/settings" />
           <Card className="border-border/70 p-4">
             <p className="text-sm text-muted-foreground">{t('settings.socialAccountsOrgOnly')}</p>
           </Card>
@@ -128,20 +125,16 @@ export default function SocialAccountsSettings() {
   return (
     <AppLayout>
       <div className="mx-auto flex w-full max-w-lg flex-col gap-4 px-4 py-6">
-        <Button type="button" variant="ghost" size="sm" className="w-fit gap-2 px-0" onClick={() => navigate('/settings')}>
-          <ArrowLeft className="h-4 w-4" />
-          {t('settings.socialAccountsBack')}
-        </Button>
-
-        <div className="flex items-start gap-3">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-            <Share2 className="h-6 w-6" />
-          </div>
-          <div>
-            <h1 className="font-display text-xl font-bold text-foreground">{t('settings.socialAccounts')}</h1>
-            <p className="text-sm text-muted-foreground">{t('settings.socialAccountsDescription')}</p>
-          </div>
-        </div>
+        <AppPageHeader
+          title={t('settings.socialAccounts')}
+          subtitle={t('settings.socialAccountsDescription')}
+          fallbackPath="/settings"
+          leading={
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <Share2 className="h-6 w-6" />
+            </div>
+          }
+        />
 
         {loading || allowed === null ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">

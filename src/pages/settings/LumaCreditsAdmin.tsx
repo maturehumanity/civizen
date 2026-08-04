@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion';
-import { ArrowLeft, Coins } from 'lucide-react';
+import { Coins } from 'lucide-react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 import { AppLayout } from '@/components/layout/AppLayout';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -17,7 +17,6 @@ import { useLanguage } from '@/contexts/LanguageContext';
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export default function LumaCreditsAdmin() {
-  const navigate = useNavigate();
   const { t } = useLanguage();
   const [username, setUsername] = useState('');
   const [profileIdRaw, setProfileIdRaw] = useState('');
@@ -104,17 +103,12 @@ export default function LumaCreditsAdmin() {
     <AppLayout>
       <div className="space-y-6 px-4 py-6">
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
-          <Button type="button" variant="ghost" className="mb-2 gap-2 px-0" onClick={() => navigate('/settings')}>
-            <ArrowLeft className="h-4 w-4" />
-            {t('settings.lumaMintBack')}
-          </Button>
-          <div className="flex items-start gap-3">
-            <Coins className="mt-1 h-10 w-10 shrink-0 text-primary/80" aria-hidden />
-            <div>
-              <h1 className="text-2xl font-display font-bold text-foreground">{t('settings.lumaMintTitle')}</h1>
-              <p className="text-sm text-muted-foreground">{t('settings.lumaMintSubtitle')}</p>
-            </div>
-          </div>
+          <AppPageHeader
+            title={t('settings.lumaMintTitle')}
+            subtitle={t('settings.lumaMintSubtitle')}
+            fallbackPath="/settings"
+            leading={<Coins className="mt-1 h-10 w-10 shrink-0 text-primary/80" aria-hidden />}
+          />
         </motion.div>
 
         <Card className="border-amber-500/40 bg-amber-500/5 p-5 shadow-sm">

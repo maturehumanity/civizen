@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { cloneElement, isValidElement, lazy, Suspense, useState, useEffect, useRef, useMemo, type ChangeEvent, type ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Input } from '@/components/ui/input';
@@ -14,7 +14,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { ArrowLeft, Camera, Check, ChevronLeft, ChevronRight, ChevronsUpDown, Eye, EyeOff, Globe, Loader2, MapPin, PencilLine, Save } from 'lucide-react';
+import { Camera, Check, ChevronLeft, ChevronRight, ChevronsUpDown, Eye, EyeOff, Globe, Loader2, MapPin, PencilLine, Save } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getCountryName, getCountryOptions } from '@/lib/countries';
 import { detectDeviceLocation, LocationPermissionError } from '@/lib/device-location';
@@ -69,7 +69,6 @@ function isBuildModeActive() {
 }
 
 export default function EditProfile() {
-  const navigate = useNavigate();
   const { profile, refreshProfile } = useAuth();
   const { t, language } = useLanguage();
   const [fullName, setFullName] = useState(profile?.full_name || '');
@@ -601,43 +600,40 @@ export default function EditProfile() {
         data-build-root="true"
       >
         <div
-          className="inline-flex"
           data-build-key="editProfileBackGroup"
           data-build-label={LAYOUT_REGION_LABELS.editProfileBackGroup}
         >
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate(-1)}
-            className="gap-2"
+          <span
+            className="sr-only"
+            data-build-key="editProfileBackIcon"
+            data-build-label={LAYOUT_REGION_LABELS.editProfileBackIcon}
+          />
+          <span
+            className="sr-only"
+            data-build-key="editProfileBackText"
+            data-build-label={LAYOUT_REGION_LABELS.editProfileBackText}
           >
-            <span
-              className="inline-flex"
-              data-build-key="editProfileBackIcon"
-              data-build-label={LAYOUT_REGION_LABELS.editProfileBackIcon}
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </span>
-            <span data-build-key="editProfileBackText" data-build-label={LAYOUT_REGION_LABELS.editProfileBackText}>
-              {t('common.back')}
-            </span>
-          </Button>
+            {t('common.back')}
+          </span>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            data-build-key="editProfileTitleGroup"
+            data-build-label={LAYOUT_REGION_LABELS.editProfileTitleGroup}
+          >
+            <AppPageHeader
+              title={
+                <span
+                  data-build-key="editProfileTitle"
+                  data-build-label={LAYOUT_REGION_LABELS.editProfileTitle}
+                >
+                  {t('editProfile.title')}
+                </span>
+              }
+              fallbackPath="/settings"
+            />
+          </motion.div>
         </div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          data-build-key="editProfileTitleGroup"
-          data-build-label={LAYOUT_REGION_LABELS.editProfileTitleGroup}
-        >
-          <h1
-            className="text-2xl font-display font-bold text-foreground"
-            data-build-key="editProfileTitle"
-            data-build-label={LAYOUT_REGION_LABELS.editProfileTitle}
-          >
-            {t('editProfile.title')}
-          </h1>
-        </motion.div>
 
         <input
           ref={avatarInputRef}

@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import {
-  ArrowLeft,
   Award,
   BadgeCheck,
   Crown,
@@ -15,7 +13,7 @@ import {
   Users,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { Button } from '@/components/ui/button';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { APP_ROLES, type AppRole } from '@/lib/access-control';
@@ -38,7 +36,6 @@ const roleIconMap = {
 } as const;
 
 export default function RolesAdmin() {
-  const navigate = useNavigate();
   const { t } = useLanguage();
   const { profile } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -80,14 +77,12 @@ export default function RolesAdmin() {
   return (
     <AppLayout>
       <div className="space-y-6 px-4 py-6">
-        <Button variant="ghost" size="sm" onClick={() => navigate('/settings')} className="gap-2">
-          <ArrowLeft className="h-4 w-4" />
-          {t('common.back')}
-        </Button>
-
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
-          <h1 className="text-2xl font-display font-bold text-foreground">{t('admin.rolesPage.title')}</h1>
-          <p className="text-sm text-muted-foreground">{t('admin.rolesPage.subtitle')}</p>
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+          <AppPageHeader
+            title={t('admin.rolesPage.title')}
+            subtitle={t('admin.rolesPage.subtitle')}
+            fallbackPath="/settings"
+          />
         </motion.div>
 
         {loading ? (

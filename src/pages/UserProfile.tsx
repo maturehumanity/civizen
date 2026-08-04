@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { CivizenScore } from '@/components/ui/CivizenScore';
 import { PillarBadge } from '@/components/ui/PillarBadge';
 import { Button } from '@/components/ui/button';
@@ -28,7 +29,7 @@ import {
 } from '@/lib/civizen-performance';
 import { PerformanceDetailsPanel } from '@/components/profile/PerformanceDetailsPanel';
 import { useAuth } from '@/contexts/AuthContext';
-import { ArrowLeft, CheckCircle, Star, Flag } from 'lucide-react';
+import { CheckCircle, Star, Flag } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface UserProfile {
@@ -247,10 +248,10 @@ export default function UserProfile() {
   return (
     <AppLayout>
       <div className="space-y-6 px-4 py-6">
-        <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="gap-2">
-          <ArrowLeft className="h-4 w-4" />
-          {t('userProfile.back')}
-        </Button>
+        <AppPageHeader
+          title={profile.full_name || t('common.anonymousUser')}
+          fallbackPath="/search"
+        />
 
         <motion.div
           className="text-center"
@@ -271,9 +272,6 @@ export default function UserProfile() {
             )}
           </div>
 
-          <h1 className="font-display text-2xl font-bold text-foreground">
-            {profile.full_name || t('common.anonymousUser')}
-          </h1>
           {profile.username && <p className="text-muted-foreground">@{profile.username}</p>}
           {profile.bio && (
             <p className="mx-auto mt-2 max-w-xs text-sm text-muted-foreground">{profile.bio}</p>

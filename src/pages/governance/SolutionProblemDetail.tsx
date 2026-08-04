@@ -1,8 +1,9 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Loader2, ThumbsUp } from 'lucide-react';
+import { useParams } from 'react-router-dom';
+import { Loader2, ThumbsUp } from 'lucide-react';
 
 import { AppLayout } from '@/components/layout/AppLayout';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -169,12 +170,17 @@ export default function SolutionProblemDetail() {
   return (
     <AppLayout>
       <div className="mx-auto max-w-3xl space-y-4 px-3 pb-24 pt-2 sm:px-4">
-        <Button type="button" variant="ghost" size="sm" className="-ml-2 gap-1" asChild>
-          <Link to="/governance/solutions">
-            <ArrowLeft className="h-4 w-4" />
-            {t('solutions.backToList')}
-          </Link>
-        </Button>
+        <AppPageHeader
+          title={problem?.title ?? t('solutions.title')}
+          fallbackPath="/governance/solutions"
+          actions={
+            problem ? (
+              <Badge variant={statusBadgeVariant(problem.status)}>
+                {t(`solutions.status.${problem.status}`)}
+              </Badge>
+            ) : undefined
+          }
+        />
 
         {loading ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -198,14 +204,6 @@ export default function SolutionProblemDetail() {
         {problem ? (
           <>
             <div className="space-y-2">
-              <div className="flex flex-wrap items-start justify-between gap-2">
-                <h1 className="min-w-0 flex-1 font-display text-xl font-bold text-foreground">
-                  {problem.title}
-                </h1>
-                <Badge variant={statusBadgeVariant(problem.status)}>
-                  {t(`solutions.status.${problem.status}`)}
-                </Badge>
-              </div>
               <div className="flex flex-wrap gap-1">
                 <Badge variant="outline">{t(`solutions.mode.${problem.mode}`)}</Badge>
                 {problem.authorityName ? (

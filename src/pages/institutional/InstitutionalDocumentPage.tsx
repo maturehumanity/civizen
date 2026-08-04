@@ -1,8 +1,8 @@
-import { Link } from 'react-router-dom';
 import { FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 import { StudyMarkdownReader } from '@/components/study/StudyMarkdownReader';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { PublicPageFooter } from '@/components/public/PublicPageFooter';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -42,20 +42,17 @@ export function InstitutionalDocumentPage({ doc }: InstitutionalDocumentPageProp
           animate={{ opacity: 1, y: 0 }}
           className="space-y-3"
         >
-          <div className="flex items-start gap-3">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <FileText className="h-6 w-6" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-display font-bold text-foreground">{doc.title}</h1>
-              <p className="mt-1 text-sm text-muted-foreground">{t('institutionalDocs.controllingNote')}</p>
-            </div>
-          </div>
-          <p className="text-sm">
-            <Link to="/documents" className="text-primary underline-offset-4 hover:underline">
-              {t('institutionalDocs.backToIndex')}
-            </Link>
-          </p>
+          <AppPageHeader
+            title={doc.title}
+            subtitle={t('institutionalDocs.controllingNote')}
+            padForChrome={false}
+            fallbackPath="/documents"
+            leading={
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                <FileText className="h-6 w-6" aria-hidden />
+              </div>
+            }
+          />
         </motion.header>
 
         <Card className="border-border/70 bg-card/95 p-5 shadow-sm">

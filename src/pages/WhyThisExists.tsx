@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { PublicPageFooter } from '@/components/public/PublicPageFooter';
 import { PublicPageShell } from '@/components/public/PublicPageShell';
 import { onboardingSectionTitleClass } from '@/components/public/onboarding-styles';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePageMeta } from '@/hooks/usePageMeta';
@@ -128,17 +129,18 @@ export default function WhyThisExists() {
         className="mx-auto max-w-3xl space-y-10 sm:space-y-12"
       >
         <header className="space-y-3 border-b border-border/40 pb-8">
-          <div className="flex items-start gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/12 text-primary">
-              <Globe2 className="h-5 w-5" aria-hidden />
-            </div>
-            <div className="min-w-0 space-y-2">
-              <h1 className={cn(onboardingSectionTitleClass, 'text-3xl sm:text-4xl')}>{t('whyThisExists.title')}</h1>
-              <p className="text-sm font-medium tracking-wide text-muted-foreground sm:text-base">
-                {t('whyThisExists.subtitle')}
-              </p>
-            </div>
-          </div>
+          <AppPageHeader
+            title={t('whyThisExists.title')}
+            subtitle={t('whyThisExists.subtitle')}
+            padForChrome={false}
+            fallbackPath="/"
+            titleClassName={cn(onboardingSectionTitleClass, 'text-3xl sm:text-4xl')}
+            leading={
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/12 text-primary">
+                <Globe2 className="h-5 w-5" aria-hidden />
+              </div>
+            }
+          />
         </header>
 
         <section aria-labelledby="shared-future" className="space-y-5">

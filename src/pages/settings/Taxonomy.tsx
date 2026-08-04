@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion';
-import { ArrowLeft, ChevronRight, Store } from 'lucide-react';
+import { ChevronRight, Store } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { AppLayout } from '@/components/layout/AppLayout';
-import { Button } from '@/components/ui/button';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { Card } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -23,23 +23,12 @@ export default function TaxonomySettings() {
   return (
     <AppLayout>
       <div className="flex min-h-0 flex-col px-4 pb-28 pt-4">
-        <div className="mb-4 flex items-center gap-2">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 shrink-0"
-            onClick={() => navigate('/settings')}
-            aria-label={t('settings.taxonomyBack')}
-          >
-            <ArrowLeft className="h-4 w-4" aria-hidden />
-          </Button>
-          <div className="min-w-0">
-            <h1 className="text-xl font-display font-bold tracking-tight text-foreground">
-              {t('settings.taxonomyTitle')}
-            </h1>
-            <p className="text-sm text-muted-foreground">{t('settings.taxonomySubtitle')}</p>
-          </div>
+        <div className="mb-4">
+          <AppPageHeader
+            title={t('settings.taxonomyTitle')}
+            subtitle={t('settings.taxonomySubtitle')}
+            fallbackPath="/settings"
+          />
         </div>
 
         <div className="flex flex-col gap-3">

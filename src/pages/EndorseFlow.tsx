@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,7 +16,7 @@ import { canEndorse, type Endorsement } from '@/lib/scoring';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
-import { ArrowLeft, CheckCircle, Send, AlertCircle, Clock } from 'lucide-react';
+import { CheckCircle, Send, AlertCircle, Clock } from 'lucide-react';
 
 interface UserProfile {
   id: string;
@@ -201,38 +202,22 @@ export default function EndorseFlow() {
   return (
     <AppLayout hideNav>
       <div className="px-4 py-6 space-y-6 min-h-screen">
-        {/* Back button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => selectedPillar ? setSelectedPillar(null) : navigate(-1)}
-          className="gap-2"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          {selectedPillar ? t('endorseFlow.backToPillars') : t('endorseFlow.back')}
-        </Button>
-
-        {/* Target user info */}
-        <motion.div
-          className="flex items-center gap-4"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <Avatar className="w-16 h-16 border-2 border-border">
-            <AvatarImage src={targetUser.avatar_url || undefined} />
-            <AvatarFallback className="bg-primary/10 text-primary text-xl font-display">
-              {getInitials(targetUser.full_name)}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <h1 className="text-xl font-display font-bold text-foreground">
-              {t('endorseFlow.endorseTarget', { name: targetUser.full_name || t('common.anonymousUser') })}
-            </h1>
-            {targetUser.username && (
-              <p className="text-muted-foreground">@{targetUser.username}</p>
-            )}
-          </div>
-        </motion.div>
+        <AppPageHeader
+          title={t('endorseFlow.endorseTarget', {
+            name: targetUser.full_name || t('common.anonymousUser'),
+          })}
+          subtitle={targetUser.username ? `@${targetUser.username}` : undefined}
+          showBack
+          onBack={selectedPillar ? () => setSelectedPillar(null) : undefined}
+          leading={
+            <Avatar className="w-12 h-12 border-2 border-border">
+              <AvatarImage src={targetUser.avatar_url || undefined} />
+              <AvatarFallback className="bg-primary/10 text-primary text-lg font-display">
+                {getInitials(targetUser.full_name)}
+              </AvatarFallback>
+            </Avatar>
+          }
+        />
 
         {!selectedPillar ? (
           // Pillar selection

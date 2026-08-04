@@ -1,10 +1,11 @@
 import { motion } from 'framer-motion';
-import { ArrowLeft, Coins } from 'lucide-react';
+import { Coins } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { MarketLumaActivitySection } from '@/components/market/MarketLumaActivitySection';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
@@ -46,21 +47,12 @@ export default function PrototypeCreditsPage() {
   return (
     <AppLayout>
       <div className="space-y-6 px-4 py-6" data-build-key="prototypeCreditsPage" data-build-label="Prototype credits page">
-        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="shrink-0"
-            onClick={() => navigate('/settings')}
-            aria-label={t('settings.walletBack')}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div className="min-w-0">
-            <h1 className="text-xl font-display font-bold text-foreground">{t('settings.walletPageTitle')}</h1>
-            <p className="text-sm text-muted-foreground">{t('settings.walletPageSubtitle')}</p>
-          </div>
+        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
+          <AppPageHeader
+            title={t('settings.walletPageTitle')}
+            subtitle={t('settings.walletPageSubtitle')}
+            fallbackPath="/settings"
+          />
         </motion.div>
 
         <motion.div
