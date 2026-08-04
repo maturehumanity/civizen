@@ -113,6 +113,11 @@ describe('PermissionsAdmin page', () => {
     expect(await screen.findByTestId('permissions-section-toggle-home')).toHaveAttribute('aria-expanded', 'false');
     expect(screen.getByTestId('permissions-section-toggle-knowledge')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /^Create$/ })).not.toBeInTheDocument();
+
+    const matrixScroll = screen.getByTestId('permissions-matrix-scroll');
+    expect(matrixScroll.className).toContain('[scrollbar-width:none]');
+    expect(matrixScroll.className).toContain('[&::-webkit-scrollbar]:hidden');
+    expect(matrixScroll.className).not.toContain('max-h-[72vh]');
   });
 
   it('expands all folders from the title chevron, and still unfolds one folder by name', async () => {

@@ -48,7 +48,7 @@ export default function PermissionsAdmin() {
     [profile?.role],
   );
   const matrixGridTemplate = useMemo(
-    () => `minmax(260px, 1.9fr) repeat(${visibleRoles.length}, minmax(72px, 0.65fr))`,
+    () => `minmax(140px, 1.2fr) repeat(${visibleRoles.length}, minmax(64px, 1fr))`,
     [visibleRoles.length],
   );
 
@@ -211,8 +211,8 @@ export default function PermissionsAdmin() {
 
   return (
     <AppLayout>
-      <div className="space-y-6 px-4 py-6">
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+      <div className="flex h-[calc(100dvh-5rem)] flex-col gap-2 px-2 pt-2">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="shrink-0">
           <AppPageHeader
             title={
               <>
@@ -238,17 +238,25 @@ export default function PermissionsAdmin() {
           />
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <Card className="overflow-hidden rounded-3xl border-border/60 shadow-sm">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="min-h-0 flex-1"
+        >
+          <Card className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border-border/60 shadow-sm">
             {loading ? (
-              <div className="flex items-center justify-center gap-2 px-6 py-20 text-muted-foreground">
+              <div className="flex flex-1 items-center justify-center gap-2 px-6 py-20 text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 <span>{t('common.loading')}</span>
               </div>
             ) : (
-              <div className="max-h-[72vh] overflow-auto">
+              <div
+                data-testid="permissions-matrix-scroll"
+                className="min-h-0 flex-1 overflow-auto overscroll-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              >
                 <div
-                  className="sticky top-0 z-20 grid items-center gap-3 border-b border-border/60 bg-card/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-card/80"
+                  className="sticky top-0 z-20 grid items-center gap-2 border-b border-border/60 bg-card/95 px-3 py-3 backdrop-blur supports-[backdrop-filter]:bg-card/80"
                   style={{ gridTemplateColumns: matrixGridTemplate }}
                 >
                   <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
@@ -264,13 +272,13 @@ export default function PermissionsAdmin() {
                   ))}
                 </div>
 
-                <div className="space-y-5 p-4">
+                <div className="space-y-4 p-3">
                   {groupedPermissions.map((sectionGroup) => {
                     const sectionCollapsed = isSectionCollapsed(sectionGroup.sectionId);
                     const sectionLabel = t(`admin.permissions.sectionNames.${sectionGroup.sectionId}`);
 
                     return (
-                      <div key={sectionGroup.sectionId} className="space-y-4">
+                      <div key={sectionGroup.sectionId} className="space-y-3">
                         <button
                           type="button"
                           onClick={() => toggleSectionVisibility(sectionGroup.sectionId)}
@@ -292,10 +300,10 @@ export default function PermissionsAdmin() {
                               return (
                                 <Card
                                   key={`${sectionGroup.sectionId}-${pageGroup.pageId}`}
-                                  className="overflow-hidden rounded-3xl border-border/60 shadow-none"
+                                  className="overflow-hidden rounded-2xl border-border/60 shadow-none"
                                 >
                                   {showPageLabel ? (
-                                    <div className="border-b border-border/60 px-4 py-3">
+                                    <div className="border-b border-border/60 px-3 py-2.5">
                                       <button
                                         type="button"
                                         onClick={() => togglePageVisibility(pageKey)}
@@ -313,7 +321,7 @@ export default function PermissionsAdmin() {
                                       {pageGroup.items.map((entry) => (
                                         <div
                                           key={entry.permission}
-                                          className="grid items-center gap-2.5 rounded-2xl px-4 py-2 transition-[background-color,box-shadow] hover:bg-background/40 hover:ring-1 hover:ring-primary/20"
+                                          className="grid items-center gap-2 rounded-xl px-3 py-2 transition-[background-color,box-shadow] hover:bg-background/40 hover:ring-1 hover:ring-primary/20"
                                           style={{ gridTemplateColumns: matrixGridTemplate }}
                                         >
                                           <div className="min-w-0">
