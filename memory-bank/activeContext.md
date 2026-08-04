@@ -2,7 +2,7 @@
 
 ## Current focus
 
-**Market Jobs default + Services icon (2026-08-04):** `/market` defaults to **Jobs** (specialists lane with content) instead of empty For you. Products/Services header toggle uses Package + Handshake with on-hover tooltips. Spec: `nav-secondary-carousel.md`.
+**Market Jobs default + Services icon (2026-08-04):** `/market` defaults to **Jobs** (specialists lane with content) instead of empty For you. Products/Services header toggle uses Package + Handshake with on-hover tooltips. Spec: `nav-secondary-carousel.md`. **Testing v0.1.169** (build 171).
 
 **Profile avatar header sizing (2026-08-04):** `UserPageMenu` supports `size="sm"` (32px) and defaults to `md` (40px, matches AppTopChrome Search). Messaging/Market use `sm`. Messaging inbox filter row uses `items-center` + `overflow-y-hidden` (and hidden horizontal scrollbar chrome) so a tall avatar cannot create a vertical header scrollbar. **Testing v0.1.168** (build 170).
 
