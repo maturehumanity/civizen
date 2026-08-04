@@ -6,6 +6,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatLumaFromLumens } from '@/lib/prototype-credits';
@@ -67,7 +68,7 @@ export default function Earnings() {
 
   return (
     <AppLayout>
-      <div className="mx-auto flex max-w-3xl flex-col gap-4 px-4 py-6" data-build-key="earningsPage" data-build-label="Earnings page">
+      <div className="mx-auto flex max-w-3xl flex-col gap-4 overflow-x-clip px-4 py-6" data-build-key="earningsPage" data-build-label="Earnings page">
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex items-start gap-2">
           <Button
             type="button"
@@ -128,20 +129,35 @@ export default function Earnings() {
           </Card>
         </motion.div>
 
-        <div className="flex flex-wrap gap-2" data-build-key="earningsFilters" data-build-label="Earnings filters">
-          {FILTERS.map((value) => (
-            <Button
-              key={value}
-              type="button"
-              size="sm"
-              variant={filter === value ? 'default' : 'outline'}
-              className={cn('rounded-full', filter === value && 'shadow-sm')}
-              onClick={() => setFilter(value)}
+        <Tabs
+          value={filter}
+          onValueChange={(value) => setFilter(value as SellerEarningsFilter)}
+          className="w-full min-w-0"
+          data-build-key="earningsFilters"
+          data-build-label="Earnings filters"
+        >
+          <div className="-mx-4 min-w-0 overflow-x-auto overscroll-x-contain scroll-smooth touch-pan-x [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <TabsList
+              aria-label={t('earnings.pageTitle')}
+              className="inline-flex h-auto w-max min-w-full justify-start gap-0 rounded-none border-b border-border/60 bg-transparent p-0 text-foreground shadow-none"
             >
-              {t(`earnings.filter.${value}`)}
-            </Button>
-          ))}
-        </div>
+              {FILTERS.map((value) => (
+                <TabsTrigger
+                  key={value}
+                  value={value}
+                  className={cn(
+                    'shrink-0 rounded-none border-b-2 border-transparent bg-transparent px-2.5 py-2 text-xs font-medium shadow-none',
+                    'text-muted-foreground hover:text-foreground',
+                    'data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none',
+                    'focus-visible:ring-1 focus-visible:ring-ring sm:px-3 sm:text-sm',
+                  )}
+                >
+                  {t(`earnings.filter.${value}`)}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
+        </Tabs>
 
         <div className="flex flex-wrap gap-2">
           <Button type="button" variant="outline" size="sm" asChild>
