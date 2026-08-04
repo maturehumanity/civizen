@@ -121,6 +121,126 @@ export function getDisplayNameParts(user: Pick<ProfileRow, 'full_name' | 'userna
   };
 }
 
+export type LinkedAccountLink = {
+  owner_profile_id: string;
+  linked_profile_id: string;
+  relationship_type: string;
+  business_name_normalized: string | null;
+};
+
+export type OrganizationMembership = {
+  profile: ProfileRow;
+  organizationName: string;
+};
+
+export type UserAdminGroup = {
+  /** Personal (or unlinked) account shown as the group head. Null for orphan org-only rows. */
+  owner: ProfileRow | null;
+  organizations: OrganizationMembership[];
+};
+
+/** Title-case a `business_name_normalized` slug for display. */
+export function humanizeBusinessName(normalized: string | null | undefined): string | null {
+  if (!normalized?.trim()) return null;
+  return normalized
+    .trim()
+    .split(/[_\s-]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(' ');
+}
+
+/** Organization label: prefer profile full name, then humanized business slug, then username. */
+export function getOrganizationDisplayName(
+  profile: Pick<ProfileRow, 'full_name' | 'username'>,
+  businessNameNormalized?: string | null,
+): string {
+  const parts = getDisplayNameParts(profile);
+  return parts.name || humanizeBusinessName(businessNameNormalized) || profile.username || 'Organization';
+}
+
+export function isBusinessUsername(username?: string | null): boolean {
+  return Boolean(username?.trim().toLowerCase().startsWith('biz_'));
+}
+
+export function buildBusinessLinkIndex(links: readonly LinkedAccountLink[]) {
+  const businessByLinkedId = new Map<string, LinkedAccountLink>();
+  const orgsByOwnerId = new Map<string, LinkedAccountLink[]>();
+
+  for (const link of links) {
+    if (link.relationship_type !== 'business') continue;
+    businessByLinkedId.set(link.linked_profile_id, link);
+    const list = orgsByOwnerId.get(link.owner_profile_id) ?? [];
+    list.push(link);
+    orgsByOwnerId.set(link.owner_profile_id, list);
+  }
+
+  return { businessByLinkedId, orgsByOwnerId };
+}
+
+/**
+ * Groups personal accounts with their business organization profiles.
+ * Nested org profiles are omitted from the top level; orphan orgs (owner missing) appear alone.
+ */
+export function groupUsersWithOrganizations(
+  users: readonly ProfileRow[],
+  links: readonly LinkedAccountLink[],
+): UserAdminGroup[] {
+  const byId = new Map(users.map((user) => [user.id, user]));
+  const { businessByLinkedId, orgsByOwnerId } = buildBusinessLinkIndex(links);
+  const nestedOrgIds = new Set(businessByLinkedId.keys());
+  const groups: UserAdminGroup[] = [];
+  const ownersWithGroup = new Set<string>();
+
+  for (const user of users) {
+    if (nestedOrgIds.has(user.id)) continue;
+
+    const orgLinks = orgsByOwnerId.get(user.id) ?? [];
+    const organizations: OrganizationMembership[] = [];
+    for (const link of orgLinks) {
+      const profile = byId.get(link.linked_profile_id);
+      if (!profile) continue;
+      organizations.push({
+        profile,
+        organizationName: getOrganizationDisplayName(profile, link.business_name_normalized),
+      });
+    }
+
+    groups.push({ owner: user, organizations });
+    ownersWithGroup.add(user.id);
+  }
+
+  for (const user of users) {
+    if (!nestedOrgIds.has(user.id)) continue;
+    const link = businessByLinkedId.get(user.id);
+    if (!link) continue;
+    if (ownersWithGroup.has(link.owner_profile_id)) continue;
+
+    groups.push({
+      owner: null,
+      organizations: [
+        {
+          profile: user,
+          organizationName: getOrganizationDisplayName(user, link.business_name_normalized),
+        },
+      ],
+    });
+  }
+
+  return groups;
+}
+
+/** Card title: organization name for business accounts, otherwise personal display name. */
+export function getAdminCardTitle(
+  user: Pick<ProfileRow, 'full_name' | 'username'>,
+  options?: { isOrganization?: boolean; organizationName?: string | null },
+): string | null {
+  if (options?.isOrganization) {
+    return options.organizationName || getOrganizationDisplayName(user) || null;
+  }
+  return getDisplayNameParts(user).name;
+}
+
 export function getNextUserExperienceLevel(level: UserExperienceLevel | null | undefined): UserExperienceLevel {
   const current = level && userExperienceLevels.includes(level) ? level : 'entry';
   const index = userExperienceLevels.indexOf(current);

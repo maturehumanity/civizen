@@ -31,6 +31,12 @@ vi.mock('@/components/ui/select', () => ({
   SelectItem: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
+vi.mock('@/components/ui/popover', () => ({
+  Popover: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  PopoverTrigger: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  PopoverContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}));
+
 vi.mock('framer-motion', () => ({
   motion: new Proxy(
     {},
@@ -51,7 +57,7 @@ const sampleUser = {
   user_id: 'u1',
   username: 'ada',
   full_name: 'Ada Lovelace',
-  avatar_url: null,
+  avatar_url: 'https://example.com/ada.png',
   country: 'United Kingdom',
   country_code: 'GB',
   language_code: 'en',
@@ -75,6 +81,17 @@ const sampleUser = {
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
   last_active_at: new Date().toISOString(),
+} as ProfileRow;
+
+const sampleOrg = {
+  ...sampleUser,
+  id: 'p-org',
+  user_id: 'u-org',
+  username: 'biz_arts',
+  full_name: 'Arts and Culture',
+  avatar_url: 'https://example.com/arts.png',
+  role: 'certified',
+  is_verified: false,
 } as ProfileRow;
 
 function wrap(node: React.ReactNode) {
@@ -132,7 +149,12 @@ describe('UsersAdmin components', () => {
           switchingUserId={null}
           t={t}
           verificationCasesByProfile={{}}
-          visibleUsers={[sampleUser]}
+          visibleGroups={[
+            {
+              owner: sampleUser,
+              organizations: [{ profile: sampleOrg, organizationName: 'Arts and Culture' }],
+            },
+          ]}
           formatDate={() => 'today'}
           formatRelativeTime={() => 'now'}
           getActivityTimestamp={() => new Date().toISOString()}
@@ -147,6 +169,7 @@ describe('UsersAdmin components', () => {
     );
 
     expect(screen.getByText('Ada Lovelace')).toBeInTheDocument();
+    expect(screen.getByText('Arts and Culture')).toBeInTheDocument();
   });
 
   it('renders mobile list role controls without crashing', () => {
@@ -162,7 +185,12 @@ describe('UsersAdmin components', () => {
           switchingUserId={null}
           t={t}
           verificationCasesByProfile={{}}
-          visibleUsers={[sampleUser]}
+          visibleGroups={[
+            {
+              owner: sampleUser,
+              organizations: [{ profile: sampleOrg, organizationName: 'Arts and Culture' }],
+            },
+          ]}
           formatDate={() => 'today'}
           formatRelativeTime={() => 'now'}
           getActivityTimestamp={() => new Date().toISOString()}
@@ -178,5 +206,8 @@ describe('UsersAdmin components', () => {
     );
 
     expect(screen.getByText('Ada Lovelace')).toBeInTheDocument();
+    expect(screen.getByText('Arts and Culture')).toBeInTheDocument();
+    expect(screen.getByLabelText('admin.users.userIsVerified')).toBeInTheDocument();
+    expect(screen.getByLabelText('admin.users.userIsUnverified')).toBeInTheDocument();
   });
 });

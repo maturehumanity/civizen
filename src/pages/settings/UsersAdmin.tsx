@@ -40,7 +40,9 @@ import {
 import {
   getEffectiveCitizenshipStatus,
   getNextUserExperienceLevel,
+  groupUsersWithOrganizations,
   manageableRoles,
+  type LinkedAccountLink,
   type OverrideMode,
   type ProfessionRow,
   type ProfessionStatusMode,
@@ -207,6 +209,7 @@ export default function UsersAdmin() {
   const { t, language } = useLanguage();
   const isMobile = useIsMobile();
   const [users, setUsers] = useState<ProfileRow[]>([]);
+  const [linkedAccounts, setLinkedAccounts] = useState<LinkedAccountLink[]>([]);
   const [rolePermissions, setRolePermissions] = useState<Record<AppRole, AppPermission[]>>(
     Object.fromEntries(APP_ROLES.map((role) => [role, []])) as Record<AppRole, AppPermission[]>,
   );
@@ -267,6 +270,7 @@ export default function UsersAdmin() {
 
     const [
       { data: usersData, error: usersError },
+      { data: linkedAccountsData, error: linkedAccountsError },
       { data: matrixData, error: matrixError },
       { data: professionsData, error: professionsError },
       { data: profileProfessionsData, error: profileProfessionsError },
@@ -282,6 +286,10 @@ export default function UsersAdmin() {
       emergencyEscalationHistoryResponse,
     ] = await Promise.all([
       supabase.from('profiles').select('*').is('deleted_at', null).order('created_at', { ascending: false }),
+      supabase
+        .from('linked_accounts')
+        .select('owner_profile_id, linked_profile_id, relationship_type, business_name_normalized')
+        .eq('relationship_type', 'business'),
       supabase.from('role_permissions').select('role,permission'),
       supabase.from('professions').select('*').order('label', { ascending: true }),
       supabase.from('profile_professions').select('*'),
@@ -322,6 +330,10 @@ export default function UsersAdmin() {
     if (usersError) {
       console.error('Error loading users:', usersError);
       toast.error(translate('admin.users.loadFailed'));
+    }
+
+    if (linkedAccountsError) {
+      console.error('Error loading linked accounts:', linkedAccountsError);
     }
 
     if (matrixError) {
@@ -430,6 +442,7 @@ export default function UsersAdmin() {
     );
 
     setUsers(nextUsers);
+    setLinkedAccounts((linkedAccountsData ?? []) as LinkedAccountLink[]);
     setRolePermissions(groupedRolePermissions);
     setProfessions(professionsData ?? []);
     setUserProfessions(groupedProfessions);
@@ -487,7 +500,7 @@ export default function UsersAdmin() {
     const normalized = search.trim().toLowerCase();
     if (!normalized) return users;
 
-    return users.filter((user) =>
+    const matchesSearch = (user: ProfileRow) =>
       [
         user.full_name,
         user.username,
@@ -497,9 +510,30 @@ export default function UsersAdmin() {
         verificationCasesByProfile[user.id]?.status,
       ]
         .filter(Boolean)
-        .some((value) => String(value).toLowerCase().includes(normalized)),
-    );
-  }, [search, users, verificationCasesByProfile]);
+        .some((value) => String(value).toLowerCase().includes(normalized))
+      || linkedAccounts.some(
+        (link) =>
+          link.relationship_type === 'business'
+          && (link.linked_profile_id === user.id || link.owner_profile_id === user.id)
+          && Boolean(link.business_name_normalized?.toLowerCase().includes(normalized)),
+      );
+
+    const matchedIds = new Set(users.filter(matchesSearch).map((user) => user.id));
+
+    // Keep owner↔org pairs together when either side matches search.
+    for (const link of linkedAccounts) {
+      if (link.relationship_type !== 'business') continue;
+      if (matchedIds.has(link.owner_profile_id)) matchedIds.add(link.linked_profile_id);
+      if (matchedIds.has(link.linked_profile_id)) matchedIds.add(link.owner_profile_id);
+    }
+
+    return users.filter((user) => matchedIds.has(user.id));
+  }, [linkedAccounts, search, users, verificationCasesByProfile]);
+
+  const visibleGroups = useMemo(
+    () => groupUsersWithOrganizations(visibleUsers, linkedAccounts),
+    [linkedAccounts, visibleUsers],
+  );
 
   const selectedUser = useMemo(
     () => users.find((user) => user.id === selectedUserId) || null,
@@ -1439,7 +1473,7 @@ export default function UsersAdmin() {
                 <Loader2 className="h-4 w-4 animate-spin" />
                 <span>{t('common.loading')}</span>
               </div>
-            ) : visibleUsers.length === 0 ? (
+            ) : visibleGroups.length === 0 ? (
               <div className="px-6 py-16 text-center">
                 <p className="text-lg font-semibold text-foreground">{t('admin.users.noResultsTitle')}</p>
                 <p className="mt-2 text-sm text-muted-foreground">{t('admin.users.noResultsDescription')}</p>
@@ -1464,7 +1498,7 @@ export default function UsersAdmin() {
                     switchingUserId={switchingUserId}
                     t={t}
                     verificationCasesByProfile={verificationCasesByProfile}
-                    visibleUsers={visibleUsers}
+                    visibleGroups={visibleGroups}
                     formatDate={formatDate}
                     formatRelativeTime={formatRelativeTime}
                     getActivityTimestamp={getActivityTimestamp}
@@ -1487,7 +1521,7 @@ export default function UsersAdmin() {
                     switchingUserId={switchingUserId}
                     t={t}
                     verificationCasesByProfile={verificationCasesByProfile}
-                    visibleUsers={visibleUsers}
+                    visibleGroups={visibleGroups}
                     formatDate={formatDate}
                     formatRelativeTime={formatRelativeTime}
                     getActivityTimestamp={getActivityTimestamp}
