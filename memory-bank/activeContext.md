@@ -2,7 +2,7 @@
 
 ## Current focus
 
-**Endorse vs credentials icons (2026-08-04):** Endorse uses Lucide `ThumbsUp`; Professional credentials keeps `Award`, so Profile menu / Contribute / Settings no longer share the same medal icon.
+**Endorse vs credentials icons (2026-08-04):** Endorse uses Lucide `ThumbsUp`; Professional credentials keeps `Award`, so Profile menu / Contribute / Settings no longer share the same medal icon. **Testing v0.1.152** (build 154).
 
 **Search companies ownership + endorse (2026-08-04):** People no longer lists business profiles. Companies show a tappable “Run by [name]” owner row and Endorse. Directory uses `search_civizen_directory` RPC so owner fields work for all signed-in users despite `linked_accounts` RLS. LANGUAGE_PACK_VERSION 119. **Testing v0.1.151** (build 153).
 
