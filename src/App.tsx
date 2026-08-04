@@ -24,6 +24,7 @@ const SignUp = lazyWithChunkReload(() => import('@/pages/auth/SignUp'));
 const ForgotPassword = lazyWithChunkReload(() => import('@/pages/auth/ForgotPassword'));
 const ResetPassword = lazyWithChunkReload(() => import('@/pages/auth/ResetPassword'));
 const Contribute = lazyWithChunkReload(() => import('@/pages/Contribute'));
+const ContributeLane = lazyWithChunkReload(() => import('@/pages/ContributeLane'));
 const Messaging = lazyWithChunkReload(() => import('@/pages/Messaging'));
 const DownloadPage = lazyWithChunkReload(() => import('@/pages/Download'));
 const WhyThisExists = lazyWithChunkReload(() => import('@/pages/WhyThisExists'));
@@ -259,6 +260,10 @@ const App = () => (
                   {/* Protected routes */}
                   <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
                   <Route path="/contribute" element={<ProtectedRoute><Contribute /></ProtectedRoute>} />
+                  <Route
+                    path="/contribute/:laneId"
+                    element={<ProtectedRoute><ContributeLane /></ProtectedRoute>}
+                  />
                   <Route path="/messaging/:conversationId" element={<ProtectedRoute><Messaging /></ProtectedRoute>} />
                   <Route path="/messaging" element={<ProtectedRoute><Messaging /></ProtectedRoute>} />
                   <Route path="/messagin" element={<ProtectedRoute><Navigate to="/messaging" replace /></ProtectedRoute>} />

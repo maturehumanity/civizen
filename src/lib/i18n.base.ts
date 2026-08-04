@@ -1563,24 +1563,69 @@ export const baseTranslations = {
   },
   "contribute": {
     "title": "Contribute",
-    "subtitle": "Choose how you want to strengthen your presence and support the community.",
-    "actions": {
-      "endorse": {
-        "title": "Endorse someone",
-        "description": "Recognize another person with a pillar-based endorsement."
+    "subtitle": "How would you like to contribute today?",
+    "backToHub": "Back to Contribute",
+    "sections": {
+      "ways": "Ways to Contribute",
+      "community": "Community",
+      "knowledge": "Knowledge",
+      "impact": "Your Impact"
+    },
+    "lanes": {
+      "volunteer": {
+        "title": "Volunteer",
+        "description": "Help your community by volunteering your time and skills."
       },
-      "profile": {
-        "title": "Improve your profile",
-        "description": "Update your identity, bio, and country so your profile feels complete."
+      "professional": {
+        "title": "Professional Skills",
+        "description": "Apply your professional expertise to help build Civizen."
       },
-      "share": {
-        "title": "Share an update",
-        "description": "Open Messaging for the shared stream, quick updates, and calls."
+      "financial": {
+        "title": "Financial Support",
+        "description": "Support the mission financially through inquiry pathways."
       },
-      "score": {
-        "title": "Review your score",
-        "description": "Check your profile to see how your trust signals and endorsements are evolving."
+      "organization": {
+        "title": "Organization Partnership",
+        "description": "Enable institutions to partner, sponsor, and publish opportunities."
+      },
+      "projects": {
+        "title": "Community Projects",
+        "description": "Join projects that improve communities around the world."
+      },
+      "tasks": {
+        "title": "Open Tasks",
+        "description": "Help where your expertise is needed."
+      },
+      "challenges": {
+        "title": "Monthly Challenges",
+        "description": "Participate in community challenges."
+      },
+      "knowledge": {
+        "title": "Share Knowledge",
+        "description": "Contribute knowledge that benefits humanity."
+      },
+      "improvements": {
+        "title": "Suggest Improvements",
+        "description": "Help improve Civizen itself."
+      },
+      "impact": {
+        "title": "Contribution Summary",
+        "description": "See how your participation strengthens Civizen over time."
       }
+    },
+    "placeholder": {
+      "comingSoonTitle": "Coming soon",
+      "comingSoonBody": "This contribution path is part of the Contribute hub roadmap. Opportunities, intake, and tracking will open here in a later phase.",
+      "impactHint": "For now, review your Civizen Score and Contributions activity on your profile.",
+      "relatedTitle": "Related places"
+    },
+    "related": {
+      "volunteerInterest": "Contributor interest",
+      "policy": "Contributor Participation Policy",
+      "governance": "Governance",
+      "solutions": "Solutions",
+      "study": "Study",
+      "score": "Review your score"
     }
   },
   "features": {
@@ -1740,16 +1785,16 @@ export const baseTranslations = {
       },
       "contributionHub": {
         "title": "Open the contribute hub",
-        "summary": "Use the Contribute page as a home for actions that strengthen your presence and help other people.",
+        "summary": "Use Contribute as the gateway for volunteering, professional skills, financial interest, community projects, and related participation paths.",
         "workflow": [
-          "Open Contribute from your page list, Law, or other in-app links that point to the hub.",
-          "Choose the kind of contribution you want to make next.",
-          "Jump into the linked flow for endorsing, profile improvement, the messaging stream, or score review."
+          "Open Contribute from the bottom navigation.",
+          "Choose how you want to contribute — volunteer, skills, funding interest, organization partnership, community, knowledge, or impact.",
+          "Follow the linked flow or placeholder path for that contribution lane."
         ],
         "details": [
-          "Contribute is designed as a central action hub rather than a single-purpose screen.",
-          "It surfaces high-intent actions without requiring a primary tab in the bottom navigation.",
-          "The page helps separate contribution actions from passive browsing."
+          "Contribute is the participation engine for Civizen, not a shortcut to Profile, Messaging, or Score.",
+          "Endorsement stays on Search and user profiles.",
+          "Financial paths remain inquiry-only until an authorized funding portal is available."
         ]
       },
       "homeAppDownload": {
@@ -3689,8 +3734,8 @@ export const baseTranslations = {
       "pageDescription": "Learn how Civizen recognizes contributors. Compensation exists only under written employment, contracts, grants, fellowships, bounties, or other approved programs.",
       "point1": "Recognition may include attribution, badges, credentials, and community responsibilities — not money or a security.",
       "point2": "Compensation exists only when established through an approved written arrangement.",
-      "point3": "You can also use the in-app Contribute hub for everyday civic actions.",
-      "civicCta": "Open the Contribute hub",
+      "point3": "Use the in-app Contribute hub to discover other ways to participate beyond this interest form.",
+      "hubCta": "Explore Contribute",
       "formTitle": "Contributor interest",
       "policyLink": "Read the Contributor Participation Policy"
     },

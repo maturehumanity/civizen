@@ -249,6 +249,12 @@ const allPages: PageEntry[] = [
   { name: 'ForgotPassword', path: '/forgot-password', load: () => import('@/pages/auth/ForgotPassword') },
   { name: 'ResetPassword', path: '/reset-password', load: () => import('@/pages/auth/ResetPassword') },
   { name: 'Contribute', path: '/contribute', load: () => import('@/pages/Contribute') },
+  {
+    name: 'ContributeLane',
+    path: '/contribute/tasks',
+    routePath: '/contribute/:laneId',
+    load: () => import('@/pages/ContributeLane'),
+  },
   { name: 'Messaging', path: '/messaging', load: () => import('@/pages/Messaging') },
   { name: 'WhyThisExists', path: '/why-this-exists', load: () => import('@/pages/WhyThisExists') },
   { name: 'Features', path: '/features', load: () => import('@/pages/Features') },

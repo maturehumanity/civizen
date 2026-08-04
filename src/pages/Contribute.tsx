@@ -1,16 +1,22 @@
 import { motion } from 'framer-motion';
-import { Edit3, MessageCircle, PlusCircle, ThumbsUp, TrendingUp } from 'lucide-react';
+import { PlusCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
+import {
+  CONTRIBUTE_SECTION_ORDER,
+  getContributeLanesBySection,
+  type ContributeLaneSection,
+} from '@/lib/contribute-lanes';
 
-const actionMeta = [
-  { key: 'endorse', icon: ThumbsUp, path: '/endorse', iconClassName: 'text-accent' },
-  { key: 'profile', icon: Edit3, path: '/settings/profile', iconClassName: 'text-primary' },
-  { key: 'share', icon: MessageCircle, path: '/messaging', iconClassName: 'text-primary' },
-  { key: 'score', icon: TrendingUp, path: '/profile', iconClassName: 'text-accent' },
-] as const;
+const SECTION_TITLE_KEYS: Record<ContributeLaneSection, string> = {
+  ways: 'contribute.sections.ways',
+  community: 'contribute.sections.community',
+  knowledge: 'contribute.sections.knowledge',
+  impact: 'contribute.sections.impact',
+};
 
 export default function Contribute() {
   const navigate = useNavigate();
@@ -18,7 +24,7 @@ export default function Contribute() {
 
   return (
     <AppLayout>
-      <div className="space-y-6 px-4 py-6">
+      <div className="space-y-8 px-4 py-6">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -31,43 +37,50 @@ export default function Contribute() {
             <h1 className="text-2xl font-display font-bold text-foreground">
               {t('contribute.title')}
             </h1>
-            <p className="text-base text-muted-foreground">
-              {t('contribute.subtitle')}
-            </p>
+            <p className="text-base text-muted-foreground">{t('contribute.subtitle')}</p>
           </div>
         </motion.div>
 
-        <motion.div
-          className="grid gap-3 sm:grid-cols-2"
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-        >
-          {actionMeta.map((action, index) => {
-            const Icon = action.icon;
-            return (
-              <motion.div
-                key={action.key}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.08 + index * 0.04 }}
-              >
-                <Card
-                  className="cursor-pointer border-border/70 bg-card/95 p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:shadow-md"
-                  onClick={() => navigate(action.path)}
-                >
-                  <Icon className={`mb-3 h-8 w-8 ${action.iconClassName}`} />
-                  <h2 className="font-semibold text-foreground">
-                    {t(`contribute.actions.${action.key}.title`)}
-                  </h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {t(`contribute.actions.${action.key}.description`)}
-                  </p>
-                </Card>
-              </motion.div>
-            );
-          })}
-        </motion.div>
+        {CONTRIBUTE_SECTION_ORDER.map((section, sectionIndex) => {
+          const lanes = getContributeLanesBySection(section);
+          return (
+            <motion.section
+              key={section}
+              className="space-y-3"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.04 + sectionIndex * 0.05 }}
+            >
+              <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                {t(SECTION_TITLE_KEYS[section])}
+              </h2>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {lanes.map((lane, index) => {
+                  const Icon = lane.icon;
+                  return (
+                    <motion.div
+                      key={lane.id}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.06 + sectionIndex * 0.05 + index * 0.03 }}
+                    >
+                      <Card
+                        className="cursor-pointer border-border/70 bg-card/95 p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:shadow-md"
+                        onClick={() => navigate(lane.path)}
+                      >
+                        <Icon className={`mb-3 h-8 w-8 ${lane.iconClassName}`} />
+                        <h3 className="font-semibold text-foreground">{t(lane.titleKey)}</h3>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          {t(lane.descriptionKey)}
+                        </p>
+                      </Card>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </motion.section>
+          );
+        })}
       </div>
     </AppLayout>
   );

@@ -28,6 +28,9 @@ describe('app-back-navigation', () => {
     expect(getAppBackFallback('/messaging/abc')).toBe('/messaging');
     expect(getAppBackFallback('/study/foo')).toBe('/study');
     expect(getAppBackFallback('/market/sell')).toBe('/market');
+    expect(getAppBackFallback('/contribute/tasks')).toBe('/contribute');
+    expect(getAppBackFallback('/contribute/impact')).toBe('/contribute');
+    expect(getAppBackFallback('/contribute/policy')).toBe('/');
     expect(getAppBackFallback('/u/armen')).toBe('/search');
     expect(getAppBackFallback('/earnings')).toBe('/');
   });

@@ -19,6 +19,9 @@ export function getAppBackFallback(pathname: string): string {
   if (pathname.startsWith('/market/')) return '/market';
   if (pathname.startsWith('/governance/')) return '/governance';
   if (pathname.startsWith('/fund/')) return '/fund';
+  if (pathname.startsWith('/contribute/') && pathname !== '/contribute/policy') {
+    return '/contribute';
+  }
   if (pathname.startsWith('/agreements/')) return '/agreements';
   if (pathname.startsWith('/u/')) return '/search';
   return '/';

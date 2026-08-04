@@ -26,7 +26,7 @@ export default function FundContribute() {
           <Link to="/contribute/policy">{t('fund.contribute.policyLink')}</Link>
         </Button>
         <Button asChild variant="outline" className="w-full sm:w-auto">
-          <Link to="/contribute">{t('fund.contribute.civicCta')}</Link>
+          <Link to="/contribute">{t('fund.contribute.hubCta')}</Link>
         </Button>
       </div>
 
