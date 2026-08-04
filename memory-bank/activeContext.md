@@ -2,6 +2,10 @@
 
 ## Current focus
 
+**Testing v0.1.128 (2026-08-03):** Build 130 (`20260803-v0.1.128`). Live/Production remains on prior soak build. Composer wraps under avatar with curved shape-outside.
+
+**Home composer wraparound (2026-08-03):** Long drafts use a single bordered field with floated avatar + circular shape-outside so lines wrap under the photo (full width from ~line 3) with a soft curve.
+
 **Testing v0.1.127 (2026-08-03):** Build 129 (`20260803-v0.1.127`). Live/Production remains on prior soak build. Composer remeasures so full draft text stays visible.
 
 **Home composer clip fix (2026-08-03):** Draft field remeasures height after width settles (rAF + width ResizeObserver) so restored/long drafts wrap fully instead of clipping under overflow.
