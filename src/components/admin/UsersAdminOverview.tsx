@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ArrowLeft, Search, Shield, Users } from 'lucide-react';
+import { ChevronLeft, Search, Shield, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -26,14 +26,20 @@ export function UsersAdminOverview({
   return (
     <>
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
-        <div className="relative grid grid-cols-[auto_1fr_auto] items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={onBack} className="w-fit gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            {t('common.back')}
+        <div className="flex items-center gap-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={onBack}
+            className="h-10 w-10 shrink-0"
+            aria-label={t('common.back')}
+          >
+            <ChevronLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-center text-2xl font-display font-bold text-foreground">{t('admin.users.title')}</h1>
-          {/* Spacer matches back control width so the title stays centered under top chrome actions */}
-          <div className="w-[4.5rem]" aria-hidden />
+          <h1 className="min-w-0 truncate text-2xl font-display font-bold text-foreground">
+            {t('admin.users.title')}
+          </h1>
         </div>
       </motion.div>
 
@@ -41,32 +47,44 @@ export function UsersAdminOverview({
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
-        className="flex gap-3 overflow-x-auto pb-1 sm:grid sm:grid-cols-3 sm:overflow-visible"
+        className="grid grid-cols-3 gap-2 overflow-x-auto scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
-        <Card className="min-w-[220px] rounded-3xl border-border/60 p-4 shadow-sm sm:min-w-0">
-          <div className="flex items-center gap-3">
-            <div className="rounded-2xl bg-primary/10 p-3 text-primary"><Users className="h-5 w-5" /></div>
-            <div>
-              <p className="text-sm text-muted-foreground">{t('admin.users.totalUsers')}</p>
-              <p className="text-2xl font-semibold text-foreground">{stats.total}</p>
+        <Card className="min-w-0 rounded-2xl border-border/60 p-2.5 shadow-sm sm:rounded-3xl sm:p-4">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+            <div className="shrink-0 rounded-xl bg-primary/10 p-2 text-primary sm:rounded-2xl sm:p-3">
+              <Users className="h-4 w-4 sm:h-5 sm:w-5" />
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-[11px] leading-tight text-muted-foreground sm:text-sm">
+                {t('admin.users.totalUsers')}
+              </p>
+              <p className="text-lg font-semibold text-foreground sm:text-2xl">{stats.total}</p>
             </div>
           </div>
         </Card>
-        <Card className="min-w-[220px] rounded-3xl border-border/60 p-4 shadow-sm sm:min-w-0">
-          <div className="flex items-center gap-3">
-            <div className="rounded-2xl bg-emerald-500/10 p-3 text-emerald-600 dark:text-emerald-300"><Shield className="h-5 w-5" /></div>
-            <div>
-              <p className="text-sm text-muted-foreground">{t('admin.users.admins')}</p>
-              <p className="text-2xl font-semibold text-foreground">{stats.admins}</p>
+        <Card className="min-w-0 rounded-2xl border-border/60 p-2.5 shadow-sm sm:rounded-3xl sm:p-4">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+            <div className="shrink-0 rounded-xl bg-emerald-500/10 p-2 text-emerald-600 dark:text-emerald-300 sm:rounded-2xl sm:p-3">
+              <Shield className="h-4 w-4 sm:h-5 sm:w-5" />
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-[11px] leading-tight text-muted-foreground sm:text-sm">
+                {t('admin.users.admins')}
+              </p>
+              <p className="text-lg font-semibold text-foreground sm:text-2xl">{stats.admins}</p>
             </div>
           </div>
         </Card>
-        <Card className="min-w-[220px] rounded-3xl border-border/60 p-4 shadow-sm sm:min-w-0">
-          <div className="flex items-center gap-3">
-            <div className="rounded-2xl bg-amber-500/10 p-3 text-amber-600 dark:text-amber-300"><Shield className="h-5 w-5" /></div>
-            <div>
-              <p className="text-sm text-muted-foreground">{t('admin.users.staffRoles')}</p>
-              <p className="text-2xl font-semibold text-foreground">{stats.staff}</p>
+        <Card className="min-w-0 rounded-2xl border-border/60 p-2.5 shadow-sm sm:rounded-3xl sm:p-4">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+            <div className="shrink-0 rounded-xl bg-amber-500/10 p-2 text-amber-600 dark:text-amber-300 sm:rounded-2xl sm:p-3">
+              <Shield className="h-4 w-4 sm:h-5 sm:w-5" />
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-[11px] leading-tight text-muted-foreground sm:text-sm">
+                {t('admin.users.staffRoles')}
+              </p>
+              <p className="text-lg font-semibold text-foreground sm:text-2xl">{stats.staff}</p>
             </div>
           </div>
         </Card>

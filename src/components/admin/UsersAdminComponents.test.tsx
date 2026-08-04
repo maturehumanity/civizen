@@ -133,6 +133,8 @@ describe('UsersAdmin components', () => {
     );
 
     expect(screen.getByText('admin.users.title')).toBeInTheDocument();
+    expect(screen.getByLabelText('common.back')).toBeInTheDocument();
+    expect(screen.queryByText('common.back')).not.toBeInTheDocument();
     expect(screen.queryByText('admin.users.createUser')).not.toBeInTheDocument();
   });
 

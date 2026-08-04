@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**UsersAdmin overview polish (2026-08-04):** Level hover label is “User Level”; stats cards fit in one row without a visible scrollbar; header is chevron-only Back beside the Users title. LANGUAGE_PACK_VERSION 118. **Testing pending release bump.**
+
 **UsersAdmin level under avatar (2026-08-04):** Experience level (Entry/Junior/…) sits under the photo/logo on the same left column; hover/click opens a level menu like the role pill. **Testing v0.1.149** (build 151).
 
 **UsersAdmin add-user chrome (2026-08-04):** Create user is a `+` icon in AppTopChrome immediately before Search (not a text button beside the title). **Testing v0.1.148** (build 150).

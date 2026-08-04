@@ -3491,7 +3491,7 @@ export const baseTranslations = {
       "loginAsUserUnavailable": "Login as user is only available in dev mode.",
       "loginAsUserFailed": "Could not switch into that user account.",
       "loginAsUserSuccess": "Now signed in as {user}.",
-      "levelCycleHint": "Click to change user level.",
+      "levelCycleHint": "User Level",
       "levelUpdateFailed": "Could not update the user level.",
       "levelUpdated": "{user} is now set to {level}.",
       "createUser": "New user",
