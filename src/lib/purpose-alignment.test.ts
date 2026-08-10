@@ -69,8 +69,8 @@ describe('purpose-alignment correction v0.5', () => {
       worldCitizenship!.markdown,
       pathway!.markdown,
       communityCharter!.markdown,
-      readRepo('docs/02-moderated/policies/foundation/the-civizen-charter.md'),
-      readRepo('docs/02-moderated/policies/citizenship_and_verification_policy_v0_1.md'),
+      readRepo('docs/00-foundation/the-civizen-charter.md'),
+      readRepo('docs/02-policies/citizenship-and-verification/citizenship-and-verification-policy-v0.1.md'),
     ].join('\n');
 
     expect(sources).not.toMatch(/Citizenship is an internal platform status only\./);

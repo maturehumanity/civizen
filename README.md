@@ -71,7 +71,7 @@ npm run dev
 
 ### Technical direction (short)
 
-Local-first identity (DIDs), sync and storage toward P2P/decentralized backends, community governance of upgrades, and a staged path from testing builds to production. Deep architecture notes live under `docs/` — start with [docs/README.md](./docs/README.md) and [Sovereign Architecture](./docs/SOVEREIGN_CIVIZEN_ARCHITECTURE.md).
+Local-first identity (DIDs), sync and storage toward P2P/decentralized backends, community governance of upgrades, and a staged path from testing builds to production. Deep architecture notes live under `docs/` — start with [docs/README.md](./docs/README.md) and [Sovereign Architecture](./docs/03-platform/architecture/sovereign-civizen-architecture.md).
 
 ### Project conventions
 

@@ -7,5 +7,9 @@ src/integrations/supabase/ @Gityer
 src/lib/app-release.ts @Gityer
 src/lib/update-channel.ts @Gityer
 public/updates/ @Gityer
-docs/03-governance/ @Gityer
+docs/00-foundation/ @Gityer
+docs/01-governance/ @Gityer
+docs/02-policies/ @Gityer
+docs/03-platform/ @Gityer
 docs/04-operations/ @Gityer
+docs/05-research/ @Gityer

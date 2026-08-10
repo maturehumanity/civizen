@@ -1,5 +1,5 @@
-import lumaMonetaryPolicyBaseline from '../../docs/02-moderated/policies/monetary/civizen_luma_monetary_policy_and_ai_agent_spec.md?raw';
-import constitutionalTokenomicsGovernance from '../../docs/03-governance/civizen-constitutional-tokenomics-governance.md?raw';
+import lumaMonetaryPolicyBaseline from '../../docs/02-policies/monetary/civizen-luma-monetary-policy-and-ai-agent-spec.md?raw';
+import constitutionalTokenomicsGovernance from '../../docs/01-governance/funding-and-monetary/civizen-constitutional-tokenomics-governance.md?raw';
 
 import type { StudyDomainId } from '@/lib/study';
 

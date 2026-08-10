@@ -13,7 +13,7 @@ historical_note: Historical implementation planning notes. References to “acti
 
 # Governance Implementation Roadmap v0.1
 
-> **Historical document.** Some sections still use legacy “activation review” terminology for schema and migration planning. Present user-facing language is **program readiness and availability**. See `docs/03-governance/community-readiness-and-program-availability-framework.md` and `/about/planetary-citizenship-pathway`.
+> **Historical document.** Some sections still use legacy “activation review” terminology for schema and migration planning. Present user-facing language is **program readiness and availability**. See `docs/01-governance/participation/community-readiness-and-program-availability-framework.md` and `/about/planetary-citizenship-pathway`.
 
 ## 1. Purpose
 
@@ -29,15 +29,15 @@ This roadmap turns the current governance draft set into an implementation seque
 
 The policy source of truth for this roadmap is currently:
 
-- `docs/02-moderated/legal/civizen_terms_of_use.md`
-- `docs/02-moderated/legal/civizen_constitution_v0_1.md`
-- `docs/02-moderated/policies/citizenship_and_verification_policy_v0_1.md`
-- `docs/03-governance/founder-role-charter-v0.2.md`
-- `docs/03-governance/role-domains-and-maturity-thresholds-v0.1.md`
-- `docs/03-governance/citizen-status-model-v0.1.md`
-- `docs/03-governance/governance-permission-model-v0.1.md`
-- `docs/03-governance/country-activation-framework-v0.1.md`
-- `docs/03-governance/advisory-high-council-model-v0.1.md`
+- `docs/02-policies/legal/civizen-terms-of-use.md`
+- `docs/01-governance/constitution/civizen-constitution-v0.1.md`
+- `docs/02-policies/citizenship-and-verification/citizenship-and-verification-policy-v0.1.md`
+- `docs/archive/superseded/founder-role-charter-v0.2.md`
+- `docs/01-governance/roles-and-permissions/role-domains-and-maturity-thresholds-v0.1.md`
+- `docs/01-governance/participation/citizen-status-model-v0.1.md`
+- `docs/01-governance/roles-and-permissions/governance-permission-model-v0.1.md`
+- `docs/01-governance/country-activation/country-activation-framework-v0.1.md`
+- `docs/01-governance/institutions/advisory-high-council-model-v0.1.md`
 
 ## 3. Current Codebase Snapshot
 
@@ -638,7 +638,7 @@ To keep implementation coherent, work in this order:
 This roadmap is now the best repo-native handoff point for continuation. A new chat can resume effectively from the current codebase if it is directed to:
 
 - continue Civizen decentralization from `docs/04-operations/dev/governance-implementation-roadmap-v0.1.md`
-- use `docs/03-governance/decentralized-transition-architecture.md` as the target architecture
+- use `docs/03-platform/decentralization/decentralized-transition-architecture.md` as the target architecture
 - start with `Section 14. Immediate Next Steps`
 - for **verifier mirror / federation rollout** status, headline program %, and multi-operator rehearsal gate, read `docs/04-operations/dev/verifier-federation/rollout-plan-v0.1.md` §8–§10 in the same session
 

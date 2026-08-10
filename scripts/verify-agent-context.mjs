@@ -30,6 +30,12 @@ const agents = readFileSync(AGENTS, 'utf8');
 if (!agents.includes('nav-secondary-carousel.md')) {
   fail('AGENTS.md must reference docs/04-operations/dev/nav-secondary-carousel.md');
 }
+if (!agents.includes('00-foundation/recognized-planetary-citizenship-pathway.md')) {
+  fail('AGENTS.md must reference docs/00-foundation/recognized-planetary-citizenship-pathway.md');
+}
+if (!existsSync('docs/00-foundation/philosophy-of-mature-humanity.md')) {
+  fail('missing docs/00-foundation/philosophy-of-mature-humanity.md');
+}
 if (!agents.includes('memory-bank/activeContext.md')) {
   fail('AGENTS.md must reference memory-bank/activeContext.md');
 }

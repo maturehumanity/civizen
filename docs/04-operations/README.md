@@ -1,17 +1,28 @@
 # Operations
 
-Developer-facing material lives here: engineering standards, agent workflow, release policy, and local development guidance.
+Developer, release, deployment stubs, and contributor process documentation.
 
-Public repository documentation covers local development, testing, and general release requirements only. It does not authorize or describe production access. Production access, provider configuration, database migration access, recovery procedures, secrets management, host topology, and deployment runbooks are maintained in an access-controlled operations store.
+Production host topology, secrets, and privileged runbooks are **not** published here; they remain in the access-controlled operations store. Public stubs under `dev/ssh-and-vps/` and `REMOTE_DB_ACCESS.md` explain what is intentionally omitted.
 
-Current implementation planning documents:
+## Sections
 
-- `dev/governance-implementation-roadmap-v0.1.md`
-- `dev/verifier-federation/rollout-plan-v0.1.md` (operator rotation: `dev/verifier-federation/operator-signer-rotation-runbook-v0.1.md`)
-- `dev/ENGINEERING_STANDARDS.md`
-- `dev/AGENTS.md` — agent workflow (verification, arc carousel, testing-first release)
-- `dev/RELEASING.md` — general release policy and local build sequence
-- `dev/REMOTE_DB_ACCESS.md` — public stub only
-- `dev/ssh-and-vps/` — public stubs only
+| Section | Purpose |
+| --- | --- |
+| [`dev/`](./dev/) | Agent notes, release guides, UX specs, federation runbooks |
+| [`contributor-processes/`](./contributor-processes/) | Content metadata templates and retrieval rules |
 
-Local development does not require production access.
+## Canonical starting points
+
+1. [`dev/AGENTS.md`](./dev/AGENTS.md) — mandatory agent context  
+2. [`dev/nav-secondary-carousel.md`](./dev/nav-secondary-carousel.md) — Market/Home/Study arc UX  
+3. [`dev/ENVIRONMENT_LIFECYCLE.md`](./dev/ENVIRONMENT_LIFECYCLE.md) — release / data isolation  
+4. [`dev/RELEASING.md`](./dev/RELEASING.md) — human release steps  
+
+## Related
+
+- Platform architecture: [`../03-platform/`](../03-platform/)
+- Policies for public copy: [`../02-policies/institutional/`](../02-policies/institutional/)
+
+## Proposing changes
+
+Update the relevant spec in the same session as the code change. Process changes belong in `AGENTS.md` and `.cursor/rules/civizen-project.mdc`.

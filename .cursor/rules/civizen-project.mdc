@@ -13,6 +13,9 @@ Before planning or editing, read (in order):
 2. `docs/04-operations/dev/AGENTS.md`
 3. If the task touches secondary nav, Market bottom menu, Home/Study tabs, or `NavSecondaryCarousel`:
    - **`docs/04-operations/dev/nav-secondary-carousel.md`** (canonical UX + geometry spec)
+4. If the task touches onboarding, identity, citizenship, governance, elections, legal status, partnerships, or public mission copy:
+   - **`docs/00-foundation/recognized-planetary-citizenship-pathway.md`**
+5. Documentation map: `docs/README.md` (purpose-based IA: foundation · governance · policies · platform · operations · research · proposals · archive)
 
 Do not rely on conversation memory alone for component behavior.
 

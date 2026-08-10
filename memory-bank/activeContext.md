@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Documentation IA restructure (2026-08-10):** `docs/` reorganized by purpose (`00-foundation` … `05-research`, plus `proposals/` and `archive/`). Canonical philosophy: `docs/00-foundation/philosophy-of-mature-humanity.md`. Public institutional policies: `docs/02-policies/institutional/`. Pathway: `docs/00-foundation/recognized-planetary-citizenship-pathway.md`. Inventory: `docs/archive/implementation-history/docs-ia-migration-inventory-2026-08-10.md`. Uncommitted Market Jobs form edits left untouched.
+
 **Market Jobs sentence form polish + Production (2026-08-04):** Logged-in users no longer see Worker/Employer tabs (mode from personal vs `biz_*` account). Job-type token cycles seed labels until hover/select; multi-select shows “Baker or Barista” style lists with checks in the dropdown. Location shows city/region plus matching country flag (`RoundCountryFlag`), also beside Full name. Also ships Permissions drag-scroll, ProtectedRoute profile-load gate, and AppPageHeader alignment. **Production v0.1.172** (build 174).
 
 **Market Jobs sentence form (2026-08-04):** Jobs replaces StudySpecialists with a progressive sentence form (job type + location tokens, then contact + More details). Marketplace title hover shows the transactional specialist description. Submissions persist to `market_job_interests`. LANGUAGE_PACK_VERSION 123. **Testing v0.1.171** (build 173).
@@ -184,11 +186,11 @@
 
 **Score page header + dial hint (2026-08-02):** Score overview shows **tier name** on line 1 and compact **Civizen Score · 8.4** (smaller) with info icon on line 2. Stage, confidence, points to next tier, /100 score, and last updated live in the score info hover. Dial rotate hint sits **inside** the bottom-left ring corner (toward the dial), not outside. LANGUAGE_PACK_VERSION 95. **Testing v0.1.88**.
 
-**Score dial Explorer + education flush (2026-08-02):** Unscored profiles display **Explorer** (not “Not yet scored”) on Score overview / Home; dial shows battery-style **0%** on a slightly thicker ring. Education panel flushes save on close and refreshes score inputs — certificate is not required for a preliminary Learning score. Spec Test 1 updated in `docs/civizen_score_tiers_implementation.md`. **Testing v0.1.88**.
+**Score dial Explorer + education flush (2026-08-02):** Unscored profiles display **Explorer** (not “Not yet scored”) on Score overview / Home; dial shows battery-style **0%** on a slightly thicker ring. Education panel flushes save on close and refreshes score inputs — certificate is not required for a preliminary Learning score. Spec Test 1 updated in `docs/03-platform/scoring-and-reputation/civizen-score-tiers-implementation.md`. **Testing v0.1.88**.
 
-**Civizen Score tiers (2026-08-02):** Public tier system is Explorer · Builder · Contributor · Catalyst · Steward (not Stage: Building). Higher tiers require Performance/Contributions floors, confidence, and verified activity. Low scores use developmental colors (not red). Spec: `docs/civizen_score_tiers_implementation.md`. Module: `src/lib/civizen-score-tiers.ts` (rules v1.0.0). LANGUAGE_PACK_VERSION 94.
+**Civizen Score tiers (2026-08-02):** Public tier system is Explorer · Builder · Contributor · Catalyst · Steward (not Stage: Building). Higher tiers require Performance/Contributions floors, confidence, and verified activity. Low scores use developmental colors (not red). Spec: `docs/03-platform/scoring-and-reputation/civizen-score-tiers-implementation.md`. Module: `src/lib/civizen-score-tiers.ts` (rules v1.0.0). LANGUAGE_PACK_VERSION 94.
 
-**Civizen Score reorganization (2026-08-02):** Home score card and `/profile` Score page use five score categories — Learning, Experience, Skills, Performance, Contributions — instead of an endorsement-only overall score. Missing scores show **Not yet scored** (never silent zeros). Confidence and stage are separate from the number. Domains/pillars live under **Activity by Domain**; endorsements under **Evidence & Validation**. Core model: `src/lib/civizen-score.ts` (`civizen-score-v1`). Spec: `docs/civizen_score_page_reorganization.md`. LANGUAGE_PACK_VERSION 93.
+**Civizen Score reorganization (2026-08-02):** Home score card and `/profile` Score page use five score categories — Learning, Experience, Skills, Performance, Contributions — instead of an endorsement-only overall score. Missing scores show **Not yet scored** (never silent zeros). Confidence and stage are separate from the number. Domains/pillars live under **Activity by Domain**; endorsements under **Evidence & Validation**. Core model: `src/lib/civizen-score.ts` (`civizen-score-v1`). Spec: `docs/03-platform/scoring-and-reputation/civizen-score-page-reorganization.md`. LANGUAGE_PACK_VERSION 93.
 
 **Live + Testing v0.1.75 (2026-08-02):** Build 77 (`20260802-v0.1.75`) promoted to Live/Production (same APK bytes as Testing). New approved Civizen brand mark / launcher icons, Solutions Discuss/Solve, theme-toggle hover polish, Funding admin tab packing. Default Live channel previously stayed on v0.1.49, so devices on Live saw no update prompt for Testing-only builds.
 
@@ -254,7 +256,7 @@
 
 **P0-03 dead monetary copy:** Funding calculator/distribution and market buy/peerSend keys removed; agreement/prototype wording; LANGUAGE_PACK_VERSION 61.
 
-**Institutional correction (prior):** Public tree lacks the institutional source package and superseded archives (private copies retained). Funding calculator/distribution UI removed; distribution and Luma-transfer RPCs blocked. Member ID / world-citizenship / Luma Option A / Terms `2026-07-30-institutional-v2` affirmative re-consent remain. Restricted operational materials stay out of the public tree (ops in access-controlled store). Canonical public institutional policy remains under `docs/02-moderated/policies/institutional/` with in-app index `/documents`. Do not republish hostnames, keys, ports, usernames, or production server paths in public docs. Re-clone any old local checkouts.
+**Institutional correction (prior):** Public tree lacks the institutional source package and superseded archives (private copies retained). Funding calculator/distribution UI removed; distribution and Luma-transfer RPCs blocked. Member ID / world-citizenship / Luma Option A / Terms `2026-07-30-institutional-v2` affirmative re-consent remain. Restricted operational materials stay out of the public tree (ops in access-controlled store). Canonical public institutional policy remains under `docs/02-policies/institutional/` with in-app index `/documents`. Do not republish hostnames, keys, ports, usernames, or production server paths in public docs. Re-clone any old local checkouts.
 
 **P1-01 strict Luma prototype (2026-07-30):** Wallet UX renamed to Prototype credits (`/settings/prototype-credits`; `/settings/wallet` and `/settings/luma-wallet` redirect). PeerSendLumaDialog removed from production. Market Buy button removed; Start agreement / Contact only; illustrative credit amount copy. Issuance/policy engine moved to `research/economic-simulations/luma-monetary-model/` (non-operational); production uses `src/lib/prototype-credits.ts` helpers + controlling notice. GovernanceAdmin monetary policy save UI removed.
 
@@ -262,13 +264,13 @@
 
 **Public institutional UI wiring (2026-07-30):** `WorldCitizenshipStatusNotice` on Edit Profile (credential), social card, Profile, Governance hub header + activation readiness; institutional doc metadata (publication/effective/last updated, professional review, superseded/archived) on document pages and index badges; peer Luma transfer UI removed from production (`PeerSendLumaDialog` deleted); Terms acceptance version centralized in `src/lib/terms-version.ts` as `2026-07-30-institutional-v2`, with `TermsReconsentGate` on `ProtectedRoute` for version-aware affirmative re-consent.
 
-**Public institutional surfaces:** Public Part III docs under `docs/02-moderated/policies/institutional/`; community charter under `policies/governance/`. Public app corrections: `/fund` inquiry copy without return percentages; `/fund/invest` non-offering notice; `/fund/transparency` without founder reserve / distribution engine; Terms/signup/footer legal-status + world-citizenship notices; SSN labels → Civizen Member ID; Luma described as prototype credits; LICENSE no longer claims MIT until verified. Public routes: `/documents`, `/about/*`, `/governance/about`, `/governance/charter`, `/transparency`, `/partners`, `/contribute/policy`.
+**Public institutional surfaces:** Public Part III docs under `docs/02-policies/institutional/`; community charter under `policies/governance/`. Public app corrections: `/fund` inquiry copy without return percentages; `/fund/invest` non-offering notice; `/fund/transparency` without founder reserve / distribution engine; Terms/signup/footer legal-status + world-citizenship notices; SSN labels → Civizen Member ID; Luma described as prototype credits; LICENSE no longer claims MIT until verified. Public routes: `/documents`, `/about/*`, `/governance/about`, `/governance/charter`, `/transparency`, `/partners`, `/contribute/policy`.
 
 **Stale chunk / startup crash after deploy (2026-07-24):** Fixed root cause of “Failed to fetch dynamically imported module” / “Civizen hit a startup issue” on `civizen.world` — missing hashed assets must return a real 404 (not SPA HTML); client auto-reloads once on chunk-load errors (`chunk-load-recovery`, `lazyWithChunkReload`); toaster/sonner are eager so they cannot fail as orphan lazy chunks. Deploy merge/asset-preservation procedures live in the access-controlled operations store.
 
 **Levela leftovers in live data (2026-07-30):** User still saw Levela in profile menu, Nela chat, and Home — not from i18n source, but from DB: business account `biz_levela` / full_name `Levela`, linked `business_name_normalized=levela`, Home welcome post, and 6 Nela conversation messages. Scrubbed via `20260730220000_scrub_levela_user_visible_content.sql`.
 
-**Why Civizen Exists page (2026-07-23):** `/why-this-exists` rewritten from `docs/civizen_why_this_exists_page_brief.md` — founder message structure, diversity reassurance section, three CTAs (signup / book / GitHub). Book URL is interim Amazon search via `MATURE_HUMANITY_BOOK_URL` in `src/lib/onboarding-links.ts` until a permanent store URL is configured.
+**Why Civizen Exists page (2026-07-23):** `/why-this-exists` rewritten from `docs/00-foundation/why-civizen-exists-page-brief.md` — founder message structure, diversity reassurance section, three CTAs (signup / book / GitHub). Book URL is interim Amazon search via `MATURE_HUMANITY_BOOK_URL` in `src/lib/onboarding-links.ts` until a permanent store URL is configured.
 
 **GitHub:** Canonical repo is [`maturehumanity/civizen`](https://github.com/maturehumanity/civizen). Legacy [`maturehumanity/levela`](https://github.com/maturehumanity/levela) is **archived** (README points here).
 
@@ -280,7 +282,7 @@
 
 **Android update flow (2026-07-31):** Default Live; Test channel gated by `updates.test`. In-app APK install via `ApkUpdater`. Fixed “download again” loop: `INSTALL_PERMISSION_REQUIRED` keeps the prompt (no WebView navigate / no early dismiss). **v0.1.47** (build 49, `20260731-v0.1.47`) on Testing and Live.
 
-**Funding readiness (Fund Civizen)** — Public inquiry surfaces updated per institutional policy. Canonical *public* policy: `docs/02-moderated/policies/institutional/`. Superseded exploratory funding materials are not current policy. Funding calculator/distribution UI removed.
+**Funding readiness (Fund Civizen)** — Public inquiry surfaces updated per institutional policy. Canonical *public* policy: `docs/02-policies/institutional/`. Superseded exploratory funding materials are not current policy. Funding calculator/distribution UI removed.
 
 Secondary UI focus remains **NavSecondaryCarousel / Market arc menu** — geometry must match `docs/04-operations/dev/nav-secondary-carousel.md`.
 
@@ -290,8 +292,8 @@ Secondary UI focus remains **NavSecondaryCarousel / Market arc menu** — geomet
 2. `docs/04-operations/dev/nav-secondary-carousel.md` when touching secondary nav or Market bottom carousel
 3. `docs/04-operations/dev/contribute-page.md` when touching `/contribute` or contribution hub lanes
 4. `memory-bank/systemPatterns.md` for component map
-5. `docs/02-moderated/policies/institutional/README.md` (and funding integrity / legal status) when touching funding pages or institutional copy
-6. `docs/02-moderated/policies/foundation/recognized-planetary-citizenship-pathway.md` when touching onboarding, identity, citizenship, governance, elections, legal status, partnerships, or public mission copy
+5. `docs/02-policies/institutional/README.md` (and funding integrity / legal status) when touching funding pages or institutional copy
+6. `docs/00-foundation/recognized-planetary-citizenship-pathway.md` when touching onboarding, identity, citizenship, governance, elections, legal status, partnerships, or public mission copy
 
 ## Verification
 

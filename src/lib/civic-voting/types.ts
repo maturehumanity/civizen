@@ -1,5 +1,5 @@
 /**
- * Civic voting domain types — see docs/03-governance/civic-voting-system-design-v0.1.md
+ * Civic voting domain types — see docs/01-governance/participation/civic-voting-system-design-v0.1.md
  */
 
 export type CivicElectionTier =

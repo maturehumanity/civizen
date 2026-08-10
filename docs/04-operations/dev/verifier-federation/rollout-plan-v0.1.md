@@ -87,7 +87,7 @@ Deliverables:
 
 1. Domain-role and signer-governance checks for federated package signers.
 2. Runbook for rotating operators/signers without breaking verification continuity (see `docs/04-operations/dev/verifier-federation/operator-signer-rotation-runbook-v0.1.md`).
-3. Constitutional and policy mapping for mirror federation responsibilities (summary table in that runbook §7; full constitutional text remains under `docs/03-governance/`).
+3. Constitutional and policy mapping for mirror federation responsibilities (summary table in that runbook §7; full constitutional text remains under `docs/01-governance/`).
 
 Acceptance gates:
 

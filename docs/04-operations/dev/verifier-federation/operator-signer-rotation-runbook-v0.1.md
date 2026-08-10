@@ -61,4 +61,4 @@ Operational steps for **Phase D** of `rollout-plan-v0.1.md` (same folder): rotat
 | Inter-operator distribution evidence | `governance_public_audit_verifier_federation_packages` + `_package_signatures` | Append-only; signatures restricted to approved directory signer keys. |
 | Automated inconsistency handling | `run_governance_public_audit_verifier_federation_distribution_verification`, federation alert scopes | Stale package / bad signature / policy mismatch taxonomy. |
 
-This mapping is **descriptive** (what exists today in schema and RPC names), not a substitute for constitutional text in `docs/03-governance/`.
+This mapping is **descriptive** (what exists today in schema and RPC names), not a substitute for constitutional text in `docs/01-governance/`.
