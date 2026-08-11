@@ -2,6 +2,10 @@
 
 ## Current focus
 
+**Live ships bug fixes immediately (2026-08-11):** Standing rule updated — confirmed bug-fix releases must promote to Live/Production in the same session (not Testing-only). Live promoted to **v0.1.174** (build 176) so default Android clients get the update prompt.
+
+**Capital stack / ROI scenario pack (2026-08-11):** Docs `20`–`22` — provisional capital-stack, revenue, investor-return, and contributor-compensation model. Privately investable 5y range ~$0.9B / ~$2.8B / ~$6.3B (not full ~$37.5B). Payout base = eligible distributable commercial CF; tested 5/5, 10/10, 15/15 pools (unapproved). CSV + meta hold calculations. **No** app finance records, payout systems, or investment offers. README + due-diligence index updated.
+
 **Testing v0.1.174 (2026-08-11):** Build 176 (`20260811-v0.1.174`) published to Testing + live web. Includes project finance workspace, validation budget UI, Program plan, funding docs, Program Readiness UX. Production remains on prior soak build until Testing is clear.
 
 **Draft Budget v0.1 retirement (2026-08-11):** Safety-checked remote demo (`90a496d2-…`, zeros only, no allocations/commitments/receipts/fees/publications). Hard-deleted via `scripts/db/retire-demo-draft-budget-v01.sql` with audit `budget.demonstration_retired`. Validation intact (`0ef850e3-…`, planned_minor 44600000000). Ordinary selector excludes `is_demonstration`; default = validation. Ordinary seed path refuses recreate; local-only under `scripts/db/local-dev-only/`. Client seed gated (`force` / `VITE_ALLOW_DEMO_BUDGET_SEED`). LANGUAGE_PACK_VERSION 135.

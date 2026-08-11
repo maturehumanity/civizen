@@ -82,21 +82,20 @@ When restricted ops configuration is available to the agent, perform production 
 - When tightening Build mode / Layers coverage on a page, audit earlier existing elements on that same page too, not just newly added elements, so older text/value nodes do not get left behind as group-only targets.
 - Do not wait for the user to name missed sub-elements one by one. When a composite field is touched, audit and register its obvious inner parts in the same pass.
 - Proactively enforce all standing instructions and notes in this file on future work. Do not wait for the user to repeat them when they clearly apply.
-- When the user asks to **`update the application`**, follow a **testing-first continuity policy**:
-  - Keep **Production** on the last known-good build.
-  - Publish the **newly built version to Testing**.
-  - Only move a Testing build to Production after there are no reported blockers for that Testing release.
-  - Goal: users must always have a stable fallback build available.
-- `npm run update:application` defaults to the Testing channel. Do not use `CIVIZEN_UPDATE_CHANNEL=release` or `CIVIZEN_UPDATE_CHANNEL=both` unless the user explicitly approves a Production promotion or emergency release.
+- **Bug fixes ship to Live immediately (standing rule, 2026-08-11):** When the change is a bug fix / confirmed fix / “ship the update,” publish so **Live/Production** clients get the update prompt in the **same session**. Do not leave a fix on Testing-only while Live stays on an older build unless the user explicitly asks for Testing-only soak.
+  - Default path for a fix: bump → build/publish Testing → **immediately promote that exact build to Live** (`npm run promote:android-testing-to-release`) → deploy web/APK manifests → verify both live endpoints.
+  - Larger exploratory features may still soak on Testing first when the user frames them as Testing-only; when unclear and the work includes a user-facing bug fix, prefer Live.
+- When the user asks to **`update the application`**, publish a real new build and deploy it. For bug fixes, Live must move in that same session (see rule above). Testing remains available as a pre-release channel for gated testers (`updates.test`).
+- `npm run update:application` still defaults to building the Testing channel artifacts; for bug fixes, follow with promote-to-release (or an explicitly approved `CIVIZEN_UPDATE_CHANNEL=both` / release publish) so Live matches. Do not use release/both casually for unrelated experiments without intent to update Live.
 - Treat `docs/04-operations/dev/ENVIRONMENT_LIFECYCLE.md` as the canonical release/data-isolation policy.
-- Standard release sequence for continuity:
-  1. If the current Testing build has no reported bugs, promote that exact tested build to Production with `npm run promote:android-testing-to-release`.
-  2. Bump release metadata (`npm run release:bump -- patch` unless instructed otherwise).
-  3. Build and publish the new **Testing** build (`CIVIZEN_UPDATE_CHANNEL=testing npm run update:application`).
+- Standard release sequence for a **bug fix / confirmed fix ship**:
+  1. Bump release metadata (`npm run release:bump -- patch` unless instructed otherwise).
+  2. Build and publish (`CIVIZEN_UPDATE_CHANNEL=testing npm run update:application`).
+  3. Promote that exact build to Live (`npm run promote:android-testing-to-release`).
   4. Rebuild `dist/` if needed so the release payload contains the latest manifests/download links.
   5. **Same-session production publish:** when restricted ops configuration is available, publish via the project’s controlled deployment procedures privately (do not publish how).
-  6. Verify live `/updates/android-testing.json` and `/updates/android-release.json` (or `.js`) match expected versions/channels.
-- **Stop condition:** do not report “application updated” until production publish + live endpoint verification are complete, unless production access is definitively unavailable (state that explicitly).
+  6. Verify live `/updates/android-testing.json` and `/updates/android-release.json` (or `.js`) both match the shipped version (Live must not lag behind the fix).
+- **Stop condition:** do not report a bug-fix ship complete while Live still advertises an older build, unless production access is definitively unavailable (state that explicitly).
 - Do not commit or push APK binaries to GitHub for this project. APKs should exist only as local build artifacts on this machine and as deployed download files on production.
 - For Study/Constitution UI changes, preserve all existing user-visible labels/structure unless the user explicitly asks to modify that exact element. Do not remove, rename, or restyle article/sub-article labels when the request is about behavior only (for example open/close interactions).
 - When the user asks to update/publish the application for testing, always perform a real release bump first (new `APP_VERSION`, `ANDROID_VERSION_CODE`, and `APP_RELEASE_ID`) before running the update/deploy flow, so installed clients can detect and prompt for the new update.
@@ -170,6 +169,7 @@ When restricted ops configuration is available to the agent, perform production 
 - **2026-08 correction — push without watching CI:** Failure pattern: agent pushes to `main`, reports done, and leaves a red CI stream (user only notices via Gmail). Mandatory check: after every `git push` to a tracked branch with CI, run `npm run verify:ci` in the same session and keep working until it exits 0 (or fix the failure and push again). Stop condition: do not claim a push is complete while `verify:ci` is pending or failed.
 - **2026-08 correction — page load waterfalls:** Failure pattern: stacking full-screen gates (i18n base → auth profile/E2EE → page sequential Supabase + contribution sync) so sparse screens feel multi-second empty. Mandatory check: paint shell without awaiting unrelated bootstrap (messaging E2EE, contribution recollect); parallelize independent queries; load contribution ledger first and sync in background with TTL. Stop condition: do not ship a page that keeps a full-screen spinner until every secondary sync finishes.
 - **2026-08 correction — deploy disk fill:** Failure pattern: every deploy wrote a full-site backup tarball and retained every historical testing APK until the VPS filled (~97%) and extract failed mid-deploy (truncated APKs). Mandatory: keep ≤2 backups; prune non-release versioned APKs from `downloads/` during deploy; verify APK byte size after publish. Stop condition: do not report deploy complete if remote disk is critically full or versioned APKs are tiny/truncated.
+- **2026-08 correction — bug fixes stuck on Testing:** Failure pattern: shipping a confirmed bug fix only to Testing while default Live clients (including the owner) stay on an older build and never see an update prompt. Mandatory: for bug fixes, promote the exact shipped build to Live in the same session and verify `/updates/android-release.json` (and `android.js`) match. Stop condition: do not report a bug-fix update complete while Live lags Testing.
 
 ## 7. Post-development verification (mandatory after every fix or UI change)
 
@@ -247,13 +247,15 @@ Do **not** start a Cursor `/loop` or `while true; sleep …; echo AGENT_LOOP_TIC
   - run app/runtime verification on `http://localhost:8080` for the changed flow
   - if the change affects distributed app behavior (web/mobile), run the full update pipeline and, when restricted ops configuration is available, publish privately without documenting production internals
   - when publishing mobile updates intended to be detected by installed clients, ensure release metadata is bumped first (`APP_VERSION`, `ANDROID_VERSION_CODE`, `APP_RELEASE_ID`)
+  - **for bug fixes:** after the Testing build is published, promote that exact build to Live (`npm run promote:android-testing-to-release`) and deploy so `/updates/android-release.json` matches; default Live clients must get the update prompt
   - commit all pending related changes in this repo (not just the last edited file)
   - push `main` to GitHub
   - **immediately** run `npm run verify:ci` (waits for the GitHub Actions `CI` workflow on `HEAD`; exits non-zero on failure; prints failed-log snippet + run URL)
-  - verify live endpoints after publish (including both update channels when enabled)
+  - verify live endpoints after publish (including both update channels when enabled — **Live must not lag** a bug-fix ship)
 - Stop condition:
   - do not report completion until publish + commit + push + **`verify:ci` green** + live verification (when publishing) are all done
   - do not leave the session after a push while CI is still running or red — watch it finish or fix the failure in the same session
+  - do not report a bug-fix ship complete while Live still advertises an older version than Testing
 - Communication rule:
   - do not ask whether to perform commit/push/update once a fix is confirmed; execute this flow automatically
   - when reporting a push, include the CI result (success URL or the failure cause from `verify:ci`)

@@ -26,8 +26,9 @@ For now, Civizen uses one public web origin (`https://civizen.world`) and separa
 - Pull requests from untrusted forks must never deploy automatically.
 - Protected branches must require maintainer review before merge.
 - CODEOWNERS should require extra review for release, workflow, database, and governance-sensitive files.
-- Merged work goes to the Test channel first.
-- Production promotion must be explicit and auditable.
+- Merged work is published to the Test channel artifacts as part of the release build.
+- **Bug fixes / confirmed fix ships must also update Live in the same session** (promote the exact Testing APK/manifests to Live and deploy). Do not leave Live advertising an older build after a bug-fix ship.
+- Broader exploratory features may soak on Test first when explicitly framed that way; Production promotion remains auditable via the promote/deploy record.
 - APK binaries are not committed to the repository. The website hosts current APK downloads; GitHub Releases may mirror signed production artifacts.
 
 ## Data and Decentralization Model
