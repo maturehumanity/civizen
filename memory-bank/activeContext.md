@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Live + Testing v0.1.176 (2026-08-11):** Build 178 (`20260811-v0.1.176`) published to Testing and Live. Includes bottom-nav hide-on-scroll, Funding Economics page, Validation Budget v0.2 draft model/docs, and capital/participation planning pack.
+
 **Validation Budget v0.2 coverage adds applied (2026-08-11):** Exact Base **$530,200,000.00** (~$530M externally); Low/High ~$438.3M/~$654.5M. Seven additive lines (VAL-AUD/SCR/EVT/DISP/EMR/UTIL/LOSS = +$6.2M). Contingency **$65M** and safe-pause **$55M** unchanged (formula would imply +~$0.6M/+~$0.8M — reported, not applied). Prior **$524M** and **$446M** retained as superseded estimates. Draft/unapproved/unpublished. FPP **$14.7M** / eligible **$1,470M** unchanged. Economics model **0.1.5**; LANGUAGE_PACK **139**.
 
 **Bottom nav hide-on-scroll (2026-08-11):** `MobileNav` uses `useShowOnScrollUp` — hide bottom bar (+ FAB) on scroll down, show on scroll up so long pages gain viewport on mobile. Secondary arc/strip closes while hidden; Market `persistCarousel` restores on scroll up. Spec: `nav-secondary-carousel.md` § Behavior.
