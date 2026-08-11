@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Testing v0.1.174 (2026-08-11):** Build 176 (`20260811-v0.1.174`) published to Testing + live web. Includes project finance workspace, validation budget UI, Program plan, funding docs, Program Readiness UX. Production remains on prior soak build until Testing is clear.
+
 **Draft Budget v0.1 retirement (2026-08-11):** Safety-checked remote demo (`90a496d2-…`, zeros only, no allocations/commitments/receipts/fees/publications). Hard-deleted via `scripts/db/retire-demo-draft-budget-v01.sql` with audit `budget.demonstration_retired`. Validation intact (`0ef850e3-…`, planned_minor 44600000000). Ordinary selector excludes `is_demonstration`; default = validation. Ordinary seed path refuses recreate; local-only under `scripts/db/local-dev-only/`. Client seed gated (`force` / `VITE_ALLOW_DEMO_BUDGET_SEED`). LANGUAGE_PACK_VERSION 135.
 
 **Budget structure toolbar (2026-08-11):** Single folder icon toggles expand/collapse all (hover Expand/Collapse); `+` icon for Add group (hover label). Removed By group / All line items toggle — nested hierarchy only. LANGUAGE_PACK_VERSION 134.
