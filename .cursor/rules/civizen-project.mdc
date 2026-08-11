@@ -27,7 +27,11 @@ Run:
 npm run verify:post-dev
 ```
 
-Do not tell the user a UI fix is done until `verify:post-dev` passes **and** the change matches the relevant spec (not just scripts).
+That sequence includes **`verify:home-post-composer`** (Home empty field click → focus → type). Do not tell the user a UI fix is done until `verify:post-dev` passes **and** the change matches the relevant spec (not just scripts).
+
+## Input-control replacements
+
+Do **not** replace a working `textarea` / `input` with `contentEditable` or custom floated chrome for aesthetics unless the same session adds an automated **click → focus → type** proof and keeps a `verify:post-dev` runtime gate for primary surfaces. See AGENTS.md §3 **Input-control replacement gate** and the 2026-08 Home composer correction (broke on Testing v0.1.128 / `737086f`).
 
 ## After every push to GitHub
 

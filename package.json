@@ -38,8 +38,9 @@
     "verify:dev-load": "node scripts/verify-dev-app-load.mjs",
     "verify:arc-carousel-layout": "npx tsx scripts/verify-arc-carousel-layout.mjs",
     "verify:arc-carousel-visible": "node scripts/verify-arc-carousel-visible.mjs",
+    "verify:home-post-composer": "node scripts/verify-home-post-composer.mjs",
     "verify:ci": "node scripts/verify-ci.mjs",
-    "verify:post-dev": "npm run verify:agent-context && npm run verify:dev-load && npm run verify:arc-carousel-layout && npm run verify:arc-carousel-visible",
+    "verify:post-dev": "npm run verify:agent-context && npm run verify:dev-load && npm run verify:arc-carousel-layout && npm run verify:arc-carousel-visible && npm run verify:home-post-composer",
     "release:guard": "node scripts/verify-release-lifecycle.mjs",
     "release:testing": "CIVIZEN_UPDATE_CHANNEL=testing npm run update:application",
     "release:production:promote": "npm run promote:android-testing-to-release && npm run build"

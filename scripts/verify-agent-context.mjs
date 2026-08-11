@@ -48,10 +48,19 @@ if (!agents.includes('verify:ci')) {
 if (!existsSync('scripts/verify-ci.mjs')) {
   fail('missing scripts/verify-ci.mjs');
 }
+if (!existsSync('scripts/verify-home-post-composer.mjs')) {
+  fail('missing scripts/verify-home-post-composer.mjs');
+}
+if (!agents.includes('verify:home-post-composer')) {
+  fail('AGENTS.md must reference verify:home-post-composer in post-dev / interaction gates');
+}
 
 const cursorRule = readFileSync('.cursor/rules/civizen-project.mdc', 'utf8');
 if (!cursorRule.includes('verify:ci')) {
   fail('.cursor/rules/civizen-project.mdc must require verify:ci after push');
+}
+if (!cursorRule.includes('verify:home-post-composer')) {
+  fail('.cursor/rules/civizen-project.mdc must require verify:home-post-composer after UI work');
 }
 
 const spec = readFileSync('docs/04-operations/dev/nav-secondary-carousel.md', 'utf8');

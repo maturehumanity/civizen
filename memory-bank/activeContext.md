@@ -2,7 +2,7 @@
 
 ## Current focus
 
-**Home post composer dead click (2026-08-11):** Empty wraparound `contentEditable` ignored taps on placeholder/padding/avatar (hit target shorter than floated avatar; no chrome→focus path). Fixed: avatar-row min-height, `pointer-events-none` avatar, `focusHomePostComposerFromChrome` on field chrome. Tests: `home-post-composer-focus.test.ts`, `Home.composer.test.tsx`.
+**Home post composer — process root cause + gates (2026-08-11):** Working `<textarea>` was replaced on **2026-08-03** (Testing **v0.1.128**, commit `737086f`) with floated `contentEditable` for wraparound aesthetics; click→focus→type was never gated, so empty-field taps died until reported. Product fix shipped in **v0.1.175**. Prevention now in-tree: AGENTS §3 **Input-control replacement gate**, AGENTS correction naming `737086f`, Playwright **`verify:home-post-composer`** inside `verify:post-dev`, cursor rule pointer, Vitest helpers.
 
 **Investable-vehicle redesign (2026-08-11):** Docs `23`–`25` — ring-fenced commercial/OPS/JUR/DISC vehicles; FY2025 platform benchmarks; lawful ad/discovery upside; revised post-contract 10%/10% waterfall; readiness gaps. Doc `20` equity unattractiveness (~0.3× MOIC no TV) preserved. Doc `22` marked **internal — investability redesign required** (not external). Vehicle-assigned private capital ~$0.9/$2.8/$6.4B. **No** app finance/payout/offer changes.
 
