@@ -44,6 +44,7 @@ import {
   type SocialConnectionStatus,
   type SocialCrosspostStatus,
 } from '@/lib/social-accounts';
+import { focusHomePostComposerFromChrome } from '@/lib/home-post-composer-focus';
 import {
   fetchPostViewStats,
   isRecordablePostId,
@@ -262,7 +263,7 @@ export default function Home() {
   }, [posts, profile?.id]);
 
   const readPostEditorText = (el: HTMLDivElement) => {
-    const raw = el.innerText.replace(/\u00a0/g, ' ');
+    const raw = (el.innerText ?? el.textContent ?? '').replace(/\u00a0/g, ' ');
     return raw === '\n' ? '' : raw;
   };
 
@@ -1408,6 +1409,7 @@ export default function Home() {
                 )}
               >
                 <div
+                  data-home-post-composer=""
                   className={cn(
                     'relative min-w-0 flex-1 overflow-hidden rounded-2xl border px-3 py-2.5 transition-[border-color,box-shadow,background-color] sm:px-4 sm:py-3',
                     canPost
@@ -1415,9 +1417,22 @@ export default function Home() {
                       : 'border-border bg-background',
                     isComposerFocused && 'border-primary/60 ring-2 ring-primary/10',
                   )}
+                  onMouseDown={(event) => {
+                    focusHomePostComposerFromChrome(event, postEditorRef.current, {
+                      disabled: isPosting,
+                    });
+                  }}
+                  onPointerDown={(event) => {
+                    // Touch / pen: same chrome-focus path as mouse.
+                    if (event.pointerType === 'mouse') return;
+                    focusHomePostComposerFromChrome(event, postEditorRef.current, {
+                      disabled: isPosting,
+                    });
+                  }}
                 >
                   <Avatar
-                    className="float-left mb-1.5 mr-3 h-10 w-10 [shape-outside:circle(50%)] [shape-margin:0.45rem] sm:mb-2 sm:mr-3.5 sm:h-12 sm:w-12"
+                    aria-hidden
+                    className="pointer-events-none float-left mb-1.5 mr-3 h-10 w-10 [shape-outside:circle(50%)] [shape-margin:0.45rem] sm:mb-2 sm:mr-3.5 sm:h-12 sm:w-12"
                   >
                     <AvatarImage src={profile?.avatar_url || undefined} />
                     <AvatarFallback className="bg-primary/20 text-primary">
@@ -1439,8 +1454,9 @@ export default function Home() {
                     aria-multiline="true"
                     aria-label={composerPlaceholder}
                     contentEditable={!isPosting}
+                    tabIndex={isPosting ? -1 : 0}
                     suppressContentEditableWarning
-                    className="min-h-[1.5rem] whitespace-pre-wrap break-words text-sm leading-6 text-foreground outline-none"
+                    className="min-h-10 w-full whitespace-pre-wrap break-words text-sm leading-6 text-foreground outline-none sm:min-h-12"
                     onInput={(event) => {
                       const next = readPostEditorText(event.currentTarget);
                       setPostContent(next);

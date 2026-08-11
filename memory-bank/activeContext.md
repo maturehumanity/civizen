@@ -2,6 +2,10 @@
 
 ## Current focus
 
+**Home post composer dead click (2026-08-11):** Empty wraparound `contentEditable` ignored taps on placeholder/padding/avatar (hit target shorter than floated avatar; no chrome→focus path). Fixed: avatar-row min-height, `pointer-events-none` avatar, `focusHomePostComposerFromChrome` on field chrome. Tests: `home-post-composer-focus.test.ts`, `Home.composer.test.tsx`.
+
+**Investable-vehicle redesign (2026-08-11):** Docs `23`–`25` — ring-fenced commercial/OPS/JUR/DISC vehicles; FY2025 platform benchmarks; lawful ad/discovery upside; revised post-contract 10%/10% waterfall; readiness gaps. Doc `20` equity unattractiveness (~0.3× MOIC no TV) preserved. Doc `22` marked **internal — investability redesign required** (not external). Vehicle-assigned private capital ~$0.9/$2.8/$6.4B. **No** app finance/payout/offer changes.
+
 **Live ships bug fixes immediately (2026-08-11):** Standing rule updated — confirmed bug-fix releases must promote to Live/Production in the same session (not Testing-only). Live promoted to **v0.1.174** (build 176) so default Android clients get the update prompt.
 
 **Capital stack / ROI scenario pack (2026-08-11):** Docs `20`–`22` — provisional capital-stack, revenue, investor-return, and contributor-compensation model. Privately investable 5y range ~$0.9B / ~$2.8B / ~$6.3B (not full ~$37.5B). Payout base = eligible distributable commercial CF; tested 5/5, 10/10, 15/15 pools (unapproved). CSV + meta hold calculations. **No** app finance records, payout systems, or investment offers. README + due-diligence index updated.
