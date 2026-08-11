@@ -3,11 +3,11 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { fundingAdminPath } from '@/lib/funding/admin-sections';
+import { fundingAdminPath, type FundingAdminPrimarySection } from '@/lib/funding/admin-sections';
 
 type FundingOverviewAdminProps = {
   embedded?: boolean;
-  onGoToSection?: (section: 'budget' | 'program-plan' | 'sources' | 'interest') => void;
+  onGoToSection?: (section: FundingAdminPrimarySection) => void;
 };
 
 /**
@@ -16,7 +16,7 @@ type FundingOverviewAdminProps = {
 export default function FundingOverviewAdmin({ onGoToSection }: FundingOverviewAdminProps = {}) {
   const { t } = useLanguage();
 
-  const go = (section: 'budget' | 'program-plan' | 'sources' | 'interest') => {
+  const go = (section: FundingAdminPrimarySection) => {
     if (onGoToSection) onGoToSection(section);
   };
 
@@ -37,6 +37,15 @@ export default function FundingOverviewAdmin({ onGoToSection }: FundingOverviewA
               <div className="text-xs text-muted-foreground">{t('settings.adminFundingOverviewProgramPlanHint')}</div>
             </div>
             <Button type="button" size="sm" variant="outline" onClick={() => go('program-plan')}>
+              {t('settings.adminFundingOverviewOpen')}
+            </Button>
+          </li>
+          <li className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border/60 px-3 py-2">
+            <div>
+              <div className="font-medium">{t('settings.adminFundingSectionEconomics')}</div>
+              <div className="text-xs text-muted-foreground">{t('settings.adminFundingOverviewEconomicsHint')}</div>
+            </div>
+            <Button type="button" size="sm" variant="outline" onClick={() => go('economics')}>
               {t('settings.adminFundingOverviewOpen')}
             </Button>
           </li>

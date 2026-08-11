@@ -1,0 +1,206 @@
+account_code,level,parent_code,name,category_group,typical_nature,notes
+EX-01,1,,Personnel and contributor compensation,01,opex,Top-level expense class
+EX-01-01,2,EX-01,Salaries and wages,01,opex,
+EX-01-02,2,EX-01,Contractor and professional labor,01,opex,
+EX-01-03,2,EX-01,Bonuses and incentive pay,01,opex,
+EX-01-04,2,EX-01,Secondee host costs,01,opex,
+EX-01-05,2,EX-01,Temporary and gig labor,01,opex,
+EX-01-06,2,EX-01,Severance and termination,01,opex,
+EX-02,1,,"Benefits, health, safety, and wellbeing",02,opex,Top-level expense class
+EX-02-01,2,EX-02,Health insurance and medical,02,opex,
+EX-02-02,2,EX-02,Retirement and pension,02,opex,
+EX-02-03,2,EX-02,Workers compensation,02,opex,
+EX-02-04,2,EX-02,Wellbeing and EAP,02,opex,
+EX-02-05,2,EX-02,Occupational safety,02,opex,
+EX-03,1,,Professional and specialist services,03,opex,Top-level expense class
+EX-03-01,2,EX-03,Legal counsel,03,opex,
+EX-03-02,2,EX-03,Accounting and audit fees,03,opex,
+EX-03-03,2,EX-03,Consulting and advisory,03,opex,
+EX-03-04,2,EX-03,Design and UX services,03,opex,
+EX-03-05,2,EX-03,Specialist domain experts,03,opex,
+EX-04,1,,"Research, studies, and scientific validation",04,opex,Top-level expense class
+EX-04-01,2,EX-04,Domain studies,04,opex,
+EX-04-02,2,EX-04,Independent review panels,04,opex,
+EX-04-03,2,EX-04,Surveys and fieldwork,04,opex,
+EX-04-04,2,EX-04,Academic partnerships,04,opex,
+EX-04-05,2,EX-04,Cost-model validation,04,opex,
+EX-05,1,,"Product, software, and system development",05,opex,Top-level expense class
+EX-05-01,2,EX-05,Core platform engineering,05,opex,
+EX-05-02,2,EX-05,Application features,05,opex,
+EX-05-03,2,EX-05,QA and testing,05,opex,
+EX-05-04,2,EX-05,DevOps tooling,05,opex,
+EX-05-05,2,EX-05,Open-source stewardship labor,05,opex,
+EX-06,1,,"Data, AI, knowledge, and statistics",06,opex,Top-level expense class
+EX-06-01,2,EX-06,Data engineering,06,opex,
+EX-06-02,2,EX-06,AI model development and eval,06,opex,
+EX-06-03,2,EX-06,Statistics and measurement,06,opex,
+EX-06-04,2,EX-06,Knowledge bases and catalogs,06,opex,
+EX-06-05,2,EX-06,Synthetic/test data programs,06,opex,
+EX-07,1,,"Security, privacy, assurance, and auditing",07,opex,Top-level expense class
+EX-07-01,2,EX-07,Security operations,07,opex,
+EX-07-02,2,EX-07,Privacy and DPIA,07,opex,
+EX-07-03,2,EX-07,Penetration testing,07,opex,
+EX-07-04,2,EX-07,Independent assurance contracts,07,opex,
+EX-07-05,2,EX-07,Compliance monitoring,07,opex,
+EX-08,1,,Digital infrastructure and connectivity,08,opex,Top-level expense class
+EX-08-01,2,EX-08,Cloud and hosting,08,opex,
+EX-08-02,2,EX-08,CDN and networking,08,opex,
+EX-08-03,2,EX-08,Connectivity subsidies,08,opex,
+EX-08-04,2,EX-08,Identity infrastructure ops,08,opex,
+EX-08-05,2,EX-08,Backup and archival storage,08,opex,
+EX-09,1,,"Physical facilities, equipment, and capital assets",09,opex,Top-level expense class
+EX-09-01,2,EX-09,Offices and facilities lease,09,capex,
+EX-09-02,2,EX-09,Hardware and devices,09,capex,
+EX-09-03,2,EX-09,Furniture and fit-out,09,capex,
+EX-09-04,2,EX-09,Capital asset purchases,09,capex,
+EX-09-05,2,EX-09,Depreciation (non-cash),09,opex,
+EX-10,1,,"Federation, operators, and decentralized hosting",10,opex,Top-level expense class
+EX-10-01,2,EX-10,Operator seed and establishment,10,opex,
+EX-10-02,2,EX-10,Operator recurring fees,10,opex,
+EX-10-03,2,EX-10,Federation directory ops,10,opex,
+EX-10-04,2,EX-10,Certification program costs,10,opex,
+EX-10-05,2,EX-10,Regional capacity reservations,10,opex,
+EX-11,1,,Jurisdiction and institutional implementation,11,opex,Top-level expense class
+EX-11-01,2,EX-11,Jurisdiction program delivery,11,opex,
+EX-11-02,2,EX-11,Institutional integration,11,opex,
+EX-11-03,2,EX-11,Local project management,11,opex,
+EX-11-04,2,EX-11,Change management,11,opex,
+EX-11-05,2,EX-11,Local counsel facilitation,11,opex,
+EX-12,1,,"Integration, interoperability, and migration",12,opex,Top-level expense class
+EX-12-01,2,EX-12,Legacy system adapters,12,opex,
+EX-12-02,2,EX-12,Data migration,12,opex,
+EX-12-03,2,EX-12,Standards conformance testing,12,opex,
+EX-12-04,2,EX-12,API gateway commercial,12,opex,
+EX-12-05,2,EX-12,Interoperability labs,12,opex,
+EX-13,1,,"Operations, administration, and program management",13,opex,Top-level expense class
+EX-13-01,2,EX-13,Program office,13,opex,
+EX-13-02,2,EX-13,PMO and scheduling,13,opex,
+EX-13-03,2,EX-13,HR administration,13,opex,
+EX-13-04,2,EX-13,Office administration,13,opex,
+EX-13-05,2,EX-13,Vendor management,13,opex,
+EX-14,1,,"Governance, rights, ethics, and independent oversight",14,opex,Top-level expense class
+EX-14-01,2,EX-14,Constitutional and governance design,14,opex,
+EX-14-02,2,EX-14,Independent oversight body,14,opex,
+EX-14-03,2,EX-14,Ethics and human-rights review,14,opex,
+EX-14-04,2,EX-14,Ombuds and appeals,14,opex,
+EX-14-05,2,EX-14,Board/trustee costs,14,opex,
+EX-15,1,,"Legal, regulatory, accounting, tax, and compliance",15,opex,Top-level expense class
+EX-15-01,2,EX-15,Entity formation and corporate,15,opex,
+EX-15-02,2,EX-15,Regulatory filings,15,opex,
+EX-15-03,2,EX-15,Tax compliance,15,opex,
+EX-15-04,2,EX-15,Internal controls,15,opex,
+EX-15-05,2,EX-15,Sanctions and KYC/AML controls,15,opex,
+EX-16,1,,"Insurance, risk transfer, claims, and liability",16,opex,Top-level expense class
+EX-16-01,2,EX-16,Cyber insurance,16,opex,
+EX-16-02,2,EX-16,Liability and D&O,16,opex,
+EX-16-03,2,EX-16,Property insurance,16,opex,
+EX-16-04,2,EX-16,Claims and deductibles,16,opex,
+EX-16-05,2,EX-16,Captive/self-insurance funding,16,opex,
+EX-17,1,,"Banking, payment, treasury, financing, and currency",17,opex,Top-level expense class
+EX-17-01,2,EX-17,Bank and payment processing fees,17,opex,
+EX-17-02,2,EX-17,FX gains/losses and conversion,17,opex,
+EX-17-03,2,EX-17,Interest expense,17,opex,
+EX-17-04,2,EX-17,Debt issuance costs,17,opex,
+EX-17-05,2,EX-17,Treasury and custody fees,17,opex,
+EX-18,1,,"Procurement, vendors, licenses, and intellectual property",18,opex,Top-level expense class
+EX-18-01,2,EX-18,Software licenses,18,opex,
+EX-18-02,2,EX-18,Vendor SaaS,18,opex,
+EX-18-03,2,EX-18,IP filings and trademarks,18,opex,
+EX-18-04,2,EX-18,Open-source compliance,18,opex,
+EX-18-05,2,EX-18,Procurement transaction costs,18,opex,
+EX-19,1,,"Education, training, adoption, and user support",19,opex,Top-level expense class
+EX-19-01,2,EX-19,Training delivery,19,opex,
+EX-19-02,2,EX-19,Documentation and help,19,opex,
+EX-19-03,2,EX-19,Support centers,19,opex,
+EX-19-04,2,EX-19,Adoption campaigns,19,opex,
+EX-19-05,2,EX-19,Professional capacity building,19,opex,
+EX-20,1,,"Accessibility, inclusion, localization, and nondigital access",20,opex,Top-level expense class
+EX-20-01,2,EX-20,Localization and translation,20,opex,
+EX-20-02,2,EX-20,Accessibility engineering,20,opex,
+EX-20-03,2,EX-20,Nondigital channels,20,opex,
+EX-20-04,2,EX-20,Assisted access programs,20,opex,
+EX-20-05,2,EX-20,Inclusion research,20,opex,
+EX-21,1,,"Communications, partnerships, and public engagement",21,opex,Top-level expense class
+EX-21-01,2,EX-21,Public communications,21,opex,
+EX-21-02,2,EX-21,Partnership development,21,opex,
+EX-21-03,2,EX-21,Media and press,21,opex,
+EX-21-04,2,EX-21,Community engagement,21,opex,
+EX-21-05,2,EX-21,Conference sponsorships,21,opex,
+EX-22,1,,"Travel, events, logistics, and field operations",22,opex,Top-level expense class
+EX-22-01,2,EX-22,Travel and lodging,22,opex,
+EX-22-02,2,EX-22,Events and convenings,22,opex,
+EX-22-03,2,EX-22,Logistics and shipping,22,opex,
+EX-22-04,2,EX-22,Field operations,22,opex,
+EX-22-05,2,EX-22,Visas and immigration support,22,opex,
+EX-23,1,,"Grants, subsidies, prizes, and ecosystem transfers",23,opex,Top-level expense class
+EX-23-01,2,EX-23,Research grants pass-through,23,opex,
+EX-23-02,2,EX-23,Civil-society grants,23,opex,
+EX-23-03,2,EX-23,Prizes and bounties,23,opex,
+EX-23-04,2,EX-23,Operator subsidies,23,opex,
+EX-23-05,2,EX-23,Inter-entity transfers,23,opex,
+EX-24,1,,Domain-program delivery,24,opex,Top-level expense class
+EX-24-01,2,EX-24,Health domain programs,24,opex,
+EX-24-02,2,EX-24,Economy and employment programs,24,opex,
+EX-24-03,2,EX-24,Education programs,24,opex,
+EX-24-04,2,EX-24,Justice and rights programs,24,opex,
+EX-24-05,2,EX-24,Environment and other inventory domains,24,opex,
+EX-25,1,,"Utilities, energy, environment, and sustainability",25,opex,Top-level expense class
+EX-25-01,2,EX-25,Utilities,25,opex,
+EX-25-02,2,EX-25,Energy for compute,25,opex,
+EX-25-03,2,EX-25,Carbon and sustainability programs,25,opex,
+EX-25-04,2,EX-25,Waste and recycling,25,opex,
+EX-25-05,2,EX-25,Environmental compliance,25,opex,
+EX-26,1,,"Maintenance, renewal, remediation, and technical debt",26,opex,Top-level expense class
+EX-26-01,2,EX-26,Software maintenance,26,opex,
+EX-26-02,2,EX-26,Infrastructure renewal,26,opex,
+EX-26-03,2,EX-26,Technical debt remediation,26,opex,
+EX-26-04,2,EX-26,Cryptographic migration,26,opex,
+EX-26-05,2,EX-26,Vendor upgrades,26,opex,
+EX-27,1,,"Incident, emergency, disaster recovery, and continuity",27,opex,Top-level expense class
+EX-27-01,2,EX-27,Incident response,27,opex,
+EX-27-02,2,EX-27,Disaster recovery drills,27,opex,
+EX-27-03,2,EX-27,Business continuity,27,opex,
+EX-27-04,2,EX-27,Emergency surge staffing,27,opex,
+EX-27-05,2,EX-27,Safe-pause execution,27,opex,
+EX-28,1,,"Taxes, duties, assessments, and mandatory charges",28,opex,Top-level expense class
+EX-28-01,2,EX-28,Corporate income tax,28,opex,
+EX-28-02,2,EX-28,Payroll taxes,28,opex,
+EX-28-03,2,EX-28,VAT/GST and sales tax,28,opex,
+EX-28-04,2,EX-28,Duties and customs,28,opex,
+EX-28-05,2,EX-28,Regulatory assessments,28,opex,
+EX-29,1,,"Refunds, reversals, bad debt, losses, and adjustments",29,opex,Top-level expense class
+EX-29-01,2,EX-29,Customer refunds,29,opex,
+EX-29-02,2,EX-29,Chargebacks,29,opex,
+EX-29-03,2,EX-29,Bad debt expense,29,opex,
+EX-29-04,2,EX-29,Inventory/asset write-downs,29,opex,
+EX-29-05,2,EX-29,Prior-period adjustments,29,opex,
+EX-30,1,,"Contingency, reserves, safe pause, transfer, and decommissioning",30,opex,Top-level expense class
+EX-30-01,2,EX-30,Program contingency draw,30,reserve,
+EX-30-02,2,EX-30,Operating reserve provisioning,30,reserve,
+EX-30-03,2,EX-30,Security/incident reserve,30,reserve,
+EX-30-04,2,EX-30,Safe-pause and wind-down reserve,30,reserve,
+EX-30-05,2,EX-30,Decommissioning and data export,30,reserve,
+EX-31,1,,Controlled exceptional or newly identified expenses,31,opex,Top-level expense class
+EX-31-01,2,EX-31,Board-approved exceptional,31,opex,
+EX-31-02,2,EX-31,Newly identified pending taxonomy,31,opex,
+EX-31-03,2,EX-31,Suspense pending classification,31,opex,
+DIM-01,0,,legal_entity,DIM,dimension,Which legal person books the item
+DIM-02,0,,responsible_organization,DIM,dimension,"Steward, commercial, operator, J, oversight, sector"
+DIM-03,0,,cost_center,DIM,dimension,Maps to program financial model centers
+DIM-04,0,,program_workstream,DIM,dimension,e.g. validation WS-xx or first-wave program
+DIM-05,0,,system_subsystem,DIM,dimension,Inventory system ID when applicable
+DIM-06,0,,civilization_domain,DIM,dimension,"Health, justice, education, etc."
+DIM-07,0,,jurisdiction,DIM,dimension,Participating J code or GLOBAL
+DIM-08,0,,institution_or_operator,DIM,dimension,Named counterparty when applicable
+DIM-09,0,,phase_time_period,DIM,dimension,Validation / Y1-5 / FY / month
+DIM-10,0,,funding_source,DIM,dimension,Source ledger link
+DIM-11,0,,restriction,DIM,dimension,Unrestricted / restricted purpose tags
+DIM-12,0,,cash_or_inkind,DIM,dimension,Cash vs fair-value in-kind
+DIM-13,0,,capital_or_operating,DIM,dimension,Capex vs opex
+DIM-14,0,,recurring_or_onetime,DIM,dimension,Recurring vs one-time
+DIM-15,0,,cost_behavior,DIM,dimension,Fixed / variable / usage-based
+DIM-16,0,,lifecycle_state,DIM,dimension,Planned / committed / accrued / actual / reversed
+DIM-17,0,,visibility,DIM,dimension,Public / internal / restricted / confidential
+DIM-18,0,,evidence_confidence,DIM,dimension,Evidence link + H/M/L
+DIM-19,0,,allocation_eligibility,DIM,dimension,"Flags for investor/contributor/founder/ecosystem eligibility; founder flag applies to eligible external receipts once (founder_allocation_assessed) — not a second profit cut (27 v0.1.1)"
+DIM-20,0,,founder_allocation_assessed,DIM,dimension,Provenance marker: monetary value already assessed for Founder Participation Pool; blocks reassessment across entities/accounts/vehicles/profit

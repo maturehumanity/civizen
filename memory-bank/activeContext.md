@@ -2,6 +2,16 @@
 
 ## Current focus
 
+**Validation Budget v0.2 coverage adds applied (2026-08-11):** Exact Base **$530,200,000.00** (~$530M externally); Low/High ~$438.3M/~$654.5M. Seven additive lines (VAL-AUD/SCR/EVT/DISP/EMR/UTIL/LOSS = +$6.2M). Contingency **$65M** and safe-pause **$55M** unchanged (formula would imply +~$0.6M/+~$0.8M — reported, not applied). Prior **$524M** and **$446M** retained as superseded estimates. Draft/unapproved/unpublished. FPP **$14.7M** / eligible **$1,470M** unchanged. Economics model **0.1.5**; LANGUAGE_PACK **139**.
+
+**Bottom nav hide-on-scroll (2026-08-11):** `MobileNav` uses `useShowOnScrollUp` — hide bottom bar (+ FAB) on scroll down, show on scroll up so long pages gain viewport on mobile. Secondary arc/strip closes while hidden; Market `persistCarousel` restores on scroll up. Spec: `nav-secondary-carousel.md` § Behavior.
+
+**Coverage audit doc 29 (2026-08-11):** Read-only validation + five-year coverage audit. Separates (1) health system domain (2) workforce benefits OpEx EX-02 (3) insurance system domain (4) program insurance OpEx EX-16. WS-12 $32M kept intact; ten named sub-lines proposed with `15` indicative ranges (unmapped). No UI/DB/amount/approval changes. Matrix CSV companion. Next free was 29.
+
+**Participation policy pack (2026-08-11, rev 0.1.2):** Docs `26`–`28` — CoA taxonomy; **Founder Participation Pool = 1% of Eligible External Monetary Receipts** (once). Reconciled base FPP **$14.7M** on **$1,470M** eligible vehicle equity-like capital; profit **10/10/80**. Private-capital L/B/H columns are eligibility cases **within** the ~$37.5B base ecosystem scenario (not ecosystem L/B/H). 
+
+**Funding → Economics page (2026-08-11, model v0.1.3):** Read-only planning UI at `?section=economics`. Selected commercial scenario/horizon drives summary, waterfall, pools, and illustrations. Primary eligible base = deficit-recovered cumulative cash ($3,043.4M base/15y); floored annual sum ($3,527.5M) is alternate only. Policy $310M example collapsed. Investor default $100M / V-ENT capacity $500M FPP-eligible. DEV harness `/dev/economics-visual`. LANGUAGE_PACK_VERSION 137.
+
 **Home post composer — process root cause + gates (2026-08-11):** Working `<textarea>` was replaced on **2026-08-03** (Testing **v0.1.128**, commit `737086f`) with floated `contentEditable` for wraparound aesthetics; click→focus→type was never gated, so empty-field taps died until reported. Product fix shipped in **v0.1.175**. Prevention now in-tree: AGENTS §3 **Input-control replacement gate**, AGENTS correction naming `737086f`, Playwright **`verify:home-post-composer`** inside `verify:post-dev`, cursor rule pointer, Vitest helpers.
 
 **Investable-vehicle redesign (2026-08-11):** Docs `23`–`25` — ring-fenced commercial/OPS/JUR/DISC vehicles; FY2025 platform benchmarks; lawful ad/discovery upside; revised post-contract 10%/10% waterfall; readiness gaps. Doc `20` equity unattractiveness (~0.3× MOIC no TV) preserved. Doc `22` marked **internal — investability redesign required** (not external). Vehicle-assigned private capital ~$0.9/$2.8/$6.4B. **No** app finance/payout/offer changes.

@@ -21,7 +21,7 @@ canonical: false
 
 ## A. One-paragraph opener (safe)
 
-> Civizen is developing voluntary planetary citizenship infrastructure and related civic systems. Before irreversible production, we are seeking support for an **18–24 month validation and institutional formation program** (working base estimate ~**$446M**, range ~$202M–$898M). That program funds independent review, domain studies, architecture and security work, and stoppable demonstrators. Civizen currently maintains a detailed 18–24-month validation plan and a preliminary five-year first-wave ecosystem plan. Longer horizons are retained as internal scenario analysis and will be replaced by rolling plans as evidence develops. We are not claiming recognized statehood. Conversations at this stage are inquiries pending legal receiving capacity and owner decisions.
+> Civizen is developing voluntary planetary citizenship infrastructure and related civic systems. Before irreversible production, we are seeking support for an **18–24 month validation and institutional formation program** (provisional working base estimate ~**$530M** (exact $530.2M), range ~$438.3M–$654.5M; prior v0.2 working total ~$524M and v0.1 Base ~$446M are superseded estimates). That program funds independent review, named domain studies, architecture and security work, explicit operating provisions (benefits gap and program insurance), and stoppable demonstrators. Civizen currently maintains a detailed 18–24-month validation plan and a preliminary five-year first-wave ecosystem plan. Longer horizons are retained as internal scenario analysis and will be replaced by rolling plans as evidence develops. We are not claiming recognized statehood. Conversations at this stage are inquiries pending legal receiving capacity and owner decisions. These figures are planning estimates — not bids, commitments, or guaranteed sufficiency.
 
 ---
 
@@ -29,7 +29,7 @@ canonical: false
 
 ### B1. How much are you raising?
 
-**Now:** Validation program — low ~$202M / base ~$446M / high ~$898M (`14`).  
+**Now:** Validation program — low ~$438.3M / base ~$530M (exact $530.2M) / high ~$654.5M (`30`/`31`; prior $524M and v0.1 $446M superseded).
 **Primary program context (not the immediate ask):** preliminary five-year first-wave ecosystem plan (`11`) — ~$30–50B range, modeled base ~$37.5B.  
 **Not ordinary intro content:** Years 6–20 long-range **scenarios** (`13`) — low-confidence lifecycle outlooks, not budgets.
 

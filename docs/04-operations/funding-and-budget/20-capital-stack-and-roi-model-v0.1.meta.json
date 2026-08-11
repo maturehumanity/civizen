@@ -1,0 +1,124 @@
+{
+  "version": "0.1",
+  "date": "2026-08-11",
+  "currency": "USD",
+  "disclaimer": "Scenario model for planning and discussion only. Not an investment offer, securities solicitation, return guarantee, approved payout policy, or legal conclusion. Documentation only \u2014 no application finance records, payout systems, or offerings created.",
+  "canonical_inputs": [
+    "11",
+    "12",
+    "13_roi_timing_only",
+    "14",
+    "16",
+    "17",
+    "18",
+    "19",
+    "01_fee_policy"
+  ],
+  "five_year_ecosystem_base_usd_b": 37.51,
+  "classification_rollup_usd_b": {
+    "public_grant_funded": 2.75,
+    "potentially_blended_finance": 2.3,
+    "not_appropriate_for_return_seeking": 1.65,
+    "operator_financed": 1.2,
+    "government_or_multilateral_funded": 15.11,
+    "institutional_procurement": 10.0,
+    "protected_reserve": 4.0,
+    "commercially_investable": 0.5
+  },
+  "private_return_seeking_addressable_5y_usd_b": {
+    "low": 0.9,
+    "base": 2.8,
+    "high": 6.3
+  },
+  "private_as_pct_of_5y_base": {
+    "low": 2.4,
+    "base": 7.5,
+    "high": 16.8
+  },
+  "commercial_entity_capital_usd_b": {
+    "conservative": 0.4,
+    "base": 1.2,
+    "growth": 2.5
+  },
+  "commercial_gross_revenue_15y_usd_m": {
+    "conservative": 8530.8,
+    "base": 21327,
+    "growth": 38388.6
+  },
+  "distributable_commercial_cf_15y_usd_m": {
+    "conservative": 1424.3,
+    "base": 3527.5,
+    "growth": 6299.4
+  },
+  "entity_break_even_year": {
+    "conservative": 7,
+    "base": 8,
+    "growth": 8
+  },
+  "recommended_payout_base": "eligible_distributable_commercial_cash_flow",
+  "tested_pool_scenarios": [
+    "5/5",
+    "10/10",
+    "15/15"
+  ],
+  "provisional_pool_planning_case": "10/10_with_stress_stepdown_to_5/5",
+  "illustrative_returns": {
+    "equity_800m_base_no_tv": {
+      "break_even_year_entity": 8,
+      "payback_year_investor": null,
+      "moic": 0.31,
+      "irr_annualized": -0.1141,
+      "avg_cash_on_cash_yield": 0.0386,
+      "cumulative_distributions_usd_m": 246.9,
+      "terminal_value_included_usd_m": 0
+    },
+    "equity_800m_base_with_tv": {
+      "break_even_year_entity": 8,
+      "payback_year_investor": 15,
+      "moic": 5.36,
+      "irr_annualized": 0.1517,
+      "avg_cash_on_cash_yield": 0.6694,
+      "cumulative_distributions_usd_m": 4284.2,
+      "terminal_value_included_usd_m": 4037.3
+    },
+    "equity_conservative_no_tv": {
+      "break_even_year_entity": 7,
+      "payback_year_investor": null,
+      "moic": 0.37,
+      "irr_annualized": -0.0968,
+      "avg_cash_on_cash_yield": 0.0415,
+      "cumulative_distributions_usd_m": 99.7,
+      "terminal_value_included_usd_m": 0
+    },
+    "equity_growth_with_tv": {
+      "break_even_year_entity": 8,
+      "payback_year_investor": 15,
+      "moic": 4.62,
+      "irr_annualized": 0.1376,
+      "avg_cash_on_cash_yield": 0.5781,
+      "cumulative_distributions_usd_m": 7707.7,
+      "terminal_value_included_usd_m": 7266.7
+    },
+    "preferred_300m_base_no_tv": {
+      "break_even_year_entity": 8,
+      "payback_year_investor": null,
+      "moic": 0.29,
+      "irr_annualized": -0.1185,
+      "avg_cash_on_cash_yield": 0.0367,
+      "cumulative_distributions_usd_m": 88.2,
+      "terminal_value_included_usd_m": 0
+    },
+    "capped_rr_300m_base_no_tv": {
+      "break_even_year_entity": 8,
+      "payback_year_investor": null,
+      "moic": 0.75,
+      "irr_annualized": -0.0306,
+      "avg_cash_on_cash_yield": 0.0938,
+      "cumulative_distributions_usd_m": 225.1,
+      "terminal_value_included_usd_m": 0
+    }
+  },
+  "legacy_percentage_pools": "historical_unapproved_not_revived",
+  "app_finance_records_modified": false,
+  "row_count": 249
+}

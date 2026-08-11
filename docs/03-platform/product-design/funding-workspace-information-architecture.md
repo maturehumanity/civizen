@@ -53,11 +53,12 @@ Permissions: `finance.view|edit|approve|publish|admin` (unchanged). Ordinary Bud
 | --- | --- | --- | --- |
 | **Budget (default)** | `/settings/admin/funding` | Manage draft/approved budgets (nested expense groups) | 2–5 |
 | Program plan | `?section=program-plan` | Read-only validation + five-year summaries (generated artifact) | 1–2 |
-| Overview | `?section=overview` | Where you are, status, next actions, links | 1 |
+| Economics | `?section=economics` | Read-only commercial economics scenarios (projected revenue, pools, illustrative returns) — **not** an offer; **not** public | 1–2 |
+| Overview | `?section=overview` | Orient + route to primary sections | 1 |
 | Sources | `?section=sources` | Funding sources and related money events | 2–5 |
 | Interest | `?section=interest` | Outreach interest inbox | 2–3 |
 | Legacy | `?legacy=1&…` | Historical scaffolding — finance admin overflow only | quarantine |
-| Public preview | `/fund/project-finance` | Published budget summary only — **no Program plan** | public |
+| Public preview | `/fund/project-finance` | Published budget summary only — **no Program plan / Economics** | public |
 
 Overview does **not** duplicate Budget/Sources tables. It summarizes and routes.  
 **Budget ≠ Program plan:** Program plan is the five-year first-wave pathway (~$30–50B range, ~$37.5B working base). Budget holds detailed operational/subprogram ledgers (validation ~$446M base is the currently detailed first subprogram). Do not present validation as Civizen’s complete implementation budget. Do not insert $37.5B as one ordinary ledger row until multi-entity / multi-year schema exists (see § schema note below).

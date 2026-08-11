@@ -2,7 +2,7 @@
 title: Funding Due Diligence Index v0.1
 status: index
 version: 0.1
-date: 2026-08-10
+date: 2026-08-11
 audience: owner-and-serious-inquirers
 currency: USD
 related:
@@ -29,9 +29,18 @@ canonical: false
 | External brief | `16-external-funding-brief-v0.1.md` | Controlled sharing after clarity review |
 | Internal readiness / decisions / rolling policy | `17-funding-readiness-memorandum-v0.1.md` | Provisional D1–D11; D6 unresolved |
 | Inquiry language | `18-funder-inquiry-faq-and-response-kit-v0.1.md` | Ready for steward use |
-| Validation program & envelope | `14-pre-major-build-validation-program-v0.1.md` + CSV | Working estimate |
+| Validation program & envelope | `30`/`31` provisional working draft (~$438.3M / **~$530M** exact $530.2M / ~$654.5M); prior v0.2 $524M and `14` Base ~$446M superseded | Provisional working draft — not a bid/commitment |
 | Independent panels / studies | `15-independent-review-and-domain-study-briefs-v0.1.md` | Design; chairs not seated |
 | 5y first-wave model | `11-program-financial-model-and-funding-responsibility-v0.1.md` + CSV | Preliminary ecosystem hypothesis |
+| Capital stack / revenue / ROI scenarios | `20-capital-stack-revenue-and-roi-model-v0.1.md` + CSV | Scenario model; private addressable ~$0.9–6.3B of ~$37.5B; **not** an offering |
+| Contributor / in-kind framework | `21-contributor-compensation-and-in-kind-framework-v0.1.md` | Scenario framework; no auto-equity |
+| Private investor economics brief | `22-private-investor-economics-brief-v0.1.md` | **Internal only — investability redesign required**; **not** externally authorized |
+| Investable vehicles / ad upside redesign | `23-investable-vehicles-and-private-capital-architecture-v0.1.md` + CSV | Ring-fenced vehicles; benchmarks; scale scenarios |
+| Investor/contributor waterfall redesign | `24-investor-return-and-contributor-waterfall-v0.1.md` | Post-contract 10%/10% surplus pools |
+| Private capital readiness gaps | `25-private-capital-readiness-gap-analysis-v0.1.md` | Blocks external investable presentation |
+| Chart of accounts / classification | `26-comprehensive-financial-classification-and-chart-of-accounts-v0.1.md` + CSV | Planning taxonomy; not app schema |
+| Founder / investor / contributor participation | `27-founder-investor-and-contributor-participation-policy-v0.1.md` + CSV | 1% FPP once on eligible receipts (reconciled base **$14.7M** / **$1,470M**); profit 10/10/80; **unapproved** |
+| Entity / legal action plan | `28-entity-legal-and-implementation-action-plan-v0.1.md` | Counsel path; no jurisdiction chosen |
 | System inventory | `12-comprehensive-system-inventory-v0.1.md` + CSV | Hypothesis (~467) |
 | Long-range scenarios (Y6–20) | `13-ten-and-twenty-year-program-cost-framework-v0.1.md` + CSV | Low-confidence lifecycle scenarios — **not budgets** |
 | App Program plan summary | `program-plan-summary-v0.1.json` (+ generated TS) | Read-only UI artifact |
@@ -39,7 +48,7 @@ canonical: false
 | Scope / decisions | `01-decisions-and-scope.md` | Active |
 | Pathway (mission / legal posture) | `docs/00-foundation/recognized-planetary-citizenship-pathway.md` | Canonical foundation |
 | Strategy roadmap | `docs/01-governance/funding-and-monetary/funding-readiness-roadmap.md` | Strategy |
-| App Draft Budget | Funding admin / DB | **Retired** from ordinary selector (was zeros, draft, unapproved, unpublished); validation subprogram is default |
+| App Draft Budget | Funding admin / DB | Obsolete demonstration fixture retired; **Validation Program v0.2** (exact $530.2M / ~$530M) is default working draft; prior $524M and v0.1 (~$446M) superseded/historical |
 
 ---
 
@@ -73,6 +82,14 @@ canonical: false
 | 24 | Jurisdiction MoUs / letters of intent | **Gap** | Consultation workstream |
 | 25 | Monitoring, evaluation, learning (MEL) plan | Partial | Gate reports V-G*; formal MEL TBD |
 | 26 | Wind-down / safe-pause playbook | Partial | Reserve concept in `14`; legal playbook gap |
+| 27 | Capital stack / ROI scenario model | Partial | `20`–`22` scenario pack; not offering docs; counsel + D6 still block acceptance |
+| 28 | Securities / commercial-vehicle term sheets | **Gap** | No authorized offering; instruments only modeled |
+| 29 | Contributor fair-value ledger administration | **Gap** | Method in `21`; no app implementation |
+| 30 | Ring-fenced investable vehicles + contract backlog | Partial | Architecture in `23`–`25`; no signed availability/MSA backlog |
+| 31 | Adopted advertising/discovery policy + prohibited-context controls | **Gap** | Streams modeled in `23`; policy not adopted |
+| 32 | Chart of accounts adopted in finance systems | Partial | Taxonomy in `26`; not implemented in app |
+| 33 | Founder Participation Pool legally cleared | **Gap** | Consolidated 1% on eligible receipts (`27` v0.1.1); counsel + disclosure before any promise or payment |
+| 34 | Investor/contributor unit instruments | **Gap** | Policy model only; securities analysis pending |
 
 ---
 
@@ -95,6 +112,14 @@ canonical: false
 - That planetary citizenship or statehood is recognized  
 - That production continuity capital is already gated-complete  
 - Named funder commitments or prospect scores invented by agents  
+- That `20`–`22` ROI or percentage-pool figures are adopted terms, offers, or promises  
+- That the entire ~$37.5B five-year ecosystem is privately investable  
+- That Meta-like advertising maturity or billion-user RPU scenarios in `23` are forecasts or offers  
+- That `22`–`25` authorize external investor solicitation  
+- That `27` founder/investor/contributor percentages are approved terms, entitlements, or an offering  
+- That the 1% Founder Participation Pool applies to restricted grants, taxes, escrow, pass-through, already-assessed funds, or debt without express authorization  
+- That commercial profit is an additional founder assessment base after underlying receipts were assessed  
+- That a 10/10/1/79 profit pie or dual Founder Funding + Founder Profit pools remains current policy  
 
 ---
 

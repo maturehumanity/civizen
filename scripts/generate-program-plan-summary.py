@@ -22,10 +22,12 @@ def read_csv(name: str) -> list[dict]:
 
 def main() -> None:
     meta14 = read_json("14-validation-workstreams-and-budget-v0.1.meta.json")
+    meta_v02 = read_json("validation-budget-v0.2.meta.json")
     meta11 = read_json("11-program-financial-model-v0.1.meta.json")
     meta13 = read_json("13-ten-and-twenty-year-program-cost-v0.1.meta.json")
     rows14 = read_csv("14-validation-workstreams-and-budget-v0.1.csv")
 
+    # Historical v0.1 CSV still reconciles to historical meta (provenance).
     csv_low = round(sum(float(r["low_usd_m"]) for r in rows14))
     csv_base = round(sum(float(r["base_usd_m"]) for r in rows14))
     csv_high = round(sum(float(r["high_usd_m"]) for r in rows14))
@@ -46,14 +48,22 @@ def main() -> None:
 
     base13 = next(s for s in meta13["scenarios"] if s["scenario"] == "base")
 
+    fc = meta_v02["by_funding_control_base_usd_m"]
+    fc_sum = fc["core"] + fc["independent"] + fc["grant_pass_through"] + fc["reserve"]
+    if abs(fc_sum - meta_v02["totals_usd_m"]["base"]) > 0.05:
+        raise SystemExit(
+            f"v0.2 funding-control split does not sum to Base: {fc_sum} vs {meta_v02['totals_usd_m']['base']}"
+        )
+
     summary = {
-        "modelVersion": "0.1",
-        "generatedAt": "2026-08-10",
+        "modelVersion": "0.2",
+        "generatedAt": "2026-08-11",
         "currency": "USD",
         "status": "non_approved_planning_estimates",
         "disclaimer": (
             "Read-only strategic estimates and scenarios. Not approved budgets, commitments, "
-            "receipts, or actual spending. Not worldwide completion or one organization’s budget."
+            "receipts, or actual spending. Not worldwide completion or one organization’s budget. "
+            "Validation Base is provisional v0.2 exact $530.2M (~$530M externally); historical v0.1 $446M and prior v0.2 $524M are superseded estimates."
         ),
         "hierarchy": {
             "detailedOperatingPlan": "validation_18_24_months",
@@ -62,22 +72,25 @@ def main() -> None:
             "years11to20": "directional_lifecycle_scenario",
         },
         "validation": {
-            "status": "working_estimate",
-            "durationMonths": meta14["horizon_months"],
-            "sourceDoc": "14-pre-major-build-validation-program-v0.1.md",
-            "sourceMeta": "14-validation-workstreams-and-budget-v0.1.meta.json",
-            "modelVersion": meta14["version"],
-            "updatedAt": meta14["date"],
+            "status": "provisional_working_draft",
+            "durationMonths": "18-24",
+            "sourceDoc": "30-validation-budget-v0.2-and-five-year-domain-allocation-proposal.md",
+            "sourceMeta": "validation-budget-v0.2.meta.json",
+            "reconciliationDoc": "30-validation-budget-v0.2-reconciliation-and-adoption.md",
+            "modelVersion": meta_v02["version"],
+            "updatedAt": meta_v02["date"],
             "totalsUsdM": {
-                "low": meta14["totals_usd_m"]["low"],
-                "base": meta14["totals_usd_m"]["base"],
-                "high": meta14["totals_usd_m"]["high"],
+                "low": meta_v02["totals_usd_m"]["low"],
+                "base": meta_v02["totals_usd_m"]["base"],
+                "high": meta_v02["totals_usd_m"]["high"],
             },
-            "fundingControlBaseUsdM": meta14["by_funding_control_base_usd_m"],
+            "historicalV01TotalsUsdM": meta_v02["historical_v01_totals_usd_m"],
+            "fundingControlBaseUsdM": meta_v02["by_funding_control_base_usd_m"],
             "scenarioDiffNote": (
-                "Low: leaner staffing, fewer consultations, thinner contingency. "
-                "Base: full planned workstream intensity. "
-                "High: expanded consultations, demonstrators, contingency, and assurance depth."
+                "Low (~$438.3M): compressed studies/continuity plus thinner coverage-add set — not equivalent deliverables. "
+                "Base (exact $530.2M / ~$530M externally): provisional working draft after coverage adds; contingency/safe-pause held flat. "
+                "High (~$654.5M): expanded studies, insurance, contingency, safe-pause, and high coverage adds. "
+                "Historical v0.1 Base $446M and prior v0.2 working total $524M retained as superseded estimates."
             ),
             "baseTranchePacing": [
                 {"id": "T1", "label": "Validation launch", "shareOfBase": 0.25},
@@ -85,8 +98,10 @@ def main() -> None:
                 {"id": "T3", "label": "Validation close", "shareOfBase": 0.2},
                 {"id": "reserve", "label": "Safe-pause reserve", "shareOfBase": 0.1},
             ],
-            "workstreamCount": len(rows14),
-            "workstreamsDoc": "14-pre-major-build-validation-program-v0.1.md",
+            "workstreamCount": meta_v02["line_count"],
+            "groupCount": meta_v02["group_count"],
+            "workstreamsDoc": "30-validation-budget-v0.2-reconciliation-and-adoption.md",
+            "appBudgetName": "Civizen Pre-Major-Build Validation Program v0.2",
         },
         "fiveYearFirstWave": {
             "status": "preliminary_ecosystem_hypothesis",
@@ -97,6 +112,7 @@ def main() -> None:
             "rangeUsdB": {"lowRounded": 30, "highRounded": 50},
             "modeledBaseUsdB": 37.5,
             "modeledBaseExactUsdB": meta11["five_year_base_usd_b"],
+            "reconciledBaseUsdB": "37.5-38.0",
             "annualBaseCashflowUsdB": [
                 {"year": i + 1, "amountUsdB": amount} for i, amount in enumerate(years)
             ],
@@ -104,6 +120,35 @@ def main() -> None:
             "coreMustRaiseUsdB": meta11["core_must_raise_usd_b"],
             "notWorldwideCompletion": True,
             "notSingleOrganizationBudget": True,
+            "domainLayers": {
+                "frameworkVsDeployment": (
+                    "SD-* lines are shared frameworks/standards only. "
+                    "Domain production deployment is attributed inside JP/II, not added on top of SD-*."
+                ),
+                "health": {
+                    "frameworkSdHeaUsdM": 280,
+                    "jpIiProvisionalDeploymentUsdM": 1870,
+                    "jpIiShareOf17bPct": 11,
+                    "notWorldwideHealthImplementation": True,
+                    "confidence": "low",
+                    "quoteRequired": True,
+                },
+                "insuranceSystems": {
+                    "sdInsFrameworkUsdM": 120,
+                    "fundingSource": "carve_from_SD-FIN_80_plus_SD-ADD_40",
+                    "sdFinAfterCarveUsdM": 270,
+                    "sdAddAfterCarveUsdM": 90,
+                    "jpIiProvisionalIntegrationUsdM": 680,
+                    "jpIiShareOf17bPct": 4,
+                    "notUnderwriterOrClaimsStore": True,
+                    "confidence": "low",
+                    "quoteRequired": True,
+                },
+                "responsibility": {
+                    "shared": "frameworks, standards, federation patterns, independent assurance",
+                    "jurisdictionalInstitutional": "local adaptation, production systems, clinical/insurance operation",
+                },
+            },
         },
         "longRangeOutlook": {
             "status": "internal_lifecycle_scenarios",
@@ -125,8 +170,10 @@ def main() -> None:
             },
         },
         "reconciliation": {
-            "validationCsvMatchesMeta": True,
+            "historicalValidationCsvMatchesMetaV01": True,
+            "validationWorkingDraft": "v0.2",
             "fiveYearCashflowSumsToBase": True,
+            "sdInsCarveNetZeroToFiveYearTotal": True,
         },
     }
 

@@ -53,12 +53,14 @@ import {
   nestBudgetGroupsWithLines,
   formatBudgetLineTiming,
   formatGroupPeriodLabel,
+  filterNestedBudgetGroupsByKeyword,
   parsePurposeFromDescription,
   splitBudgetLineTitle,
 } from '@/lib/finance/budget-presentation';
 import { useBudgetStructureWideLayout } from '@/lib/finance/use-budget-structure-layout';
 import { canEditBudgetLifecycle, sumLineAmounts } from '@/lib/finance/budget-rules';
 import { VALIDATION_BUDGET_V01 } from '@/lib/finance/validation-budget-v01';
+import { VALIDATION_BUDGET_V02 } from '@/lib/finance/validation-budget-v02';
 import { parseMajorToMinor } from '@/lib/finance/money';
 import {
   canApproveOwnSubmission,
@@ -68,11 +70,12 @@ import {
   canFinanceView,
 } from '@/lib/finance/permissions';
 import { downloadTextFile } from '@/lib/funding/interest-csv';
+import type { FundingAdminPrimarySection } from '@/lib/funding/admin-sections';
 import { cn } from '@/lib/utils';
 
 type FundingBudgetAdminProps = {
   embedded?: boolean;
-  onGoToSection?: (section: 'budget' | 'program-plan' | 'sources' | 'interest') => void;
+  onGoToSection?: (section: FundingAdminPrimarySection) => void;
 };
 
 type CreationPanel = 'new-budget' | 'add-group' | 'add-line' | null;
@@ -123,7 +126,25 @@ export function partitionBudgetsForSelector(budgets: ProjectBudgetRow[]): {
 
 /** Budgets shown in ordinary Settings → Funding → Budget selection. */
 export function ordinaryBudgetsForSelector(budgets: ProjectBudgetRow[]): ProjectBudgetRow[] {
-  return budgets.filter((budget) => !budget.is_demonstration);
+  return budgets.filter(
+    (budget) => !budget.is_demonstration && budget.lifecycle_status !== 'superseded',
+  );
+}
+
+/** Superseded drafts retained for history (not primary selector clutter). */
+export function historicalBudgetsForSelector(budgets: ProjectBudgetRow[]): ProjectBudgetRow[] {
+  return budgets.filter((budget) => budget.lifecycle_status === 'superseded');
+}
+
+/** Preferred current working validation revision. */
+export function preferredWorkingBudgetId(budgets: ProjectBudgetRow[]): string | null {
+  const ordinary = ordinaryBudgetsForSelector(budgets);
+  return (
+    ordinary.find((b) => b.name === VALIDATION_BUDGET_V02.name)?.id
+    ?? ordinary.find((b) => b.name === VALIDATION_BUDGET_V01.name)?.id
+    ?? ordinary[0]?.id
+    ?? null
+  );
 }
 
 /** Use a dropdown only when the user can choose among multiple ordinary budgets. */
@@ -210,6 +231,7 @@ export default function FundingBudgetAdmin({ onGoToSection }: FundingBudgetAdmin
   const [expandedGroupIds, setExpandedGroupIds] = useState<Set<string>>(new Set());
   const [creationPanel, setCreationPanel] = useState<CreationPanel>(null);
   const [workflowAction, setWorkflowAction] = useState<WorkflowAction | null>(null);
+  const [structureQuery, setStructureQuery] = useState('');
   const addLineFormRef = useRef<HTMLFormElement | null>(null);
   const { containerRef: structureLayoutRef, isWide: structureIsWide } = useBudgetStructureWideLayout();
 
@@ -224,9 +246,19 @@ export default function FundingBudgetAdmin({ onGoToSection }: FundingBudgetAdmin
     [groups, lines],
   );
 
-  const isValidationBudget = selected?.name === VALIDATION_BUDGET_V01.name;
+  const visibleNestedGroups = useMemo(
+    () => filterNestedBudgetGroupsByKeyword(nestedGroups, structureQuery),
+    [nestedGroups, structureQuery],
+  );
+
+  const structureFilterActive = structureQuery.trim().length > 0;
+
+  const isValidationBudget =
+    selected?.name === VALIDATION_BUDGET_V02.name
+    || selected?.name === VALIDATION_BUDGET_V01.name;
 
   const ordinaryBudgets = useMemo(() => ordinaryBudgetsForSelector(budgets), [budgets]);
+  const historicalBudgets = useMemo(() => historicalBudgetsForSelector(budgets), [budgets]);
 
   const totals = useMemo(() => {
     if (!selected) return null;
@@ -271,6 +303,11 @@ export default function FundingBudgetAdmin({ onGoToSection }: FundingBudgetAdmin
     });
   };
 
+  useEffect(() => {
+    if (!structureFilterActive) return;
+    setExpandedGroupIds(new Set(visibleNestedGroups.map((row) => row.group.id)));
+  }, [structureFilterActive, visibleNestedGroups]);
+
   const openCreationPanel = (panel: CreationPanel) => {
     setWorkflowAction(null);
     setCreationPanel(panel);
@@ -313,6 +350,7 @@ export default function FundingBudgetAdmin({ onGoToSection }: FundingBudgetAdmin
     setSuccess(null);
     setCreationPanel(null);
     setWorkflowAction(null);
+    setStructureQuery('');
     await loadBudgetDetail(budgetId);
   };
 
@@ -327,13 +365,12 @@ export default function FundingBudgetAdmin({ onGoToSection }: FundingBudgetAdmin
     }
     setBudgets(list.data);
     const ordinary = ordinaryBudgetsForSelector(list.data);
-    const preferred =
-      ordinary.find((b) => b.name === VALIDATION_BUDGET_V01.name)
-      ?? ordinary[0]
-      ?? null;
+    const preferredId = preferredWorkingBudgetId(list.data);
     const nextId = selectedId && ordinary.some((b) => b.id === selectedId)
       ? selectedId
-      : preferred?.id ?? null;
+      : selectedId && list.data.some((b) => b.id === selectedId && b.lifecycle_status === 'superseded')
+        ? selectedId
+      : preferredId;
     setSelectedId(nextId);
     if (nextId) {
       const g = await listBudgetGroups(nextId);
@@ -385,7 +422,9 @@ export default function FundingBudgetAdmin({ onGoToSection }: FundingBudgetAdmin
 
   const showOverflowMenu = Boolean(
     selected && (
-      (selected.lifecycle_status === 'under_review' && allowApprove && !canApproveSelected)
+      allowEdit
+      || historicalBudgets.length > 0
+      || (selected.lifecycle_status === 'under_review' && allowApprove && !canApproveSelected)
       || (selected.lifecycle_status === 'under_review' && canApproveSelected && primaryAction !== 'approve')
       || (selected.lifecycle_status === 'approved' && (
         (allowEdit && primaryAction !== 'revise')
@@ -530,10 +569,16 @@ export default function FundingBudgetAdmin({ onGoToSection }: FundingBudgetAdmin
     loading,
     allowView,
     error,
-    budgetCount: ordinaryBudgets.length,
-    selectedId: ordinaryBudgets.some((b) => b.id === selectedId) ? selectedId : null,
+    budgetCount: ordinaryBudgets.length + (selected?.lifecycle_status === 'superseded' ? 1 : 0),
+    selectedId:
+      ordinaryBudgets.some((b) => b.id === selectedId)
+      || historicalBudgets.some((b) => b.id === selectedId)
+        ? selectedId
+        : null,
   });
 
+  const viewingHistorical = selected?.lifecycle_status === 'superseded';
+  const workingBudgetId = preferredWorkingBudgetId(budgets);
   const lifecycleLabel = (status: ProjectBudgetRow['lifecycle_status']) => {
     const key = budgetLifecycleBadgeKey(status);
     if (key === 'draft') return t('settings.adminFundingBudgetLifecycleDraft');
@@ -672,7 +717,31 @@ export default function FundingBudgetAdmin({ onGoToSection }: FundingBudgetAdmin
                 <div className="min-w-0 flex-1 space-y-2">
                   <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
                     <div className="min-w-0 max-w-full">
-                      {shouldUseBudgetSelector(ordinaryBudgets.length) ? (
+                      {viewingHistorical ? (
+                        <div className="space-y-1">
+                          <p
+                            className="truncate text-sm font-medium leading-10 text-foreground"
+                            title={selected.name}
+                          >
+                            {selected.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {t('settings.adminFundingBudgetHistoricalView')}
+                            {workingBudgetId ? (
+                              <>
+                                {' · '}
+                                <button
+                                  type="button"
+                                  className="underline underline-offset-2 hover:text-foreground"
+                                  onClick={() => void selectBudget(workingBudgetId)}
+                                >
+                                  {t('settings.adminFundingBudgetReturnWorking')}
+                                </button>
+                              </>
+                            ) : null}
+                          </p>
+                        </div>
+                      ) : shouldUseBudgetSelector(ordinaryBudgets.length) ? (
                         <div className="inline-grid max-w-full">
                           <span
                             className="invisible col-start-1 row-start-1 whitespace-pre px-3 pr-9 text-sm"
@@ -772,6 +841,11 @@ export default function FundingBudgetAdmin({ onGoToSection }: FundingBudgetAdmin
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                          {historicalBudgets.map((b) => (
+                            <DropdownMenuItem key={b.id} onSelect={() => void selectBudget(b.id)}>
+                              {t('settings.adminFundingBudgetViewHistorical')}: {b.name}
+                            </DropdownMenuItem>
+                          ))}
                           {selected.lifecycle_status === 'under_review' && canApproveSelected && primaryAction !== 'approve' ? (
                             <DropdownMenuItem onSelect={() => openWorkflow('approve')}>
                               {t('settings.adminFundingBudgetApprove')}
@@ -992,7 +1066,18 @@ export default function FundingBudgetAdmin({ onGoToSection }: FundingBudgetAdmin
                         </colgroup>
                         <thead>
                           <tr className="border-b text-left text-xs text-muted-foreground">
-                            <th className="py-2 pr-2 font-medium">{t('settings.adminFundingBudgetColName')}</th>
+                            <th className="py-2 pr-2 font-medium">
+                              <input
+                                type="search"
+                                value={structureQuery}
+                                onChange={(e) => setStructureQuery(e.target.value)}
+                                placeholder={t('settings.adminFundingBudgetColName')}
+                                aria-label={t('settings.adminFundingBudgetColName')}
+                                autoComplete="off"
+                                spellCheck={false}
+                                className="w-full min-w-0 appearance-none border-0 bg-transparent p-0 text-xs font-medium text-muted-foreground shadow-none outline-none placeholder:text-muted-foreground focus:outline-none focus-visible:outline-none [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
+                              />
+                            </th>
                             <th className="py-2 pr-2 font-medium">{t('settings.adminFundingBudgetPeriod')}</th>
                             <th className="py-2 pr-2 text-right font-medium">{t('settings.adminFundingBudgetPlanned')}</th>
                             <th className="py-2 pr-2 text-right font-medium">{t('settings.adminFundingBudgetCommitted')}</th>
@@ -1001,7 +1086,14 @@ export default function FundingBudgetAdmin({ onGoToSection }: FundingBudgetAdmin
                           </tr>
                         </thead>
                         <tbody>
-                          {nestedGroups.map(({ group, lines: groupLines, totals: groupTotals }) => {
+                          {structureFilterActive && visibleNestedGroups.length === 0 ? (
+                            <tr>
+                              <td colSpan={6} className="py-4 text-sm text-muted-foreground">
+                                —
+                              </td>
+                            </tr>
+                          ) : null}
+                          {visibleNestedGroups.map(({ group, lines: groupLines, totals: groupTotals }) => {
                             const open = expandedGroupIds.has(group.id);
                             const groupPeriod = formatGroupPeriodLabel(groupLines);
                             return (
@@ -1149,7 +1241,7 @@ export default function FundingBudgetAdmin({ onGoToSection }: FundingBudgetAdmin
                     </div>
                   ) : (
                     <ul className="space-y-2" data-budget-structure-narrow>
-                      {nestedGroups.map(({ group, lines: groupLines, totals: groupTotals }) => {
+                      {visibleNestedGroups.map(({ group, lines: groupLines, totals: groupTotals }) => {
                         const open = expandedGroupIds.has(group.id);
                         const groupPeriod = formatGroupPeriodLabel(groupLines);
                         return (

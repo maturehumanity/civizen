@@ -1,0 +1,49 @@
+{
+  "version": "0.2.1",
+  "date": "2026-08-11",
+  "currency": "USD",
+  "horizon_months": "18-24",
+  "disclaimer": "Provisional working draft Base exact $530,200,000.00 (~$530M externally). Not verified quotes. Not an approved budget. Historical v0.1 Base $446M and prior v0.2 working total $524M retained as superseded estimates.",
+  "totals_usd_m": {
+    "low": 438.3,
+    "base": 530.2,
+    "high": 654.5
+  },
+  "historical_totals_usd_m": {
+    "v01": {
+      "low": 202,
+      "base": 446,
+      "high": 898
+    },
+    "v02_pre_coverage_adds": {
+      "low": 436,
+      "base": 524,
+      "high": 642
+    }
+  },
+  "by_funding_control_base_usd_m": {
+    "core": 363.7,
+    "independent": 34.0,
+    "grant_pass_through": 77.5,
+    "reserve": 55.0
+  },
+  "contingency_usd_m": 65,
+  "safe_pause_usd_m": 55,
+  "work_program_denominator_usd_m": 410.2,
+  "contingency_formula_note": "Held at $65M. Formula ~16% of $410.2M work program \u2248 $65.6M (+$0.6M) not applied.",
+  "safe_pause_formula_note": "Held at $55M. Judgment ~13.6% of $410.2M \u2248 $55.8M (+$0.8M) not applied.",
+  "coverage_adds_usd_m": 6.2,
+  "line_count": 53,
+  "group_count": 13,
+  "relationship": "Supersedes Validation Program v0.1 ($446M) and prior v0.2 working total ($524M); both retained historically.",
+  "historical_v01_totals_usd_m": {
+    "low": 202,
+    "base": 446,
+    "high": 898
+  },
+  "historical_v02_pre_coverage_adds_usd_m": {
+    "low": 436,
+    "base": 524,
+    "high": 642
+  }
+}

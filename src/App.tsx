@@ -74,6 +74,9 @@ const PermissionsAdmin = lazyWithChunkReload(() => import('@/pages/settings/Perm
 const GovernanceAdmin = lazyWithChunkReload(() => import('@/pages/settings/GovernanceAdmin'));
 const LumaCreditsAdmin = lazyWithChunkReload(() => import('@/pages/settings/LumaCreditsAdmin'));
 const FundingAdmin = lazyWithChunkReload(() => import('@/pages/settings/FundingAdmin'));
+const DevEconomicsVisual = import.meta.env.DEV
+  ? lazyWithChunkReload(() => import('@/pages/dev/DevEconomicsVisual'))
+  : null;
 const WalletPage = lazyWithChunkReload(() => import('@/pages/settings/PrototypeCredits'));
 const TaxonomySettings = lazyWithChunkReload(() => import('@/pages/settings/Taxonomy'));
 const MessagingSettingsPage = lazyWithChunkReload(() => import('@/pages/settings/MessagingSettings'));
@@ -468,6 +471,10 @@ const App = () => (
                       </ProtectedRoute>
                     }
                   />
+
+                  {DevEconomicsVisual ? (
+                    <Route path="/dev/economics-visual" element={<DevEconomicsVisual />} />
+                  ) : null}
 
                   {/* Fallback */}
                   <Route path="*" element={<NotFound />} />

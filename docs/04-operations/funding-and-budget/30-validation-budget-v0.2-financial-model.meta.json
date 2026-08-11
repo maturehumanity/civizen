@@ -1,0 +1,100 @@
+{
+  "document_id": "30",
+  "title": "Validation Budget v0.2 and five-year domain-deployment allocation",
+  "version": "0.2.1",
+  "date": "2026-08-11",
+  "currency": "USD",
+  "status": "planning-proposal",
+  "canonical": false,
+  "changes_app_or_database": false,
+  "changes_existing_446m_draft_record": false,
+  "sources": [
+    "29-validation-and-five-year-financial-coverage-audit-v0.1.md",
+    "14-pre-major-build-validation-program-v0.1.md",
+    "14-validation-workstreams-and-budget-v0.1.csv",
+    "15-independent-review-and-domain-study-briefs-v0.1.md",
+    "11-program-financial-model-and-funding-responsibility-v0.1.md",
+    "11-program-financial-model-v0.1.csv",
+    "12-comprehensive-system-inventory-v0.1.md",
+    "26-comprehensive-financial-classification-and-chart-of-accounts-v0.1.md"
+  ],
+  "proposal_markdown": "30-validation-budget-v0.2-and-five-year-domain-allocation-proposal.md",
+  "model_csv": "30-validation-budget-v0.2-financial-model.csv",
+  "validation_totals_usd_m": {
+    "low": 438.3,
+    "base_recommended": 530.2,
+    "high": 654.5,
+    "prior_v02_working_base": 524,
+    "prior_v01_base": 446,
+    "delta_base_vs_prior_v02": 6.2,
+    "external_description": "~$530M"
+  },
+  "bridge_base_usd_m": {
+    "current": 446,
+    "remove_ws12_envelope": -32,
+    "add_studies_package": 54,
+    "ex02_embedded_net": 0,
+    "ex02_gap": 5.5,
+    "ex16": 9,
+    "ex17": 1,
+    "ex28": 1,
+    "ex09_gap": 1.5,
+    "contingency_net": 25,
+    "safe_pause_net": 13,
+    "revised_base": 524
+  },
+  "anti_double_count": {
+    "ex02_embedded_disclosed_usd_m": 25.9,
+    "ex02_embedded_treatment": "reclassify_for_disclosure_only_net_zero",
+    "ex02_gap_additive_usd_m": 5.5,
+    "ex16_assumed_in_fte_load": false
+  },
+  "ws12": {
+    "prior_envelope_base_usd_m": 32,
+    "bottom_up_package_base_usd_m": 54,
+    "additional_vs_prior_base_usd_m": 22,
+    "equal_split_used": false,
+    "study_ids": [
+      "S-HEA",
+      "S-JUS",
+      "S-TAX",
+      "S-FIN",
+      "S-MIG",
+      "S-ELE",
+      "S-SOC",
+      "S-HOU",
+      "S-ENE",
+      "S-MEA",
+      "S-COO"
+    ]
+  },
+  "contingency_safe_pause_usd_m": {
+    "contingency_low_base_high": [
+      35,
+      65,
+      95
+    ],
+    "safe_pause_low_base_high": [
+      28,
+      55,
+      90
+    ]
+  },
+  "five_year": {
+    "prior_base_usd_b": 37.51,
+    "recommended_reconciled_base_usd_b": "37.5-38.0",
+    "optional_additive_insurance_framework_usd_b": 0.4,
+    "jp_ii_envelope_usd_b": 17.0,
+    "jp_ii_attribution": "provisional_percent_matrix_low_confidence",
+    "sd_hea_framework_usd_m": 280,
+    "sd_ins_framework_prefer_carve_usd_m": 120
+  },
+  "recommendation": {
+    "validation_446m_action": "replace_with_increased_v0.2_base_524m",
+    "retain_446_with_narrower_scope": "not_recommended",
+    "five_year_37_5b_action": "reconcile_with_explicit_jp_ii_and_insurance_attribution_prefer_carve"
+  },
+  "units": "usd_m means millions of USD; five_year scenario rows use usd_m scale for 37500 = 37.5B",
+  "disclaimer": "Planning ranges only. Not quotes, commitments, approved budgets, insurance binders, or authorization to operate clinical/insurance/tax/border systems.",
+  "contingency_safe_pause_note": "Held at $65M / $55M. Formula deltas +$0.6M / +$0.8M reported not applied."
+}

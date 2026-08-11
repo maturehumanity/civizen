@@ -1,0 +1,68 @@
+matrix_section,subject,validation_status,five_year_status,primary_refs,base_amount_usd_m_or_tbd,notes
+required_distinction,Health as civilization-scale system domain,H_inside_WS12_H1_and_A9,E_SD-HEA-01_framework,14|15|11|12,280_framework_5y,Clinical deployment in JP/II; not Civizen-operated EHR
+required_distinction,Workforce health benefits safety wellbeing OpEx,M_as_named_H_in_loaded_personnel,H_in_personnel_drivers,14|26|01,TBD,CoA EX-02; not a validation line
+required_distinction,Insurance as economic social system domain,I_inside_F1_and_inventory_bridges,I_under_SD-FIN_plus_absent_bridges,15|12|11,TBD_within_FIN_350,Do not merge with health domain
+required_distinction,Insurance and liability coverage as program OpEx,M_named_line_evidence_required_14_3_2,H_in_reserves_waterfall,14|26|20|24,TBD,CoA EX-16; demo insurance unquoted
+ws,WS-01 Core multidisciplinary program office,E_office_H_benefits,n/a_val,14,28,Loaded costs hide EX-02/EX-16
+ws,WS-02 Constitutional institutional design,E,n/a_val,14,16,
+ws,WS-03 Human-rights anti-capture,E,n/a_val,14,11,
+ws,WS-04 System-inventory validation,E_inventory,feeds_12,14|12,12,Challenges health/insurance rows; no domain delivery
+ws,WS-05 Architecture threat modeling,E,n/a_val,14,22,
+ws,WS-06 Federation operator-network design,E_design_D_ops,E_OE_OR_100-150_ops,14|11,15,Ops belong in 5y OE-OP/OR-OP
+ws,WS-07 Privacy data-governance,E,n/a_val,14,10,
+ws,WS-08 Security cryptographic research,E_H_cyber_insurance_buy,n/a_val,14,16,EX-16 premiums TBD
+ws,WS-09 AI governance assurance,E,n/a_val,14,9,
+ws,WS-10 Identity credential interop,E,n/a_val,14,10,
+ws,WS-11 Economic payments accounting tax feasibility,E_I_insurance_system,n/a_val,14,12,Insurance system depth insufficient
+ws,WS-12 Commissioned priority domain studies 10,E_aggregate_H_ten_domains,n/a_val,14|15,32,Needs named sub-lines; do not equal-split
+ws,WS-13 Jurisdiction institutional consultations,E,n/a_val,14,22,
+ws,WS-14 Standards interop planning,E,n/a_val,14,8,
+ws,WS-15 Accessibility localization nondigital,E,n/a_val,14,10,
+ws,WS-16 Independent multidisciplinary review panels,E,n/a_val,14|15,34,Includes A9 Health panel
+ws,WS-17 Controlled non-authoritative demonstrators,E_H_demo_insurance,n/a_val,14,24,Demo insurance evidence required
+ws,WS-18 Legal entity organizational formation,E_H_entity_insurance,n/a_val,14,14,
+ws,WS-19 Procurement financial-control setup,E_setup_I_ongoing_treasury,n/a_val,14,7,EX-17 live OpEx later
+ws,WS-20 Cost-model validation RFI actuarial,E_method_not_premium_buy,n/a_val,14,10,
+ws,WS-21 Public documentation transparency,E,n/a_val,14,6,
+ws,WS-22 Travel international coordination,E_H_travel_medical,n/a_val,14,10,
+ws,WS-23 Grants civil-society participation,E,n/a_val,14,26,
+ws,WS-24 Program contingency,E_not_substitute_EX02_16,n/a_val,14,40,
+ws,WS-25 Safe-pause continuity reserve,E,n/a_val,14,42,
+opex,Personnel and professional contributors,H_across_core_WS,H_in_5y_personnel_drivers,26|14,TBD,EX-01 EX-03
+opex,Payroll taxes employment costs,H,H,26,TBD,EX-01 EX-28
+opex,Health benefits occupational safety wellbeing,M_named,H,26,TBD,EX-02
+opex,Legal accounting audit tax compliance,E_H_WS18_19_16,E_GC_LG_assurance,26|14|11,TBD,EX-15 EX-07
+opex,Cyber D&O GL travel participant WC insurance,M_named,H_reserves,26|14,TBD,EX-16
+opex,Independent experts review panels,E_WS16,E_GOV_OV_SA,14|11,34_val,EX-04 EX-14
+opex,Contractors vendors procurement,H,H,26|14,TBD,EX-18
+opex,Software cloud AI security data communications,H,E_core_platform,26|11,TBD,EX-05..08
+opex,Facilities equipment supplies,H_thin,H,26,TBD,EX-09
+opex,Travel fieldwork events logistics,E_WS22_plus_H,H,14,10_plus_TBD,EX-22
+opex,Accessibility localization interpretation nondigital,E_WS15,E_AL_LOC_800,14|11,10_val,EX-20
+opex,Grants participant compensation,E_WS23_WS12,E_EG_CAP,14|11,26_plus_32_pass,EX-23
+opex,Banking treasury FX payment costs,I_setup_only,H,26|14,TBD,EX-17
+opex,Taxes duties refunds losses,M_D,H,26,TBD,EX-28 EX-29
+opex,Contingency safe-pause,E_WS24_25,E_RV_ALL,14|11,82_val,EX-30
+five_year,Health public health framework,n/a,E_SD-HEA,11,280,Deployment in JP/II
+five_year,Insurance social-risk systems,n/a,I_under_FIN_ECO_SOC,11|12,TBD,No dedicated insurance systems line
+five_year,Economy labor commerce banking payments accounting tax,n/a,E_SD_ECO_FIN_TAX_CP_PAY,11,1410_sum_selected,
+five_year,Education research,n/a,E_SD_EDU_SCI_AE,11,3210_sum_selected,
+five_year,Housing land food water energy transport environment,n/a,E_SD_HOU_FOO_ENE_TRA_ENV,11,see_11_csv,
+five_year,Identity governance elections justice rights dispute,n/a,E_multiple,11,see_11_csv,
+five_year,Social protection disability children aging care,n/a,E_SD_SOC,11,220,
+five_year,Communications culture media,n/a,E_SD_COM_CUL,11,280,
+five_year,Emergency humanitarian continuity,n/a,E_SD_EMR,11,200,
+five_year,Accessibility localization nondigital,n/a,E_AL_LOC,11,800,
+five_year,Federation operators 100plus SecOps DR support,n/a,E_OE_OR,11,1200_establishment_plus_recurring,
+five_year,Jurisdictional institutional integration,n/a,E_JP_II,11,17000,
+five_year,Independent oversight auditing accountability,n/a,E_GOV_SA_CP_AUD,11,900_selected,
+ws12_subline,WS-12.1 Health systems public health clinical safety medicines financing,proposed_named_subline,feeds_SD_HEA,15_H1,3.5-7_indicative,Assumed inside 32 unmapped
+ws12_subline,WS-12.2 Justice dispute-resolution,proposed_named_subline,feeds_SD_JUS,15_J1,3-6.5_indicative,Assumed inside 32 unmapped
+ws12_subline,WS-12.3 Tax public-revenue,proposed_named_subline,feeds_SD_TAX,15_T1,2-4.5_indicative,Assumed inside 32 unmapped
+ws12_subline,WS-12.4 Finance banking insurance payments monetary,proposed_named_subline,feeds_SD_FIN,15_F1,3-6_indicative,Insurance depth insufficient; assumed inside 32 unmapped
+ws12_subline,WS-12.5 Migration borders residency mobility,proposed_named_subline,feeds_SD_MIG,15_M1,3-6_indicative,Assumed inside 32 unmapped
+ws12_subline,WS-12.6 Elections democratic participation,proposed_named_subline,feeds_SD_ELE,15_E1,2.5-5.5_indicative,Assumed inside 32 unmapped
+ws12_subline,WS-12.7 Social protection children disability pensions care,proposed_named_subline,feeds_SD_SOC,15_S1,2.5-5.5_indicative,Assumed inside 32 unmapped
+ws12_subline,WS-12.8 Land housing property communal Indigenous rights,proposed_named_subline,feeds_SD_HOU,15_L1,3-6_indicative,Assumed inside 32 unmapped
+ws12_subline,WS-12.9 Energy environment nuclear-material accounting boundaries,proposed_named_subline,feeds_SD_ENE_ENV,15_N1,2-4.5_indicative,Assumed inside 32 unmapped
+ws12_subline,WS-12.10 Official statistics measurement public evidence,proposed_named_subline,feeds_SD_MEA,15_Q1,2-4_indicative,Assumed inside 32 unmapped

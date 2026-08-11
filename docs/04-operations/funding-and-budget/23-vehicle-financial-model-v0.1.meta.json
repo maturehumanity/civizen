@@ -1,0 +1,26 @@
+{
+  "version": "0.1",
+  "date": "2026-08-11",
+  "currency": "USD",
+  "disclaimer": "Scenario redesign. Not an offer. Preserves doc20 unattractive equity finding. No app changes.",
+  "prior_doc20_15y_commercial_gross_usd_b": 21.3,
+  "prior_doc20_equity_800m_moic_no_tv": 0.31,
+  "revised_investable_capital_usd_b": {
+    "low": 0.9,
+    "base": 2.8,
+    "high": 6.4
+  },
+  "vehicle_15y_gross_sum_usd_b": {
+    "conservative": 35.71,
+    "base": 103.91,
+    "high": 226.96
+  },
+  "doc20_revenue_verdict": "undercounted_if_multi_vehicle_and_lawful_discovery_scale; not_all_private_equity_CF",
+  "attractiveness_threshold_users_m_approx": 900,
+  "attractiveness_threshold_rpu_usd_approx": 12,
+  "pools_10_10": "post_contract_surplus_only",
+  "meta_maturity": "speculative_not_forecast",
+  "benchmarks_year": 2025,
+  "app_finance_records_modified": false,
+  "row_count": 197
+}

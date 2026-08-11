@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { PROGRAM_PLAN_SUMMARY } from '@/lib/funding/program-plan-summary.generated';
+import type { FundingAdminPrimarySection } from '@/lib/funding/admin-sections';
 
 type FundingProgramPlanAdminProps = {
   embedded?: boolean;
-  onGoToSection?: (section: 'budget' | 'program-plan' | 'sources' | 'interest') => void;
+  onGoToSection?: (section: FundingAdminPrimarySection) => void;
 };
 
 type FiveYearPeriod = 'total' | '1' | '2' | '3' | '4' | '5';
@@ -170,6 +171,38 @@ export default function FundingProgramPlanAdmin({
             <li>{t('settings.adminFundingProgramPlanComponentOperators')}</li>
           </ul>
         </div>
+
+        {'domainLayers' in f && f.domainLayers ? (
+          <div className="space-y-2 rounded-md border border-border/60 p-3" data-build-key="fundingProgramPlanDomainLayers">
+            <h3 className="text-xs font-medium text-muted-foreground">
+              {t('settings.adminFundingProgramPlanDomainLayers')}
+            </h3>
+            <p className="text-xs text-muted-foreground">{f.domainLayers.frameworkVsDeployment}</p>
+            <dl className="grid gap-2 text-sm sm:grid-cols-2">
+              <div className="rounded-md border border-border/40 p-2">
+                <dt className="text-xs text-muted-foreground">{t('settings.adminFundingProgramPlanHealthFramework')}</dt>
+                <dd className="font-medium">{formatUsdM(f.domainLayers.health.frameworkSdHeaUsdM)}</dd>
+                <dd className="mt-1 text-xs text-muted-foreground">
+                  {t('settings.adminFundingProgramPlanHealthJpIi')}: {formatUsdM(f.domainLayers.health.jpIiProvisionalDeploymentUsdM)}
+                  {' · '}
+                  {t('settings.adminFundingProgramPlanNotWorldwideHealth')}
+                </dd>
+              </div>
+              <div className="rounded-md border border-border/40 p-2">
+                <dt className="text-xs text-muted-foreground">{t('settings.adminFundingProgramPlanInsuranceFramework')}</dt>
+                <dd className="font-medium">{formatUsdM(f.domainLayers.insuranceSystems.sdInsFrameworkUsdM)}</dd>
+                <dd className="mt-1 text-xs text-muted-foreground">
+                  {t('settings.adminFundingProgramPlanInsuranceCarve')}: {f.domainLayers.insuranceSystems.fundingSource}
+                </dd>
+              </div>
+            </dl>
+            <p className="text-xs text-muted-foreground">
+              {t('settings.adminFundingProgramPlanSharedVsLocal')}: {f.domainLayers.responsibility.shared}
+              {' / '}
+              {f.domainLayers.responsibility.jurisdictionalInstitutional}
+            </p>
+          </div>
+        ) : null}
 
         <div className="rounded-md border border-border/60 p-3" data-build-key="fundingProgramPlanValidationLink">
           <div className="flex flex-wrap items-center justify-between gap-2">

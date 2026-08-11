@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Coins, MoreHorizontal } from 'lucide-react';
-import { useEffect, useMemo, useRef } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -27,19 +27,23 @@ import {
 } from '@/lib/funding/admin-sections';
 import { cn } from '@/lib/utils';
 
-import FundingAuditAdmin from '@/pages/settings/FundingAuditAdmin';
+/** Default tab stays eager so Budget does not wait on other sections. */
 import FundingBudgetAdmin from '@/pages/settings/FundingBudgetAdmin';
-import FundingComplianceAdmin from '@/pages/settings/FundingComplianceAdmin';
-import FundingContributorsAdmin from '@/pages/settings/FundingContributorsAdmin';
-import FundingInterestAdmin from '@/pages/settings/FundingInterestAdmin';
-import FundingLedgerAdmin from '@/pages/settings/FundingLedgerAdmin';
-import FundingOverviewAdmin from '@/pages/settings/FundingOverviewAdmin';
-import FundingProgramPlanAdmin from '@/pages/settings/FundingProgramPlanAdmin';
-import FundingSourcesAdmin from '@/pages/settings/FundingSourcesAdmin';
+
+const FundingProgramPlanAdmin = lazy(() => import('@/pages/settings/FundingProgramPlanAdmin'));
+const FundingEconomicsAdmin = lazy(() => import('@/pages/settings/FundingEconomicsAdmin'));
+const FundingOverviewAdmin = lazy(() => import('@/pages/settings/FundingOverviewAdmin'));
+const FundingSourcesAdmin = lazy(() => import('@/pages/settings/FundingSourcesAdmin'));
+const FundingInterestAdmin = lazy(() => import('@/pages/settings/FundingInterestAdmin'));
+const FundingLedgerAdmin = lazy(() => import('@/pages/settings/FundingLedgerAdmin'));
+const FundingAuditAdmin = lazy(() => import('@/pages/settings/FundingAuditAdmin'));
+const FundingComplianceAdmin = lazy(() => import('@/pages/settings/FundingComplianceAdmin'));
+const FundingContributorsAdmin = lazy(() => import('@/pages/settings/FundingContributorsAdmin'));
 
 const SECTION_LABEL_KEY: Record<FundingAdminSection, string> = {
   budget: 'settings.adminFundingSectionBudget',
   'program-plan': 'settings.adminFundingSectionProgramPlan',
+  economics: 'settings.adminFundingSectionEconomics',
   overview: 'settings.adminFundingSectionOverview',
   sources: 'settings.adminFundingSectionSources',
   interest: 'settings.adminFundingSectionInterest',
@@ -235,22 +239,34 @@ export default function FundingAdmin() {
         <div className="min-w-0">
           {section === 'budget' ? (
             <FundingBudgetAdmin embedded onGoToSection={(next) => setSection(next)} />
-          ) : null}
-          {section === 'program-plan' ? (
-            <FundingProgramPlanAdmin embedded onGoToSection={(next) => setSection(next)} />
-          ) : null}
-          {section === 'overview' ? (
-            <FundingOverviewAdmin
-              embedded
-              onGoToSection={(next) => setSection(next)}
-            />
-          ) : null}
-          {section === 'sources' ? <FundingSourcesAdmin embedded /> : null}
-          {section === 'interest' ? <FundingInterestAdmin embedded /> : null}
-          {section === 'ledger' ? <FundingLedgerAdmin embedded /> : null}
-          {section === 'audit' ? <FundingAuditAdmin embedded /> : null}
-          {section === 'compliance' ? <FundingComplianceAdmin embedded /> : null}
-          {section === 'contributors' ? <FundingContributorsAdmin embedded /> : null}
+          ) : (
+            <Suspense
+              fallback={
+                <div className="rounded-md border border-border/60 px-3 py-6 text-sm text-muted-foreground">
+                  {t('common.loading')}
+                </div>
+              }
+            >
+              {section === 'program-plan' ? (
+                <FundingProgramPlanAdmin embedded onGoToSection={(next) => setSection(next)} />
+              ) : null}
+              {section === 'economics' ? (
+                <FundingEconomicsAdmin embedded onGoToSection={(next) => setSection(next)} />
+              ) : null}
+              {section === 'overview' ? (
+                <FundingOverviewAdmin
+                  embedded
+                  onGoToSection={(next) => setSection(next)}
+                />
+              ) : null}
+              {section === 'sources' ? <FundingSourcesAdmin embedded /> : null}
+              {section === 'interest' ? <FundingInterestAdmin embedded /> : null}
+              {section === 'ledger' ? <FundingLedgerAdmin embedded /> : null}
+              {section === 'audit' ? <FundingAuditAdmin embedded /> : null}
+              {section === 'compliance' ? <FundingComplianceAdmin embedded /> : null}
+              {section === 'contributors' ? <FundingContributorsAdmin embedded /> : null}
+            </Suspense>
+          )}
         </div>
       </div>
     </AppLayout>

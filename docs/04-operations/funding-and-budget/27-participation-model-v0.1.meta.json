@@ -1,0 +1,70 @@
+{
+  "version": "0.1.2",
+  "date": "2026-08-11",
+  "currency": "USD",
+  "disclaimer": "Provisional policy model. Not an offer or payout. No app features. v0.1.2 adds FPP numerical reconciliation only; policy unchanged from 0.1.1.",
+  "policy_revision": "consolidated_founder_participation_pool_receipt_based",
+  "reconciliation": {
+    "horizon": "five_year_capital_formation",
+    "prior_placeholder_eligible_usd_m": 1400,
+    "prior_placeholder_fpp_usd_m": 14.0,
+    "reconciled_eligible_usd_m": 1470,
+    "reconciled_fpp_usd_m": 14.7,
+    "eligible_vehicle_breakdown_usd_m": {
+      "V-ENT": 500,
+      "V-OPS": 200,
+      "V-JUR": 100,
+      "V-DISC": 350,
+      "V-SEC-EDU": 120,
+      "V-SEC-EMP": 200
+    },
+    "private_stack_total_usd_m": 2800,
+    "excluded_restricted_in_stack_usd_m": 530,
+    "excluded_debt_in_stack_usd_m": 800,
+    "validation_base_usd_m": 446,
+    "ecosystem_5y_usd_m": 37500,
+    "low_high_private_usd_b": [0.9, 2.8, 6.4]
+  },
+  "superseded": {
+    "founder_funding_pool_separate": true,
+    "founder_profit_pool_on_profit": true,
+    "profit_pie_10_10_1_79": true,
+    "undocumented_1400_14_placeholder": true
+  },
+  "eligible_external_receipts_split": {
+    "founder_participation_pool": 0.01,
+    "retained": 0.99
+  },
+  "eligible_distributable_commercial_profit_split": {
+    "investor": 0.1,
+    "contributor": 0.1,
+    "ecosystem": 0.8,
+    "founder_on_profit": 0.0
+  },
+  "founder_assessment": "once_at_first_external_receipt",
+  "provenance_marker": "founder_allocation_assessed",
+  "units_and_accrual": "same_entitlement_not_separate_claims",
+  "allocation_base": "lower_of_audited_eligible_distributable_profit_and_distributable_cash",
+  "ecosystem_continuity_reserves_pct_of_profit_allocation": 13,
+  "scenario_alloc_base_usd_m": {
+    "conservative": 5,
+    "base": 310,
+    "population_scale": 2400,
+    "meta_like_maturity": 17500
+  },
+  "scenario_pools_usd_m": {
+    "base": {
+      "founder_participation_1pct_receipts": 14.7,
+      "investor": 31.0,
+      "contributor": 31.0,
+      "ecosystem": 248.0
+    },
+    "population_scale": {
+      "founder_participation_1pct_receipts": 65.0,
+      "investor": 240.0,
+      "contributor": 240.0,
+      "ecosystem": 1920.0
+    }
+  },
+  "app_finance_records_modified": false
+}

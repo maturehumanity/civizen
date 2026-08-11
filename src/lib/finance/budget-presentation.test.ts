@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  filterNestedBudgetGroupsByKeyword,
   formatBudgetLineTiming,
   formatGroupPeriodLabel,
   lineOverlapsValidationPeriodFilter,
@@ -111,6 +112,22 @@ describe('budget presentation nesting', () => {
       workstreamId: null,
       displayTitle: 'Plain line',
     });
+  });
+
+  it('filters nested groups by line-item keyword without inventing rows', () => {
+    const nested = nestBudgetGroupsWithLines(groups, lines);
+
+    const byLine = filterNestedBudgetGroupsByKeyword(nested, 'apple');
+    expect(byLine.map((row) => row.group.id)).toEqual(['g-a']);
+    expect(byLine[0].lines.map((l) => l.id)).toEqual(['l-1']);
+    expect(byLine[0].totals).toEqual({ plannedMinor: 200, committedMinor: 80, actualMinor: 20 });
+
+    const byGroupName = filterNestedBudgetGroupsByKeyword(nested, 'beta');
+    expect(byGroupName.map((row) => row.group.id)).toEqual(['g-b']);
+    expect(byGroupName[0].lines.map((l) => l.id)).toEqual(['l-3']);
+
+    expect(filterNestedBudgetGroupsByKeyword(nested, '   ')).toEqual(nested);
+    expect(filterNestedBudgetGroupsByKeyword(nested, 'zzznomatch')).toEqual([]);
   });
 
   it('labels undefined conceptual phase timing as concise TBD without inventing dates', () => {

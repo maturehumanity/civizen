@@ -2,6 +2,7 @@
 export const FUNDING_ADMIN_PRIMARY_SECTIONS = [
   'budget',
   'program-plan',
+  'economics',
   'overview',
   'sources',
   'interest',

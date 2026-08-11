@@ -1,9 +1,9 @@
 {
-  "modelVersion": "0.1",
-  "generatedAt": "2026-08-10",
+  "modelVersion": "0.2",
+  "generatedAt": "2026-08-11",
   "currency": "USD",
   "status": "non_approved_planning_estimates",
-  "disclaimer": "Read-only strategic estimates and scenarios. Not approved budgets, commitments, receipts, or actual spending. Not worldwide completion or one organization\u2019s budget.",
+  "disclaimer": "Read-only strategic estimates and scenarios. Not approved budgets, commitments, receipts, or actual spending. Not worldwide completion or one organization\u2019s budget. Validation Base is provisional v0.2 exact $530.2M (~$530M externally); historical v0.1 $446M and prior v0.2 $524M are superseded estimates.",
   "hierarchy": {
     "detailedOperatingPlan": "validation_18_24_months",
     "primaryProgramPlan": "five_year_first_wave",
@@ -11,24 +11,30 @@
     "years11to20": "directional_lifecycle_scenario"
   },
   "validation": {
-    "status": "working_estimate",
+    "status": "provisional_working_draft",
     "durationMonths": "18-24",
-    "sourceDoc": "14-pre-major-build-validation-program-v0.1.md",
-    "sourceMeta": "14-validation-workstreams-and-budget-v0.1.meta.json",
-    "modelVersion": "0.1",
-    "updatedAt": "2026-08-10",
+    "sourceDoc": "30-validation-budget-v0.2-and-five-year-domain-allocation-proposal.md",
+    "sourceMeta": "validation-budget-v0.2.meta.json",
+    "reconciliationDoc": "30-validation-budget-v0.2-reconciliation-and-adoption.md",
+    "modelVersion": "0.2.1",
+    "updatedAt": "2026-08-11",
     "totalsUsdM": {
+      "low": 438.3,
+      "base": 530.2,
+      "high": 654.5
+    },
+    "historicalV01TotalsUsdM": {
       "low": 202,
       "base": 446,
       "high": 898
     },
     "fundingControlBaseUsdM": {
-      "core": 312,
-      "independent": 34,
-      "grant_pass_through": 58,
-      "reserve": 42
+      "core": 363.7,
+      "independent": 34.0,
+      "grant_pass_through": 77.5,
+      "reserve": 55.0
     },
-    "scenarioDiffNote": "Low: leaner staffing, fewer consultations, thinner contingency. Base: full planned workstream intensity. High: expanded consultations, demonstrators, contingency, and assurance depth.",
+    "scenarioDiffNote": "Low (~$438.3M): compressed studies/continuity plus thinner coverage-add set \u2014 not equivalent deliverables. Base (exact $530.2M / ~$530M externally): provisional working draft after coverage adds; contingency/safe-pause held flat. High (~$654.5M): expanded studies, insurance, contingency, safe-pause, and high coverage adds. Historical v0.1 Base $446M and prior v0.2 working total $524M retained as superseded estimates.",
     "baseTranchePacing": [
       {
         "id": "T1",
@@ -51,8 +57,10 @@
         "shareOfBase": 0.1
       }
     ],
-    "workstreamCount": 25,
-    "workstreamsDoc": "14-pre-major-build-validation-program-v0.1.md"
+    "workstreamCount": 53,
+    "groupCount": 13,
+    "workstreamsDoc": "30-validation-budget-v0.2-reconciliation-and-adoption.md",
+    "appBudgetName": "Civizen Pre-Major-Build Validation Program v0.2"
   },
   "fiveYearFirstWave": {
     "status": "preliminary_ecosystem_hypothesis",
@@ -66,6 +74,7 @@
     },
     "modeledBaseUsdB": 37.5,
     "modeledBaseExactUsdB": 37.51,
+    "reconciledBaseUsdB": "37.5-38.0",
     "annualBaseCashflowUsdB": [
       {
         "year": 1,
@@ -91,7 +100,33 @@
     "corePrimaryResponsibleUsdB": 4.8,
     "coreMustRaiseUsdB": 8.2,
     "notWorldwideCompletion": true,
-    "notSingleOrganizationBudget": true
+    "notSingleOrganizationBudget": true,
+    "domainLayers": {
+      "frameworkVsDeployment": "SD-* lines are shared frameworks/standards only. Domain production deployment is attributed inside JP/II, not added on top of SD-*.",
+      "health": {
+        "frameworkSdHeaUsdM": 280,
+        "jpIiProvisionalDeploymentUsdM": 1870,
+        "jpIiShareOf17bPct": 11,
+        "notWorldwideHealthImplementation": true,
+        "confidence": "low",
+        "quoteRequired": true
+      },
+      "insuranceSystems": {
+        "sdInsFrameworkUsdM": 120,
+        "fundingSource": "carve_from_SD-FIN_80_plus_SD-ADD_40",
+        "sdFinAfterCarveUsdM": 270,
+        "sdAddAfterCarveUsdM": 90,
+        "jpIiProvisionalIntegrationUsdM": 680,
+        "jpIiShareOf17bPct": 4,
+        "notUnderwriterOrClaimsStore": true,
+        "confidence": "low",
+        "quoteRequired": true
+      },
+      "responsibility": {
+        "shared": "frameworks, standards, federation patterns, independent assurance",
+        "jurisdictionalInstitutional": "local adaptation, production systems, clinical/insurance operation"
+      }
+    }
   },
   "longRangeOutlook": {
     "status": "internal_lifecycle_scenarios",
@@ -106,7 +141,9 @@
     }
   },
   "reconciliation": {
-    "validationCsvMatchesMeta": true,
-    "fiveYearCashflowSumsToBase": true
+    "historicalValidationCsvMatchesMetaV01": true,
+    "validationWorkingDraft": "v0.2",
+    "fiveYearCashflowSumsToBase": true,
+    "sdInsCarveNetZeroToFiveYearTotal": true
   }
 }

@@ -4,7 +4,8 @@ import { PROGRAM_PLAN_SUMMARY } from '@/lib/funding/program-plan-summary.generat
 
 describe('program plan summary artifact', () => {
   it('exposes validation and five-year totals that match canonical metas', () => {
-    expect(PROGRAM_PLAN_SUMMARY.validation.totalsUsdM).toEqual({ low: 202, base: 446, high: 898 });
+    expect(PROGRAM_PLAN_SUMMARY.validation.totalsUsdM).toEqual({ low: 438.3, base: 530.2, high: 654.5 });
+    expect(PROGRAM_PLAN_SUMMARY.validation.historicalV01TotalsUsdM).toEqual({ low: 202, base: 446, high: 898 });
     expect(PROGRAM_PLAN_SUMMARY.fiveYearFirstWave.modeledBaseUsdB).toBe(37.5);
     expect(PROGRAM_PLAN_SUMMARY.fiveYearFirstWave.rangeUsdB).toEqual({ lowRounded: 30, highRounded: 50 });
     const years = PROGRAM_PLAN_SUMMARY.fiveYearFirstWave.annualBaseCashflowUsdB.map((y) => y.amountUsdB);
@@ -22,6 +23,15 @@ describe('program plan summary artifact', () => {
 
   it('keeps funding-control categories reconciling to validation base', () => {
     const c = PROGRAM_PLAN_SUMMARY.validation.fundingControlBaseUsdM;
-    expect(c.core + c.independent + c.grant_pass_through + c.reserve).toBe(446);
+    expect(c.core + c.independent + c.grant_pass_through + c.reserve).toBeCloseTo(530.2, 5);
+  });
+
+  it('separates health framework from JP/II deployment and documents SD-INS carve', () => {
+    const d = PROGRAM_PLAN_SUMMARY.fiveYearFirstWave.domainLayers;
+    expect(d.health.frameworkSdHeaUsdM).toBe(280);
+    expect(d.health.jpIiProvisionalDeploymentUsdM).toBe(1870);
+    expect(d.health.notWorldwideHealthImplementation).toBe(true);
+    expect(d.insuranceSystems.sdInsFrameworkUsdM).toBe(120);
+    expect(d.insuranceSystems.fundingSource).toContain('carve');
   });
 });

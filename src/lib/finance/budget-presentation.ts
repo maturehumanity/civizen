@@ -288,3 +288,62 @@ export function linesBelongOnlyToGroup(
   const match = nested.find((row) => row.group.id === groupId);
   return match?.lines ?? [];
 }
+
+function budgetTextMatchesKeyword(value: string | null | undefined, query: string): boolean {
+  if (!value) return false;
+  return value.toLowerCase().includes(query);
+}
+
+/** True when a line item title/code/description matches the keyword (case-insensitive). */
+export function budgetLineMatchesKeyword(
+  line: Pick<
+    BudgetPresentationLine,
+    | 'title'
+    | 'description'
+    | 'public_description'
+    | 'period_label'
+    | 'owner_label'
+    | 'funding_restriction_tag'
+  >,
+  query: string,
+): boolean {
+  const q = query.trim().toLowerCase();
+  if (!q) return true;
+  const { workstreamId, displayTitle } = splitBudgetLineTitle(line.title);
+  return (
+    budgetTextMatchesKeyword(line.title, q)
+    || budgetTextMatchesKeyword(workstreamId, q)
+    || budgetTextMatchesKeyword(displayTitle, q)
+    || budgetTextMatchesKeyword(line.description, q)
+    || budgetTextMatchesKeyword(line.public_description, q)
+    || budgetTextMatchesKeyword(line.period_label, q)
+    || budgetTextMatchesKeyword(line.owner_label, q)
+    || budgetTextMatchesKeyword(line.funding_restriction_tag, q)
+  );
+}
+
+/**
+ * Filter nested groups to matching line items (and groups whose name matches).
+ * Empty query returns the input unchanged. Group totals recompute for visible lines.
+ */
+export function filterNestedBudgetGroupsByKeyword(
+  nested: NestedBudgetGroupView[],
+  query: string,
+): NestedBudgetGroupView[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return nested;
+
+  const filtered: NestedBudgetGroupView[] = [];
+  for (const row of nested) {
+    const groupMatches = budgetTextMatchesKeyword(row.group.name, q);
+    const matchingLines = row.lines.filter((line) => budgetLineMatchesKeyword(line, q));
+    if (matchingLines.length === 0 && !groupMatches) continue;
+    const visibleLines = matchingLines.length > 0 ? matchingLines : row.lines;
+    filtered.push({
+      group: row.group,
+      lines: visibleLines,
+      totals: sumLinesForGroup(visibleLines),
+    });
+  }
+  return filtered;
+}

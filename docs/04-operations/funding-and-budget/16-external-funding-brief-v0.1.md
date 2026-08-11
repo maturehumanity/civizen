@@ -29,9 +29,11 @@ canonical: false
 
 | Scenario | Indicative cash (USD) | Source |
 | --- | ---: | --- |
-| Low | ~$202M | `14` |
-| **Base (working)** | **~$446M** | **`14`** |
-| High | ~$898M | `14` |
+| Low | ~$438.3M | `30`/`31` / Validation Budget v0.2 |
+| **Base (working)** | **~$530M** (exact **$530,200,000.00**) | **`30`/`31`** / app draft v0.2 |
+| High | ~$654.5M | `30`/`31` / Validation Budget v0.2 |
+
+Historical Validation Program v0.1 Base was **~$446M** (range ~$202M–$898M in `14`) — retained as superseded estimate, not the current working ask.
 
 **What changes among scenarios (summary):** Low assumes lean staffing, fewer consultations, thinner contingency, and slower panel cadence. Base funds the full validation workstream set in `14` at planned intensity. High expands consultations, demonstrators, contingency, and assurance depth when scope or risk rises. Always present the base with the full range.
 
@@ -66,7 +68,7 @@ Civilization-scale civic infrastructure that touches identity, rights, administr
 
 | Horizon | Canonical doc | Indicative figure | Epistemic status |
 | --- | --- | ---: | --- |
-| Validation 18–24 mo | **`14`** | ~$202M / **~$446M** / ~$898M | working estimate |
+| Validation 18–24 mo | **`30`/`31`** (working) · historical `14` | ~$438.3M / **~$530M** (exact $530.2M) / ~$654.5M (prior v0.2 $524M; v0.1 $446M superseded) | provisional working draft |
 | Five-year first-wave **ecosystem** | **`11`** | ~$30–50B range; modeled base ~$37.5B | preliminary ecosystem hypothesis |
 | of which core **primary** | `11` | ~$4.8B | hypothesis |
 | of which core **must raise** (incl. co-finance shares) | `11` | ~$8.2B | hypothesis |

@@ -42,6 +42,7 @@ Market uses the **same arc component** as Home/Study (not the horizontal strip),
 5. **Persistence (Market):** Arc stays visible on the Market page (`persistCarousel: true`) — no 3s auto-hide.
 6. **Rotation:** `flattenFocus: true` when settled → focus flat; flanks use tangent. While dragging, all items follow tangent.
 7. **Hide:** Pointer leaves chrome → scheduled hide (unless `persistCarousel`).
+8. **Scroll chrome:** Bottom nav (+ FAB) uses `useShowOnScrollUp` — hide on scroll down, show on scroll up (same pattern as app top chrome). Secondary carousel/strip closes while the bar is hidden; Market `persistCarousel` restores the arc when the bar returns.
 
 ---
 

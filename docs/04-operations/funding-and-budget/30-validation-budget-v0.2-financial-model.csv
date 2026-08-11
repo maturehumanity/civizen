@@ -1,0 +1,136 @@
+record_type,id,parent_id,name,scenario,primary_ex,low_usd_m,base_usd_m,high_usd_m,inkind_low_usd_m,inkind_base_usd_m,inkind_high_usd_m,cash_or_inkind,embedded_in_ws12_usd_m,additional_vs_ws12_usd_m,confidence,timing,civizen_role,notes
+bridge,BR-00,,Current validation Base v0.1,base,,446,446,446,0,0,0,cash,,,high,18-24mo,n/a,From doc 14 — hypothesis not a cap
+bridge,BR-01,,Remove opaque WS-12 envelope,base,,-32,-32,-32,0,0,0,cash,32,0,high,M3-M22,n/a,Prevent double use of study dollars
+bridge,BR-02,,Add bottom-up studies + coordination,base,,32,54,91.5,8,14,20,cash,32,22,medium,M3-M24,commissioner,See study rows
+bridge,BR-03,,EX-02 embedded disclosure extract,base,,-25.9,-25.9,-25.9,0,0,0,disclosure,0,0,medium,n/a,n/a,Reclassification only — must restore
+bridge,BR-04,,EX-02 embedded disclosure restore,base,,25.9,25.9,25.9,0,0,0,disclosure,0,0,medium,n/a,n/a,Net zero with BR-03
+bridge,BR-05,,EX-02 newly identified gap,base,,3,5.5,9,0,0,0,cash,0,5.5,medium,M1-M24,employer,Duty-of-care OHS EAP beyond load
+bridge,BR-06,,EX-16 program insurance new,base,,4,9,17,0,0,0,cash,0,9,low,M1-M24,insured,Quote-required
+bridge,BR-07,,EX-17 banking treasury FX new,base,,0.5,1,2,0,0,0,cash,0,1,low,M1-M24,steward,Validation-period fees
+bridge,BR-08,,EX-28 taxes duties new,base,,0.5,1,2,0,0,0,cash,0,1,low,M1-M24,steward,Entity compliance
+bridge,BR-09,,EX-09 facilities gap new,base,,1,1.5,3,0,0,0,cash,0,1.5,low,M1-M24,steward,Beyond WS-01 embed
+bridge,BR-10,,Contingency recalculated,base,,-5,25,55,0,0,0,cash,0,0,medium,M1-M24,steward,Replace 40 with 35/65/95 net delta shown for base +25
+bridge,BR-11,,Safe-pause recalculated,base,,-14,13,48,0,0,0,cash,0,0,medium,M1-M24,steward,Replace 42 with 28/55/90 net delta base +13
+bridge,BR-TOTAL,,Revised validation total,all,,438.3,530.2,654.5,20,34,55,cash,,,medium,18-24mo,n/a,Working Base exact 530.2 after coverage adds
+scenario,SC-VAL-L,,Validation Low total,low,,438.3,438.3,438.3,20,20,20,cash,,,medium,18-24mo,n/a,
+scenario,SC-VAL-B,,Validation Base total recommended,base,,524,524,524,34,34,34,cash,,,medium,18-24mo,n/a,
+scenario,SC-VAL-H,,Validation High total,high,,654.5,654.5,654.5,55,55,55,cash,,,low,18-24mo,n/a,
+scenario,SC-5Y-B-RECON,,Five-year Base reconciled with attribution,base,,37500,37500,38000,0,0,0,mixed,,,medium,5y,ecosystem,Prefer carve SD-INS; optional +400 if additive
+scenario,SC-5Y-B-ADD,,Five-year Base if SD-INS additive,base,,37900,37900,38300,0,0,0,mixed,,,low,5y,ecosystem,Only if carve rejected
+study,S-HEA,WS-12-V02,"Health systems public health clinical safety medicines workforce data financing",base,EX-04,5.5,8.5,14,1.5,2.2,3,mixed,5,3.5,medium,M3-M22,standards_integration_not_operator,"FTE 10-14 x 12-15mo; HIE bioethics; no PHI demos; inventory D-HEA"
+study,S-JUS,WS-12-V02,Justice and dispute resolution,base,EX-04,3,5,8.5,0.8,1.3,1.8,mixed,3.5,1.5,medium,M3-M22,standards_integration_not_operator,No central warrant/police DB
+study,S-TAX,WS-12-V02,Tax and public revenue,base,EX-04,2,3.5,6,0.5,0.8,1.2,mixed,2.5,1,medium,M4-M20,hooks_not_tax_authority,
+study,S-FIN,WS-12-V02,"Finance banking insurance systems payments monetary interfaces",base,EX-04,4,7,12,1,1.7,2.5,mixed,4,3,low,M3-M22,standards_not_underwriter,Insurance SYSTEM domain distinct from EX-16
+study,S-MIG,WS-12-V02,"Migration borders residency mobility",base,EX-04,3,5,8.5,0.8,1.4,2,mixed,3.5,1.5,medium,M3-M22,no_global_border_db,
+study,S-ELE,WS-12-V02,Elections and democratic participation,base,EX-04,2.5,4.5,7.5,0.6,1,1.5,mixed,3,1.5,medium,M4-M21,never_binding_elections,
+study,S-SOC,WS-12-V02,"Social protection children disability pensions care",base,EX-04,2.5,4.5,7.5,0.8,1.3,1.8,mixed,3,1.5,medium,M4-M21,no_benefits_authority,
+study,S-HOU,WS-12-V02,"Land housing property communal Indigenous rights",base,EX-04,3,5,8.5,1,1.7,2.5,mixed,3.5,1.5,medium,M3-M22,FPIC_noncentralization,
+study,S-ENE,WS-12-V02,"Energy environment nuclear-accounting boundaries",base,EX-04,2,3.5,6,0.5,0.8,1.2,mixed,2.5,1,medium,M4-M20,nuclear_custody_excluded,
+study,S-MEA,WS-12-V02,"Official statistics measurement public evidence",base,EX-04,2,3.5,6,0.5,0.8,1.2,mixed,2.5,1,medium,M4-M20,not_NSO,
+study,S-COO,WS-12-V02,Coordination and synthesis allowance,base,EX-13,2.5,4,7,0.2,0.35,0.5,cash,0,4,medium,M3-M24,steward,Not equal residual of 32
+study,WS-12-V02,,WS-12 package total v0.2,base,EX-04,32,54,91.5,8,14,20,mixed,32,22,medium,M3-M24,commissioner,Replaces WS-12 32 envelope
+ex02,EX02-HLTH,,Employer health or jurisdictional equivalent,base,EX-02,10.8,11,12,0,0,0,disclosure_plus_gap,0,0.5,medium,M1-M24,employer,10.5 embedded +0.5 gap
+ex02,EX02-DIS,,Disability and life coverage,base,EX-02,3.1,3.3,3.8,0,0,0,disclosure_plus_gap,0,0.3,medium,M1-M24,employer,3.0 embedded
+ex02,EX02-OHS,,Occupational health and safety,base,EX-02,3,3.5,4.5,0,0,0,disclosure_plus_gap,0,1,medium,M1-M24,employer,2.5 embedded
+ex02,EX02-MH,,Mental health wellbeing EAP,base,EX-02,2,2.5,3.5,0,0,0,disclosure_plus_gap,0,1,medium,M1-M24,employer,1.5 embedded
+ex02,EX02-WC,,Workers compensation equivalents,base,EX-02,4,4.2,5,0,0,0,disclosure_plus_gap,0,0.2,medium,M1-M24,employer,Primary WC here
+ex02,EX02-LEAVE,,Leave and statutory benefits,base,EX-02,3.7,4,5,0,0,0,disclosure_plus_gap,0,0.5,medium,M1-M24,employer,3.5 embedded
+ex02,EX02-PAYROLL,,Payroll-linked benefits employment costs,base,EX-02,1.1,1.4,2,0,0,0,disclosure_plus_gap,0,0.5,low,M1-M24,employer,Rest in EX-01/28
+ex02,EX02-DUTY,,Contractor participant duty-of-care,base,EX-02,1,1.5,2.5,0,0,0,cash,0,1.5,medium,M1-M24,steward,NOT in employee load — additive
+ex02,EX02-EMB-TOT,,EX-02 embedded disclosure total,base,EX-02,25.9,25.9,25.9,0,0,0,disclosure,0,0,medium,M1-M24,n/a,Inside personnel-heavy WS — do not add twice
+ex02,EX02-GAP-TOT,,EX-02 gap additive total,base,EX-02,3,5.5,9,0,0,0,cash,0,5.5,medium,M1-M24,n/a,Additive only
+ex16,EX16-DO,,Directors and officers,base,EX-16,0.4,0.8,1.5,0,0,0,cash,0,0.8,low,M1-M24,insured,Quote-required; intentional acts excluded
+ex16,EX16-EO,,Professional indemnity E&O,base,EX-16,0.5,1,2,0,0,0,cash,0,1,low,M1-M24,insured,Quote-required
+ex16,EX16-CYBER,,Cyber and privacy liability,base,EX-16,0.8,1.8,3.5,0,0,0,cash,0,1.8,low,M1-M24,insured,Quote-required
+ex16,EX16-GL,,General liability,base,EX-16,0.2,0.4,0.8,0,0,0,cash,0,0.4,low,M1-M24,insured,Quote-required
+ex16,EX16-EPL,,Employment practices liability,base,EX-16,0.15,0.3,0.6,0,0,0,cash,0,0.3,low,M1-M24,insured,Quote-required
+ex16,EX16-EL,,Employers liability excess WC,base,EX-16,0.2,0.4,0.8,0,0,0,cash,0,0.4,low,M1-M24,insured,Primary WC in EX-02
+ex16,EX16-TRAV,,Travel and fieldwork,base,EX-16,0.3,0.6,1.2,0,0,0,cash,0,0.6,low,M1-M24,insured,Gate for fieldwork
+ex16,EX16-PART,,Event and participant coverage,base,EX-16,0.4,0.9,1.8,0,0,0,cash,0,0.9,low,M1-M24,insured,Gate for multi-party events
+ex16,EX16-DEMO,,Research demonstrator risks,base,EX-16,0.5,1.2,2.5,0,0,0,cash,0,1.2,low,M1-M24,insured,Authoritative/PHI demos prohibited
+ex16,EX16-PROP,,Property and equipment,base,EX-16,0.1,0.25,0.5,0,0,0,cash,0,0.25,low,M1-M24,insured,Quote-required
+ex16,EX16-CLAIMS,,Claims admin deductibles SIR,base,EX-16,0.3,0.6,1.2,0,0,0,cash,0,0.6,low,M1-M24,insured,Cash for deductibles
+ex16,EX16-TOT,,EX-16 total,base,EX-16,4,9,17,0,0,0,cash,0,9,low,M1-M24,insured,Does not eliminate residual risk
+ws_retained,WS-01,,Core multidisciplinary program office,base,EX-01,12,28,55,0,0,0,cash,,,medium,M1-M24,steward,Loaded costs; EX-02 slice disclosed not removed twice
+ws_retained,WS-02,,Constitutional institutional design,base,EX-15,8,16,32,0,0,0,cash,,,medium,M1-M24,steward,
+ws_retained,WS-03,,Human-rights anti-capture,base,EX-14,5,11,22,0,0,0,cash,,,medium,M1-M24,steward,
+ws_retained,WS-04,,System inventory validation,base,EX-04,5,12,24,0,0,0,cash,,,medium,M2-M19,steward,
+ws_retained,WS-05,,Architecture threat modeling,base,EX-05,10,22,45,0,0,0,cash,,,medium,M1-M20,steward,
+ws_retained,WS-06,,Federation operator-network design validation,base,EX-10,7,15,30,0,0,0,cash,,,medium,M4-M21,design_only_not_100_ops,
+ws_retained,WS-07,,Privacy data-governance,base,EX-07,4,10,20,0,0,0,cash,,,medium,M2-M19,steward,
+ws_retained,WS-08,,Security cryptographic research,base,EX-07,7,16,32,0,0,0,cash,,,medium,M2-M21,steward,
+ws_retained,WS-09,,AI governance assurance,base,EX-06,3,9,18,0,0,0,cash,,,medium,M3-M20,steward,
+ws_retained,WS-10,,Identity credential interop design,base,EX-05,4,10,20,0,0,0,cash,,,medium,M3-M20,steward,
+ws_retained,WS-11,,Economic payments accounting tax feasibility,base,EX-04,5,12,24,0,0,0,cash,,,medium,M4-M21,hooks_not_rails,
+ws_replaced,WS-12,,Commissioned domain studies package v0.2,base,EX-04,32,54,91.5,8,14,20,mixed,32,22,medium,M3-M24,commissioner,Replaces 32 envelope
+ws_retained,WS-13,,Jurisdiction institutional consultations,base,EX-11,10,22,48,5,10,18,mixed,,,medium,M2-M24,steward,In-kind J time tracked
+ws_retained,WS-14,,Standards interop planning,base,EX-12,3,8,16,0,0,0,cash,,,medium,M4-M21,steward,
+ws_retained,WS-15,,Accessibility localization nondigital,base,EX-20,4,10,22,0,0,0,cash,,,medium,M3-M22,steward,
+ws_retained,WS-16,,Independent multidisciplinary review panels,base,EX-14,16,34,68,0,0,0,cash,,,medium,M1-M24,independent,
+ws_retained,WS-17,,Controlled non-authoritative demonstrators,base,EX-05,10,24,50,0,0,0,cash,,,medium,M6-M23,steward,Insurance gate EX-16
+ws_retained,WS-18,,Legal entity organizational formation,base,EX-15,6,14,28,0,0,0,cash,,,medium,M1-M24,steward,
+ws_retained,WS-19,,Procurement financial-control setup,base,EX-18,3,7,14,0,0,0,cash,,,medium,M1-M12,steward,
+ws_retained,WS-20,,Cost-model validation RFI actuarial,base,EX-04,4,10,22,0,0,0,cash,,,medium,M6-M23,steward,Quotes for EX-16 studies JP/II
+ws_retained,WS-21,,Public documentation transparency,base,EX-21,2,6,14,0,0,0,cash,,,medium,M1-M24,steward,
+ws_retained,WS-22,,Travel international coordination,base,EX-22,4,10,24,0,0,0,cash,,,medium,M1-M24,steward,
+ws_retained,WS-23,,Grants research civil-society,base,EX-23,12,26,52,0,0,0,cash,,,medium,M2-M24,pass_through,
+ws_adjusted,WS-24,,Program contingency v0.2,base,EX-30,35,65,95,0,0,0,cash,,,medium,M1-M24,steward,~16% of revised work program
+ws_adjusted,WS-25,,Safe-pause continuity reserve v0.2,base,EX-30,28,55,90,0,0,0,cash,,,medium,M1-M24,reserve,Not production continuity 2-4B
+new_line,VAL-EX02-GAP,,Workforce benefits gap EX-02,base,EX-02,3,5.5,9,0,0,0,cash,,,medium,M1-M24,employer,Additive
+new_line,VAL-EX16,,Program insurance liability EX-16,base,EX-16,4,9,17,0,0,0,cash,,,low,M1-M24,insured,Quote-required
+new_line,VAL-EX17,,Banking treasury FX EX-17,base,EX-17,0.5,1,2,0,0,0,cash,,,low,M1-M24,steward,
+new_line,VAL-EX28,,Taxes duties EX-28,base,EX-28,0.5,1,2,0,0,0,cash,,,low,M1-M24,steward,
+new_line,VAL-EX09-GAP,,Facilities equipment gap EX-09,base,EX-09,1,1.5,3,0,0,0,cash,,,low,M1-M24,steward,
+ws_ex_map,MAP-01,WS-01,Personnel primary,base,EX-01,,,,,0,0,0,cash,,,medium,,EX-02 disclosure dimension on same dollars
+ws_ex_map,MAP-02,WS-12-V02,Studies primary,base,EX-04,,,,,0,0,0,cash,,,medium,,
+ws_ex_map,MAP-03,WS-16,Independent panels,base,EX-14,,,,,0,0,0,cash,,,medium,,
+ws_ex_map,MAP-04,WS-15,Accessibility,base,EX-20,,,,,0,0,0,cash,,,medium,,
+ws_ex_map,MAP-05,WS-22,Travel,base,EX-22,,,,,0,0,0,cash,,,medium,,
+ws_ex_map,MAP-06,WS-23,Grants,base,EX-23,,,,,0,0,0,cash,,,medium,,
+ws_ex_map,MAP-07,WS-18,Legal org,base,EX-15,,,,,0,0,0,cash,,,medium,,
+ws_ex_map,MAP-08,WS-17,Demos tech,base,EX-05,,,,,0,0,0,cash,,,medium,,Insurance EX-16 gate
+ws_ex_map,MAP-09,WS-24,Contingency,base,EX-30,,,,,0,0,0,cash,,,medium,,
+ws_ex_map,MAP-10,WS-25,Safe-pause,base,EX-30,,,,,0,0,0,cash,,,medium,,
+ws_ex_map,MAP-11,VAL-EX16,Insurance premiums,base,EX-16,,,,,0,0,0,cash,,,low,,
+ws_ex_map,MAP-12,VAL-EX02-GAP,Benefits gap,base,EX-02,,,,,0,0,0,cash,,,medium,,
+health_5y,H5-SD,,SD-HEA framework existing,base,EX-24,180,280,450,0,0,0,cash,,,medium,5y,framework_only,From doc 11
+health_5y,H5-PLAT,,Shared platform dependencies disclose-only,base,EX-05,0,0,0,0,0,0,disclosure,,,medium,5y,horizontal,Do not add GC-CP again
+health_5y,H5-JPII,,Clinical public-health deployment in JP/II,base,EX-11,1200,1870,3000,800,1200,2000,mixed,,,low,5y,jurisdiction_institution,11% of 17B provisional
+health_5y,H5-IFACE,,Workforce safety medicines data financing interfaces,base,EX-24,50,120,250,20,40,80,mixed,,,low,5y,interfaces_only,Spans validation S-HEA + JP/II
+health_5y,H5-ASR,,Independent clinical privacy safety assurance,base,EX-07,50,100,180,0,0,0,cash,,,low,5y,independent,Quote TBD
+health_5y,H5-UNK,,Still unallocated absent inventory bridges,base,EX-31,0,0,0,0,0,0,unknown,,,low,5y,n/a,Do not invent — track via WS-20/12
+ins_5y,I5-COM,,Commercial insurance systems framework,base,EX-24,80,120,200,0,0,0,cash,,,low,5y,standards_not_underwriter,Prefer carve from SD-FIN/ADD
+ins_5y,I5-HLTH,,Health insurance financing interfaces,base,EX-24,50,80,150,20,40,70,mixed,,,low,5y,interfaces_only,Not claims operator
+ins_5y,I5-SOC,,Social insurance unemployment disability pensions care,base,EX-24,60,100,180,30,50,90,mixed,,,low,5y,interfaces_only,
+ins_5y,I5-AGR,,Agricultural property disaster insurance interfaces,base,EX-24,40,60,120,15,30,50,mixed,,,low,5y,interfaces_only,
+ins_5y,I5-REG,,Licensing solvency claims fraud actuarial consumer-protection requirements,base,EX-04,25,40,80,5,10,20,mixed,,,low,5y,requirements_research,
+ins_5y,I5-JPII,,JP/II insurance systems integration,base,EX-11,400,680,1100,200,350,600,mixed,,,low,5y,local_systems,4% of 17B
+jp_ii,JP-HEA,,Health public health,base,EX-11,1200,1870,3000,800,1200,2000,mixed,,,low,5y,local_majority,stage 20/30/50; shared 15%
+jp_ii,JP-INS,,Insurance systems,base,EX-11,400,680,1100,200,350,600,mixed,,,low,5y,local_majority,stage 25/35/40; shared 20%
+jp_ii,JP-FIN,,Finance banking payments,base,EX-11,900,1360,2200,400,700,1100,mixed,,,low,5y,local_majority,8%
+jp_ii,JP-TAX,,Tax public revenue,base,EX-11,550,850,1400,400,700,1100,mixed,,,low,5y,local_majority,5%
+jp_ii,JP-JUS,,Justice dispute,base,EX-11,650,1020,1700,500,900,1400,mixed,,,low,5y,local_majority,6%
+jp_ii,JP-ELE,,Elections public admin,base,EX-11,550,850,1400,450,800,1200,mixed,,,low,5y,local_majority,5%
+jp_ii,JP-MIG,,Migration residency,base,EX-11,550,850,1400,450,800,1200,mixed,,,low,5y,local_majority,5%
+jp_ii,JP-SOC,,Social protection care,base,EX-11,750,1190,1900,500,900,1400,mixed,,,low,5y,local_majority,7%
+jp_ii,JP-EDU,,Education research,base,EX-11,650,1020,1700,500,900,1400,mixed,,,low,5y,local_majority,6%
+jp_ii,JP-HOU,,Housing land Indigenous,base,EX-11,550,850,1400,450,800,1200,mixed,,,low,5y,local_majority,5%
+jp_ii,JP-ENE,,Energy environment,base,EX-11,550,850,1400,400,700,1100,mixed,,,low,5y,local_majority,5%
+jp_ii,JP-FOO,,Food water,base,EX-11,450,680,1100,350,600,950,mixed,,,low,5y,local_majority,4%
+jp_ii,JP-TRA,,Transport,base,EX-11,450,680,1100,300,550,900,mixed,,,low,5y,local_majority,4%
+jp_ii,JP-EMR,,Emergency humanitarian,base,EX-11,550,850,1400,350,600,950,mixed,,,low,5y,local_majority,5%
+jp_ii,JP-ID,,Identity gov shared at J,base,EX-11,650,1020,1700,300,500,800,mixed,,,low,5y,shared_higher,6%
+jp_ii,JP-OTH,,Other multi-domain residual,base,EX-11,1500,2380,3800,800,1400,2200,mixed,,,low,5y,residual,14%
+decision,D-01,,Replace 446M draft with v0.2 Base 524M,base,,,,,0,0,0,n/a,,,high,,recommended,Increase not retain
+decision,D-02,,Bind EX-16 before multi-party demos fieldwork,base,,,,,0,0,0,n/a,,,high,,gate,Must not start without cover or waiver
+decision,D-03,,Never operate clinical claims insurance underwriting,base,,,,,0,0,0,n/a,,,high,,prohibited,
+decision,D-04,,JP/II production after validation gates + continuity package,base,,,,,0,0,0,n/a,,,high,,gate,Continuity 2-4B separate
+decision,D-05,,Prefer carve SD-INS 120 from FIN/ADD vs inflate 37.5B,base,,,,,0,0,0,n/a,,,medium,,recommended,
+coverage_add,VAL-AUD,,Recurring independent financial audit,base,EX-03,0.5,1.5,3,0,0,0,cash,0,1.5,medium,M1-M24,steward,Beyond WS-19.FIN setup
+coverage_add,VAL-SCR,,Role-based screening safeguarding background checks,base,EX-13,0.3,0.8,1.5,0,0,0,cash,0,0.8,medium,M1-M24,steward,Not universal participant screening
+coverage_add,VAL-EVT,,Convenings consultations events beyond travel,base,EX-22,0.5,1.5,3,0,0,0,cash,0,1.5,medium,M2-M24,grants,Beyond WS-22 travel
+coverage_add,VAL-DISP,,Secure disposal and e-waste handling,base,EX-09,0.2,0.6,1.2,0,0,0,cash,0,0.6,low,M1-M24,steward,Beyond WS-17.HST
+coverage_add,VAL-EMR,,Emergency participant field assistance,base,EX-27,0.5,1.0,2,0,0,0,cash,0,1.0,medium,M1-M24,steward,Defined eligibility not discretionary
+coverage_add,VAL-UTIL,,Utilities and energy for validation compute,base,EX-25,0.2,0.5,1,0,0,0,cash,0,0.5,low,M1-M24,steward,
+coverage_add,VAL-LOSS,,Refunds reversals bad debt loss adjustments,base,EX-29,0.1,0.3,0.8,0,0,0,cash,0,0.3,low,M1-M24,steward,Not EX-29 generic label
+coverage_add,COV-TOTAL,,Coverage adds package,base,,2.3,6.2,12.5,0,0,0,cash,0,6.2,medium,M1-M24,n/a,Contingency and safe-pause unchanged

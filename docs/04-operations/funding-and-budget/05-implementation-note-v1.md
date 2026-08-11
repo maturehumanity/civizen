@@ -12,7 +12,7 @@
    - `finance.approve`
    - `finance.publish`
    - `finance.admin` (administration / allocation override / self-approve exception)
-3. **Legacy capital-ledger and distribution scaffolding is quarantined**, not deleted. Ordinary navigation shows only Budget · Sources · Interest. Ledger · Audit · Compliance · Contributors require `?legacy=1` and are labeled inactive/experimental. They are **not** linked to project finance records.
+3. **Legacy capital-ledger and distribution scaffolding is quarantined**, not deleted. Ordinary navigation shows Budget · Program plan · **Economics** · Overview · Sources · Interest. Ledger · Audit · Compliance · Contributors require `?legacy=1` and are labeled inactive/experimental. They are **not** linked to project finance records.
 4. Approval and publication are separate permissions and separate actions.
 5. An approver cannot approve a budget revision they submitted unless they also hold `finance.admin` (or temporary legacy compat).
 6. Allocation overrides require `finance.admin` (or legacy compat) **and** a recorded reason.
@@ -56,8 +56,17 @@
 ## Entry points
 
 - Internal: `/settings/admin/funding` (default Budget)
+- Program plan: `/settings/admin/funding?section=program-plan` (read-only)
+- Economics: `/settings/admin/funding?section=economics` (read-only commercial scenario planning; `finance.view`; **not** public)
 - Legacy: `/settings/admin/funding?legacy=1`
-- Public: `/fund/project-finance` (last published timestamp + published version required)
+- Public: `/fund/project-finance` (last published timestamp + published version required; **no** Economics)
+
+## Economics page (2026-08-11)
+
+- UI: `FundingEconomicsAdmin` — preservation-first; does not change Budget layout/schema
+- Canonical calc module: `src/lib/funding/economics-model.ts` (+ annual CF data from doc 20)
+- Sources: docs `20`, `22`, `23`, `24`, `27` (model v0.1.2)
+- No migrations, payments, offers, balances, securities, or distribution mechanisms
 
 ## Draft Budget v0.1 (retired demonstration skeleton)
 

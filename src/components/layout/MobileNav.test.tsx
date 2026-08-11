@@ -1,6 +1,6 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { MobileNav } from '@/components/layout/MobileNav';
 import { PageSecondaryNavProvider } from '@/contexts/PageSecondaryNavContext';
@@ -38,7 +38,19 @@ vi.mock('@/contexts/LanguageContext', async () => {
   };
 });
 
+function setScrollY(y: number) {
+  Object.defineProperty(window, 'scrollY', {
+    configurable: true,
+    value: y,
+    writable: true,
+  });
+}
+
 describe('MobileNav', () => {
+  afterEach(() => {
+    setScrollY(0);
+  });
+
   it('shows Home Study Contribute Market Messaging and omits Settings', () => {
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -58,5 +70,34 @@ describe('MobileNav', () => {
       labels.some((label) => button.textContent?.includes(label)),
     );
     expect(buttons.map((button) => button.textContent?.replace(/\s+/g, ' ').trim())).toEqual(labels);
+  });
+
+  it('hides on scroll down and shows again on scroll up', () => {
+    setScrollY(0);
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <PageSecondaryNavProvider>
+          <MobileNav />
+        </PageSecondaryNavProvider>
+      </MemoryRouter>,
+    );
+
+    const nav = screen.getByTestId('mobile-bottom-nav');
+    expect(nav.className).toContain('translate-y-0');
+    expect(nav).toHaveAttribute('aria-hidden', 'false');
+
+    act(() => {
+      setScrollY(120);
+      window.dispatchEvent(new Event('scroll'));
+    });
+    expect(nav.className).toContain('translate-y-[calc(7rem+env(safe-area-inset-bottom,0px))]');
+    expect(nav).toHaveAttribute('aria-hidden', 'true');
+
+    act(() => {
+      setScrollY(40);
+      window.dispatchEvent(new Event('scroll'));
+    });
+    expect(nav.className).toContain('translate-y-0');
+    expect(nav).toHaveAttribute('aria-hidden', 'false');
   });
 });

@@ -1,19 +1,25 @@
 import { motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { NavSecondaryCarousel } from '@/components/layout/NavSecondaryCarousel';
 import { NavSecondaryStrip } from '@/components/layout/NavSecondaryStrip';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePageSecondaryNavContext } from '@/contexts/PageSecondaryNavContext';
+import { useShowOnScrollUp } from '@/hooks/useShowOnScrollUp';
 import { MAIN_NAV_ITEMS, isMainNavItemActive } from '@/lib/main-nav';
+import { cn } from '@/lib/utils';
 
 function matchesSecondaryNavRoute(pathname: string, itemPath: string) {
   return isMainNavItemActive(pathname, itemPath);
 }
 
 const ACTIVE_NAV_DOUBLE_TAP_MS = 400;
+
+/** Clears nav + FAB off-screen (FAB sits above the bar at ~4.15rem). */
+const BOTTOM_CHROME_HIDE_TRANSLATE =
+  'translate-y-[calc(7rem+env(safe-area-inset-bottom,0px))]';
 
 function isSecondaryNavChromeTarget(target: EventTarget | null) {
   return target instanceof Element && Boolean(target.closest('[data-secondary-nav-chrome]'));
@@ -25,7 +31,25 @@ export function MobileNav() {
   const { t } = useLanguage();
   const { config, setCarouselVisible, cancelCarouselHide, scheduleCarouselHide } =
     usePageSecondaryNavContext();
+  const { visible: chromeVisible } = useShowOnScrollUp();
   const lastActiveNavTapRef = useRef<{ path: string; at: number } | null>(null);
+
+  // Hide secondary arc/strip with the bar; restore Market-style persistent carousel on scroll up.
+  useEffect(() => {
+    if (!chromeVisible) {
+      setCarouselVisible(false);
+      return;
+    }
+    if (config?.persistCarousel) {
+      setCarouselVisible(true);
+    }
+  }, [chromeVisible, config?.persistCarousel, setCarouselVisible]);
+
+  const chromeSlideClass = cn(
+    'transition-transform duration-300 ease-out motion-reduce:transition-none',
+    chromeVisible ? 'translate-y-0' : BOTTOM_CHROME_HIDE_TRANSLATE,
+    !chromeVisible && 'pointer-events-none',
+  );
 
   const revealCarouselForActiveItem = (itemPath: string) => {
     if (!config || !matchesSecondaryNavRoute(location.pathname, itemPath)) return;
@@ -67,7 +91,10 @@ export function MobileNav() {
       {config?.fab ? (
         <div
           data-secondary-nav-chrome
-          className="pointer-events-none fixed inset-x-0 bottom-[calc(4.15rem+env(safe-area-inset-bottom,0px))] z-[70] flex justify-center"
+          className={cn(
+            'pointer-events-none fixed inset-x-0 bottom-[calc(4.15rem+env(safe-area-inset-bottom,0px))] z-[70] flex justify-center',
+            chromeSlideClass,
+          )}
           onPointerEnter={cancelCarouselHide}
           onPointerLeave={handleChromePointerLeave}
         >
@@ -85,8 +112,14 @@ export function MobileNav() {
         </div>
       ) : null}
       <nav
+        data-testid="mobile-bottom-nav"
         data-secondary-nav-chrome
-        className={`fixed bottom-0 left-0 right-0 z-50 border-t border-border/50 bg-card/80 backdrop-blur-xl${config?.fab ? ' overflow-visible border-t-0' : ''}`}
+        aria-hidden={!chromeVisible}
+        className={cn(
+          'fixed bottom-0 left-0 right-0 z-50 border-t border-border/50 bg-card/80 backdrop-blur-xl',
+          config?.fab && 'overflow-visible border-t-0',
+          chromeSlideClass,
+        )}
         onPointerEnter={cancelCarouselHide}
         onPointerLeave={handleChromePointerLeave}
       >
