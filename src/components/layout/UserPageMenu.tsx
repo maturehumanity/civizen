@@ -259,6 +259,8 @@ export function UserPageMenu({ size = 'md' }: { size?: 'sm' | 'md' } = {}) {
   ]);
 
   useEffect(() => {
+    if (!open) return;
+
     const handlePointerDown = (event: PointerEvent) => {
       if (!panelRef.current?.contains(event.target as Node)) {
         setOpen(false);
@@ -278,7 +280,49 @@ export function UserPageMenu({ size = 'md' }: { size?: 'sm' | 'md' } = {}) {
       window.removeEventListener('pointerdown', handlePointerDown);
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [open]);
+
+  // Keep page scroll locked while the profile menu is open so mobile swipes
+  // scroll the menu list instead of the underlying page (scroll chaining).
+  useEffect(() => {
+    if (!open) return;
+
+    const scrollY = window.scrollY;
+    const previous = {
+      overflow: document.body.style.overflow,
+      position: document.body.style.position,
+      top: document.body.style.top,
+      width: document.body.style.width,
+      paddingRight: document.body.style.paddingRight,
+    };
+    const scrollbarGap = window.innerWidth - document.documentElement.clientWidth;
+
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    if (scrollbarGap > 0) {
+      document.body.style.paddingRight = `${scrollbarGap}px`;
+    }
+
+    const preventBackgroundTouchMove = (event: TouchEvent) => {
+      const target = event.target as Node | null;
+      if (target && panelRef.current?.contains(target)) return;
+      event.preventDefault();
+    };
+
+    document.addEventListener('touchmove', preventBackgroundTouchMove, { passive: false });
+
+    return () => {
+      document.removeEventListener('touchmove', preventBackgroundTouchMove);
+      document.body.style.overflow = previous.overflow;
+      document.body.style.position = previous.position;
+      document.body.style.top = previous.top;
+      document.body.style.width = previous.width;
+      document.body.style.paddingRight = previous.paddingRight;
+      window.scrollTo(0, scrollY);
+    };
+  }, [open]);
 
   useEffect(() => {
     if (!profile?.id || !open || !linkedAccountsFeatureAvailable) return;
@@ -653,13 +697,14 @@ export function UserPageMenu({ size = 'md' }: { size?: 'sm' | 'md' } = {}) {
         {open && (
           <motion.div
             key="page-list"
+            data-testid="user-page-menu-panel"
             initial={{ opacity: 0, y: -8, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.98 }}
             transition={{ duration: 0.16, ease: 'easeOut' }}
-            className="absolute right-0 top-[calc(100%+8px)] z-50 w-[320px] overflow-hidden rounded-3xl border border-border/70 bg-card/95 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-card/92"
+            className="absolute right-0 top-[calc(100%+8px)] z-50 w-[min(320px,calc(100vw-1.5rem))] max-h-[calc(100dvh-6.5rem)] overflow-y-auto overscroll-contain touch-pan-y rounded-3xl border border-border/70 bg-card/95 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-card/92 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
-            <div className="p-2 pt-2 space-y-2">
+            <div className="space-y-2 p-2 pt-2">
               <div className="rounded-2xl border border-border/60 bg-background/70 px-3 py-2">
                 <div className="space-y-0.5">
                   <div className="flex items-center justify-between gap-2">

@@ -99,6 +99,24 @@ describe('UserPageMenu account switcher', () => {
     expect(screen.getAllByText('Current').length).toBeGreaterThan(0);
   });
 
+  it('locks body scroll and makes the profile panel the scroll container while open', () => {
+    renderMenu();
+
+    fireEvent.click(screen.getByTestId('user-page-menu-trigger'));
+
+    const panel = screen.getByTestId('user-page-menu-panel');
+    expect(panel.className).toMatch(/overflow-y-auto/);
+    expect(panel.className).toMatch(/overscroll-contain/);
+    expect(document.body.style.position).toBe('fixed');
+    expect(document.body.style.overflow).toBe('hidden');
+
+    fireEvent.click(screen.getByTestId('user-page-menu-trigger'));
+
+    expect(screen.queryByTestId('user-page-menu-panel')).not.toBeInTheDocument();
+    expect(document.body.style.position).not.toBe('fixed');
+    expect(document.body.style.overflow).not.toBe('hidden');
+  });
+
   it('places add-business on the Accounts header and opens the create dialog', () => {
     renderMenu();
 

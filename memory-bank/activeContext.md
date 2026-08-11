@@ -2,7 +2,25 @@
 
 ## Current focus
 
+**Profile menu scroll lock (2026-08-10):** Opening Profile no longer scroll-chains to the page behind on mobile/narrow viewports. `UserPageMenu` locks `document.body` while open and uses a max-height `overflow-y-auto` + `overscroll-contain` panel as the scroll target.
+
+**Program financial model v0.1 (2026-08-10):** `docs/04-operations/funding-and-budget/11-program-financial-model-and-funding-responsibility-v0.1.md` + `11-program-financial-model-v0.1.csv` — cost centers, funding responsibility, sector domains, release gates. Bottom-up base ~$37.5B/5y; core primary ~$4.8B; core must raise ~$8.2B. App DB unchanged (amounts 0).
+
+**Five-year ecosystem cost reconciliation v0.1 (2026-08-10):** `10-five-year-ecosystem-cost-reconciliation-v0.1.md` — ~$35B midpoint framing; detailed model in `11`.
+
+**Civilization-scale program framework v0.1 (2026-08-10):** `09` remains authority for capability map and launch gates; ecosystem dollar totals preliminary and deferred to `10`.
+
+**Budget realism audit v0.1 (2026-08-10):** `08-budget-realism-and-scope-audit-v0.1.md` — historical prototype honesty audit; superseded for civilization-scale capitalization by `09`.
+
+**Budget estimate scenarios v0.1 (2026-08-10):** `docs/04-operations/funding-and-budget/07-budget-estimate-scenarios-v0.1.md` — low/base/high USD proposal (base cash ~$226k incl. 15% contingency). Superseded for decision-making by realism audit Cases A/B/C; kept for history.
+
+**Draft Budget v0.1 planning skeleton (2026-08-10):** `docs/04-operations/funding-and-budget/06-initial-working-budget-v0.1.md` — nine expense groups, phase definitions. App seed: draft + `is_demonstration=true` + zero minor units; idempotent SQL `scripts/db/seed-initial-working-budget-v01.sql`.
+
+**Project finance workspace v1 (2026-08-10):** Settings → Funding Budget/Sources; public `/fund/project-finance`. Fine-grained `finance.view|edit|approve|publish|admin` with legacy compat; legacy ledger tabs quarantined behind `?legacy=1`. LANGUAGE_PACK_VERSION 125.
+
 **Documentation IA restructure (2026-08-10):** `docs/` reorganized by purpose (`00-foundation` … `05-research`, plus `proposals/` and `archive/`). Canonical philosophy: `docs/00-foundation/philosophy-of-mature-humanity.md`. Public institutional policies: `docs/02-policies/institutional/`. Pathway: `docs/00-foundation/recognized-planetary-citizenship-pathway.md`. Inventory: `docs/archive/implementation-history/docs-ia-migration-inventory-2026-08-10.md`. Uncommitted Market Jobs form edits left untouched.
+
+**Funding strategy docs (2026-08-10):** Added practical funding guidance under `docs/01-governance/funding-and-monetary/` without selecting a financing model: `funding-and-sustainability-plan.md`, `funding-options.md`, `funding-readiness-roadmap.md`. README separates strategy / current policies / conditional frameworks. Cleanup pass: restored grant-restricted policy as Current Draft; demoted LSP/calculator/distribution docs to Historical / prototype; transparency policy no longer implies fixed pools; crypto remains Conditional/Future · Disabled; open-legal-questions kept short. No application code changes.
 
 **Market Jobs sentence form polish + Production (2026-08-04):** Logged-in users no longer see Worker/Employer tabs (mode from personal vs `biz_*` account). Job-type token cycles seed labels until hover/select; multi-select shows “Baker or Barista” style lists with checks in the dropdown. Location shows city/region plus matching country flag (`RoundCountryFlag`), also beside Full name. Also ships Permissions drag-scroll, ProtectedRoute profile-load gate, and AppPageHeader alignment. **Production v0.1.172** (build 174).
 
