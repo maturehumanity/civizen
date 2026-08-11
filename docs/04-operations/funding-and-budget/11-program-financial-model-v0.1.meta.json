@@ -1,0 +1,25 @@
+{
+  "version": "0.1",
+  "date": "2026-08-10",
+  "currency": "USD",
+  "disclaimer": "Preliminary planning ranges \u2014 not approved budgets, bids, or commitments.",
+  "five_year_low_usd_b": 22.8,
+  "five_year_base_usd_b": 37.51,
+  "five_year_high_usd_b": 60.88,
+  "years_base_usd_b": [
+    3.0,
+    5.25,
+    7.5,
+    9.75,
+    12.0
+  ],
+  "core_must_raise_usd_b": 8.2,
+  "core_primary_responsible_usd_b": 4.8,
+  "reserves_usd_b": 4.0,
+  "domain_frameworks_usd_b": 5.31,
+  "constrained_mid_usd_b": 20.6,
+  "accelerated_mid_usd_b": 87.3,
+  "vs_doc10_midpoint_usd_b": 35.0,
+  "delta_explanation": "+$2.5B vs $35B from explicit sector-domain frameworks without double-counting shared horizontal platform",
+  "line_count": 43
+}

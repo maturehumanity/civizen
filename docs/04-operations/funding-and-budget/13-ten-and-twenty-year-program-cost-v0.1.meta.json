@@ -1,0 +1,42 @@
+{
+  "version": "0.1",
+  "date": "2026-08-10",
+  "currency": "USD",
+  "disclaimer": "Preliminary long-horizon planning ranges \u2014 not budgets, bids, or commitments.",
+  "scenarios": [
+    {
+      "scenario": "constrained",
+      "years_1_5_usd_b": 20.6,
+      "years_6_10_usd_b": 75,
+      "years_11_20_usd_b": 237,
+      "years_1_10_usd_b": 95.6,
+      "years_1_20_usd_b": 332.6,
+      "y6_10_breakdown": "{\"dev\": 18, \"ops\": 25, \"expand_j\": 22, \"assure\": 4, \"reserves\": 6}",
+      "y11_20_breakdown": "{\"dev\": 40, \"ops\": 90, \"expand_j\": 60, \"assure\": 12, \"reserves\": 20, \"replace\": 15}"
+    },
+    {
+      "scenario": "base",
+      "years_1_5_usd_b": 37.5,
+      "years_6_10_usd_b": 160,
+      "years_11_20_usd_b": 585,
+      "years_1_10_usd_b": 197.5,
+      "years_1_20_usd_b": 782.5,
+      "y6_10_breakdown": "{\"dev\": 35, \"ops\": 55, \"expand_j\": 50, \"assure\": 8, \"reserves\": 12}",
+      "y11_20_breakdown": "{\"dev\": 90, \"ops\": 220, \"expand_j\": 160, \"assure\": 30, \"reserves\": 45, \"replace\": 40}"
+    },
+    {
+      "scenario": "accelerated",
+      "years_1_5_usd_b": 87.3,
+      "years_6_10_usd_b": 390,
+      "years_11_20_usd_b": 1430,
+      "years_1_10_usd_b": 477.3,
+      "years_1_20_usd_b": 1907.3,
+      "y6_10_breakdown": "{\"dev\": 80, \"ops\": 120, \"expand_j\": 140, \"assure\": 20, \"reserves\": 30}",
+      "y11_20_breakdown": "{\"dev\": 220, \"ops\": 550, \"expand_j\": 400, \"assure\": 70, \"reserves\": 100, \"replace\": 90}"
+    }
+  ],
+  "post_y5_annual_first_wave_ops_usd_b": "2-5+",
+  "post_y10_annual_ops_indicative_base_usd_b": "12-25",
+  "post_y20_annual_ops_indicative_base_usd_b": "40-90",
+  "method": "Bottom-up from first-wave model + expansion drivers. Not forced to a preset grand total."
+}

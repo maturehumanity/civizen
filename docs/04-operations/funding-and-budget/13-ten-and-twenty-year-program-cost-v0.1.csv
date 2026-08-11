@@ -1,0 +1,4 @@
+scenario,years_1_5_usd_b,years_6_10_usd_b,years_11_20_usd_b,years_1_10_usd_b,years_1_20_usd_b,y6_10_breakdown,y11_20_breakdown
+constrained,20.6,75,237,95.6,332.6,"{""dev"": 18, ""ops"": 25, ""expand_j"": 22, ""assure"": 4, ""reserves"": 6}","{""dev"": 40, ""ops"": 90, ""expand_j"": 60, ""assure"": 12, ""reserves"": 20, ""replace"": 15}"
+base,37.5,160,585,197.5,782.5,"{""dev"": 35, ""ops"": 55, ""expand_j"": 50, ""assure"": 8, ""reserves"": 12}","{""dev"": 90, ""ops"": 220, ""expand_j"": 160, ""assure"": 30, ""reserves"": 45, ""replace"": 40}"
+accelerated,87.3,390,1430,477.3,1907.3,"{""dev"": 80, ""ops"": 120, ""expand_j"": 140, ""assure"": 20, ""reserves"": 30}","{""dev"": 220, ""ops"": 550, ""expand_j"": 400, ""assure"": 70, ""reserves"": 100, ""replace"": 90}"

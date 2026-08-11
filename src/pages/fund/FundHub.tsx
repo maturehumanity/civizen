@@ -5,6 +5,7 @@ import {
   HandCoins,
   HeartHandshake,
   Landmark,
+  PieChart,
   TrendingUp,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -38,6 +39,11 @@ const lanes = [
     key: 'transparency',
     path: '/fund/transparency',
     icon: Eye,
+  },
+  {
+    key: 'projectFinance',
+    path: '/fund/project-finance',
+    icon: PieChart,
   },
 ] as const;
 

@@ -506,7 +506,7 @@ export default function GovernanceAdmin() {
 
   return (
     <AppLayout>
-      <div className="space-y-5 px-4 py-6">
+      <div className="space-y-5 px-4 py-6 pb-24 md:pb-6">
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
           <AppPageHeader
             title={t('governance.title')}

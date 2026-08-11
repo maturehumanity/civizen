@@ -10,12 +10,14 @@ Software architecture, decentralization mechanisms, civic-participation integrat
 | [`decentralization/`](./decentralization/) | Decentralized transition architecture |
 | [`civic-participation/`](./civic-participation/) | Governance integration guide |
 | [`scoring-and-reputation/`](./scoring-and-reputation/) | Score page reorganization + tier implementation |
+| [`product-design/`](./product-design/) | Information architecture and content standards; Funding workspace IA; admin usability audit |
 
 ## Recommended reading order
 
 1. Decentralized transition architecture  
 2. Sovereign architecture (historical reference)  
 3. Score tiers + score page specs when working on `/profile` score UI  
+4. [`product-design/information-architecture-and-content-standards.md`](./product-design/information-architecture-and-content-standards.md) before large Settings/Admin UX changes
 
 ## Related
 

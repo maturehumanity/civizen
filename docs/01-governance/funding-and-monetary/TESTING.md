@@ -1,62 +1,65 @@
-# How to test Civizen funding (interest → ledger → compliance → distribution)
+# How to test Civizen funding
 
-This checklist covers the shipped funding stack through Phase 6 scaffolding.
-**Run this once at the end** after the full planned build — you do not need to re-test after each phase.
+**Status:** Current Draft ops checklist for **interest / ledger / compliance scaffolding**.  
+Not authorization to accept capital. Not authorization of fixed investor/contributor/founder payout formulas.
+
+Prefer: [`funding-and-sustainability-plan.md`](./funding-and-sustainability-plan.md) · [`funding-and-financial-integrity.md`](../../02-policies/institutional/funding-and-financial-integrity.md)
+
+---
 
 ## Prerequisites
 
 - Founder (or admin with `settings.manage` / `role.assign`) logged in for admin screens
-- Dev app at `http://localhost:8080` (or live site if you are validating production)
-- Do **not** treat ledger entries as a live securities offering or donation checkout
+- Dev app at `http://localhost:8080` (or live site if validating production)
+- Do **not** treat ledger entries as a live securities offering or donation/grant checkout
 - Software ledger ≠ legal books; no live KYC/payment processor is wired yet
+- USDT / digital-asset acceptance remains **Disabled**
 
-## A. Public interest paths
+---
 
-1. Open `/fund` — hub with five pathways
+## Current tests (inquiry and classification scaffolding)
+
+### A. Public interest paths
+
+1. Open `/fund` — hub with pathways
 2. Open `/fund/support` — submit a donation interest (name + email; amount optional)
-3. Open `/fund/invest` — submit investor interest (must check risk disclosure)
+3. Open `/fund/invest` — submit investor interest (acknowledge non-offering / risk language)
 4. Open `/fund/institutional` — submit an institutional inquiry
 5. Confirm success message appears (no payment is taken)
 
-## B. Convert inquiry → ledger
+### B. Convert inquiry → ledger
 
 1. Sign in as founder/admin
 2. Settings → **Funding interest**
-3. Find your inquiry → **Add to ledger**
-   - If no amount was indicated, enter one first
+3. Find your inquiry → **Add to ledger** (enter amount first if missing)
 4. Confirm status becomes **Contacted** and “Already converted” appears
 5. Settings → **Funding ledger** — see a **pledged** commitment linked to that inquiry
 
-## C. Mark received + lane filters
+### C. Mark received + lane filters
 
 1. On Funding ledger, set filters (lane / status) and confirm the list updates
 2. Change the commitment status to **Received**
-3. Confirm:
-   - Received totals by lane update
-   - For investor lane, an investor position is created (visible via later calculator / distribution)
+3. Confirm received totals by lane update
 4. Settings → **Funding audit log** — see `interest_converted` and `commitment_status_changed`
 
-## D. Publish transparency
+Note: An “investor position” row, if created by scaffolding when an investor-lane commitment is marked received, is a **classification record only**. It does not create investor rights or authorize pool payouts.
+
+### D. Publish transparency
 
 1. Funding ledger → **Publish totals**
 2. Open `/fund/transparency` (logged out is fine)
-3. Confirm live USD aggregates appear for received lanes
+3. Confirm live USD aggregates appear for received lanes (by class/lane — not fixed pool formulas)
 4. Funding ledger → **Unpublish**
 5. Refresh `/fund/transparency` — back to “not published” placeholders
 
-## E. Manual commitment entry
+### E. Manual commitment entry
 
 1. Funding ledger → **Record commitment**
 2. Create a donation or grant (grant needs restriction code/text)
 3. Save as pledged, then mark received
 4. Export CSV and open the file
 
-## F. Calculator
-
-1. Settings → **Funding calculator**
-2. Keep defaults (or use Constitution example) and confirm investor pool = 10% of LSP
-
-## G. Compliance queue + payment receipts (Phase 5 scaffolding)
+### F. Compliance queue + payment receipts (manual scaffolding)
 
 1. Settings → **Funding compliance** (or Funding ledger → **Compliance**)
 2. Open a compliance case (e.g. KYC or sanctions) linked to a funder/commitment
@@ -65,53 +68,56 @@ This checklist covers the shipped funding stack through Phase 6 scaffolding.
 5. Return to compliance → set case to **Cleared**
 6. Mark commitment received again — should succeed
 7. Record a **payment receipt** (manual/wire) for that commitment
-   - Optionally check “Also mark commitment as received”
-8. Confirm receipt appears in the list and audit log shows `compliance_case_upserted` / `payment_receipt_recorded`
+8. Confirm receipt appears and audit log shows related events
 
-## H. Contributors + distribution periods (Phase 6 scaffolding)
+Receipt recording in admin tools does **not** mean public checkout or live rails are enabled.
 
-1. Settings → **Funding contributors**
-2. Add a contributor profile
-3. Add a verified contribution with points (e.g. 100)
-4. Settings → **Funding distribution**
-5. Create a period (label + date range + LSP amount; keep share caps)
-6. Confirm calculated pools: investor 10%, founder 1%, contributor/servicing/mission residual
-7. **Approve & generate payouts**
-8. **View payouts** — expect investor/contributor proportional rows plus founder, servicing, mission
-9. Audit log should show `distribution_period_created` and `distribution_period_approved`
+---
 
-## I. End-to-end sanity (optional single pass)
+## Historical / prototype tests (not current policy)
+
+The following exercises prototype UIs that may still exist in the product. They encode **retired** LSP percentage-pool assumptions. Running them validates scaffolding only. Results are **not** Civizen financing policy and must not be published as allocation terms.
+
+### H1. Funding calculator (prototype)
+
+1. If a **Funding calculator** admin surface still exists, open it
+2. Confirm it is treated as an internal prototype tool
+3. Do **not** treat any default investor/founder pool percentage of a retired proceeds field as adopted policy
+
+> Note (2026-08-10): current Funding admin sections are interest · ledger · audit · compliance · contributors. A standalone calculator route may already be gone; related math/i18n may still exist in code.
+
+### H2. Contributors + distribution periods (prototype)
+
+1. Settings → **Funding contributors** (still present)
+2. Related library/RPC scaffolding may still create or display distribution-period / pool fields
+3. Do **not** treat investor/founder/contributor/servicing/mission pool splits as authorized allocations
+4. Any approve-payouts action creates software records only — not bank transfers and not policy adoption
+
+### H3. Optional prototype end-to-end
 
 1. Public invest interest → convert → compliance clear → receipt → mark received
-2. Contributor points recorded
-3. Create + approve a small LSP period
-4. Publish transparency briefly, then unpublish
-5. Export interest + ledger CSVs
+2. Optional: prototype contributor points + prototype distribution period
+3. Publish transparency briefly, then unpublish
+4. Export interest + ledger CSVs
 
-## Agent / CI smoke (already run in-session when possible)
+---
+
+## Agent / CI smoke (when relevant)
 
 ```bash
-# Phase 3–4 ledger + transparency
 bash scripts/db/apply-remote-migration.sh scripts/db/test-funding-ledger-smoke.sql
-
-# Phase 5–6 compliance + distribution objects
 bash scripts/db/apply-remote-migration.sh scripts/db/test-funding-compliance-distribution-smoke.sql
-
-# Public RPC + route HTTP checks (dev server must be up)
-# Prefer: export VITE_SUPABASE_URL=... VITE_SUPABASE_ANON_KEY=... (do not blindly source .env.local if passwords break the shell)
 node scripts/test-funding-public-surfaces.mjs
-
-# Unit tests
 npx vitest run src/lib/funding
-
-# Front-end gate after UI work
-npm run verify:post-dev
 ```
+
+Distribution-related smoke scripts may exercise prototype objects. Passing them does not authorize fixed public distribution formulas.
+
+---
 
 ## Known non-goals (not bugs)
 
-- No card/wire/crypto checkout yet (live rails gated on Phase 0 legal)
+- No card/wire/crypto checkout (live rails gated; crypto **Disabled**)
 - No external KYC/AML provider integration yet (manual cases only)
-- Approving a distribution period creates payout **records**, not bank transfers
-- USDT acceptance remains disabled by policy until counsel decides
+- Prototype distribution approvals ≠ bank transfers and ≠ adopted pool policy
 - Software ledger ≠ audited legal books

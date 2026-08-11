@@ -1,0 +1,33 @@
+{
+  "version": "0.1",
+  "date": "2026-08-10",
+  "system_count": 467,
+  "horizontal_count": 106,
+  "domain_count": 361,
+  "first_wave_funding_status_counts": {
+    "partial": 94,
+    "framework-only": 252,
+    "absent": 82,
+    "hidden-in-J-II": 34,
+    "adequate": 5
+  },
+  "architecture_decision_counts": {
+    "standards": 110,
+    "reference": 161,
+    "operate": 44,
+    "leave-to-J": 27,
+    "multi-impl": 22,
+    "federate": 7,
+    "prohibit-global-central": 9,
+    "integrate": 87
+  },
+  "classification_counts": {
+    "shared-core": 99,
+    "integration": 72,
+    "domain-specific": 296
+  },
+  "never_centralize_globally_count": 42,
+  "operate_directly_count": 44,
+  "indicative_first_wave_unfunded_or_weak_usd_b": 9.58,
+  "disclaimer": "Catalog is extensive but not metaphysically complete; expect growth."
+}

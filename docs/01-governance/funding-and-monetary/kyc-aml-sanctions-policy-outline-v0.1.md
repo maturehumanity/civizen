@@ -1,9 +1,9 @@
 # KYC, AML, sanctions, and source-of-funds policy outline v0.1
 
-**Status:** Outline stub  
-**Related:** Funding Constitution §13, §14, §20 item 8  
+**Status:** Current Draft — outline only; subject to legal and institutional review; not operational.  
+**Related:** [`funding-and-financial-integrity.md`](../../02-policies/institutional/funding-and-financial-integrity.md)  
 **Counsel review:** Not started  
-**Product:** No capital acceptance until this policy is counsel-approved and operationally staffed.
+**Product:** No capital acceptance until this policy is counsel-approved and operationally staffed. Digital-asset acceptance remains **Disabled**.
 
 ## Purpose
 

@@ -1,0 +1,26 @@
+workstream_id,name,category,funding_control,low_usd_m,base_usd_m,high_usd_m,duration_months,earliest_start_month,notes
+WS-01,Core multidisciplinary program office & stewardship teams,internal_teams,core,12,28,55,24,1,"Program mgmt, inventory leads, architecture liaison, finance, ops; FTE loaded costs"
+WS-02,Constitutional & institutional design,constitutional_institutional,core,8,16,32,24,1,"Charters, SoD, temporary→mature governance pathway; counsel"
+WS-03,Human-rights & anti-capture safeguards,rights_anti_capture,core,5,11,22,24,1,Rights impact assessments; capture scenarios; complaint design
+WS-04,System-inventory validation campaign (467 entries),inventory_validation,core,5,12,24,18,2,Structured review method; special tracks for operate/never-centralize
+WS-05,Architecture alternatives & threat modeling,architecture_security_research,core,10,22,45,20,1,Federation topologies; adversarial models; alternative analyses
+WS-06,Federation & operator-network design validation,federation_operators,core,7,15,30,18,4,≤10 design-validation operators; independence criteria; no production authority
+WS-07,Privacy & data-governance design,privacy_data,core,4,10,20,18,2,Data classes; cross-border rules; DPIA patterns; minimization
+WS-08,Security & cryptographic research,architecture_security_research,core,7,16,32,20,2,Crypto agility; supply chain; IR drills on demos only
+WS-09,AI governance & assurance frameworks,ai_assurance,core,3,9,18,18,3,Model inventory; HITL; evaluation protocols for Civizen agents
+WS-10,Identity & credential interoperability design,identity_credentials,core,4,10,20,18,3,Interop profiles; no production population binding
+WS-11,"Economic, payments, accounting & taxation feasibility",econ_payments_tax,core,5,12,24,18,4,Hooks vs rails; no real-money custody; tax authority boundaries
+WS-12,Commissioned priority domain studies (10),domain_studies,grant_pass_through,18,32,60,20,3,See doc 15 briefs; published public-interest outputs required
+WS-13,Jurisdiction & institutional consultations,consultations_participation,core,10,22,48,23,2,Sample legal traditions; MoU prep only; in-kind J time tracked separately
+WS-14,Standards & interoperability planning,standards_interop,core,3,8,16,18,4,Conformance suites planning; liaison to SDOs
+WS-15,"Accessibility, localization & nondigital inclusion",a11y_l10n_nondigital,core,4,10,22,20,3,Priority languages; paper/phone/kiosk patterns for demos
+WS-16,Independent multidisciplinary review panels (16),independent_panels,independent,16,34,68,24,1,Ring-fenced; honoraria; secretariat; minority reports preserved
+WS-17,Controlled non-authoritative demonstrators,demonstrators,core,10,24,50,18,6,Synthetic/authorized test data only; safely stoppable; labeled
+WS-18,Legal entity & organizational formation package,legal_org_formation,core,6,14,28,24,1,Core steward; independent bodies; CoI; whistleblower; procurement rules
+WS-19,Procurement & financial-control systems setup,procurement_finance_controls,core,3,7,14,12,1,Multi-entity ledgers design; not loading civilization figures into app DB
+WS-20,Cost-model validation (RFI/quotes/actuarial/benchmarks),cost_model_validation,core,4,10,22,18,6,Challenges 11/12/13 hypotheses; publishes confidence bands
+WS-21,Public documentation & transparency program,public_documentation,core,2,6,14,24,1,Public goods packaging; concept summary; open reports
+WS-22,Travel & international coordination,travel_coordination,core,4,10,24,24,1,Hybrid-first; equity travel fund for Global South participants
+WS-23,Grants to research institutions & civil-society participants,grants_civil_society,grant_pass_through,12,26,52,23,2,Inclusion; community validation; not core P&L spend
+WS-24,Program contingency (policy),contingency,core,18,40,78,24,1,~15–18% of workstreams WS-01..WS-23; drawdown rules
+WS-25,Safe-pause & validation-program continuity reserve,safe_pause_reserve,reserve,22,42,80,24,1,"Wind-down, publish, archive, transfer; NOT the $2–4B production continuity package"

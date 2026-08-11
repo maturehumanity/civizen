@@ -292,6 +292,7 @@ const allPages: PageEntry[] = [
   { name: 'FundInstitutional', path: '/fund/institutional', load: () => import('@/pages/fund/FundInstitutional') },
   { name: 'FundContribute', path: '/fund/contribute', load: () => import('@/pages/fund/FundContribute') },
   { name: 'FundTransparency', path: '/fund/transparency', load: () => import('@/pages/fund/FundTransparency') },
+  { name: 'FundProjectFinance', path: '/fund/project-finance', load: () => import('@/pages/fund/FundProjectFinance') },
   { name: 'PublicDocumentsIndex', path: '/documents', load: () => import('@/pages/institutional/PublicDocumentsIndex') },
   { name: 'InstitutionalDocRoute', path: '/documents/legal-status', routePath: '/documents/:slug', load: () => import('@/pages/institutional/InstitutionalDocRoute') },
   { name: 'Pillars', path: '/settings/pillars', load: () => import('@/pages/settings/Pillars') },

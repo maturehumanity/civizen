@@ -13,9 +13,9 @@ These documents describe **how Civizen governance is modeled**. Adopted public p
 | Participation | [`participation/`](./participation/) | draft / current |
 | Roles & permissions | [`roles-and-permissions/`](./roles-and-permissions/) | draft |
 | Country activation | [`country-activation/`](./country-activation/) | draft |
-| Funding & monetary models | [`funding-and-monetary/`](./funding-and-monetary/) | mostly **superseded** for public policy |
+| Funding & monetary models | [`funding-and-monetary/`](./funding-and-monetary/) | strategy drafts + mostly **superseded** exploratory policy |
 
-> **Public funding copy:** Prefer [`../02-policies/institutional/`](../02-policies/institutional/). The funding pack under `funding-and-monetary/` is retained as historical / exploratory governance material.
+> **Public funding copy:** Prefer [`../02-policies/institutional/`](../02-policies/institutional/). Start funding strategy with [`funding-and-monetary/funding-and-sustainability-plan.md`](./funding-and-monetary/funding-and-sustainability-plan.md). Older financing constitutions, tokenomics, and fixed-pool terms under `funding-and-monetary/` are retained as historical / conditional material — not current public policy.
 
 ## Recommended reading order
 

@@ -47,9 +47,12 @@ type SentenceTokenProps = {
   onOpenChange: (open: boolean) => void;
   ariaLabel: string;
   empty: boolean;
+  /** When false, empty tokens keep the accent color (used for cycling job types). */
+  dimWhenEmpty?: boolean;
   children: ReactNode;
   panel: ReactNode;
   contentClassName?: string;
+  triggerClassName?: string;
   onHoverChange?: (hovered: boolean) => void;
 };
 
@@ -58,9 +61,11 @@ function SentenceToken({
   onOpenChange,
   ariaLabel,
   empty,
+  dimWhenEmpty = true,
   children,
   panel,
   contentClassName,
+  triggerClassName,
   onHoverChange,
 }: SentenceTokenProps) {
   const closeTimerRef = useRef<number | null>(null);
@@ -107,7 +112,8 @@ function SentenceToken({
           aria-expanded={open}
           className={cn(
             'ml-0.5 mr-0.5 inline-flex max-w-[min(22rem,calc(100vw-6rem))] items-center rounded-sm border-b border-dashed border-primary/55 px-0.5 text-left font-medium text-primary transition-colors hover:border-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-            empty && 'text-muted-foreground',
+            empty && dimWhenEmpty && 'text-muted-foreground',
+            triggerClassName,
           )}
           onMouseEnter={() => {
             setHovered(true);
@@ -177,7 +183,7 @@ function CyclingOptionsLabel({
   if (!active || options.length === 0) return <>{fallback}</>;
   const label = options[index % options.length] ?? fallback;
   return (
-    <span className="inline-block min-w-[4.5ch] transition-opacity duration-300" aria-hidden>
+    <span className="inline-block min-w-[4.5ch] font-semibold text-primary transition-opacity duration-300" aria-hidden>
       {label}
     </span>
   );
@@ -433,6 +439,8 @@ export function MarketJobsInterestForm() {
           onHoverChange={setJobHovered}
           ariaLabel={t('market.jobsForm.jobTypeLabel')}
           empty={jobTypes.length === 0}
+          dimWhenEmpty={false}
+          triggerClassName="border-primary/70 font-semibold text-primary hover:bg-primary/15"
           panel={
             <Command>
               <CommandInput
@@ -483,7 +491,7 @@ export function MarketJobsInterestForm() {
           }
         >
           {jobTypes.length > 0 ? (
-            formatEnglishOrList(jobTypes)
+            <span className="font-semibold text-primary">{formatEnglishOrList(jobTypes)}</span>
           ) : (
             <CyclingOptionsLabel
               options={MARKET_JOB_TYPE_SEEDS}

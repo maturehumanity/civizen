@@ -45,6 +45,11 @@ export const APP_PERMISSIONS = [
   'market.manage',
   'role.assign',
   'settings.manage',
+  'finance.view',
+  'finance.edit',
+  'finance.approve',
+  'finance.publish',
+  'finance.admin',
   'like.create',
   'like.delete_self',
 ] as const;

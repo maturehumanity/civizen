@@ -26,7 +26,8 @@ Substantive documents may include YAML front matter (`title`, `status`, `version
 | Read the Philosophy of Mature Humanity | [`00-foundation/philosophy-of-mature-humanity.md`](./00-foundation/philosophy-of-mature-humanity.md) |
 | Understand Civizen governance | [`01-governance/README.md`](./01-governance/README.md) |
 | Review current policies | [`02-policies/README.md`](./02-policies/README.md) · especially [`02-policies/institutional/`](./02-policies/institutional/) |
-| Understand the platform architecture | [`03-platform/README.md`](./03-platform/README.md) |
+| Understand the platform architecture | [`03-platform/README.md`](./03-platform/README.md) · product IA: [`03-platform/product-design/information-architecture-and-content-standards.md`](./03-platform/product-design/information-architecture-and-content-standards.md) |
+| Browse funding & budget planning index | [`04-operations/funding-and-budget/README.md`](./04-operations/funding-and-budget/README.md) |
 | Review research and background | [`05-research/README.md`](./05-research/README.md) |
 | Propose or review a change | [`proposals/README.md`](./proposals/README.md) |
 | Browse historical implementation records | [`archive/README.md`](./archive/README.md) |

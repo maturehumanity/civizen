@@ -158,7 +158,15 @@ export default function Settings() {
   const updateChannelCloseTimerRef = useRef<number | null>(null);
   const installedReleaseLabel = `${APP_VERSION_TAG} (${ANDROID_VERSION_CODE})`;
   const canAccessAdmin = profile
-    ? permissionListHasAny(profile.effective_permissions || [], ['role.assign', 'settings.manage'])
+    ? permissionListHasAny(profile.effective_permissions || [], [
+        'role.assign',
+        'settings.manage',
+        'finance.view',
+        'finance.edit',
+        'finance.approve',
+        'finance.publish',
+        'finance.admin',
+      ])
     : false;
   const [isCivizenOrgAccount, setIsCivizenOrgAccount] = useState(false);
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AlertCircle, Loader2 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -28,6 +28,7 @@ interface GovernanceProgramReadinessScopeCardProps {
   recordingDecision: boolean;
   formatTimestamp: (value: string | null) => string;
   onRecordDecision: (args: { reviewId: string; decision: ActivationReviewDecision; notes: string }) => void;
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
 function statusBadgeClass(status: ActivationThresholdReviewRow['status']) {
@@ -77,16 +78,40 @@ export function GovernanceProgramReadinessScopeCard({
   recordingDecision,
   formatTimestamp,
   onRecordDecision,
+  onDirtyChange,
 }: GovernanceProgramReadinessScopeCardProps) {
   const [decision, setDecision] = useState<ActivationReviewDecision>('approve');
   const [notes, setNotes] = useState('');
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [savedFlash, setSavedFlash] = useState(false);
+
+  useEffect(() => {
+    setDecision('approve');
+    setNotes('');
+    setHistoryOpen(false);
+    setSavedFlash(false);
+    onDirtyChange?.(false);
+    // Reset local form when switching the selected review.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [review.id]);
+
+  const markDirty = (nextDecision: ActivationReviewDecision, nextNotes: string) => {
+    const dirty = nextDecision !== 'approve' || nextNotes.trim().length > 0;
+    onDirtyChange?.(dirty);
+  };
+
+  const saveDisabled = recordingDecision;
 
   return (
     <div className="rounded-xl border border-border/70 bg-card p-3">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <p className="text-sm font-semibold text-foreground">{review.jurisdiction_label || (review.scope_type === 'world' ? 'World' : review.country_code)}</p>
-          <p className="text-xs text-muted-foreground">{review.scope_type === 'world' ? 'World scope' : `Country ${review.country_code}`}</p>
+          <p className="text-sm font-semibold text-foreground">
+            {review.jurisdiction_label || (review.scope_type === 'world' ? 'World' : review.country_code)}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {review.scope_type === 'world' ? 'World scope' : `Country ${review.country_code}`}
+          </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Badge variant="outline" className={statusBadgeClass(review.status)}>
@@ -113,81 +138,114 @@ export function GovernanceProgramReadinessScopeCard({
         </div>
       </div>
 
-      {(latestEvidence || latestDecision) ? (
-        <div className="mt-2 space-y-1 text-xs text-muted-foreground">
-          {latestDecision ? (
-            <p>
-              Latest decision:
-              {' '}
-              <span className="text-foreground">{getActivationDecisionLabel(latestDecision.decision)}</span>
-              {' '}
-              ({formatTimestamp(latestDecision.created_at)})
-            </p>
-          ) : null}
-          {latestEvidence ? (
-            <p>
-              Latest evidence:
-              {' '}
-              <span className="text-foreground">{latestEvidence.evidence_type}</span>
-              {' '}
-              ({formatTimestamp(latestEvidence.created_at)})
-            </p>
-          ) : null}
-        </div>
-      ) : null}
-
-      <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
-        <div className="space-y-2">
-          <Label>Record decision</Label>
-          <div className="grid gap-2 md:grid-cols-[280px_minmax(0,1fr)]">
-            <Select value={decision} onValueChange={(value) => setDecision(value as ActivationReviewDecision)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Decision" />
-              </SelectTrigger>
-              <SelectContent>
-                {READINESS_DECISIONS.map((value) => (
-                  <SelectItem key={value} value={value}>
-                    {getActivationDecisionLabel(value)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Textarea
-              value={notes}
-              onChange={(event) => setNotes(event.target.value)}
-              placeholder="Decision notes"
-              rows={2}
-            />
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-2 sm:flex-row lg:flex-col">
-          <Button
-            type="button"
-            variant="outline"
-            className="gap-2"
-            disabled={recordingDecision}
-            onClick={() =>
-              onRecordDecision({
-                reviewId: review.id,
-                decision,
-                notes,
-              })
-            }
-          >
-            {recordingDecision ? <Loader2 className="h-4 w-4 animate-spin" /> : <AlertCircle className="h-4 w-4" />}
-            Save decision
-          </Button>
-        </div>
-      </div>
-
       {latestDecision ? (
-        <div className="mt-2 flex justify-end">
+        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          <span>
+            Prior decision:{' '}
+            <span className="text-foreground">{getActivationDecisionLabel(latestDecision.decision)}</span>
+            {' '}
+            ({formatTimestamp(latestDecision.created_at)})
+          </span>
           <Badge variant="outline" className={decisionBadgeClass(latestDecision.decision)}>
             {getActivationDecisionLabel(latestDecision.decision)}
           </Badge>
         </div>
-      ) : null}
+      ) : (
+        <p className="mt-2 text-xs text-muted-foreground">No prior decision recorded for this scope.</p>
+      )}
+
+      <div className="mt-2">
+        <Button type="button" size="sm" variant="ghost" className="h-auto px-0 text-xs" onClick={() => setHistoryOpen((v) => !v)}>
+          {historyOpen ? 'Hide decision history' : 'Show decision history'}
+        </Button>
+        {historyOpen ? (
+          <div className="mt-1 space-y-1 rounded-md border border-border/60 bg-muted/20 p-2 text-xs text-muted-foreground">
+            {latestDecision ? (
+              <p>
+                Latest: {getActivationDecisionLabel(latestDecision.decision)} · {formatTimestamp(latestDecision.created_at)}
+                {latestDecision.notes ? ` · ${latestDecision.notes}` : ''}
+              </p>
+            ) : (
+              <p>No history entries loaded for this record.</p>
+            )}
+            {latestEvidence ? (
+              <p>
+                Latest evidence: {latestEvidence.evidence_type} · {formatTimestamp(latestEvidence.created_at)}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+
+      <div className="mt-3 space-y-2 border-t border-border/60 pt-3">
+        <div>
+          <Label>Record decision for this scope</Label>
+          <p className="text-xs text-muted-foreground">
+            Choose an outcome and optional notes, then save. Only this selected record is updated.
+          </p>
+        </div>
+        <div className="grid gap-2 md:grid-cols-[280px_minmax(0,1fr)]">
+          <Select
+            value={decision}
+            onValueChange={(value) => {
+              const next = value as ActivationReviewDecision;
+              setDecision(next);
+              markDirty(next, notes);
+            }}
+          >
+            <SelectTrigger aria-label="Decision">
+              <SelectValue placeholder="Decision" />
+            </SelectTrigger>
+            <SelectContent>
+              {READINESS_DECISIONS.map((value) => (
+                <SelectItem key={value} value={value}>
+                  {getActivationDecisionLabel(value)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Textarea
+            value={notes}
+            onChange={(event) => {
+              const next = event.target.value;
+              setNotes(next);
+              markDirty(decision, next);
+            }}
+            placeholder="Decision notes (optional)"
+            rows={2}
+            aria-label="Decision notes"
+          />
+        </div>
+
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <Button
+            type="button"
+            variant="outline"
+            className="gap-2"
+            disabled={saveDisabled}
+            onClick={() => {
+              onRecordDecision({
+                reviewId: review.id,
+                decision,
+                notes,
+              });
+              setSavedFlash(true);
+              window.setTimeout(() => setSavedFlash(false), 2500);
+            }}
+          >
+            {recordingDecision ? <Loader2 className="h-4 w-4 animate-spin" /> : <AlertCircle className="h-4 w-4" />}
+            Save decision
+          </Button>
+          {saveDisabled ? (
+            <p className="text-xs text-muted-foreground">Save is unavailable while a decision is being recorded.</p>
+          ) : null}
+          {savedFlash && !recordingDecision ? (
+            <p className="text-xs text-emerald-700 dark:text-emerald-400" role="status">
+              Decision submitted. List status refreshes after the server updates.
+            </p>
+          ) : null}
+        </div>
+      </div>
     </div>
   );
 }

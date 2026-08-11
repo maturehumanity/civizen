@@ -1,12 +1,14 @@
 # Donation acceptance policy v0.1
 
-**Status:** Stub / draft  
-**Related:** Funding Constitution §11  
+**Status:** Current Draft — subject to legal and institutional review. Capital acceptance not enabled.  
+**Related:** [`funding-and-financial-integrity.md`](../../02-policies/institutional/funding-and-financial-integrity.md) · [`grant-restricted-funds-policy-v0.1.md`](./grant-restricted-funds-policy-v0.1.md)  
 **Counsel review:** Not started
 
 ## Purpose
 
 Define how Civizen may accept philanthropic support without creating investor rights.
+
+The legal entity or entities capable of receiving donations will be determined through Civizen’s institutional and legal architecture.
 
 ## Core rules
 
@@ -23,6 +25,6 @@ Define how Civizen may accept philanthropic support without creating investor ri
 
 ## Open questions
 
-- Which legal entity issues receipts?
-- Which jurisdictions get tax-language templates?
+- Receiving entity for receipts — see [`open-legal-questions.md`](./open-legal-questions.md)
+- Which jurisdictions get tax-language templates once an entity exists?
 - Public donor wall: opt-in only?

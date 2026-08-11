@@ -166,6 +166,10 @@ export function GovernancePublicAuditVerifierMirrorDirectoryCard({
           </Button>
 
           <Label className="pt-1 text-xs">Record directory attestation</Label>
+          <p className="text-xs text-muted-foreground">
+            Confirm whether a published verifier directory is accepted. This does not publish a new directory.
+            Signer key and attestation signature are required before you can save.
+          </p>
           <Select
             value={attestationDraft.directoryId}
             onValueChange={(value) => setAttestationDraft((current) => ({ ...current, directoryId: value }))}
@@ -219,6 +223,15 @@ export function GovernancePublicAuditVerifierMirrorDirectoryCard({
             {savingDirectoryAttestation ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
             Save attestation
           </Button>
+          {(
+            !attestationDraft.directoryId
+            || !attestationDraft.signerKey.trim()
+            || !attestationDraft.attestationSignature.trim()
+          ) ? (
+            <p className="text-xs text-muted-foreground">
+              Save stays disabled until a directory, signer key, and attestation signature are provided.
+            </p>
+          ) : null}
         </>
       )}
 

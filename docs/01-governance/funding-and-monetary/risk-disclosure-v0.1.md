@@ -1,6 +1,7 @@
 # Superseded document
 
+**Status:** Historical / Superseded — not current policy; not published.
+
 This earlier planning document is not current policy and is no longer published.
 
-Current public policy is available through the Civizen Public Documents index.
-
+Current public policy: [`funding-and-financial-integrity.md`](../../02-policies/institutional/funding-and-financial-integrity.md) · Civizen Public Documents index (`/documents`).

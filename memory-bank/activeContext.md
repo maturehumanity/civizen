@@ -2,9 +2,37 @@
 
 ## Current focus
 
+**Draft Budget v0.1 retirement (2026-08-11):** Safety-checked remote demo (`90a496d2-…`, zeros only, no allocations/commitments/receipts/fees/publications). Hard-deleted via `scripts/db/retire-demo-draft-budget-v01.sql` with audit `budget.demonstration_retired`. Validation intact (`0ef850e3-…`, planned_minor 44600000000). Ordinary selector excludes `is_demonstration`; default = validation. Ordinary seed path refuses recreate; local-only under `scripts/db/local-dev-only/`. Client seed gated (`force` / `VITE_ALLOW_DEMO_BUDGET_SEED`). LANGUAGE_PACK_VERSION 135.
+
+**Budget structure toolbar (2026-08-11):** Single folder icon toggles expand/collapse all (hover Expand/Collapse); `+` icon for Add group (hover label). Removed By group / All line items toggle — nested hierarchy only. LANGUAGE_PACK_VERSION 134.
+
+**Budget hierarchy styling (2026-08-11):** Expense-group rows use semibold name/totals and stronger background; line items use normal weight, deeper indent, muted WS-id + period, quieter child background — styling only. LANGUAGE_PACK_VERSION 134.
+
+**Timeframe UI cleanup (2026-08-11):** Compact expense-table toolbar (no standalone Period row). Period selector removed — canonical model has no periodized amounts, so month-window filters were not honest financial controls; duration shown as `18–24 months` metadata badge. Month 25 was a CSV off-by-one on WS-13/WS-23 (`start=2` + `duration=24`); doc 14 table is M2–M24 — corrected `duration_months` to 23 (amounts unchanged). LANGUAGE_PACK_VERSION 134.
+
+**Financial hierarchy framing (2026-08-11):** Validation budget classified as subprogram (18–24 mo, ~$446M) inside five-year first-wave pathway (~$30–50B / ~$37.5B base) — not Civizen’s complete implementation budget. Program plan primary heading is five-year plan; Budget selector = ordinary non-demonstration budgets (default validation). No $37.5B master ledger row. Schema needs for a future multi-entity five-year master budget documented in funding IA. LANGUAGE_PACK_VERSION 133.
+
+**Period presentation (2026-08-11):** Validation budget shows 18–24 month duration + Period filter (timing-overlap only; full-program planned amounts — no fabricated period cash). Timing column renamed Period; group rows show combined month ranges. Program plan five-year card has Planning period selector (Five-year total / Year 1–5) from canonical annual cashflow. Missing data: validation model has no periodized planned amounts by month window or tranche. LANGUAGE_PACK_VERSION 132.
+
+**Funding Budget upper layout (2026-08-11):** Settings → Funding → Budget compact header — dropdown selector (Active / Demonstration optgroups), status badges, totals strip, primary workflow action + overflow (CSV, New budget, secondary), creation forms hidden until requested, hierarchy immediately below. Funding subtitle shortened; legacy tools only via finance.admin overflow (`?legacy=1` preserved). Presentation only — no finance record/schema/permission/calculation changes. LANGUAGE_PACK_VERSION 131.
+
+**Validation Program draft budget (2026-08-10):** Seeded `Civizen Pre-Major-Build Validation Program v0.1` from doc `14` CSV base scenario — exact planned **$446,000,000.00** (44,600,000,000 minor), 12 groups, 25 lines (WS-01…WS-25), committed/actual 0, draft/unapproved/unpublished, `publish_flag=false`. Preferred / default selection in Settings → Funding → Budget. Idempotent SQL `scripts/db/seed-validation-budget-v01.sql` + TS model/seed. Low/high remain Program Plan only. (Obsolete Draft Budget v0.1 later retired — see 2026-08-11 entry.) LANGUAGE_PACK_VERSION 130.
+
+**Program plan + Budget nesting + phase Timing TBD (2026-08-10):** Settings → Funding adds read-only **Program plan** (`?section=program-plan`) from generated `program-plan-summary-v0.1.json` (Months 1–24 validation + Years 1–5 first wave; long-range behind advanced disclosure). Budget default unchanged; nested expandable expense groups use a **wide hierarchical table** (≥720px panel) and stacked cards only when narrow; timing shows concise **TBD**. Docs `13`/`16`–`19`/`06`/IA updated. Demo budget amounts/approval/public page unchanged. LANGUAGE_PACK_VERSION 129.
+
+**Funding inquiry-readiness package (2026-08-10):** Docs `16`–`19` provisionally approved. `17` §5 records owner decisions D1–D11: validation ask (~$446M base, ~$202–898M range); long-horizon figures as ecosystem hypotheses; `16` for controlled sharing after final review; prospect categories for research (not commitments); receiving entity/fiscal path **unresolved (D6)**; independent assurance mandatory; demo budget stays zeros. No financial records, budget publication, or funding commitments recorded.
+
+**Budget visibility + Program Readiness UX (2026-08-10):** Remote DB confirmed `Civizen Draft Budget v0.1` (draft, demonstration, USD, 9 groups, 22 lines, amounts 0, unpublished). Funding Budget empty/access/load states + demo badges. Governance Program Readiness refactored to summary→list→one detail form; APIs/permissions/rules unchanged. Browser screenshots unavailable.
+
+**Funding IA standards + workspace nav (2026-08-10):** Universal IA standards under `docs/03-platform/product-design/`; Funding Overview section + mobile section picker + Sources work-panel progressive disclosure; funding-and-budget README reindexed. Budget remains default. No finance schema/record changes (demo budget still 0).
+
+**Pre-major-build validation program (2026-08-10):** `14-pre-major-build-validation-program-v0.1.md` + workstreams CSV + `15` panel/study briefs + external concept summary. Bottom-up validation budget ~$202M / ~$446M / ~$898M (18–24 mo); supersedes `11` §7.3 $0.25–0.50B as working total. Inventory and long-horizon costs treated as hypotheses. App DB unchanged (amounts 0).
+
+**System inventory + long-horizon costs (2026-08-10):** `12` (467 systems) and `13` (10y/20y ranges) — structured hypotheses pending validation in `14`. Document `11` is five-year **first-wave** only (~$37.5B), not worldwide completion.
+
 **Profile menu scroll lock (2026-08-10):** Opening Profile no longer scroll-chains to the page behind on mobile/narrow viewports. `UserPageMenu` locks `document.body` while open and uses a max-height `overflow-y-auto` + `overscroll-contain` panel as the scroll target.
 
-**Program financial model v0.1 (2026-08-10):** `docs/04-operations/funding-and-budget/11-program-financial-model-and-funding-responsibility-v0.1.md` + `11-program-financial-model-v0.1.csv` — cost centers, funding responsibility, sector domains, release gates. Bottom-up base ~$37.5B/5y; core primary ~$4.8B; core must raise ~$8.2B. App DB unchanged (amounts 0).
+**Program financial model v0.1 (2026-08-10):** `docs/04-operations/funding-and-budget/11-program-financial-model-and-funding-responsibility-v0.1.md` + `11-program-financial-model-v0.1.csv` — cost centers, funding responsibility, sector domains, release gates. Bottom-up base ~$37.5B/5y **first wave**; core primary ~$4.8B; core must raise ~$8.2B. App DB unchanged (amounts 0).
 
 **Five-year ecosystem cost reconciliation v0.1 (2026-08-10):** `10-five-year-ecosystem-cost-reconciliation-v0.1.md` — ~$35B midpoint framing; detailed model in `11`.
 
@@ -14,7 +42,7 @@
 
 **Budget estimate scenarios v0.1 (2026-08-10):** `docs/04-operations/funding-and-budget/07-budget-estimate-scenarios-v0.1.md` — low/base/high USD proposal (base cash ~$226k incl. 15% contingency). Superseded for decision-making by realism audit Cases A/B/C; kept for history.
 
-**Draft Budget v0.1 planning skeleton (2026-08-10):** `docs/04-operations/funding-and-budget/06-initial-working-budget-v0.1.md` — nine expense groups, phase definitions. App seed: draft + `is_demonstration=true` + zero minor units; idempotent SQL `scripts/db/seed-initial-working-budget-v01.sql`.
+**Draft Budget v0.1 planning skeleton (2026-08-10):** `docs/04-operations/funding-and-budget/06-initial-working-budget-v0.1.md` — nine expense groups, phase definitions. Originally seeded as draft + `is_demonstration=true` + zero minor units; **retired from ordinary remote use** (see 2026-08-11 entry). Explicit local-only seed under `scripts/db/local-dev-only/`.
 
 **Project finance workspace v1 (2026-08-10):** Settings → Funding Budget/Sources; public `/fund/project-finance`. Fine-grained `finance.view|edit|approve|publish|admin` with legacy compat; legacy ledger tabs quarantined behind `?legacy=1`. LANGUAGE_PACK_VERSION 125.
 

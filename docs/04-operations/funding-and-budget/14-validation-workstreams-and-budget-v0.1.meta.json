@@ -1,0 +1,20 @@
+{
+  "version": "0.1",
+  "date": "2026-08-10",
+  "currency": "USD",
+  "horizon_months": "18-24",
+  "disclaimer": "Bottom-up planning ranges for pre-major-build validation only. Not verified quotes. Not an approved budget. Supersedes 11 \u00a77.3 $0.25\u20130.50B as working hypothesis pending this validation.",
+  "totals_usd_m": {
+    "low": 202,
+    "base": 446,
+    "high": 898
+  },
+  "by_funding_control_base_usd_m": {
+    "core": 312,
+    "independent": 34,
+    "grant_pass_through": 58,
+    "reserve": 42
+  },
+  "prior_11_section_7_3_hypothesis_usd_b": "0.25-0.50",
+  "relationship": "Document 14 recalculates without forcing the prior band; overlap is coincidental if any."
+}

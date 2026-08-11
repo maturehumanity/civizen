@@ -1,7 +1,7 @@
 # Sponsorship policy v0.1
 
-**Status:** Stub / draft  
-**Related:** Funding Constitution §3 (Sponsorships lane)  
+**Status:** Current Draft — subject to legal and institutional review.  
+**Related:** [`funding-and-financial-integrity.md`](../../02-policies/institutional/funding-and-financial-integrity.md)  
 **Counsel review:** Not started
 
 ## Purpose

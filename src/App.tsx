@@ -34,6 +34,7 @@ const FundInvest = lazyWithChunkReload(() => import('@/pages/fund/FundInvest'));
 const FundInstitutional = lazyWithChunkReload(() => import('@/pages/fund/FundInstitutional'));
 const FundContribute = lazyWithChunkReload(() => import('@/pages/fund/FundContribute'));
 const FundTransparency = lazyWithChunkReload(() => import('@/pages/fund/FundTransparency'));
+const FundProjectFinance = lazyWithChunkReload(() => import('@/pages/fund/FundProjectFinance'));
 const PublicDocumentsIndex = lazyWithChunkReload(() => import('@/pages/institutional/PublicDocumentsIndex'));
 const InstitutionalDocRoute = lazyWithChunkReload(() => import('@/pages/institutional/InstitutionalDocRoute'));
 const Features = lazyWithChunkReload(() => import('@/pages/Features'));
@@ -234,6 +235,7 @@ const App = () => (
                   <Route path="/fund/institutional" element={<FundInstitutional />} />
                   <Route path="/fund/contribute" element={<FundContribute />} />
                   <Route path="/fund/transparency" element={<FundTransparency />} />
+                  <Route path="/fund/project-finance" element={<FundProjectFinance />} />
                   <Route path="/terms" element={<TermsOfUse />} />
                   <Route path="/documents" element={<PublicDocumentsIndex />} />
                   <Route path="/documents/:docSlug" element={<InstitutionalDocRoute />} />
@@ -423,30 +425,40 @@ const App = () => (
                   <Route
                     path="/settings/admin/funding"
                     element={
-                      <ProtectedRoute requiredPermissions={['role.assign', 'settings.manage']}>
+                      <ProtectedRoute
+                        requiredPermissions={[
+                          'finance.view',
+                          'finance.edit',
+                          'finance.approve',
+                          'finance.publish',
+                          'finance.admin',
+                          'role.assign',
+                          'settings.manage',
+                        ]}
+                      >
                         <FundingAdmin />
                       </ProtectedRoute>
                     }
                   />
                   <Route
                     path="/settings/admin/funding-interest"
-                    element={<Navigate to="/settings/admin/funding" replace />}
+                    element={<Navigate to="/settings/admin/funding?section=interest" replace />}
                   />
                   <Route
                     path="/settings/admin/funding-ledger"
-                    element={<Navigate to="/settings/admin/funding?section=ledger" replace />}
+                    element={<Navigate to="/settings/admin/funding?section=ledger&legacy=1" replace />}
                   />
                   <Route
                     path="/settings/admin/funding-audit"
-                    element={<Navigate to="/settings/admin/funding?section=audit" replace />}
+                    element={<Navigate to="/settings/admin/funding?section=audit&legacy=1" replace />}
                   />
                   <Route
                     path="/settings/admin/funding-compliance"
-                    element={<Navigate to="/settings/admin/funding?section=compliance" replace />}
+                    element={<Navigate to="/settings/admin/funding?section=compliance&legacy=1" replace />}
                   />
                   <Route
                     path="/settings/admin/funding-contributors"
-                    element={<Navigate to="/settings/admin/funding?section=contributors" replace />}
+                    element={<Navigate to="/settings/admin/funding?section=contributors&legacy=1" replace />}
                   />
                   <Route
                     path="/settings/market/luma-credits"
