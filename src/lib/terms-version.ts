@@ -18,7 +18,14 @@ export const TERMS_RECONSENT_ALLOWED_PATHS = [
   '/reset-password',
 ] as const;
 
-export type TermsReconsentGateDecision = 'pass-through' | 'wait-for-profile' | 'show-reconsent';
+export type TermsReconsentGateDecision =
+  | 'pass-through'
+  | 'wait-for-profile'
+  | 'profile-unavailable'
+  | 'show-reconsent';
+
+/** Max time to wait for the first profile row before offering sign-out recovery. */
+export const PROFILE_LOAD_WAIT_MS = 10_000;
 
 export function hasAcceptedCurrentTerms(termsVersion: string | null | undefined): boolean {
   return termsVersion === TERMS_ACCEPTANCE_VERSION;
@@ -52,11 +59,19 @@ export function resolveTermsReconsentGate(input: {
   loading: boolean;
   hasUser: boolean;
   profileLoaded: boolean;
+  /** True when a profile refresh finished without a usable profile row. */
+  profileLoadFailed?: boolean;
+  /** True when waiting for profile exceeded PROFILE_LOAD_WAIT_MS. */
+  profileLoadTimedOut?: boolean;
   termsVersion: string | null | undefined;
   pathname: string;
 }): TermsReconsentGateDecision {
   if (input.loading || !input.hasUser) {
     return 'pass-through';
+  }
+
+  if (input.profileLoadFailed || input.profileLoadTimedOut) {
+    return 'profile-unavailable';
   }
 
   if (!input.profileLoaded) {

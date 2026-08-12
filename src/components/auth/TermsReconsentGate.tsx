@@ -1,6 +1,6 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FileText, Loader2 } from 'lucide-react';
+import { AlertTriangle, FileText, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { loadSupabaseClient } from '@/integrations/supabase/load-client';
 import {
+  PROFILE_LOAD_WAIT_MS,
   TERMS_ACCEPTANCE_VERSION,
   buildTermsAcceptanceProfilePatch,
   resolveTermsReconsentGate,
@@ -20,21 +21,41 @@ type TermsReconsentGateProps = {
 /**
  * Blocks protected app surfaces until the signed-in profile has affirmatively
  * accepted the current Terms version. Allowed legal/support paths still render.
+ *
+ * Also recovers when a session exists but the profile row never loads — without
+ * this, AuthRedirect sends /login and /signup back to Home and the user is stuck
+ * on an infinite Loading state.
  */
 export function TermsReconsentGate({ children }: TermsReconsentGateProps) {
-  const { user, profile, loading, signOut, refreshProfile } = useAuth();
+  const { user, profile, loading, profileLoadFailed, signOut, refreshProfile } = useAuth();
   const location = useLocation();
   const { t } = useLanguage();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [profileLoadTimedOut, setProfileLoadTimedOut] = useState(false);
 
   const decision = resolveTermsReconsentGate({
     loading,
     hasUser: Boolean(user),
     profileLoaded: Boolean(profile),
+    profileLoadFailed,
+    profileLoadTimedOut,
     termsVersion: profile?.terms_version,
     pathname: location.pathname,
   });
+
+  useEffect(() => {
+    if (decision !== 'wait-for-profile') {
+      setProfileLoadTimedOut(false);
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setProfileLoadTimedOut(true);
+    }, PROFILE_LOAD_WAIT_MS);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [decision]);
 
   if (decision === 'pass-through') {
     return <>{children}</>;
@@ -44,6 +65,62 @@ export function TermsReconsentGate({ children }: TermsReconsentGateProps) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-pulse-soft text-muted-foreground">{t('common.loading')}</div>
+      </div>
+    );
+  }
+
+  if (decision === 'profile-unavailable') {
+    const retry = async () => {
+      setSubmitting(true);
+      setError(null);
+      setProfileLoadTimedOut(false);
+      try {
+        await refreshProfile();
+      } catch (err) {
+        console.error('Failed to reload profile:', err);
+        setError(t('terms.profileLoadError'));
+      } finally {
+        setSubmitting(false);
+      }
+    };
+
+    const leave = async () => {
+      setSubmitting(true);
+      setError(null);
+      try {
+        await signOut();
+      } catch (err) {
+        console.error('Failed to sign out after profile load failure:', err);
+        setError(t('terms.profileLoadError'));
+        setSubmitting(false);
+      }
+    };
+
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background px-4 py-10">
+        <Card className="w-full max-w-md rounded-3xl border-border/70 bg-card p-6 shadow-sm">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
+              <AlertTriangle className="h-6 w-6" />
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-xl font-display font-bold text-foreground">{t('terms.profileLoadTitle')}</h1>
+              <p className="text-sm text-muted-foreground">{t('terms.profileLoadDescription')}</p>
+            </div>
+          </div>
+
+          {error ? <p className="mt-4 text-sm text-destructive">{error}</p> : null}
+
+          <div className="mt-6 flex flex-col gap-3">
+            <Button type="button" disabled={submitting} onClick={() => void retry()}>
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              {t('terms.profileLoadRetry')}
+            </Button>
+            <Button type="button" variant="outline" disabled={submitting} onClick={() => void leave()}>
+              {t('terms.profileLoadSignOut')}
+            </Button>
+          </div>
+        </Card>
       </div>
     );
   }

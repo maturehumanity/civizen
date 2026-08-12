@@ -2,9 +2,17 @@
 
 ## Current focus
 
+**Web login/signup lockout fix (2026-08-11):** Session could succeed while `profiles` fetch failed/hung; `TermsReconsentGate` waited forever on Loading, and `AuthRedirect` bounced `/login` + `/signup` to `/` — Login/Sign up looked dead. Root cause since Terms re-consent **2026-07-30**; more visible after **2026-08-03** auth no longer gated on profile. Fix: `profileLoadFailed` + 10s timeout recovery (Retry / Sign out); Login/SignUp submit try/finally. LANGUAGE_PACK_VERSION 141.
+
+**Validation Budget v0.3 Recommended applied (2026-08-11):** Owner selected Recommended Validation Program from decision pack `33`. New app draft **Civizen Pre-Major-Build Validation Program v0.3** — exact Base **$634,400,000.00** (~$634M); same-scope Low/High ~**$552.4M / $833.2M**. Direct **$489.5M** + contingency **$78.3M** + safe-pause **$66.6M**. 13 groups / 53 lines (WS-15 $18M; VAL-EX16 $12M quote-dependent; WS-22 $11.5M corrected travel). Draft/unapproved/unpublished; committed/actual 0; public flags false. v0.1 ($446M) and v0.2 ($530.2M) preserved as superseded/historical; primary selector excludes superseded. Constrained ~$374M / Expanded ~$1.03B documented as **different scopes**. Tranches in Program plan/docs (T1 ~$132M; provisional escrow floor $60M) — not a Budget table dashboard. Economics model **0.1.6** restricted-validation = exact v0.3 Base; FPP **$14.7M** / eligible **$1,470M** unchanged; founder accrued only. Receiving-entity path unresolved — do not accept funds. LANGUAGE_PACK **140**.
+
+**Scope/priority/tranche decision pack (2026-08-11):** Doc `33` + CSV — Recommended case **selected and applied** as Validation Budget v0.3. Separates Constrained / Recommended / Expanded scope from same-scope unit-cost L/B/H. Corrects WS-22 travel math.
+
+**Line-adequacy audit v0.2 (2026-08-11):** Doc `32` + CSV — analysis only. Adequacy stress ~$662M superseded as recommended Base by doc `33` after travel-math correction.
+
 **Live + Testing v0.1.176 (2026-08-11):** Build 178 (`20260811-v0.1.176`) published to Testing and Live. Includes bottom-nav hide-on-scroll, Funding Economics page, Validation Budget v0.2 draft model/docs, and capital/participation planning pack.
 
-**Validation Budget v0.2 coverage adds applied (2026-08-11):** Exact Base **$530,200,000.00** (~$530M externally); Low/High ~$438.3M/~$654.5M. Seven additive lines (VAL-AUD/SCR/EVT/DISP/EMR/UTIL/LOSS = +$6.2M). Contingency **$65M** and safe-pause **$55M** unchanged (formula would imply +~$0.6M/+~$0.8M — reported, not applied). Prior **$524M** and **$446M** retained as superseded estimates. Draft/unapproved/unpublished. FPP **$14.7M** / eligible **$1,470M** unchanged. Economics model **0.1.5**; LANGUAGE_PACK **139**.
+**Validation Budget v0.2 coverage adds (historical, 2026-08-11):** Exact Base **$530,200,000.00** — superseded as working draft by v0.3; retained historically. Prior **$524M** and **$446M** also retained. FPP **$14.7M** / eligible **$1,470M** unchanged through v0.3.
 
 **Bottom nav hide-on-scroll (2026-08-11):** `MobileNav` uses `useShowOnScrollUp` — hide bottom bar (+ FAB) on scroll down, show on scroll up so long pages gain viewport on mobile. Secondary arc/strip closes while hidden; Market `persistCarousel` restores on scroll up. Spec: `nav-secondary-carousel.md` § Behavior.
 

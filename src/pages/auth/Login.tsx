@@ -37,13 +37,19 @@ export default function Login() {
     setLoading(true);
     setError(null);
 
-    const { error } = await signIn(identifier, password);
+    try {
+      const { error } = await signIn(identifier, password);
 
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-    } else {
+      if (error) {
+        setError(error.message);
+        return;
+      }
+
       navigate('/');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Sign in failed');
+    } finally {
+      setLoading(false);
     }
   };
 

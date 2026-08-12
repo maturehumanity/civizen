@@ -87,6 +87,8 @@ interface AuthContextType {
   session: Session | null;
   profile: Profile | null;
   loading: boolean;
+  /** Session exists but the latest profile refresh returned no usable row. */
+  profileLoadFailed: boolean;
   signUp: (
     credentials: {
       email?: string;
@@ -135,12 +137,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileLoadFailed, setProfileLoadFailed] = useState(false);
   const [accountSessionMap, setAccountSessionMap] = useState<Record<string, StoredAccountSession>>(() => readStoredSessionMap());
   const [accountSwitchStack, setAccountSwitchStack] = useState<StoredAccountSession[]>(() => readStoredSwitchStack());
   const supportsLastActiveRef = useRef(true);
   const profileRefreshInFlightRef = useRef<Promise<Profile | null> | null>(null);
   const lastProfileRefreshAtRef = useRef(0);
   const lastProfileTouchAtRef = useRef(0);
+  const profileRef = useRef<Profile | null>(null);
+  profileRef.current = profile;
 
   const knownAccountSessions = useMemo(
     () =>
@@ -362,6 +367,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Publish profile immediately so ProtectedRoute / Home can paint.
         // Messaging key bootstrap is unrelated to auth readiness.
         setProfile(profileData);
+        setProfileLoadFailed(false);
         if (permissionListHasAny(profileData.effective_permissions || [], ['message.create'])) {
           void (async () => {
             try {
@@ -375,6 +381,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
           })();
         }
+      } else if (!profileRef.current) {
+        // No profile to paint yet — surface failure so TermsReconsentGate can
+        // offer Retry / Sign out instead of waiting forever (login/signup lockout).
+        setProfileLoadFailed(true);
       }
       return profileData;
     })();
@@ -391,7 +401,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshProfile = useCallback(async () => {
     if (user) {
-      await refreshProfileForUser(user.id);
+      setProfileLoadFailed(false);
+      await refreshProfileForUser(user.id, true);
     }
   }, [refreshProfileForUser, user]);
 
@@ -416,6 +427,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             );
           } else if (event === 'SIGNED_OUT') {
             clearAccountSwitchState();
+            setProfileLoadFailed(false);
           }
 
           // INITIAL_SESSION is handled by getSession below to avoid a double
@@ -425,6 +437,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             event === 'USER_UPDATED';
 
           if (currentSession?.user && shouldRefreshProfile) {
+            setProfileLoadFailed(false);
             void refreshProfileForUser(currentSession.user.id, true).finally(() => {
               if (active) setLoading(false);
             });
@@ -432,6 +445,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (active) setLoading(false);
           } else {
             setProfile(null);
+            setProfileLoadFailed(false);
             if (active) setLoading(false);
           }
         }
@@ -793,6 +807,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setSession(null);
     setProfile(null);
+    setProfileLoadFailed(false);
     persistAccountSessionMap({});
     clearAccountSwitchState();
   };
@@ -804,6 +819,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         session,
         profile,
         loading,
+        profileLoadFailed,
         signUp,
         signIn,
         signInWithBiometrics,

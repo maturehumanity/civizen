@@ -75,6 +75,44 @@ describe('terms-version', () => {
     ).toBe('show-reconsent');
   });
 
+  it('surfaces profile-unavailable when the profile row never loads', () => {
+    expect(
+      resolveTermsReconsentGate({
+        loading: false,
+        hasUser: true,
+        profileLoaded: false,
+        profileLoadFailed: true,
+        termsVersion: undefined,
+        pathname: '/',
+      }),
+    ).toBe('profile-unavailable');
+
+    expect(
+      resolveTermsReconsentGate({
+        loading: false,
+        hasUser: true,
+        profileLoaded: false,
+        profileLoadTimedOut: true,
+        termsVersion: undefined,
+        pathname: '/',
+      }),
+    ).toBe('profile-unavailable');
+  });
+
+  it('waits for profile only while a load is still in progress', () => {
+    expect(
+      resolveTermsReconsentGate({
+        loading: false,
+        hasUser: true,
+        profileLoaded: false,
+        profileLoadFailed: false,
+        profileLoadTimedOut: false,
+        termsVersion: undefined,
+        pathname: '/',
+      }),
+    ).toBe('wait-for-profile');
+  });
+
   it('passes through when the current version is accepted', () => {
     expect(
       resolveTermsReconsentGate({

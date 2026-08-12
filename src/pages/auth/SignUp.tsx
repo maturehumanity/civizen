@@ -98,30 +98,36 @@ export default function SignUp() {
 
     setLoading(true);
 
-    const { error } = await signUp({
-      email: trimmedEmail || undefined,
-      phoneNumber: trimmedPhone || undefined,
-      phoneCountryCode: latestPhoneCountry.dialCode || undefined,
-    }, password, {
-      full_name: fullName || undefined,
-      date_of_birth: dateOfBirth || undefined,
-      country: country || undefined,
-      country_code: selectedCountryCode || undefined,
-      language_code: preferredLanguage,
-      phone_country_code: latestPhoneCountry.dialCode || undefined,
-      phone_number: trimmedPhone || undefined,
-      terms_accepted_at: new Date().toISOString(),
-      terms_version: TERMS_ACCEPTANCE_VERSION,
-      terms_acceptance_method: 'signup',
-    });
+    try {
+      const { error } = await signUp({
+        email: trimmedEmail || undefined,
+        phoneNumber: trimmedPhone || undefined,
+        phoneCountryCode: latestPhoneCountry.dialCode || undefined,
+      }, password, {
+        full_name: fullName || undefined,
+        date_of_birth: dateOfBirth || undefined,
+        country: country || undefined,
+        country_code: selectedCountryCode || undefined,
+        language_code: preferredLanguage,
+        phone_country_code: latestPhoneCountry.dialCode || undefined,
+        phone_number: trimmedPhone || undefined,
+        terms_accepted_at: new Date().toISOString(),
+        terms_version: TERMS_ACCEPTANCE_VERSION,
+        terms_acceptance_method: 'signup',
+      });
 
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-    } else {
+      if (error) {
+        setError(error.message);
+        return;
+      }
+
       setSuccessContactLabel(trimmedEmail || `${latestPhoneCountry.dialCode}${normalizedPhoneDigits}` || trimmedPhone);
       setSuccessWasPhone(!trimmedEmail);
       setSuccess(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not create account');
+    } finally {
+      setLoading(false);
     }
   };
 
