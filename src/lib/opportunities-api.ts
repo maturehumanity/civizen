@@ -5,13 +5,18 @@ import {
   mapOpportunityEvaluation,
   mapOpportunityEvidence,
   mapOpportunityParticipation,
+  mapOpportunityWorkAssessment,
   toOpportunityPayloadJson,
+  workAssessmentScoresPayload,
   type ContributionOpportunity,
+  type EvaluationDimension,
   type OpportunityApplicantIdentity,
   type OpportunityEvaluation,
   type OpportunityEvidence,
   type OpportunityParticipation,
   type OpportunityPayload,
+  type OpportunityWorkAssessment,
+  type OpportunityWorkAssessmentScores,
 } from '@/lib/opportunities';
 
 type DbClient = typeof supabase;
@@ -86,6 +91,7 @@ export async function listOpenOpportunities(
     .from('contribution_opportunities')
     .select('*')
     .eq('status', 'open')
+    .eq('opportunity_kind', 'education_to_contribution')
     .order('created_at', { ascending: false });
   if (error) throw new Error(rpcErrorMessage(error));
   return asRows(data).map((row) => mapContributionOpportunity(row));
@@ -100,6 +106,7 @@ export async function listManagedOpportunities(
     .from('contribution_opportunities')
     .select('*')
     .in('publisher_profile_id', publisherProfileIds)
+    .eq('opportunity_kind', 'education_to_contribution')
     .order('updated_at', { ascending: false });
   if (error) throw new Error(rpcErrorMessage(error));
   return asRows(data).map((row) => mapContributionOpportunity(row));
@@ -198,6 +205,33 @@ export async function listParticipationEvaluations(
     .order('created_at', { ascending: false });
   if (error) throw new Error(rpcErrorMessage(error));
   return asRows(data).map((row) => mapOpportunityEvaluation(row));
+}
+
+export async function listWorkAssessmentsForParticipations(
+  participationIds: readonly string[],
+  client: DbClient = supabase,
+): Promise<OpportunityWorkAssessment[]> {
+  if (participationIds.length === 0) return [];
+  const { data, error } = await db(client)
+    .from('opportunity_work_assessments')
+    .select('*')
+    .in('participation_id', participationIds);
+  if (error) throw new Error(rpcErrorMessage(error));
+  return asRows(data).map((row) => mapOpportunityWorkAssessment(row));
+}
+
+export async function getOpportunityWorkAssessment(
+  participationId: string,
+  client: DbClient = supabase,
+): Promise<OpportunityWorkAssessment | null> {
+  const { data, error } = await db(client)
+    .from('opportunity_work_assessments')
+    .select('*')
+    .eq('participation_id', participationId)
+    .maybeSingle();
+  if (error) throw new Error(rpcErrorMessage(error));
+  const row = asRecord(data);
+  return row ? mapOpportunityWorkAssessment(row) : null;
 }
 
 export {
@@ -357,4 +391,31 @@ function optionalEvaluationScore(value?: number | null): number | null {
     throw new Error('invalid_evaluation_score');
   }
   return value;
+}
+
+export async function recordOpportunityWorkAssessment(
+  args: {
+    participationId: string;
+    scores: OpportunityWorkAssessmentScores;
+    dimensions: readonly EvaluationDimension[];
+    notes?: string | null;
+  },
+  client: DbClient = supabase,
+): Promise<string> {
+  const payload = workAssessmentScoresPayload(args.scores, args.dimensions);
+  for (const value of Object.values(payload)) {
+    optionalEvaluationScore(value);
+  }
+  if (Object.keys(payload).length === 0 && !args.notes?.trim()) {
+    throw new Error('evaluation_empty');
+  }
+  return rpcId(
+    'record_opportunity_work_assessment',
+    {
+      p_participation_id: args.participationId,
+      p_scores: payload,
+      p_notes: args.notes?.trim() || null,
+    },
+    client,
+  );
 }

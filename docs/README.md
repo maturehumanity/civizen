@@ -51,7 +51,7 @@ Substantive documents may include YAML front matter (`title`, `status`, `version
 | Review research and background | [`05-research/README.md`](./05-research/README.md) |
 | Propose or review a change | [`proposals/README.md`](./proposals/README.md) |
 | Browse historical implementation records | [`archive/README.md`](./archive/README.md) |
-| Develop or release the app | [`04-operations/dev/AGENTS.md`](./04-operations/dev/AGENTS.md) |
+| Develop or release the app | [`04-operations/dev/AGENTS.md`](./04-operations/dev/AGENTS.md) · Contribute hub: [`04-operations/dev/contribute-page.md`](./04-operations/dev/contribute-page.md) · Phase 1 pilots: [`04-operations/dev/phase-1-pilot-operating-model.md`](./04-operations/dev/phase-1-pilot-operating-model.md) · Historical development reconstruction: [`04-operations/dev/historical-development-reconstruction.md`](./04-operations/dev/historical-development-reconstruction.md) |
 
 ## Top-level map
 

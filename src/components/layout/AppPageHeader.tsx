@@ -96,7 +96,7 @@ export function AppPageHeader({
         {typeof title === 'string' || typeof title === 'number' ? (
           <h1
             className={cn(
-              'text-2xl font-display font-bold leading-none text-foreground',
+              'text-2xl font-display font-bold leading-snug break-words text-foreground',
               titleClassName,
             )}
             data-testid="app-page-header-title"
@@ -108,7 +108,7 @@ export function AppPageHeader({
             role="heading"
             aria-level={1}
             className={cn(
-              'flex items-center gap-2 text-2xl font-display font-bold leading-none text-foreground',
+              'flex items-center gap-2 text-2xl font-display font-bold leading-snug break-words text-foreground',
               titleClassName,
             )}
             data-testid="app-page-header-title"

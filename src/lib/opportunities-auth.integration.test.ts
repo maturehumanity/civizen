@@ -92,7 +92,12 @@ describe.skipIf(!harness)('Slice 1 authorization (local supabase)', () => {
     draftId = String(draft);
 
     const { data: openId, error: openError } = await publisher.client.rpc('create_contribution_opportunity', {
-      payload: { title: 'Open clinic note', summary: 'Public contribution work.', status: 'open' },
+      payload: {
+        title: 'Open clinic note',
+        summary: 'Public contribution work.',
+        status: 'open',
+        evaluation_dimensions: ['quality', 'impact'],
+      },
     });
     if (openError || !openId) throw openError ?? new Error('create_open_failed');
     opportunityId = String(openId);
@@ -204,6 +209,12 @@ describe.skipIf(!harness)('Slice 1 authorization (local supabase)', () => {
 
   it('prevents a participant from evaluating their own work', async () => {
     await participant.client.rpc('submit_opportunity_work', { p_participation_id: participationId });
+    const { error: assessBeforeVerify } = await publisher.client.rpc('record_opportunity_work_assessment', {
+      p_participation_id: participationId,
+      p_scores: { quality: 90 },
+    });
+    expect(assessBeforeVerify?.message ?? '').toMatch(/work_not_verified/i);
+
     const { error } = await participant.client.rpc('evaluate_opportunity_work', {
       p_participation_id: participationId,
       p_decision: 'verified',
@@ -231,5 +242,54 @@ describe.skipIf(!harness)('Slice 1 authorization (local supabase)', () => {
       .eq('source_table', 'opportunity_participations')
       .eq('source_id', participationId);
     expect(events).toHaveLength(1);
+  });
+
+  it('keeps evaluation independent of verification and blocks unauthorized assessors', async () => {
+    const { data: events } = await admin
+      .from('profile_contribution_events')
+      .select('capacity_estimate, impact_estimate, collaboration_estimate')
+      .eq('source_table', 'opportunity_participations')
+      .eq('source_id', participationId);
+    expect(events).toHaveLength(1);
+    const before = events?.[0];
+
+    const { error: publisherAssess } = await publisher.client.rpc('record_opportunity_work_assessment', {
+      p_participation_id: participationId,
+      p_scores: { quality: 90 },
+    });
+    expect(publisherAssess).toBeNull();
+
+    const { error: selfAssess } = await participant.client.rpc('record_opportunity_work_assessment', {
+      p_participation_id: participationId,
+      p_scores: { quality: 99 },
+    });
+    expect(selfAssess?.message ?? '').toMatch(/self_evaluation_forbidden|not_authorized/i);
+
+    const { error: strangerAssess } = await stranger.client.rpc('record_opportunity_work_assessment', {
+      p_participation_id: participationId,
+      p_scores: { quality: 10 },
+    });
+    expect(strangerAssess?.message ?? '').toMatch(/not_authorized/i);
+
+    const { data: assessments } = await participant.client
+      .from('opportunity_work_assessments')
+      .select('quality_score, impact_score')
+      .eq('participation_id', participationId);
+    expect(assessments).toEqual([{ quality_score: 90, impact_score: null }]);
+
+    const { data: strangerRows } = await stranger.client
+      .from('opportunity_work_assessments')
+      .select('id')
+      .eq('participation_id', participationId);
+    expect(strangerRows ?? []).toEqual([]);
+
+    const { data: afterEvents } = await admin
+      .from('profile_contribution_events')
+      .select('capacity_estimate, collaboration_estimate')
+      .eq('source_table', 'opportunity_participations')
+      .eq('source_id', participationId);
+    expect(afterEvents).toHaveLength(1);
+    expect(afterEvents?.[0]?.capacity_estimate).toBe(90);
+    expect(before?.capacity_estimate).not.toBe(90);
   });
 });

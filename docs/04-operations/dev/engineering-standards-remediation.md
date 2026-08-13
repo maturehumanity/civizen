@@ -31,6 +31,10 @@ These files exceeded the soft limit before or during institutional remediation. 
 
 - `GovernanceActivationFeedAdaptersPanel.tsx` — deleted from production tree (off route graph; demographic ingest UI removed).
 
+## 2026-08-13 Phase 1 pilot freeze
+
+Frozen caps updated after Slices 1–4 (Opportunities, Challenges, Learning Commons) and Score V2 integration. New contribute pages and score modules are allowlisted at current size. Pre-existing over-limit files that were missing from the 2026-07-30 freeze are now included so `npm run lint` can pass. Prefer splitting Challenge/Knowledge/Opportunity detail pages and Score modules on the next dedicated refactor.
+
 ## 2026-08-01 purpose-alignment pass
 
 Frozen caps updated for `App.tsx`, `AuthContext.tsx`, `i18n.base.ts`, `Settings.tsx`, and civic-voting files that grew with mission/copy and voting work. Prefer splitting on next touch.

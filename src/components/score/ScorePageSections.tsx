@@ -12,6 +12,7 @@ import {
   getCategoryMeta,
 } from '@/lib/civizen-score';
 import { getDevelopmentalScoreColor } from '@/lib/civizen-score-tiers';
+import { scoreCoverageCaption, scoreEvidenceEstimateCaption, scoreProgressCaption } from '@/lib/civizen-score-caption';
 import { PILLARS, type PillarId } from '@/lib/constants';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigate } from 'react-router-dom';
@@ -51,12 +52,14 @@ interface ScoreOverviewProps {
 export function ScoreOverview({ score, showTitle = true }: ScoreOverviewProps) {
   const { t } = useLanguage();
   const overall = score.overall.score;
+  const established = score.overall.status === 'established' && overall != null;
   const updated = formatUpdatedAt(score.overall.lastCalculatedAt);
   const tier = score.tier.finalTier ?? 'explorer';
-  const scoreColor = getDevelopmentalScoreColor(overall, tier);
+  const scoreColor = getDevelopmentalScoreColor(established ? overall : null, tier);
   const tierLabel = t(`score.tier.${tier}`);
-  const compactScore =
-    overall == null ? t('score.notYetScoredShort') : formatScoreValue(overall);
+  const compactScore = established ? formatScoreValue(overall) : t('score.notEstablishedYet');
+  const estimateCaption = scoreEvidenceEstimateCaption(score, t);
+  const coverageCaption = scoreCoverageCaption(score, t);
 
   return (
     <section className="w-full max-w-md space-y-1.5 text-center" aria-labelledby="civizen-score-heading">
@@ -95,7 +98,7 @@ export function ScoreOverview({ score, showTitle = true }: ScoreOverviewProps) {
                 <div className="space-y-1 border-t border-border/60 pt-2">
                   <p className="font-medium text-foreground">
                     {t('score.pageTitle')}:{' '}
-                    {overall == null ? t('score.notYetScored') : formatScoreOutOf100(overall)}
+                    {established ? formatScoreOutOf100(overall) : t('score.notEstablishedYet')}
                   </p>
                   <p>
                     {t('score.stageLabel')}: {t(`score.stage.${score.overall.stage}`)}
@@ -103,24 +106,37 @@ export function ScoreOverview({ score, showTitle = true }: ScoreOverviewProps) {
                   <p>
                     {t('score.confidenceLabel')}: {confidenceLabel(score.overall.confidence, t)}
                   </p>
-                  {score.tier.pointsToNextTier != null && score.tier.nextTier ? (
+                  {score.overall.status ? (
                     <p>
-                      {t('score.pointsToTier', {
-                        points: score.tier.pointsToNextTier,
-                        tier: t(`score.tier.${score.tier.nextTier}`),
-                      })}
+                      {t('score.statusLabel')}: {t(`score.status.${score.overall.status}`)}
                     </p>
                   ) : null}
-                  {score.validation.verifiedEvidenceCount > 0 ? (
+                  {estimateCaption ? <p>{estimateCaption}</p> : null}
+                  {coverageCaption ? <p>{coverageCaption}</p> : null}
+                  {score.coverage?.limited ? <p>{t('score.limitedCoverageHint')}</p> : null}
+                  {score.overall.confidence === 'low' || score.overall.confidence === 'insufficient' ? (
+                    <p>{t('score.lowConfidenceHint')}</p>
+                  ) : null}
+                  {scoreProgressCaption(score, t) ? <p>{scoreProgressCaption(score, t)}</p> : null}
+                  {score.validation.verifiedEvidenceCount === 1 ? (
+                    <p>{t('score.basedOnIndependentOne')}</p>
+                  ) : score.validation.verifiedEvidenceCount > 0 ? (
                     <p>{t('score.basedOnVerified', { count: score.validation.verifiedEvidenceCount })}</p>
                   ) : overall == null ? (
                     <p>{t('score.addActivityHint')}</p>
                   ) : null}
+                  <p>{t('score.verificationDoesNotRaiseRating')}</p>
                   {updated ? <p>{t('score.lastUpdated', { date: updated })}</p> : null}
                 </div>
               </HoverCardContent>
             </HoverCard>
           </div>
+          {!established ? (
+            <div className="space-y-0.5 text-sm text-muted-foreground">
+              {estimateCaption ? <p>{estimateCaption}</p> : null}
+              {coverageCaption ? <p>{coverageCaption}</p> : null}
+            </div>
+          ) : null}
         </>
       ) : null}
     </section>
@@ -190,8 +206,10 @@ export function ScoreCategoryCards({ categories, selectedId, onSelect }: Categor
                 <div className="mt-3 space-y-2">
                   <p className="text-xs text-muted-foreground">{category.fullLabel}</p>
                   <p className="text-xs text-muted-foreground">
-                    {confidenceLabel(category.confidence, t)} ·{' '}
-                    {t('score.verifiedRecords', { count: category.verifiedSourceCount })}
+                    {category.status === 'provisional'
+                      ? t('score.provisionalCategoryHint')
+                      : confidenceLabel(category.confidence, t)}{' '}
+                    · {t('score.verifiedRecords', { count: category.verifiedSourceCount })}
                   </p>
                   <p className="text-sm text-muted-foreground">{meta.description}</p>
                   <Button
@@ -263,7 +281,13 @@ interface EvidenceValidationProps {
 export function ScoreEvidenceValidation({ score }: EvidenceValidationProps) {
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const independentCount =
+    score.validation.independentVerifiedCount ?? score.validation.verifiedEvidenceCount;
+  const verifiedContributions =
+    score.categories.find((category) => category.id === 'contributions')?.verifiedSourceCount ?? 0;
   const rows = [
+    { label: t('score.independentEvidence'), value: independentCount, icon: ShieldCheck },
+    { label: t('score.verifiedContributions'), value: verifiedContributions, icon: Sparkles },
     { label: t('score.evidenceItems'), value: score.validation.evidenceCount, icon: FileCheck2 },
     { label: t('score.verifiedEvidence'), value: score.validation.verifiedEvidenceCount, icon: ShieldCheck },
     { label: t('score.ratings'), value: score.validation.ratingCount, icon: Star },
@@ -289,6 +313,8 @@ export function ScoreEvidenceValidation({ score }: EvidenceValidationProps) {
             <span className="font-display text-sm font-semibold">{row.value}</span>
           </div>
         ))}
+        <p className="text-xs text-muted-foreground">{t('score.oneActivityMultipleProjections')}</p>
+        <p className="text-xs text-muted-foreground">{t('score.verificationDoesNotRaiseRating')}</p>
         <div className="flex flex-wrap gap-2 pt-2">
           <Button size="sm" variant="outline" onClick={() => navigate('/profile')}>
             {t('score.addEvidence')}

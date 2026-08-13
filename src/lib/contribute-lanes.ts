@@ -2,8 +2,6 @@ import type { LucideIcon } from 'lucide-react';
 import {
   BookOpen,
   Briefcase,
-  ClipboardList,
-  Globe2,
   HandCoins,
   Handshake,
   Landmark,
@@ -32,15 +30,8 @@ export type ContributeLane = {
   relatedLinks?: readonly ContributeRelatedLink[];
 };
 
-/** Placeholder lane path segments (excludes /contribute/policy and live Slice 1 professional). */
-export const CONTRIBUTE_PLACEHOLDER_IDS = [
-  'projects',
-  'tasks',
-  'challenges',
-  'knowledge',
-  'improvements',
-  'impact',
-] as const;
+/** Placeholder lane path segments (excludes live contribution surfaces). */
+export const CONTRIBUTE_PLACEHOLDER_IDS = ['improvements'] as const;
 
 export type ContributePlaceholderId = (typeof CONTRIBUTE_PLACEHOLDER_IDS)[number];
 
@@ -89,33 +80,6 @@ export const CONTRIBUTE_LANES: readonly ContributeLane[] = [
     placeholder: false,
   },
   {
-    id: 'projects',
-    section: 'community',
-    path: '/contribute/projects',
-    icon: Globe2,
-    iconClassName: 'text-primary',
-    titleKey: 'contribute.lanes.projects.title',
-    descriptionKey: 'contribute.lanes.projects.description',
-    placeholder: true,
-    relatedLinks: [
-      { path: '/fund/contribute', labelKey: 'contribute.related.volunteerInterest' },
-      { path: '/governance', labelKey: 'contribute.related.governance' },
-    ],
-  },
-  {
-    id: 'tasks',
-    section: 'community',
-    path: '/contribute/tasks',
-    icon: ClipboardList,
-    iconClassName: 'text-primary',
-    titleKey: 'contribute.lanes.tasks.title',
-    descriptionKey: 'contribute.lanes.tasks.description',
-    placeholder: true,
-    relatedLinks: [
-      { path: '/fund/contribute', labelKey: 'contribute.related.volunteerInterest' },
-    ],
-  },
-  {
     id: 'challenges',
     section: 'community',
     path: '/contribute/challenges',
@@ -123,7 +87,7 @@ export const CONTRIBUTE_LANES: readonly ContributeLane[] = [
     iconClassName: 'text-accent',
     titleKey: 'contribute.lanes.challenges.title',
     descriptionKey: 'contribute.lanes.challenges.description',
-    placeholder: true,
+    placeholder: false,
   },
   {
     id: 'knowledge',
@@ -133,7 +97,7 @@ export const CONTRIBUTE_LANES: readonly ContributeLane[] = [
     iconClassName: 'text-primary',
     titleKey: 'contribute.lanes.knowledge.title',
     descriptionKey: 'contribute.lanes.knowledge.description',
-    placeholder: true,
+    placeholder: false,
     relatedLinks: [
       { path: '/study', labelKey: 'contribute.related.study' },
     ],
@@ -160,7 +124,7 @@ export const CONTRIBUTE_LANES: readonly ContributeLane[] = [
     iconClassName: 'text-accent',
     titleKey: 'contribute.lanes.impact.title',
     descriptionKey: 'contribute.lanes.impact.description',
-    placeholder: true,
+    placeholder: false,
     relatedLinks: [
       { path: '/profile', labelKey: 'contribute.related.score' },
     ],

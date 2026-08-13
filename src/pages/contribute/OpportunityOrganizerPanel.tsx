@@ -5,37 +5,34 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
   organizerNextAction,
-  parseOptionalEvaluationScore,
   type ContributionOpportunity,
   type OpportunityApplicantIdentity,
   type OpportunityEvidence,
   type OpportunityParticipation,
+  type OpportunityWorkAssessment,
+  type OpportunityWorkAssessmentScores,
 } from '@/lib/opportunities';
 import {
   evaluateOpportunityWork,
   listOpportunityApplicantIdentities,
+  listWorkAssessmentsForParticipations,
+  recordOpportunityWorkAssessment,
   reviewOpportunityApplication,
   setContributionOpportunityStatus,
 } from '@/lib/opportunities-api';
 import { OpportunityEvidenceList } from '@/pages/contribute/OpportunityEvidenceList';
-import { toast } from 'sonner';
+import {
+  OpportunityAssessmentForm,
+  OpportunityAssessmentView,
+} from '@/pages/contribute/OpportunityWorkAssessmentCard';
 
 function initialsFor(name: string) {
   return name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase() ?? '').join('') || '?';
-}
-
-function parseScores(qualityRaw: string, impactRaw: string) {
-  const quality = parseOptionalEvaluationScore(qualityRaw);
-  const impact = parseOptionalEvaluationScore(impactRaw);
-  if (!quality.ok || !impact.ok) return null;
-  return { qualityScore: quality.value, impactScore: impact.value };
 }
 
 export function OpportunityOrganizerPanel({
@@ -65,9 +62,7 @@ export function OpportunityOrganizerPanel({
 }) {
   const { t } = useLanguage();
   const [identities, setIdentities] = useState<Map<string, OpportunityApplicantIdentity>>(new Map());
-  const [qualityScore, setQualityScore] = useState('');
-  const [impactScore, setImpactScore] = useState('');
-  const [showScores, setShowScores] = useState(false);
+  const [assessments, setAssessments] = useState<Map<string, OpportunityWorkAssessment>>(new Map());
 
   useEffect(() => {
     if (applicants.length === 0) {
@@ -88,19 +83,32 @@ export function OpportunityOrganizerPanel({
     };
   }, [applicants, opportunity.id]);
 
-  const evaluate = (applicantId: string, decision: 'verified' | 'rejected') => {
-    const scores = parseScores(qualityScore, impactScore);
-    if (!scores) {
-      toast.error(t('contribute.opportunities.evaluationScoresInvalid'));
+  useEffect(() => {
+    const ids = applicants.map((row) => row.id);
+    if (ids.length === 0) {
+      setAssessments(new Map());
       return;
     }
+    let cancelled = false;
+    void listWorkAssessmentsForParticipations(ids)
+      .then((rows) => {
+        if (cancelled) return;
+        setAssessments(new Map(rows.map((row) => [row.participationId, row])));
+      })
+      .catch(() => {
+        if (!cancelled) setAssessments(new Map());
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [applicants]);
+
+  const evaluate = (applicantId: string, decision: 'verified' | 'rejected') => {
     void onAction(async () => {
       await evaluateOpportunityWork({
         participationId: applicantId,
         decision,
         feedback: evalFeedback,
-        qualityScore: scores.qualityScore,
-        impactScore: scores.impactScore,
         skillNames:
           decision === 'verified'
             ? evalSkills.split(',').map((name) => name.trim()).filter(Boolean)
@@ -108,6 +116,22 @@ export function OpportunityOrganizerPanel({
       });
       onReviewingId(null);
     }, decision === 'verified' ? 'contribute.opportunities.verified' : 'contribute.opportunities.revisionRequested');
+  };
+
+  const saveAssessment = (
+    applicantId: string,
+    scores: OpportunityWorkAssessmentScores,
+    notes: string,
+  ) => {
+    void onAction(async () => {
+      await recordOpportunityWorkAssessment({
+        participationId: applicantId,
+        scores,
+        dimensions: opportunity.evaluationDimensions,
+        notes,
+      });
+      onReviewingId(null);
+    }, 'contribute.opportunities.assessmentSaved');
   };
 
   return (
@@ -140,9 +164,10 @@ export function OpportunityOrganizerPanel({
         <p className="text-sm text-muted-foreground">{t('contribute.opportunities.noApplicants')}</p>
       ) : (
         applicants.map((applicant) => {
-          const organizerAction = organizerNextAction(applicant);
+          const organizerAction = organizerNextAction(applicant, opportunity);
           const identity = identities.get(applicant.id);
           const displayName = identity?.displayName || t('contribute.opportunities.unnamedApplicant');
+          const assessment = assessments.get(applicant.id) ?? null;
           return (
             <Card key={applicant.id} className="space-y-3 border-border/70 bg-card/95 p-4">
               <div className="flex items-start justify-between gap-2">
@@ -235,36 +260,6 @@ export function OpportunityOrganizerPanel({
                         onChange={(event) => onEvalSkills(event.target.value)}
                         placeholder={t('contribute.opportunities.skillsPlaceholder')}
                       />
-                      <Collapsible open={showScores} onOpenChange={setShowScores}>
-                        <CollapsibleTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            {t('contribute.opportunities.moreDetails')}
-                          </Button>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent className="space-y-2 pt-2">
-                          <p className="text-xs text-muted-foreground">
-                            {t('contribute.opportunities.evaluationScoresHint')}
-                          </p>
-                          <Label htmlFor={`quality-${applicant.id}`}>
-                            {t('contribute.opportunities.qualityScore')}
-                          </Label>
-                          <Input
-                            id={`quality-${applicant.id}`}
-                            inputMode="decimal"
-                            value={qualityScore}
-                            onChange={(event) => setQualityScore(event.target.value)}
-                          />
-                          <Label htmlFor={`impact-${applicant.id}`}>
-                            {t('contribute.opportunities.impactScore')}
-                          </Label>
-                          <Input
-                            id={`impact-${applicant.id}`}
-                            inputMode="decimal"
-                            value={impactScore}
-                            onChange={(event) => setImpactScore(event.target.value)}
-                          />
-                        </CollapsibleContent>
-                      </Collapsible>
                       <div className="flex flex-wrap gap-2">
                         <Button size="sm" disabled={busy} onClick={() => evaluate(applicant.id, 'verified')}>
                           {t('contribute.opportunities.verify')}
@@ -279,6 +274,34 @@ export function OpportunityOrganizerPanel({
                         </Button>
                       </div>
                     </div>
+                  ) : null}
+                </div>
+              ) : null}
+              {organizerAction === 'assess' ? (
+                <div className="space-y-2">
+                  {assessment && reviewingId !== applicant.id ? (
+                    <OpportunityAssessmentView
+                      dimensions={opportunity.evaluationDimensions}
+                      assessment={assessment}
+                    />
+                  ) : null}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => onReviewingId(reviewingId === applicant.id ? null : applicant.id)}
+                  >
+                    {assessment
+                      ? t('contribute.opportunities.assessmentUpdate')
+                      : t('contribute.opportunities.assessmentEnter')}
+                  </Button>
+                  {reviewingId === applicant.id ? (
+                    <OpportunityAssessmentForm
+                      key={applicant.id}
+                      dimensions={opportunity.evaluationDimensions}
+                      existing={assessment}
+                      busy={busy}
+                      onSave={(scores, notes) => saveAssessment(applicant.id, scores, notes)}
+                    />
                   ) : null}
                 </div>
               ) : null}

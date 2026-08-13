@@ -30,6 +30,15 @@ const ProfessionalOpportunities = lazyWithChunkReload(
 );
 const OpportunityDetail = lazyWithChunkReload(() => import('@/pages/contribute/OpportunityDetail'));
 const OpportunityForm = lazyWithChunkReload(() => import('@/pages/contribute/OpportunityForm'));
+const CommunityChallenges = lazyWithChunkReload(() => import('@/pages/contribute/CommunityChallenges'));
+const ChallengeForm = lazyWithChunkReload(() => import('@/pages/contribute/ChallengeForm'));
+const ChallengeDetail = lazyWithChunkReload(() => import('@/pages/contribute/ChallengeDetail'));
+const KnowledgeSpaces = lazyWithChunkReload(() => import('@/pages/contribute/KnowledgeSpaces'));
+const KnowledgeSpaceForm = lazyWithChunkReload(() => import('@/pages/contribute/KnowledgeSpaceForm'));
+const KnowledgeSpaceDetail = lazyWithChunkReload(() => import('@/pages/contribute/KnowledgeSpaceDetail'));
+const KnowledgeResourceForm = lazyWithChunkReload(() => import('@/pages/contribute/KnowledgeResourceForm'));
+const KnowledgeResourceDetail = lazyWithChunkReload(() => import('@/pages/contribute/KnowledgeResourceDetail'));
+const ContributeImpact = lazyWithChunkReload(() => import('@/pages/contribute/ContributeImpact'));
 const Messaging = lazyWithChunkReload(() => import('@/pages/Messaging'));
 const DownloadPage = lazyWithChunkReload(() => import('@/pages/Download'));
 const WhyThisExists = lazyWithChunkReload(() => import('@/pages/WhyThisExists'));
@@ -289,6 +298,62 @@ const App = () => (
                   <Route
                     path="/contribute/professional/:opportunityId"
                     element={<ProtectedRoute><OpportunityDetail /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/contribute/challenges"
+                    element={<ProtectedRoute><CommunityChallenges /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/contribute/challenges/new"
+                    element={<ProtectedRoute><ChallengeForm /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/contribute/challenges/:challengeId/edit"
+                    element={<ProtectedRoute><ChallengeForm /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/contribute/challenges/:challengeId"
+                    element={<ProtectedRoute><ChallengeDetail /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/contribute/knowledge"
+                    element={<ProtectedRoute><KnowledgeSpaces /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/contribute/knowledge/new"
+                    element={<ProtectedRoute><KnowledgeSpaceForm /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/contribute/knowledge/:spaceId/edit"
+                    element={<ProtectedRoute><KnowledgeSpaceForm /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/contribute/knowledge/:spaceId/resources/new"
+                    element={<ProtectedRoute><KnowledgeResourceForm /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/contribute/knowledge/:spaceId/resources/:resourceId/edit"
+                    element={<ProtectedRoute><KnowledgeResourceForm /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/contribute/knowledge/:spaceId/resources/:resourceId"
+                    element={<ProtectedRoute><KnowledgeResourceDetail /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/contribute/knowledge/:spaceId"
+                    element={<ProtectedRoute><KnowledgeSpaceDetail /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/contribute/impact"
+                    element={<ProtectedRoute><ContributeImpact /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/contribute/tasks"
+                    element={<ProtectedRoute><Navigate to="/contribute/professional" replace /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/contribute/projects"
+                    element={<ProtectedRoute><Navigate to="/contribute/challenges" replace /></ProtectedRoute>}
                   />
                   <Route
                     path="/contribute/:laneId"

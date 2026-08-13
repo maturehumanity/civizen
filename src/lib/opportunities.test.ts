@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  assessmentSummaryScore,
   buildOpportunityScoreEvent,
   canApplyToOpportunity,
   canEvaluateWork,
+  canRecordWorkAssessment,
   canTransitionOpportunityStatus,
   canWithdrawParticipation,
   demonstratedExperienceFromVerified,
@@ -16,7 +18,9 @@ import {
   organizerNextAction,
   participantNextAction,
   parseOptionalEvaluationScore,
+  performanceFactorsFromAssessment,
   profileCanManagePublisher,
+  sanitizeEvaluationDimensions,
   shouldProjectScoreEvent,
   type ContributionOpportunity,
   type OpportunityParticipation,
@@ -44,6 +48,7 @@ function opportunity(overrides: Partial<ContributionOpportunity> = {}): Contribu
     expectedOutcome: 'A one-page workflow note',
     evidenceRequirements: 'Link or description of the note',
     evaluationCriteria: 'Complete and usable by the clinic',
+    evaluationDimensions: [],
     createdAt: '2026-08-13T00:00:00.000Z',
     updatedAt: '2026-08-13T00:00:00.000Z',
     ...overrides,
@@ -197,6 +202,18 @@ describe('opportunity lifecycle transitions', () => {
     expect(
       organizerNextAction(participation({ status: 'submitted', verificationStatus: 'pending' })),
     ).toBe('evaluate');
+    expect(
+      organizerNextAction(
+        participation({ status: 'completed', verificationStatus: 'verified' }),
+        opportunity({ evaluationDimensions: ['quality'] }),
+      ),
+    ).toBe('assess');
+    expect(
+      organizerNextAction(
+        participation({ status: 'completed', verificationStatus: 'verified' }),
+        opportunity(),
+      ),
+    ).toBe('none');
   });
 });
 
@@ -225,7 +242,24 @@ describe('verified score and profile projection', () => {
     expect(event.verified).toBe(true);
     expect(event.rawMeta).toEqual({ kind: 'education_to_contribution' });
     expect(event.capacityEstimate).toBe(80);
-    expect(event.impactEstimate).toBe(75);
+    expect(event.impactEstimate).toBe(60);
+    expect(event.collaborationEstimate).toBe(40);
+  });
+
+  it('projects a score event for verified work even when no evaluation was recorded', () => {
+    const verified = participation({
+      status: 'completed',
+      verificationStatus: 'verified',
+      completedAt: '2026-08-20T00:00:00.000Z',
+    });
+    expect(shouldProjectScoreEvent(verified)).toBe(true);
+    const event = buildOpportunityScoreEvent({
+      participation: verified,
+      opportunity: opportunity(),
+    });
+    expect(event.capacityEstimate).toBe(75);
+    expect(event.impactEstimate).toBe(70);
+    expect(event.collaborationEstimate).toBe(40);
   });
 
   it('is idempotent for the same participation source id', () => {
@@ -309,6 +343,44 @@ describe('opportunity row mapping', () => {
     expect(mapped.status).toBe('draft');
     expect(mapped.requiredSkills).toEqual(['Writing']);
   });
+
+  it('maps community implementation opportunities without treating them as professional listings', () => {
+    const mapped = mapContributionOpportunity({
+      id: 'opp-2',
+      publisher_profile_id: 'org-1',
+      title: 'Map garden beds and the current water points',
+      summary: 'Walk the plot with two garden members.',
+      status: 'open',
+      opportunity_kind: 'community_implementation',
+      required_skills: [],
+      optional_skills: [],
+      is_remote: false,
+      compensation_status: 'volunteer',
+      created_at: '2026-08-13T00:00:00.000Z',
+      updated_at: '2026-08-13T00:00:00.000Z',
+    });
+    expect(mapped.opportunityKind).toBe('community_implementation');
+    expect(mapped.status).toBe('open');
+  });
+
+  it('maps knowledge-gap opportunities without treating them as professional listings', () => {
+    const mapped = mapContributionOpportunity({
+      id: 'opp-3',
+      publisher_profile_id: 'org-1',
+      title: 'Write a short note on unlit walking streets',
+      summary: 'Walk two streets after dusk and record where light is missing.',
+      status: 'open',
+      opportunity_kind: 'knowledge_gap',
+      required_skills: [],
+      optional_skills: [],
+      is_remote: false,
+      compensation_status: 'volunteer',
+      created_at: '2026-08-13T00:00:00.000Z',
+      updated_at: '2026-08-13T00:00:00.000Z',
+    });
+    expect(mapped.opportunityKind).toBe('knowledge_gap');
+    expect(mapped.status).toBe('open');
+  });
 });
 
 describe('evaluation scores and applicant identity mapping', () => {
@@ -337,5 +409,90 @@ describe('evaluation scores and applicant identity mapping', () => {
       avatarUrl: 'https://example.test/ada.png',
     });
     expect(participation({ participantProfileId: 'user-2' })).not.toHaveProperty('displayName');
+  });
+});
+
+describe('optional work assessment independent of verification', () => {
+  const verified = participation({
+    status: 'completed',
+    verificationStatus: 'verified',
+    completedAt: '2026-08-20T00:00:00.000Z',
+  });
+
+  it('keeps unknown or duplicate dimension choices out of the opportunity config', () => {
+    expect(sanitizeEvaluationDimensions(['quality', 'impact', 'quality', 'unknown'])).toEqual([
+      'quality',
+      'impact',
+    ]);
+    expect(sanitizeEvaluationDimensions(['impact', 'completion', 'collaboration'])).toEqual([
+      'completion',
+      'collaboration',
+      'impact',
+    ]);
+  });
+
+  it('allows evaluation only after verified completion and only for selected dimensions', () => {
+    expect(
+      canRecordWorkAssessment({
+        participation: participation({ status: 'submitted', verificationStatus: 'pending' }),
+        evaluationDimensions: ['quality'],
+      }),
+    ).toBe(false);
+    expect(
+      canRecordWorkAssessment({
+        participation: verified,
+        evaluationDimensions: [],
+      }),
+    ).toBe(false);
+    expect(
+      canRecordWorkAssessment({
+        participation: verified,
+        evaluationDimensions: ['quality', 'impact'],
+      }),
+    ).toBe(true);
+    expect(canEvaluateWork(participation({ status: 'submitted', verificationStatus: 'pending' }))).toBe(
+      true,
+    );
+    expect(canEvaluateWork(verified)).toBe(false);
+  });
+
+  it('maps only quality, impact, and collaboration into Performance estimates', () => {
+    const withSelected = performanceFactorsFromAssessment({
+      assessment: {
+        scores: {
+          completion: 40,
+          quality: 90,
+          reliability: 20,
+          collaboration: 80,
+          outcome: 15,
+          impact: 60,
+        },
+      },
+    });
+    expect(withSelected.capacityEstimate).toBe(90);
+    expect(withSelected.impactEstimate).toBe(60);
+    expect(withSelected.collaborationEstimate).toBe(80);
+
+    const withoutPerformanceDims = performanceFactorsFromAssessment({
+      assessment: {
+        scores: { completion: 40, reliability: 20, outcome: 15 },
+      },
+    });
+    expect(withoutPerformanceDims.capacityEstimate).toBe(75);
+    expect(withoutPerformanceDims.impactEstimate).toBe(70);
+    expect(withoutPerformanceDims.collaborationEstimate).toBe(40);
+  });
+
+  it('summarizes selected scored dimensions without requiring every dimension', () => {
+    expect(
+      assessmentSummaryScore({ quality: 80, impact: 70, completion: null }, ['quality', 'impact', 'completion']),
+    ).toBe(75);
+    const event = buildOpportunityScoreEvent({
+      participation: verified,
+      opportunity: opportunity({ evaluationDimensions: ['quality', 'completion'] }),
+      assessment: { scores: { quality: 88, completion: 40 } },
+    });
+    expect(event.capacityEstimate).toBe(88);
+    expect(event.collaborationEstimate).toBe(40);
   });
 });

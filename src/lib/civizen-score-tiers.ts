@@ -5,8 +5,12 @@
  */
 
 import type { ScoreConfidence } from '@/lib/civizen-score';
+import {
+  TIER_EVIDENCE_GATES,
+  type ScoreMaturityStatus,
+} from '@/lib/civizen-score-model';
 
-export const TIER_RULES_VERSION = '1.0.0';
+export const TIER_RULES_VERSION = '1.1.0';
 
 export type CivizenTier =
   | 'explorer'
@@ -52,6 +56,10 @@ export interface TierRule {
   requiresSustainedActivity?: boolean;
   requiresSubstantialImpact?: boolean;
   requiresNoSeriousIntegrityIssue?: boolean;
+  minIndependentVerifiedEvidence?: number;
+  minScoredCategories?: number;
+  requiresRecurrence?: boolean;
+  minTimeSpanDays?: number;
   /** Hex accent for tier-colored UI (labels, badges, dial progress). */
   colorHex: string;
   /** Tailwind text class mirroring colorHex (arbitrary value). */
@@ -111,6 +119,9 @@ export const DEFAULT_TIER_RULES: TierRule[] = [
     minScore: 30,
     maxScore: 59.9,
     requiresVerifiedActivity: true,
+    minIndependentVerifiedEvidence: TIER_EVIDENCE_GATES.builder.minIndependentVerifiedRoots,
+    minScoredCategories: TIER_EVIDENCE_GATES.builder.minScoredCategories,
+    minConfidence: TIER_EVIDENCE_GATES.builder.minConfidence,
     colorHex: TIER_COLORS.builder,
     accentClass: 'text-[#2BA8A0]',
     icon: 'Blocks',
@@ -126,6 +137,10 @@ export const DEFAULT_TIER_RULES: TierRule[] = [
     minContributionsScore: 50,
     minConfidence: 'moderate',
     requiresVerifiedActivity: true,
+    minIndependentVerifiedEvidence: TIER_EVIDENCE_GATES.contributor.minIndependentVerifiedRoots,
+    minScoredCategories: TIER_EVIDENCE_GATES.contributor.minScoredCategories,
+    requiresRecurrence: TIER_EVIDENCE_GATES.contributor.requiresRecurrence,
+    minTimeSpanDays: TIER_EVIDENCE_GATES.contributor.minTimeSpanDays,
     colorHex: TIER_COLORS.contributor,
     accentClass: 'text-[#3B82F6]',
     icon: 'Handshake',
@@ -142,6 +157,10 @@ export const DEFAULT_TIER_RULES: TierRule[] = [
     minConfidence: 'high',
     requiresSustainedActivity: true,
     requiresNoSeriousIntegrityIssue: true,
+    minIndependentVerifiedEvidence: TIER_EVIDENCE_GATES.catalyst.minIndependentVerifiedRoots,
+    minScoredCategories: TIER_EVIDENCE_GATES.catalyst.minScoredCategories,
+    requiresRecurrence: TIER_EVIDENCE_GATES.catalyst.requiresRecurrence,
+    minTimeSpanDays: TIER_EVIDENCE_GATES.catalyst.minTimeSpanDays,
     colorHex: TIER_COLORS.catalyst,
     accentClass: 'text-[#8B5CF6]',
     icon: 'Sparkles',
@@ -158,6 +177,10 @@ export const DEFAULT_TIER_RULES: TierRule[] = [
     minConfidence: 'high',
     requiresSubstantialImpact: true,
     requiresNoSeriousIntegrityIssue: true,
+    minIndependentVerifiedEvidence: TIER_EVIDENCE_GATES.steward.minIndependentVerifiedRoots,
+    minScoredCategories: TIER_EVIDENCE_GATES.steward.minScoredCategories,
+    requiresRecurrence: TIER_EVIDENCE_GATES.steward.requiresRecurrence,
+    minTimeSpanDays: TIER_EVIDENCE_GATES.steward.minTimeSpanDays,
     colorHex: TIER_COLORS.steward,
     accentClass: 'text-[#D9A441]',
     icon: 'Shield',
@@ -175,6 +198,12 @@ export interface TierQualificationInput {
   hasSustainedActivity: boolean;
   hasSubstantialImpact: boolean;
   hasUnresolvedSeriousIntegrityIssue: boolean;
+  independentVerifiedEvidenceCount?: number;
+  scoredCategoryCount?: number;
+  establishedCategoryCount?: number;
+  hasRecurrence?: boolean;
+  timeSpanDays?: number;
+  overallStatus?: ScoreMaturityStatus;
   rules?: TierRule[];
 }
 
@@ -188,7 +217,11 @@ export interface TierRequirementResult {
     | 'verified_activity'
     | 'sustained_activity'
     | 'impact'
-    | 'integrity';
+    | 'integrity'
+    | 'independent_evidence'
+    | 'coverage'
+    | 'recurrence'
+    | 'history';
   currentValue: number | string | boolean | null;
   requiredValue: number | string | boolean | null;
   met: boolean;
@@ -234,6 +267,27 @@ export interface CivizenTierStatus {
   progress: TierProgress;
   calculatedAt: string | null;
   rulesVersion: string;
+  readiness?: TierReadiness;
+}
+
+export interface TierGateState {
+  id: string;
+  label: string;
+  met: boolean;
+  detail: string;
+}
+
+export interface TierReadiness {
+  nextTier: CivizenTier | null;
+  scoreThresholdMet: boolean;
+  evidenceMet: boolean;
+  confidenceMet: boolean;
+  coverageMet: boolean;
+  historyMet: boolean;
+  ready: boolean;
+  emphasizePointsToNext: boolean;
+  blockingGates: TierGateState[];
+  gates: TierGateState[];
 }
 
 function ruleFor(id: CivizenTier, rules: TierRule[] = DEFAULT_TIER_RULES): TierRule {
@@ -377,6 +431,63 @@ export function getUnmetRequirements(
     });
   }
 
+  if (rule.minIndependentVerifiedEvidence != null) {
+    const current = input.independentVerifiedEvidenceCount ?? 0;
+    if (current < rule.minIndependentVerifiedEvidence) {
+      unmet.push({
+        id: 'independent_evidence',
+        label: 'Independent verified evidence',
+        type: 'independent_evidence',
+        currentValue: current,
+        requiredValue: rule.minIndependentVerifiedEvidence,
+        met: false,
+        explanation: `${rule.label} needs ${rule.minIndependentVerifiedEvidence} independent verified evidence items, not projections of the same activity.`,
+      });
+    }
+  }
+
+  if (rule.minScoredCategories != null) {
+    const current = Math.max(input.scoredCategoryCount ?? 0, input.establishedCategoryCount ?? 0);
+    if (current < rule.minScoredCategories) {
+      unmet.push({
+        id: 'coverage',
+        label: 'Category coverage',
+        type: 'coverage',
+        currentValue: current,
+        requiredValue: rule.minScoredCategories,
+        met: false,
+        explanation: `${rule.label} needs evidence in at least ${rule.minScoredCategories} score ${rule.minScoredCategories === 1 ? 'category' : 'categories'}.`,
+      });
+    }
+  }
+
+  if (rule.requiresRecurrence && !input.hasRecurrence) {
+    unmet.push({
+      id: 'recurrence',
+      label: 'Recurrence',
+      type: 'recurrence',
+      currentValue: false,
+      requiredValue: true,
+      met: false,
+      explanation: `${rule.label} needs more than one independent activity.`,
+    });
+  }
+
+  if (rule.minTimeSpanDays != null && rule.minTimeSpanDays > 0) {
+    const current = input.timeSpanDays ?? 0;
+    if (current < rule.minTimeSpanDays) {
+      unmet.push({
+        id: 'history',
+        label: 'History / time span',
+        type: 'history',
+        currentValue: current,
+        requiredValue: rule.minTimeSpanDays,
+        met: false,
+        explanation: `${rule.label} needs a longer demonstrated history.`,
+      });
+    }
+  }
+
   if (rule.requiresSustainedActivity && !input.hasSustainedActivity) {
     unmet.push({
       id: 'sustained_activity',
@@ -410,6 +521,18 @@ export function getUnmetRequirements(
       requiredValue: true,
       met: false,
       explanation: `${rule.label} requires no unresolved serious integrity issue.`,
+    });
+  }
+
+  if (tier !== 'explorer' && input.overallStatus && input.overallStatus !== 'established') {
+    unmet.push({
+      id: 'score_maturity',
+      label: 'Established Civizen Score',
+      type: 'score',
+      currentValue: input.overallStatus,
+      requiredValue: 'established',
+      met: false,
+      explanation: 'A provisional estimate cannot unlock this tier.',
     });
   }
 
@@ -503,6 +626,17 @@ export function buildTierProgress(
     },
   ];
 
+  if (input.overallStatus != null && nextTier !== 'explorer') {
+    requirements.push({
+      id: 'score_maturity',
+      label: 'Established Civizen Score',
+      currentValue: input.overallStatus,
+      requiredValue: 'established',
+      met: input.overallStatus === 'established',
+      explanation: 'A provisional estimate cannot unlock this tier.',
+    });
+  }
+
   if (nextRule.minPerformanceScore != null) {
     const current = input.performanceScore;
     requirements.push({
@@ -542,6 +676,49 @@ export function buildTierProgress(
       currentValue: input.hasVerifiedActivity,
       requiredValue: true,
       met: input.hasVerifiedActivity,
+    });
+  }
+
+  if (nextRule.minIndependentVerifiedEvidence != null) {
+    const current = input.independentVerifiedEvidenceCount ?? 0;
+    requirements.push({
+      id: 'independent_evidence',
+      label: 'Independent verified evidence',
+      currentValue: current,
+      requiredValue: nextRule.minIndependentVerifiedEvidence,
+      met: current >= nextRule.minIndependentVerifiedEvidence,
+    });
+  }
+
+  if (nextRule.minScoredCategories != null) {
+    const current = Math.max(input.scoredCategoryCount ?? 0, input.establishedCategoryCount ?? 0);
+    requirements.push({
+      id: 'coverage',
+      label: 'Category coverage',
+      currentValue: current,
+      requiredValue: nextRule.minScoredCategories,
+      met: current >= nextRule.minScoredCategories,
+    });
+  }
+
+  if (nextRule.requiresRecurrence) {
+    requirements.push({
+      id: 'recurrence',
+      label: 'Recurrence',
+      currentValue: Boolean(input.hasRecurrence),
+      requiredValue: true,
+      met: Boolean(input.hasRecurrence),
+    });
+  }
+
+  if (nextRule.minTimeSpanDays != null && nextRule.minTimeSpanDays > 0) {
+    const current = input.timeSpanDays ?? 0;
+    requirements.push({
+      id: 'history',
+      label: 'History / time span',
+      currentValue: current,
+      requiredValue: nextRule.minTimeSpanDays,
+      met: current >= nextRule.minTimeSpanDays,
     });
   }
 
@@ -585,12 +762,65 @@ export function buildTierProgress(
   };
 }
 
+export function buildTierReadiness(
+  input: TierQualificationInput,
+  progress: TierProgress,
+): TierReadiness {
+  const gates: TierGateState[] = progress.requirements.map((req) => ({
+    id: req.id,
+    label: req.label,
+    met: req.met,
+    detail:
+      req.met
+        ? 'Met'
+        : req.id === 'overall_score'
+          ? 'Numerical score condition not yet met'
+          : req.id === 'score_maturity'
+            ? 'A provisional estimate cannot unlock this tier'
+            : req.id === 'independent_evidence'
+            ? 'Needs more independent history'
+            : req.id === 'confidence'
+              ? `Confidence: ${String(req.currentValue ?? 'Low')}`
+              : req.id === 'coverage'
+                ? 'Coverage is insufficient'
+                : 'Not met',
+  }));
+  const scoreGate = gates.find((gate) => gate.id === 'overall_score');
+  const evidenceGate = gates.find((gate) => gate.id === 'independent_evidence' || gate.id === 'verified_activity');
+  const confidenceGate = gates.find((gate) => gate.id === 'confidence');
+  const coverageGate = gates.find((gate) => gate.id === 'coverage');
+  const historyGate = gates.find((gate) => gate.id === 'history' || gate.id === 'recurrence' || gate.id === 'sustained_activity');
+  const nonScoreGates = gates.filter((gate) => gate.id !== 'overall_score');
+  const blockingGates = gates.filter((gate) => !gate.met);
+  const emphasizePointsToNext = Boolean(
+    progress.nextTier &&
+      nonScoreGates.length > 0 &&
+      nonScoreGates.every((gate) => gate.met) &&
+      scoreGate &&
+      !scoreGate.met,
+  );
+
+  return {
+    nextTier: progress.nextTier,
+    scoreThresholdMet: scoreGate?.met ?? false,
+    evidenceMet: evidenceGate?.met ?? true,
+    confidenceMet: confidenceGate?.met ?? true,
+    coverageMet: coverageGate?.met ?? true,
+    historyMet: historyGate?.met ?? true,
+    ready: blockingGates.length === 0 && progress.nextTier != null,
+    emphasizePointsToNext,
+    blockingGates,
+    gates,
+  };
+}
+
 export function calculateTierStatus(
   input: TierQualificationInput,
   calculatedAt: string | null = null,
 ): CivizenTierStatus {
   const result = determineFinalTier(input);
   const progress = buildTierProgress(input, result.finalTier);
+  const readiness = buildTierReadiness(input, progress);
 
   return {
     scoreState: input.overallScore == null ? 'not_scored' : 'scored',
@@ -606,6 +836,7 @@ export function calculateTierStatus(
     progress,
     calculatedAt,
     rulesVersion: TIER_RULES_VERSION,
+    readiness,
   };
 }
 

@@ -56,6 +56,7 @@ const openOpportunity = {
   expectedOutcome: null,
   evidenceRequirements: null,
   evaluationCriteria: null,
+  evaluationDimensions: [],
   createdAt: '2026-08-13T00:00:00.000Z',
   updatedAt: '2026-08-13T00:00:00.000Z',
 };

@@ -29,6 +29,7 @@ Before planning or editing, read (in order):
 7. If the task touches public Areas / Initiatives, `/contribute`, `/partners`, or public participation discovery:
    - **`docs/03-platform/areas-and-initiatives/public-areas-initiatives-v1.md`** (working product spec; not `/documents`; do not implement `/areas` without a separate task)
    - **`docs/04-operations/dev/contribute-page.md`** when touching `/contribute`
+   - **`docs/04-operations/dev/phase-1-pilot-operating-model.md`** when touching `/contribute` pilots
 8. Documentation map: `docs/README.md` (purpose-based IA: foundation · governance · policies · platform · operations · research · proposals · archive · institutional)
 
 Do not rely on conversation memory alone for component behavior.

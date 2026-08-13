@@ -10,11 +10,15 @@ import { usePageSecondaryNav } from '@/hooks/usePageSecondaryNav';
 import { supabase } from '@/integrations/supabase/client';
 import { type Endorsement } from '@/lib/scoring';
 import { buildScoreFromProfileActivity, formatScoreValue, type CategoryScoreInput, type CivizenScoreResponse } from '@/lib/civizen-score';
+import { ownProfileRingDisplay } from '@/lib/civizen-score-ring-display';
+import { scoreCoverageCaption, scoreEvidenceEstimateCaption, scoreProgressCaption } from '@/lib/civizen-score-caption';
 import { getDevelopmentalScoreColor } from '@/lib/civizen-score-tiers';
-import { countSkillsFromEntry } from '@/lib/profile-skills';
+import { countSkillsFromEntry, declaredSkillNamesFromEntry } from '@/lib/profile-skills';
 import { countTrainingsFromEntry } from '@/lib/profile-trainings';
-import { parseExperienceEntries } from '@/lib/profile-experience';
+import { parseExperienceEntries, cumulativeExperienceMonths } from '@/lib/profile-experience';
 import {
+  demonstratedProjectsFromContributionEvents,
+  demonstratedSkillsFromContributionEvents,
   loadContributionEventsThenSync,
   scoreContributionsFromEvents,
   type ContributionEvent,
@@ -135,7 +139,15 @@ export default function Home() {
   const [educationLevels, setEducationLevels] = useState<string[]>([]);
   const [trainingCount, setTrainingCount] = useState(0);
   const [skillCount, setSkillCount] = useState(0);
+  const [declaredSkillNames, setDeclaredSkillNames] = useState<string[]>([]);
+  const [demonstratedSkills, setDemonstratedSkills] = useState<
+    ReturnType<typeof demonstratedSkillsFromContributionEvents>
+  >([]);
+  const [demonstratedProjects, setDemonstratedProjects] = useState<
+    ReturnType<typeof demonstratedProjectsFromContributionEvents>
+  >([]);
   const [experienceCount, setExperienceCount] = useState(0);
+  const [experienceMonths, setExperienceMonths] = useState(0);
   const [contributionInput, setContributionInput] = useState<CategoryScoreInput | null>(null);
   const [performanceInput, setPerformanceInput] = useState<CategoryScoreInput | null>(null);
   const [recentEndorsements, setRecentEndorsements] = useState<RecentEndorsement[]>([]);
@@ -562,6 +574,8 @@ export default function Home() {
     try {
       const applyContributionEvents = (events: ContributionEvent[]) => {
         setContributionInput(scoreContributionsFromEvents(events));
+        setDemonstratedSkills(demonstratedSkillsFromContributionEvents(events));
+        setDemonstratedProjects(demonstratedProjectsFromContributionEvents(events));
         void loadPerformanceRatings(profile.id).then((ratings) => {
           setPerformanceInput(scorePerformanceFromEvents(events, ratings, profile.id));
         });
@@ -662,7 +676,10 @@ export default function Home() {
 
       setTrainingCount(countTrainingsFromEntry(trainingData));
       setSkillCount(countSkillsFromEntry(skillsData));
-      setExperienceCount(parseExperienceEntries(experienceData?.experiences).length);
+      setDeclaredSkillNames(declaredSkillNamesFromEntry(skillsData));
+      const experienceEntries = parseExperienceEntries(experienceData?.experiences);
+      setExperienceCount(experienceEntries.length);
+      setExperienceMonths(cumulativeExperienceMonths(experienceEntries));
       applyContributionEvents(contributionEvents);
 
       if (recentData) {
@@ -706,7 +723,11 @@ export default function Home() {
         educationLevels,
         trainingCount,
         skillCount,
+        declaredSkillNames,
+        demonstratedSkills,
+        demonstratedProjects,
         experienceCount,
+        experienceMonths,
         endorsementCount: endorsements.length,
         contributions: contributionInput,
         performance: performanceInput,
@@ -718,7 +739,11 @@ export default function Home() {
       educationLevels,
       trainingCount,
       skillCount,
+      declaredSkillNames,
+      demonstratedSkills,
+      demonstratedProjects,
       experienceCount,
+      experienceMonths,
       endorsements.length,
       contributionInput,
       performanceInput,
@@ -765,13 +790,8 @@ export default function Home() {
   const showDevelopmentStories = homeTab === 'stories';
   const homeScoreTierId = score.tier.finalTier ?? 'explorer';
   const homeScoreTierLabel = t(`score.tier.${homeScoreTierId}`);
-  const homePointsToNextLabel =
-    score.tier.pointsToNextTier != null && score.tier.nextTier
-      ? t('score.pointsToTier', {
-          points: score.tier.pointsToNextTier,
-          tier: t(`score.tier.${score.tier.nextTier}`),
-        })
-      : null;
+  const homePointsToNextLabel = scoreProgressCaption(score, t) || null;
+  const homeRing = ownProfileRingDisplay(score);
   const curatedStories = useMemo<CuratedStoryListItem[]>(
     () => buildCuratedStoryList(developmentStories),
     [developmentStories],
@@ -1232,10 +1252,13 @@ export default function Home() {
                           aria-label={homePointsToNextLabel}
                         >
                           <CivizenScore
-                            score={score.overall.score}
+                            score={homeRing.value}
                             size="md"
                             showLabel={false}
                             tier={score.tier.finalTier}
+                            emptyLabel="—"
+                            presentation={homeRing.presentation === 'provisional' ? 'provisional' : 'established'}
+                            centerCaption={homeRing.presentation === 'provisional' ? t('score.estimateLabel') : null}
                           />
                         </div>
                       </TooltipTrigger>
@@ -1244,10 +1267,13 @@ export default function Home() {
                   ) : (
                     <div className="shrink-0">
                       <CivizenScore
-                        score={score.overall.score}
+                        score={homeRing.value}
                         size="md"
                         showLabel={false}
                         tier={score.tier.finalTier}
+                        emptyLabel="—"
+                        presentation={homeRing.presentation === 'provisional' ? 'provisional' : 'established'}
+                        centerCaption={homeRing.presentation === 'provisional' ? t('score.estimateLabel') : null}
                       />
                     </div>
                   )}
@@ -1267,9 +1293,9 @@ export default function Home() {
                                     homeScoreTierId,
                                   )}`}
                                   tabIndex={0}
-                                  aria-label={`${homeScoreTierLabel}. ${homePointsToNextLabel}`}
+                                  aria-label={`${t('score.notEstablishedYet')}. ${homePointsToNextLabel}`}
                                 >
-                                  {homeScoreTierLabel}
+                                  {t('score.notEstablishedYet')}
                                 </p>
                               </TooltipTrigger>
                               <TooltipContent side="bottom">{homePointsToNextLabel}</TooltipContent>
@@ -1281,7 +1307,7 @@ export default function Home() {
                                 homeScoreTierId,
                               )}`}
                             >
-                              {homeScoreTierLabel}
+                              {t('score.notEstablishedYet')}
                             </p>
                           )}
                           <Tooltip>
@@ -1302,8 +1328,11 @@ export default function Home() {
                           </Tooltip>
                         </div>
                         <p className="mt-2 text-sm text-muted-foreground">
-                          {t('home.scoreBuildingHint')}
+                          {scoreEvidenceEstimateCaption(score, t) ?? t('home.scoreBuildingHint')}
                         </p>
+                        {scoreCoverageCaption(score, t) ? (
+                          <p className="text-sm text-muted-foreground">{scoreCoverageCaption(score, t)}</p>
+                        ) : null}
                       </>
                     ) : (
                       <>

@@ -39,10 +39,10 @@ describe('civizen contributions estimator', () => {
     expect(contentSizeFactor(500)).toBe(1.1);
   });
 
-  it('boosts impact when verified', () => {
+  it('does not change impact when verified', () => {
     expect(applyVerifiedImpactBoost(40, false)).toBe(40);
-    expect(applyVerifiedImpactBoost(40, true)).toBe(50);
-    expect(applyVerifiedImpactBoost(90, true)).toBe(100);
+    expect(applyVerifiedImpactBoost(40, true)).toBe(40);
+    expect(applyVerifiedImpactBoost(90, true)).toBe(90);
   });
 
   it('estimates law contributions with higher capacity than posts', () => {
@@ -163,7 +163,7 @@ describe('civizen contributions estimator', () => {
     ]);
     expect(scored?.metrics?.find((m) => m.id === 'ratings')?.value).toBeNull();
     expect(scored?.verifiedSourceCount).toBe(2);
-    expect(['moderate', 'high', 'very_high']).toContain(scored?.confidence);
+    expect(scored?.confidence).toBe('low');
     expect(scored?.score).toBeGreaterThan(0);
   });
 
@@ -218,8 +218,10 @@ describe('civizen contributions estimator', () => {
     );
 
     expect(fewChatMirrors!.score!).toBeLessThan(55);
-    expect(manyStories!.score!).toBeGreaterThan(70);
-    expect(manyStories!.score!).toBeGreaterThan(fewChatMirrors!.score!);
+    expect(manyStories!.score!).toBeGreaterThan(60);
+    expect(manyStories!.score!).toBeGreaterThan(fewChatMirrors!.score! + 8);
+    // Sustained good work approaches demonstrated quality; it is not inflated past it.
+    expect(manyStories!.score!).toBeLessThan(72);
   });
 
   it('groups high-volume ledger types', () => {
@@ -280,7 +282,7 @@ describe('civizen contributions estimator', () => {
     });
     expect(event.verified).toBe(true);
     expect(event.capacityEstimate).toBe(80);
-    expect(event.impactEstimate).toBe(75);
+    expect(event.impactEstimate).toBe(60);
     expect(event.sourceTable).toBe('opportunity_participations');
   });
 
@@ -302,10 +304,16 @@ describe('civizen contributions estimator', () => {
 });
 
 describe('i18n base prefetch helpers', () => {
-  it('exposes a sync peek after loadBaseTranslations resolves', async () => {
+  it('labels independent evidence and unclassified domain activity accurately', async () => {
     await loadBaseTranslations();
-    const peeked = peekBaseTranslations();
+    const peeked = peekBaseTranslations() as {
+      score?: { independentEvidence?: string; domainNoActivity?: string; verifiedContributions?: string };
+      common?: { loading?: string };
+    };
     expect(peeked).toBeTruthy();
-    expect((peeked as { common?: { loading?: string } })?.common?.loading).toBeTruthy();
+    expect(peeked.common?.loading).toBeTruthy();
+    expect(peeked.score?.independentEvidence).toBe('Independent verified evidence');
+    expect(peeked.score?.verifiedContributions).toBe('Verified contributions');
+    expect(peeked.score?.domainNoActivity).toBe('No classified domain activity yet.');
   });
 });

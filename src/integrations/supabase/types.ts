@@ -1679,6 +1679,7 @@ export type Database = {
           description: string | null
           estimated_effort: string | null
           evaluation_criteria: string | null
+          evaluation_dimensions: string[]
           evidence_requirements: string | null
           expected_outcome: string | null
           id: string
@@ -1686,6 +1687,10 @@ export type Database = {
           location_text: string | null
           opportunity_kind: string
           optional_skills: string[]
+          implementation_project_id: string | null
+          knowledge_gap_id: string | null
+          knowledge_space_id: string | null
+          program_id: string | null
           publisher_profile_id: string
           required_skills: string[]
           status: string
@@ -1703,6 +1708,7 @@ export type Database = {
           description?: string | null
           estimated_effort?: string | null
           evaluation_criteria?: string | null
+          evaluation_dimensions?: string[]
           evidence_requirements?: string | null
           expected_outcome?: string | null
           id?: string
@@ -1710,6 +1716,10 @@ export type Database = {
           location_text?: string | null
           opportunity_kind?: string
           optional_skills?: string[]
+          implementation_project_id?: string | null
+          knowledge_gap_id?: string | null
+          knowledge_space_id?: string | null
+          program_id?: string | null
           publisher_profile_id: string
           required_skills?: string[]
           status?: string
@@ -1727,6 +1737,7 @@ export type Database = {
           description?: string | null
           estimated_effort?: string | null
           evaluation_criteria?: string | null
+          evaluation_dimensions?: string[]
           evidence_requirements?: string | null
           expected_outcome?: string | null
           id?: string
@@ -1734,6 +1745,10 @@ export type Database = {
           location_text?: string | null
           opportunity_kind?: string
           optional_skills?: string[]
+          implementation_project_id?: string | null
+          knowledge_gap_id?: string | null
+          knowledge_space_id?: string | null
+          program_id?: string | null
           publisher_profile_id?: string
           required_skills?: string[]
           status?: string
@@ -1756,6 +1771,361 @@ export type Database = {
             columns: ["area_node_id"]
             isOneToOne: false
             referencedRelation: "classification_nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contribution_opportunities_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "contribution_programs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contribution_opportunities_implementation_project_id_fkey"
+            columns: ["implementation_project_id"]
+            isOneToOne: false
+            referencedRelation: "implementation_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contribution_programs: {
+        Row: {
+          area_node_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          program_kind: string
+          publisher_profile_id: string
+          seed_key: string | null
+          status: string
+          summary: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          area_node_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          program_kind?: string
+          publisher_profile_id: string
+          seed_key?: string | null
+          status?: string
+          summary: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          area_node_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          program_kind?: string
+          publisher_profile_id?: string
+          seed_key?: string | null
+          status?: string
+          summary?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contribution_programs_publisher_profile_id_fkey"
+            columns: ["publisher_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contribution_programs_area_node_id_fkey"
+            columns: ["area_node_id"]
+            isOneToOne: false
+            referencedRelation: "classification_nodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_challenges: {
+        Row: {
+          affected: string | null
+          area_node_id: string | null
+          completed_at: string | null
+          completed_by: string | null
+          constraints: string | null
+          context_detail: string | null
+          created_at: string
+          evidence_links: string | null
+          id: string
+          lessons_learned: string | null
+          outcome_evidence: string | null
+          outcome_summary: string | null
+          problem_statement: string
+          program_id: string
+          publisher_profile_id: string
+          resources: string | null
+          scope_text: string | null
+          selected_proposal_id: string | null
+          status: string
+          success_criteria: string
+          success_criteria_result: string | null
+          title: string
+          updated_at: string
+          why_it_matters: string
+        }
+        Insert: {
+          affected?: string | null
+          area_node_id?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          constraints?: string | null
+          context_detail?: string | null
+          created_at?: string
+          evidence_links?: string | null
+          id?: string
+          lessons_learned?: string | null
+          outcome_evidence?: string | null
+          outcome_summary?: string | null
+          problem_statement: string
+          program_id: string
+          publisher_profile_id: string
+          resources?: string | null
+          scope_text?: string | null
+          selected_proposal_id?: string | null
+          status?: string
+          success_criteria: string
+          success_criteria_result?: string | null
+          title: string
+          updated_at?: string
+          why_it_matters: string
+        }
+        Update: {
+          affected?: string | null
+          area_node_id?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          constraints?: string | null
+          context_detail?: string | null
+          created_at?: string
+          evidence_links?: string | null
+          id?: string
+          lessons_learned?: string | null
+          outcome_evidence?: string | null
+          outcome_summary?: string | null
+          problem_statement?: string
+          program_id?: string
+          publisher_profile_id?: string
+          resources?: string | null
+          scope_text?: string | null
+          selected_proposal_id?: string | null
+          status?: string
+          success_criteria?: string
+          success_criteria_result?: string | null
+          title?: string
+          updated_at?: string
+          why_it_matters?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_challenges_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "contribution_programs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_challenges_publisher_profile_id_fkey"
+            columns: ["publisher_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      challenge_proposals: {
+        Row: {
+          author_profile_id: string
+          challenge_id: string
+          created_at: string
+          expected_result: string
+          id: string
+          implementation_approach: string | null
+          rationale: string
+          resources_needed: string | null
+          risks: string | null
+          status: string
+          supporting_evidence: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_profile_id: string
+          challenge_id: string
+          created_at?: string
+          expected_result: string
+          id?: string
+          implementation_approach?: string | null
+          rationale: string
+          resources_needed?: string | null
+          risks?: string | null
+          status?: string
+          supporting_evidence?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_profile_id?: string
+          challenge_id?: string
+          created_at?: string
+          expected_result?: string
+          id?: string
+          implementation_approach?: string | null
+          rationale?: string
+          resources_needed?: string | null
+          risks?: string | null
+          status?: string
+          supporting_evidence?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_proposals_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "community_challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenge_proposals_author_profile_id_fkey"
+            columns: ["author_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      implementation_projects: {
+        Row: {
+          challenge_id: string
+          created_at: string
+          id: string
+          key_steps: string | null
+          outcome_evidence: string | null
+          proposal_id: string
+          publisher_profile_id: string
+          status: string
+          summary: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          challenge_id: string
+          created_at?: string
+          id?: string
+          key_steps?: string | null
+          outcome_evidence?: string | null
+          proposal_id: string
+          publisher_profile_id: string
+          status?: string
+          summary: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          challenge_id?: string
+          created_at?: string
+          id?: string
+          key_steps?: string | null
+          outcome_evidence?: string | null
+          proposal_id?: string
+          publisher_profile_id?: string
+          status?: string
+          summary?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "implementation_projects_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: true
+            referencedRelation: "community_challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "implementation_projects_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "challenge_proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      solution_records: {
+        Row: {
+          challenge_id: string
+          contributors: string | null
+          created_at: string
+          evidence: string | null
+          id: string
+          implementation_summary: string
+          implemented_solution: string
+          knowledge_resource_id: string | null
+          knowledge_space_id: string | null
+          lessons_learned: string | null
+          outcome: string
+          problem_context: string
+          program_id: string
+          project_id: string | null
+          publisher_profile_id: string
+          reuse_notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          challenge_id: string
+          contributors?: string | null
+          created_at?: string
+          evidence?: string | null
+          id?: string
+          implementation_summary: string
+          implemented_solution: string
+          knowledge_resource_id?: string | null
+          knowledge_space_id?: string | null
+          lessons_learned?: string | null
+          outcome: string
+          problem_context: string
+          program_id: string
+          project_id?: string | null
+          publisher_profile_id: string
+          reuse_notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          challenge_id?: string
+          contributors?: string | null
+          created_at?: string
+          evidence?: string | null
+          id?: string
+          implementation_summary?: string
+          implemented_solution?: string
+          knowledge_resource_id?: string | null
+          knowledge_space_id?: string | null
+          lessons_learned?: string | null
+          outcome?: string
+          problem_context?: string
+          program_id?: string
+          project_id?: string | null
+          publisher_profile_id?: string
+          reuse_notes?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solution_records_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: true
+            referencedRelation: "community_challenges"
             referencedColumns: ["id"]
           },
         ]
@@ -1921,6 +2291,59 @@ export type Database = {
             foreignKeyName: "opportunity_evaluations_participation_id_fkey"
             columns: ["participation_id"]
             isOneToOne: false
+            referencedRelation: "opportunity_participations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      opportunity_work_assessments: {
+        Row: {
+          collaboration_score: number | null
+          completion_score: number | null
+          created_at: string
+          evaluator_profile_id: string
+          id: string
+          impact_score: number | null
+          notes: string | null
+          outcome_score: number | null
+          participation_id: string
+          quality_score: number | null
+          reliability_score: number | null
+          updated_at: string
+        }
+        Insert: {
+          collaboration_score?: number | null
+          completion_score?: number | null
+          created_at?: string
+          evaluator_profile_id: string
+          id?: string
+          impact_score?: number | null
+          notes?: string | null
+          outcome_score?: number | null
+          participation_id: string
+          quality_score?: number | null
+          reliability_score?: number | null
+          updated_at?: string
+        }
+        Update: {
+          collaboration_score?: number | null
+          completion_score?: number | null
+          created_at?: string
+          evaluator_profile_id?: string
+          id?: string
+          impact_score?: number | null
+          notes?: string | null
+          outcome_score?: number | null
+          participation_id?: string
+          quality_score?: number | null
+          reliability_score?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opportunity_work_assessments_participation_id_fkey"
+            columns: ["participation_id"]
+            isOneToOne: true
             referencedRelation: "opportunity_participations"
             referencedColumns: ["id"]
           },
@@ -7080,6 +7503,120 @@ export type Database = {
         Args: { payload: Json }
         Returns: string
       }
+      create_contribution_program: {
+        Args: { payload: Json }
+        Returns: string
+      }
+      create_community_challenge: {
+        Args: { payload: Json }
+        Returns: string
+      }
+      create_knowledge_space: {
+        Args: { payload: Json }
+        Returns: string
+      }
+      update_knowledge_space: {
+        Args: { p_space_id: string; payload: Json }
+        Returns: undefined
+      }
+      set_knowledge_space_status: {
+        Args: { p_space_id: string; p_status: string }
+        Returns: undefined
+      }
+      create_knowledge_resource: {
+        Args: { payload: Json }
+        Returns: string
+      }
+      update_knowledge_resource: {
+        Args: { p_resource_id: string; payload: Json }
+        Returns: undefined
+      }
+      set_knowledge_resource_status: {
+        Args: { p_resource_id: string; p_status: string }
+        Returns: undefined
+      }
+      create_knowledge_gap: {
+        Args: { payload: Json }
+        Returns: string
+      }
+      convert_knowledge_gap_to_opportunity: {
+        Args: { p_gap_id: string; payload: Json }
+        Returns: string
+      }
+      convert_knowledge_gap_to_challenge: {
+        Args: { p_gap_id: string; payload: Json }
+        Returns: string
+      }
+      resolve_knowledge_gap: {
+        Args: { p_gap_id: string; payload: Json }
+        Returns: undefined
+      }
+      publish_solution_record_as_resource: {
+        Args: { p_solution_id: string; p_space_id: string }
+        Returns: string
+      }
+      list_knowledge_resource_attribution_identities: {
+        Args: { p_resource_id: string }
+        Returns: {
+          attribution_kind: string
+          display_name: string
+          id: string
+          organization_name: string | null
+          profile_id: string | null
+          resource_id: string
+          username: string | null
+        }[]
+      }
+      update_community_challenge: {
+        Args: { p_challenge_id: string; payload: Json }
+        Returns: undefined
+      }
+      set_community_challenge_status: {
+        Args: { p_challenge_id: string; p_status: string }
+        Returns: undefined
+      }
+      submit_challenge_proposal: {
+        Args: { p_challenge_id: string; payload: Json }
+        Returns: string
+      }
+      select_challenge_proposal: {
+        Args: { p_proposal_id: string }
+        Returns: string
+      }
+      record_challenge_outcome: {
+        Args: { p_challenge_id: string; payload: Json }
+        Returns: undefined
+      }
+      complete_community_challenge: {
+        Args: { p_challenge_id: string }
+        Returns: string
+      }
+      create_implementation_opportunity: {
+        Args: { p_project_id: string; payload: Json }
+        Returns: string
+      }
+      link_implementation_opportunity: {
+        Args: { p_opportunity_id: string; p_project_id: string }
+        Returns: undefined
+      }
+      list_challenge_proposal_identities: {
+        Args: { p_challenge_id: string }
+        Returns: {
+          avatar_url: string | null
+          display_name: string
+          profile_id: string
+          proposal_id: string
+          username: string | null
+        }[]
+      }
+      current_profile_can_read_challenge: {
+        Args: { p_challenge_id: string }
+        Returns: boolean
+      }
+      current_profile_can_read_program: {
+        Args: { p_program_id: string }
+        Returns: boolean
+      }
       current_profile_can_read_participation: {
         Args: { p_participation_id: string }
         Returns: boolean
@@ -7110,6 +7647,14 @@ export type Database = {
           p_participation_id: string
           p_quality_score?: number | null
           p_skill_names?: string[]
+        }
+        Returns: string
+      }
+      record_opportunity_work_assessment: {
+        Args: {
+          p_notes?: string | null
+          p_participation_id: string
+          p_scores?: Json
         }
         Returns: string
       }

@@ -19,6 +19,7 @@ import {
   listOpenOpportunities,
   listOpportunityApplicantIdentities,
   listVerifiedSkillEvidenceForProfile,
+  recordOpportunityWorkAssessment,
 } from '@/lib/opportunities-api';
 
 describe('opportunities API service boundary', () => {
@@ -70,9 +71,10 @@ describe('opportunities API service boundary', () => {
   it('lists open opportunities with a status filter', async () => {
     const builder: Record<string, unknown> = {};
     const chain = () => builder;
+    const eq = vi.fn(chain);
     Object.assign(builder, {
       select: chain,
-      eq: chain,
+      eq,
       order: async () => ({
         data: [
           {
@@ -97,6 +99,7 @@ describe('opportunities API service boundary', () => {
 
     const rows = await listOpenOpportunities();
     expect(from).toHaveBeenCalledWith('contribution_opportunities');
+    expect(eq).toHaveBeenCalledWith('opportunity_kind', 'education_to_contribution');
     expect(rows).toHaveLength(1);
     expect(rows[0]?.status).toBe('open');
     expect(rpc).not.toHaveBeenCalled();
@@ -167,6 +170,42 @@ describe('opportunities API service boundary', () => {
         participationId: 'part-1',
         decision: 'verified',
         qualityScore: 140,
+      }),
+    ).rejects.toThrow('invalid_evaluation_score');
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it('records a work assessment through a separate RPC after verification', async () => {
+    rpc.mockResolvedValue({ data: 'assess-1', error: null });
+    await recordOpportunityWorkAssessment({
+      participationId: 'part-1',
+      scores: { quality: 82, impact: 70 },
+      dimensions: ['quality', 'impact'],
+      notes: 'Clear write-up.',
+    });
+    expect(rpc).toHaveBeenCalledWith(
+      'record_opportunity_work_assessment',
+      expect.objectContaining({
+        p_participation_id: 'part-1',
+        p_scores: { quality: 82, impact: 70 },
+        p_notes: 'Clear write-up.',
+      }),
+    );
+  });
+
+  it('rejects empty assessments and out-of-range dimension scores before calling the RPC', async () => {
+    await expect(
+      recordOpportunityWorkAssessment({
+        participationId: 'part-1',
+        scores: {},
+        dimensions: ['quality'],
+      }),
+    ).rejects.toThrow('evaluation_empty');
+    await expect(
+      recordOpportunityWorkAssessment({
+        participationId: 'part-1',
+        scores: { quality: 140 },
+        dimensions: ['quality'],
       }),
     ).rejects.toThrow('invalid_evaluation_score');
     expect(rpc).not.toHaveBeenCalled();

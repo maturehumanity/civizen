@@ -17,6 +17,10 @@ function input(partial: {
   hasSustainedActivity?: boolean;
   hasSubstantialImpact?: boolean;
   hasUnresolvedSeriousIntegrityIssue?: boolean;
+  independentVerifiedEvidenceCount?: number;
+  scoredCategoryCount?: number;
+  hasRecurrence?: boolean;
+  timeSpanDays?: number;
 }) {
   return {
     overallScore: partial.overallScore,
@@ -27,8 +31,51 @@ function input(partial: {
     hasSustainedActivity: partial.hasSustainedActivity ?? false,
     hasSubstantialImpact: partial.hasSubstantialImpact ?? false,
     hasUnresolvedSeriousIntegrityIssue: partial.hasUnresolvedSeriousIntegrityIssue ?? false,
+    independentVerifiedEvidenceCount: partial.independentVerifiedEvidenceCount,
+    scoredCategoryCount: partial.scoredCategoryCount,
+    hasRecurrence: partial.hasRecurrence,
+    timeSpanDays: partial.timeSpanDays,
   };
 }
+
+const builderReady = {
+  hasVerifiedActivity: true,
+  independentVerifiedEvidenceCount: 3,
+  scoredCategoryCount: 1,
+  confidence: 'low' as const,
+};
+
+const contributorReady = {
+  ...builderReady,
+  performanceScore: 50,
+  contributionsScore: 50,
+  confidence: 'moderate' as const,
+  independentVerifiedEvidenceCount: 5,
+  scoredCategoryCount: 2,
+  hasRecurrence: true,
+  timeSpanDays: 30,
+};
+
+const catalystReady = {
+  ...contributorReady,
+  performanceScore: 65,
+  contributionsScore: 65,
+  confidence: 'high' as const,
+  independentVerifiedEvidenceCount: 12,
+  scoredCategoryCount: 3,
+  hasSustainedActivity: true,
+  timeSpanDays: 90,
+};
+
+const stewardReady = {
+  ...catalystReady,
+  performanceScore: 75,
+  contributionsScore: 75,
+  independentVerifiedEvidenceCount: 20,
+  scoredCategoryCount: 4,
+  hasSubstantialImpact: true,
+  timeSpanDays: 180,
+};
 
 describe('civizen score tiers', () => {
   it('Test 1: not yet scored still displays Explorer', () => {
@@ -49,9 +96,9 @@ describe('civizen score tiers', () => {
     expect(status.pointsToNextTier).toBe(21.6);
   });
 
-  it('Test 3: Builder threshold with verified activity', () => {
+  it('Test 3: Builder threshold with verified activity and enough independent evidence', () => {
     const result = determineFinalTier(
-      input({ overallScore: 30, hasVerifiedActivity: true, confidence: 'low' }),
+      input({ overallScore: 30, ...builderReady }),
     );
     expect(result.finalTier).toBe('builder');
   });
@@ -65,14 +112,37 @@ describe('civizen score tiers', () => {
     expect(result.unmetRequirements.some((r) => r.id === 'verified_activity')).toBe(true);
   });
 
+  it('does not award Builder from a high score with only one verified activity', () => {
+    const result = determineFinalTier(
+      input({
+        overallScore: 55,
+        hasVerifiedActivity: true,
+        confidence: 'low',
+        independentVerifiedEvidenceCount: 1,
+        scoredCategoryCount: 2,
+      }),
+    );
+    expect(result.finalTier).toBe('explorer');
+    expect(result.unmetRequirements.some((r) => r.id === 'independent_evidence')).toBe(true);
+  });
+
+  it('does not unlock a tier from a provisional estimate alone', () => {
+    const result = determineFinalTier({
+      ...input({
+        overallScore: 87.5,
+        ...builderReady,
+      }),
+      overallStatus: 'provisional',
+    });
+    expect(result.finalTier).toBe('explorer');
+    expect(result.unmetRequirements.some((r) => r.id === 'score_maturity')).toBe(true);
+  });
+
   it('Test 5: Contributor threshold', () => {
     const result = determineFinalTier(
       input({
         overallScore: 60,
-        performanceScore: 50,
-        contributionsScore: 50,
-        confidence: 'moderate',
-        hasVerifiedActivity: true,
+        ...contributorReady,
       }),
     );
     expect(result.finalTier).toBe('contributor');
@@ -82,10 +152,10 @@ describe('civizen score tiers', () => {
     const result = determineFinalTier(
       input({
         overallScore: 68,
+        ...contributorReady,
         performanceScore: 42,
         contributionsScore: 61,
         confidence: 'high',
-        hasVerifiedActivity: true,
       }),
     );
     expect(result.baseTier).toBe('contributor');
@@ -101,11 +171,7 @@ describe('civizen score tiers', () => {
     const result = determineFinalTier(
       input({
         overallScore: 75,
-        performanceScore: 65,
-        contributionsScore: 65,
-        confidence: 'high',
-        hasVerifiedActivity: true,
-        hasSustainedActivity: true,
+        ...catalystReady,
       }),
     );
     expect(result.finalTier).toBe('catalyst');
@@ -115,11 +181,9 @@ describe('civizen score tiers', () => {
     const result = determineFinalTier(
       input({
         overallScore: 81,
+        ...catalystReady,
         performanceScore: 72,
         contributionsScore: 61,
-        confidence: 'high',
-        hasVerifiedActivity: true,
-        hasSustainedActivity: true,
       }),
     );
     expect(result.baseTier).toBe('catalyst');
@@ -130,12 +194,7 @@ describe('civizen score tiers', () => {
     const result = determineFinalTier(
       input({
         overallScore: 85,
-        performanceScore: 75,
-        contributionsScore: 75,
-        confidence: 'high',
-        hasVerifiedActivity: true,
-        hasSustainedActivity: true,
-        hasSubstantialImpact: true,
+        ...stewardReady,
       }),
     );
     expect(result.finalTier).toBe('steward');
@@ -145,12 +204,10 @@ describe('civizen score tiers', () => {
     const result = determineFinalTier(
       input({
         overallScore: 91,
+        ...stewardReady,
         performanceScore: 88,
         contributionsScore: 86,
         confidence: 'very_high',
-        hasVerifiedActivity: true,
-        hasSustainedActivity: true,
-        hasSubstantialImpact: true,
         hasUnresolvedSeriousIntegrityIssue: true,
       }),
     );
@@ -175,11 +232,9 @@ describe('civizen score tiers', () => {
     const before = determineFinalTier(
       input({
         overallScore: 78,
+        ...catalystReady,
         performanceScore: 70,
         contributionsScore: 68,
-        confidence: 'high',
-        hasVerifiedActivity: true,
-        hasSustainedActivity: true,
       }),
     );
     expect(before.finalTier).toBe('catalyst');
@@ -187,11 +242,10 @@ describe('civizen score tiers', () => {
     const after = determineFinalTier(
       input({
         overallScore: 72,
+        ...contributorReady,
         performanceScore: 70,
         contributionsScore: 62,
         confidence: 'high',
-        hasVerifiedActivity: true,
-        hasSustainedActivity: true,
       }),
     );
     expect(after.baseTier).toBe('contributor');
@@ -209,11 +263,9 @@ describe('civizen score tiers', () => {
     const result = determineFinalTier(
       input({
         overallScore: 78,
+        ...catalystReady,
         performanceScore: 61,
         contributionsScore: 68,
-        confidence: 'high',
-        hasVerifiedActivity: true,
-        hasSustainedActivity: true,
       }),
     );
     expect(result.baseTier).toBe('catalyst');

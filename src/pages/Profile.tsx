@@ -33,10 +33,12 @@ import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
 import { uploadProfileAvatar } from '@/lib/profile-avatar';
-import { countSkillsFromEntry } from '@/lib/profile-skills';
+import { countSkillsFromEntry, declaredSkillNamesFromEntry } from '@/lib/profile-skills';
 import { countTrainingsFromEntry } from '@/lib/profile-trainings';
 import { parseExperienceEntries, cumulativeExperienceMonths } from '@/lib/profile-experience';
 import {
+  demonstratedProjectsFromContributionEvents,
+  demonstratedSkillsFromContributionEvents,
   loadContributionEventsThenSync,
   scoreContributionsFromEvents,
   type ContributionEvent,
@@ -65,6 +67,7 @@ import {
   TierProgressSection,
 } from '@/components/score/ScorePageSections';
 import { getTierColorHex, TIER_RING_SEPARATORS } from '@/lib/civizen-score-tiers';
+import { ownProfileRingDisplay } from '@/lib/civizen-score-ring-display';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 const iconMap: Record<string, LucideIcon> = {
@@ -88,6 +91,7 @@ export default function Profile() {
   const [educationLevels, setEducationLevels] = useState<string[]>([]);
   const [trainingCount, setTrainingCount] = useState(0);
   const [skillCount, setSkillCount] = useState(0);
+  const [declaredSkillNames, setDeclaredSkillNames] = useState<string[]>([]);
   const [experienceCount, setExperienceCount] = useState(0);
   const [experienceMonths, setExperienceMonths] = useState(0);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -223,6 +227,7 @@ export default function Profile() {
 
     setTrainingCount(countTrainingsFromEntry(trainingData));
     setSkillCount(countSkillsFromEntry(skillsData));
+    setDeclaredSkillNames(declaredSkillNamesFromEntry(skillsData));
     const experienceEntries = parseExperienceEntries(experienceData?.experiences);
     setExperienceCount(experienceEntries.length);
     setExperienceMonths(cumulativeExperienceMonths(experienceEntries));
@@ -274,6 +279,9 @@ export default function Profile() {
         educationLevels,
         trainingCount,
         skillCount,
+        declaredSkillNames,
+        demonstratedSkills: demonstratedSkillsFromContributionEvents(contributionEvents),
+        demonstratedProjects: demonstratedProjectsFromContributionEvents(contributionEvents),
         experienceCount,
         experienceMonths,
         endorsementCount: endorsements.length,
@@ -287,6 +295,8 @@ export default function Profile() {
       educationLevels,
       trainingCount,
       skillCount,
+      declaredSkillNames,
+      contributionEvents,
       experienceCount,
       experienceMonths,
       endorsements.length,
@@ -686,9 +696,9 @@ export default function Profile() {
     );
   }
 
-  const overallScore = score.overall.score;
-  const overallRingProgress = (overallScore ?? 0) / 100;
-  const overallPercentLabel = `${Math.round(overallScore ?? 0)}%`;
+  const ring = ownProfileRingDisplay(score);
+  const overallRingProgress = ring.progress;
+  const overallPercentLabel = ring.centerLabel;
   /** Outer frame for the photo progress ring (px). ~11% larger; factor band loses little height. */
   const dialRingSize = 176;
   const dialRingStroke = 19;
@@ -884,7 +894,7 @@ export default function Profile() {
                     cy={dialRingCy}
                     r={dialRingRadius}
                     fill="none"
-                    stroke={tierColor}
+                    stroke={ring.presentation === 'provisional' ? 'hsl(var(--muted-foreground) / 0.55)' : tierColor}
                     strokeWidth={dialRingStroke}
                     strokeLinecap="butt"
                     style={{ strokeDasharray: dialRingCircumference }}
@@ -935,7 +945,7 @@ export default function Profile() {
                   textAnchor="middle"
                   dominantBaseline="central"
                   transform={`rotate(${percentLabelRotateDeg} ${percentLabelX} ${percentLabelY})`}
-                  fill={percentFill}
+                  fill={ring.presentation === 'provisional' ? 'hsl(var(--muted-foreground))' : percentFill}
                   style={{
                     fontSize: percentFontSize,
                     fontWeight: 700,
@@ -993,7 +1003,16 @@ export default function Profile() {
                 onChange={handleAvatarChange}
               />
 
-              <span className="sr-only">{overallPercentLabel}</span>
+              <span className="sr-only">
+                {ring.presentation === 'provisional'
+                  ? `${t('score.estimateLabel')} ${ring.centerLabel}`
+                  : overallPercentLabel}
+              </span>
+              {ring.presentation === 'provisional' ? (
+                <span className="pointer-events-none absolute bottom-1 left-1/2 z-[5] -translate-x-1/2 rounded-full bg-background/90 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  {t('score.estimateLabel')}
+                </span>
+              ) : null}
             </div>
           </div>
 

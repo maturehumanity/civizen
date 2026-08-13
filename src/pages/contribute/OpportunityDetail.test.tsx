@@ -10,8 +10,10 @@ const listOwnedLinkedProfileIds = vi.fn();
 const listOpportunityParticipations = vi.fn();
 const listParticipationEvidence = vi.fn();
 const listParticipationEvaluations = vi.fn();
+const getOpportunityWorkAssessment = vi.fn();
 const applyToContributionOpportunity = vi.fn();
 const listOpportunityApplicantIdentities = vi.fn();
+const getChallengeIdForProject = vi.fn();
 
 vi.mock('@/components/layout/AppLayout', () => ({
   AppLayout: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -37,8 +39,11 @@ vi.mock('@/lib/opportunities-api', () => ({
   listOpportunityParticipations: (...args: unknown[]) => listOpportunityParticipations(...args),
   listParticipationEvidence: (...args: unknown[]) => listParticipationEvidence(...args),
   listParticipationEvaluations: (...args: unknown[]) => listParticipationEvaluations(...args),
+  getOpportunityWorkAssessment: (...args: unknown[]) => getOpportunityWorkAssessment(...args),
   applyToContributionOpportunity: (...args: unknown[]) => applyToContributionOpportunity(...args),
   listOpportunityApplicantIdentities: (...args: unknown[]) => listOpportunityApplicantIdentities(...args),
+  listWorkAssessmentsForParticipations: vi.fn().mockResolvedValue([]),
+  recordOpportunityWorkAssessment: vi.fn(),
   withdrawOpportunityParticipation: vi.fn(),
   reviewOpportunityApplication: vi.fn(),
   startOpportunityWork: vi.fn(),
@@ -50,6 +55,10 @@ vi.mock('@/lib/opportunities-api', () => ({
 
 vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
+}));
+
+vi.mock('@/lib/challenges-api', () => ({
+  getChallengeIdForProject: (...args: unknown[]) => getChallengeIdForProject(...args),
 }));
 
 const opportunity = {
@@ -73,6 +82,7 @@ const opportunity = {
   expectedOutcome: 'A one-page note',
   evidenceRequirements: 'Link to the note',
   evaluationCriteria: 'Usable by the clinic',
+  evaluationDimensions: [],
   createdAt: '2026-08-13T00:00:00.000Z',
   updatedAt: '2026-08-13T00:00:00.000Z',
 };
@@ -95,8 +105,10 @@ describe('OpportunityDetail', () => {
     listOpportunityParticipations.mockResolvedValue([]);
     listParticipationEvidence.mockResolvedValue([]);
     listParticipationEvaluations.mockResolvedValue([]);
+    getOpportunityWorkAssessment.mockResolvedValue(null);
     applyToContributionOpportunity.mockResolvedValue('part-1');
     listOpportunityApplicantIdentities.mockResolvedValue([]);
+    getChallengeIdForProject.mockResolvedValue(null);
   });
 
   it('shows essential details and a minimal apply action', async () => {
@@ -167,5 +179,67 @@ describe('OpportunityDetail', () => {
     expect(screen.getByText('contribute.opportunities.applicantsTitle')).toBeInTheDocument();
     expect(screen.getByText('contribute.opportunities.accept')).toBeInTheDocument();
     expect(screen.queryByText('contribute.opportunities.apply')).not.toBeInTheDocument();
+  });
+
+  it('shows a concise evaluation summary on completed work, with dimensions behind more details', async () => {
+    getMyParticipation.mockResolvedValue({
+      id: 'part-1',
+      opportunityId: 'opp-1',
+      participantProfileId: 'user-1',
+      status: 'completed',
+      verificationStatus: 'verified',
+      applicationMessage: null,
+      appliedAt: '2026-08-13T00:00:00.000Z',
+      acceptedAt: null,
+      acceptedBy: null,
+      declinedAt: null,
+      declinedBy: null,
+      declineNote: null,
+      activatedAt: null,
+      submittedAt: null,
+      completedAt: '2026-08-20T00:00:00.000Z',
+      completedBy: null,
+      withdrawnAt: null,
+      cancelledAt: null,
+      cancelledBy: null,
+      createdAt: '2026-08-13T00:00:00.000Z',
+      updatedAt: '2026-08-20T00:00:00.000Z',
+    });
+    getOpportunity.mockResolvedValue({
+      ...opportunity,
+      evaluationDimensions: ['quality', 'impact'],
+    });
+    getOpportunityWorkAssessment.mockResolvedValue({
+      id: 'assess-1',
+      participationId: 'part-1',
+      evaluatorProfileId: 'org-1',
+      notes: 'Thorough and usable.',
+      scores: { quality: 82, impact: 70 },
+      createdAt: '2026-08-20T00:00:00.000Z',
+      updatedAt: '2026-08-20T00:00:00.000Z',
+    });
+
+    renderDetail();
+
+    expect(await screen.findByText(/contribute.opportunities.assessmentTitle/)).toBeInTheDocument();
+    expect(screen.getByText(/76/)).toBeInTheDocument();
+    expect(screen.queryByText('Thorough and usable.')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getAllByText('contribute.opportunities.moreDetails')[1]);
+    expect(screen.getByText('Thorough and usable.')).toBeInTheDocument();
+  });
+
+  it('links community implementation work back to its Challenge', async () => {
+    getOpportunity.mockResolvedValue({
+      ...opportunity,
+      opportunityKind: 'community_implementation',
+      implementationProjectId: 'proj-1',
+    });
+    getChallengeIdForProject.mockResolvedValue('ch-garden');
+    renderDetail();
+
+    const origin = await screen.findByText('contribute.opportunities.originChallenge');
+    expect(origin).toHaveAttribute('href', '/contribute/challenges/ch-garden');
+    expect(getChallengeIdForProject).toHaveBeenCalledWith('proj-1');
   });
 });

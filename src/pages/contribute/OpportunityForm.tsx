@@ -16,7 +16,9 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { listCurrentAreas } from '@/lib/classification';
 import {
   COMPENSATION_STATUSES,
+  EVALUATION_DIMENSIONS,
   profileCanManagePublisher,
+  sanitizeEvaluationDimensions,
   type CompensationStatus,
   type ContributionOpportunity,
 } from '@/lib/opportunities';
@@ -83,7 +85,8 @@ export default function OpportunityForm() {
         row.expectedOutcome ||
         row.evidenceRequirements ||
         row.evaluationCriteria ||
-        row.areaNodeId
+        row.areaNodeId ||
+        row.evaluationDimensions.length > 0
       ) {
         setShowDetails(true);
       }
@@ -350,6 +353,35 @@ export default function OpportunityForm() {
                 onChange={(event) => setField('evaluationCriteria', event.target.value)}
                 rows={3}
               />
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-foreground">
+                {t('contribute.opportunities.assessmentDimensionsLabel')}
+              </p>
+              <p className="text-xs text-muted-foreground">{t('contribute.opportunities.assessmentHint')}</p>
+              <div className="space-y-2">
+                {EVALUATION_DIMENSIONS.map((dimension) => {
+                  const checked = form.evaluationDimensions.includes(dimension);
+                  return (
+                    <div key={dimension} className="flex items-center gap-2">
+                      <Checkbox
+                        id={`opp-dim-${dimension}`}
+                        checked={checked}
+                        onCheckedChange={(value) => {
+                          const next =
+                            value === true
+                              ? [...form.evaluationDimensions, dimension]
+                              : form.evaluationDimensions.filter((item) => item !== dimension);
+                          setField('evaluationDimensions', sanitizeEvaluationDimensions(next));
+                        }}
+                      />
+                      <Label htmlFor={`opp-dim-${dimension}`}>
+                        {t(`contribute.opportunities.dimension.${dimension}`)}
+                      </Label>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </CollapsibleContent>
         </Collapsible>

@@ -1,19 +1,25 @@
 import {
   COMPENSATION_STATUSES,
   EVALUATION_DECISIONS,
+  EVALUATION_DIMENSIONS,
+  isOpportunityKind,
   isOpportunityStatus,
   isParticipationStatus,
   isVerifiedCompletedParticipation,
   isVerificationStatus,
+  sanitizeEvaluationDimensions,
   type CompensationStatus,
   type ContributionOpportunity,
   type EvaluationDecision,
+  type EvaluationDimension,
   type OpportunityEvaluation,
   type OpportunityEvidence,
   type OpportunityKind,
   type OpportunityParticipation,
   type OpportunityPayload,
   type OpportunitySkillEvidence,
+  type OpportunityWorkAssessment,
+  type OpportunityWorkAssessmentScores,
 } from '@/lib/opportunities';
 
 export function demonstratedSkillsNotInDeclared(args: {
@@ -78,6 +84,7 @@ export function toOpportunityPayloadJson(payload: OpportunityPayload): Record<st
     expected_outcome: payload.expectedOutcome ?? null,
     evidence_requirements: payload.evidenceRequirements ?? null,
     evaluation_criteria: payload.evaluationCriteria ?? null,
+    evaluation_dimensions: sanitizeEvaluationDimensions(payload.evaluationDimensions ?? []),
   };
 }
 
@@ -110,8 +117,9 @@ function asNumberOrNull(value: unknown): number | null {
 
 export function mapContributionOpportunity(row: Record<string, unknown>): ContributionOpportunity {
   const status = isOpportunityStatus(row.status) ? row.status : 'draft';
-  const kind: OpportunityKind =
-    row.opportunity_kind === 'education_to_contribution' ? 'education_to_contribution' : 'education_to_contribution';
+  const kind: OpportunityKind = isOpportunityKind(row.opportunity_kind)
+    ? row.opportunity_kind
+    : 'education_to_contribution';
   const compensation = COMPENSATION_STATUSES.includes(row.compensation_status as CompensationStatus)
     ? (row.compensation_status as CompensationStatus)
     : 'learning';
@@ -136,6 +144,11 @@ export function mapContributionOpportunity(row: Record<string, unknown>): Contri
     expectedOutcome: asStringOrNull(row.expected_outcome),
     evidenceRequirements: asStringOrNull(row.evidence_requirements),
     evaluationCriteria: asStringOrNull(row.evaluation_criteria),
+    evaluationDimensions: sanitizeEvaluationDimensions(row.evaluation_dimensions),
+    programId: asStringOrNull(row.program_id),
+    knowledgeGapId: asStringOrNull(row.knowledge_gap_id),
+    knowledgeSpaceId: asStringOrNull(row.knowledge_space_id),
+    implementationProjectId: asStringOrNull(row.implementation_project_id),
     createdAt: asString(row.created_at),
     updatedAt: asString(row.updated_at),
   };
@@ -195,6 +208,38 @@ export function mapOpportunityEvaluation(row: Record<string, unknown>): Opportun
     impactScore: asNumberOrNull(row.impact_score),
     createdAt: asString(row.created_at),
   };
+}
+
+export function mapOpportunityWorkAssessment(row: Record<string, unknown>): OpportunityWorkAssessment {
+  const scores: OpportunityWorkAssessmentScores = {};
+  for (const dimension of EVALUATION_DIMENSIONS) {
+    scores[dimension] = asNumberOrNull(row[`${dimension}_score`]);
+  }
+  return {
+    id: asString(row.id),
+    participationId: asString(row.participation_id),
+    evaluatorProfileId: asString(row.evaluator_profile_id),
+    notes: asStringOrNull(row.notes),
+    scores,
+    createdAt: asString(row.created_at),
+    updatedAt: asString(row.updated_at),
+  };
+}
+
+export function workAssessmentScoresPayload(
+  scores: OpportunityWorkAssessmentScores,
+  dimensions: readonly EvaluationDimension[],
+): Record<string, number> {
+  const enabled = new Set(sanitizeEvaluationDimensions(dimensions));
+  const payload: Record<string, number> = {};
+  for (const dimension of EVALUATION_DIMENSIONS) {
+    if (!enabled.has(dimension)) continue;
+    const value = scores[dimension];
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      payload[dimension] = value;
+    }
+  }
+  return payload;
 }
 
 export function mapOpportunitySkillEvidence(row: Record<string, unknown>): OpportunitySkillEvidence {

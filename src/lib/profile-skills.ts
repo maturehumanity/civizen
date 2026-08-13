@@ -559,9 +559,18 @@ export function countSkillsFromEntry(row: {
   soft_skill_names?: unknown;
   skill_names?: unknown;
 } | null | undefined): number {
-  if (!row) return 0;
+  const names = declaredSkillNamesFromEntry(row);
+  return names.length;
+}
+
+export function declaredSkillNamesFromEntry(row: {
+  hard_skill_names?: unknown;
+  soft_skill_names?: unknown;
+  skill_names?: unknown;
+} | null | undefined): string[] {
+  if (!row) return [];
   const hard = asStringArray(row.hard_skill_names);
   const soft = asStringArray(row.soft_skill_names);
-  if (hard.length > 0 || soft.length > 0) return countDeclaredSkills(hard, soft);
-  return normalizeSkillNames(asStringArray(row.skill_names)).length;
+  if (hard.length > 0 || soft.length > 0) return normalizeSkillNames([...hard, ...soft]);
+  return normalizeSkillNames(asStringArray(row.skill_names));
 }

@@ -26,6 +26,7 @@ Before planning or editing, agents **must read**:
 7. When work touches public Areas / Initiatives, `/contribute`, `/partners`, or public participation discovery:
    **`docs/03-platform/areas-and-initiatives/public-areas-initiatives-v1.md`** (working product spec; **not** `/documents`; V1 read-only `/areas` is implemented — do not expand matching, initiative schema, or nav without a separate task)
    and **`docs/04-operations/dev/contribute-page.md`** when touching `/contribute`
+   Phase 1 operating model: **`docs/04-operations/dev/phase-1-pilot-operating-model.md`**
 8. Documentation map: `docs/README.md`
 
 Cursor enforces the same list via `.cursor/rules/civizen-project.mdc` (`alwaysApply: true`).
@@ -122,6 +123,7 @@ When restricted ops configuration is available to the agent, perform production 
   - **Modify path:** update existing tests when behavior changes; do not leave stale assertions.
   - **Stop condition:** do not report a feature/fix complete if new or changed modules/pages lack corresponding test updates, unless the change is docs-only or an explicit user waiver in that session.
   - Run the new/updated tests (`npm test` or a focused `vitest run …`) in addition to `npm run verify:post-dev` when UI changed.
+- **Development outcome capture:** After a coherent shipped development outcome (not each prompt or commit), record it with `recordDevelopmentOutcome` / `planDevelopmentOutcomeStories` (`src/lib/civizen-development-capture.ts`) using a stable `outcomeRootId`, originating instruction, real features, commit SHA, `testsPassed`, roles, and `implementationAssisted`. Historical journal rows are reconstructed separately (`src/lib/civizen-historical-reconstruction.ts`, `docs/04-operations/dev/historical-development-reconstruction.md`); do not restore chat/git rows as independent contributions. Do not set Contributions/Performance/overall scores directly.
 
 ## 4. Application Versioning
 

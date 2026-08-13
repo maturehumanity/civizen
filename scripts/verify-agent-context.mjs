@@ -120,6 +120,13 @@ if (!cursorRule.includes('verify:home-post-composer')) {
   fail('.cursor/rules/civizen-project.mdc must require verify:home-post-composer after UI work');
 }
 
+if (!existsSync('docs/04-operations/dev/phase-1-pilot-operating-model.md')) {
+  fail('missing docs/04-operations/dev/phase-1-pilot-operating-model.md');
+}
+if (!agents.includes('phase-1-pilot-operating-model.md')) {
+  fail('AGENTS.md must reference docs/04-operations/dev/phase-1-pilot-operating-model.md');
+}
+
 const spec = readFileSync('docs/04-operations/dev/nav-secondary-carousel.md', 'utf8');
 if (!spec.includes('Sell') || !spec.includes('Jobs') || !spec.includes('390px')) {
   fail('nav-secondary-carousel.md missing key acceptance criteria');

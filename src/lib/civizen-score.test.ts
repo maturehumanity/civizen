@@ -44,8 +44,8 @@ describe('civizen score model', () => {
     expect(result.explanation.excludedCategories).toEqual(
       expect.arrayContaining(['performance', 'contributions']),
     );
-    expect(result.overall.score).not.toBeNull();
-    // Missing categories must not drag the overall down as zeros.
+    expect(result.overall.score).toBeNull();
+    expect(result.overall.status).toBe('provisional');
     const onlyScored = computeWeightedOverall({
       learning: 82,
       experience: 55,
@@ -53,14 +53,16 @@ describe('civizen score model', () => {
       performance: null,
       contributions: null,
     });
-    expect(result.overall.score).toBe(onlyScored.overall);
-    expect(result.overall.score).toBeGreaterThan(50);
+    expect(result.overall.provisionalEstimate).toBe(onlyScored.overall);
+    expect(result.overall.provisionalEstimate).toBeGreaterThan(50);
   });
 
   it('Profile C: active contributor has complete circle, high confidence, and history', () => {
     const result = calculateCivizenScoreModel(SCORE_TEST_PROFILES.C_activeContributor());
     expect(result.categories.every((c) => c.score != null)).toBe(true);
     expect(result.overall.score).not.toBeNull();
+    expect(result.overall.status).toBe('established');
+    expect(result.overall.provisionalEstimate).toBe(result.overall.score);
     expect(['high', 'very_high']).toContain(result.overall.confidence);
     expect(result.overall.stage).toMatch(/established/);
     expect(result.history.length).toBeGreaterThan(0);
@@ -69,7 +71,9 @@ describe('civizen score model', () => {
 
   it('Profile D: unverified experience stays low confidence with verification recommendations', () => {
     const result = calculateCivizenScoreModel(SCORE_TEST_PROFILES.D_unverifiedExperience());
-    expect(result.overall.score).not.toBeNull();
+    expect(result.overall.score).toBeNull();
+    expect(result.overall.status).toBe('provisional');
+    expect(result.overall.provisionalEstimate).not.toBeNull();
     expect(result.overall.confidence).toBe('low');
     expect(result.nextSteps.some((s) => /verif|confirm|evidence/i.test(s.label))).toBe(true);
   });

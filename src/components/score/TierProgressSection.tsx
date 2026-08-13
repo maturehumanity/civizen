@@ -2,9 +2,9 @@ import { Card } from '@/components/ui/card';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { CivizenScoreResponse } from '@/lib/civizen-score';
+import { scoreCoverageCaption, scoreEvidenceEstimateCaption, scoreProgressCaption } from '@/lib/civizen-score-caption';
 import {
   getDevelopmentalScoreColor,
-  getTierLabel,
   getTierRule,
   type CivizenTier,
 } from '@/lib/civizen-score-tiers';
@@ -89,13 +89,8 @@ export function TierProgressSection({ score }: TierProgressSectionProps) {
       <Card className="space-y-3 p-4">
         <p className="text-sm text-muted-foreground">{getTierRule(tier.finalTier).description}</p>
 
-        {tier.pointsToNextTier != null && nextLabel ? (
-          <p className="text-sm font-medium text-foreground">
-            {t('score.pointsToTier', {
-              points: tier.pointsToNextTier,
-              tier: nextLabel,
-            })}
-          </p>
+        {scoreProgressCaption(score, t) ? (
+          <p className="text-sm font-medium text-foreground">{scoreProgressCaption(score, t)}</p>
         ) : null}
 
         {progress.requirements.length > 0 ? (
@@ -159,19 +154,27 @@ interface ScoreTierSummaryProps {
 export function ScoreTierSummary({ score, compact = false }: ScoreTierSummaryProps) {
   const { t } = useLanguage();
   const overall = score.overall.score;
+  const established = score.overall.status === 'established' && overall != null;
   const tier = score.tier.finalTier ?? 'explorer';
-  const color = getDevelopmentalScoreColor(overall, tier);
+  const color = getDevelopmentalScoreColor(established ? overall : null, tier);
+  const estimateCaption = scoreEvidenceEstimateCaption(score, t);
+  const coverageCaption = scoreCoverageCaption(score, t);
 
-  if (overall == null) {
+  if (!established) {
     return (
       <div className={compact ? 'space-y-1' : 'space-y-2'}>
         <p className={`font-display font-bold ${color} ${compact ? 'text-2xl' : 'text-3xl'}`}>
+          {t('score.notEstablishedYet')}
+        </p>
+        <p className={`font-display font-semibold ${color} ${compact ? 'text-base' : 'text-lg'}`}>
           {t(`score.tier.${tier}`)}
         </p>
-        <p className="text-sm text-muted-foreground">
-          {t('score.confidenceLabel')}: {confidenceLabel(score.overall.confidence, t)}
-        </p>
-        <p className="text-sm text-muted-foreground">{t('home.scoreBuildingHint')}</p>
+        {estimateCaption ? (
+          <p className="text-sm text-muted-foreground">{estimateCaption}</p>
+        ) : (
+          <p className="text-sm text-muted-foreground">{t('home.scoreBuildingHint')}</p>
+        )}
+        {coverageCaption ? <p className="text-sm text-muted-foreground">{coverageCaption}</p> : null}
       </div>
     );
   }
@@ -185,13 +188,8 @@ export function ScoreTierSummary({ score, compact = false }: ScoreTierSummaryPro
       <p className="text-sm text-muted-foreground">
         {t('score.confidenceLabel')}: {confidenceLabel(score.overall.confidence, t)}
       </p>
-      {score.tier.pointsToNextTier != null && score.tier.nextTier ? (
-        <p className="text-sm text-muted-foreground">
-          {t('score.pointsToTier', {
-            points: score.tier.pointsToNextTier,
-            tier: getTierLabel(score.tier.nextTier),
-          })}
-        </p>
+      {scoreProgressCaption(score, t) ? (
+        <p className="text-sm text-muted-foreground">{scoreProgressCaption(score, t)}</p>
       ) : null}
     </div>
   );

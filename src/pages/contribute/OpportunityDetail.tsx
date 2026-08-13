@@ -22,6 +22,7 @@ import {
   listOwnedLinkedProfileIds,
   listParticipationEvaluations,
   listParticipationEvidence,
+  getOpportunityWorkAssessment,
   startOpportunityWork,
   submitOpportunityWork,
   withdrawOpportunityParticipation,
@@ -30,14 +31,18 @@ import {
   canApplyToOpportunity,
   participantNextAction,
   profileCanManagePublisher,
+  opportunityUsesEvaluation,
   type ContributionOpportunity,
   type OpportunityEvaluation,
   type OpportunityEvidence,
   type OpportunityParticipation,
+  type OpportunityWorkAssessment,
 } from '@/lib/opportunities';
 import { OpportunityEvidenceList } from '@/pages/contribute/OpportunityEvidenceList';
 import { OpportunityOrganizerPanel } from '@/pages/contribute/OpportunityOrganizerPanel';
+import { OpportunityAssessmentView } from '@/pages/contribute/OpportunityWorkAssessmentCard';
 import { toast } from 'sonner';
+import { getChallengeIdForProject } from '@/lib/challenges-api';
 export default function OpportunityDetail() {
   const { opportunityId = '' } = useParams<{ opportunityId: string }>();
   const { t } = useLanguage();
@@ -50,6 +55,7 @@ export default function OpportunityDetail() {
   const [applicants, setApplicants] = useState<OpportunityParticipation[]>([]);
   const [evidence, setEvidence] = useState<OpportunityEvidence[]>([]);
   const [evaluations, setEvaluations] = useState<OpportunityEvaluation[]>([]);
+  const [assessment, setAssessment] = useState<OpportunityWorkAssessment | null>(null);
   const [reviewEvidence, setReviewEvidence] = useState<OpportunityEvidence[]>([]);
   const [ownedLinkedIds, setOwnedLinkedIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,6 +67,7 @@ export default function OpportunityDetail() {
   const [evalSkills, setEvalSkills] = useState('');
   const [showDetails, setShowDetails] = useState(false);
   const [reviewingId, setReviewingId] = useState<string | null>(null);
+  const [originChallengeId, setOriginChallengeId] = useState<string | null>(null);
   const load = useCallback(async () => {
     if (!opportunityId) return;
     setLoading(true);
@@ -70,6 +77,11 @@ export default function OpportunityDetail() {
       const row = await getOpportunity(opportunityId);
       setOpportunity(row);
       if (!row) return;
+      if (row.opportunityKind === 'community_implementation' && row.implementationProjectId) {
+        setOriginChallengeId(await getChallengeIdForProject(row.implementationProjectId).catch(() => null));
+      } else {
+        setOriginChallengeId(null);
+      }
       const participation = profileId ? await getMyParticipation(opportunityId, profileId) : null;
       setMine(participation);
       const canManage = profileCanManagePublisher({
@@ -81,13 +93,16 @@ export default function OpportunityDetail() {
       if (!participation?.id) {
         setEvidence([]);
         setEvaluations([]);
+        setAssessment(null);
       } else {
-        const [ev, evals] = await Promise.all([
+        const [ev, evals, workAssessment] = await Promise.all([
           listParticipationEvidence(participation.id),
           listParticipationEvaluations(participation.id),
+          getOpportunityWorkAssessment(participation.id).catch(() => null),
         ]);
         setEvidence(ev);
         setEvaluations(evals);
+        setAssessment(workAssessment);
       }
     } catch {
       toast.error(tRef.current('contribute.opportunities.loadFailed'));
@@ -180,7 +195,15 @@ export default function OpportunityDetail() {
         <AppPageHeader
           title={opportunity.title}
           subtitle={opportunity.summary}
-          fallbackPath="/contribute/professional"
+          fallbackPath={
+            opportunity.opportunityKind === 'knowledge_gap' && opportunity.knowledgeSpaceId
+              ? `/contribute/knowledge/${opportunity.knowledgeSpaceId}`
+              : originChallengeId
+                ? `/contribute/challenges/${originChallengeId}`
+                : opportunity.opportunityKind === 'community_implementation'
+                  ? '/contribute/challenges'
+                  : '/contribute/professional'
+          }
           actions={
             manages ? (
               <Button
@@ -217,6 +240,23 @@ export default function OpportunityDetail() {
             .filter(Boolean)
             .join(' · ')}
         </p>
+
+        {opportunity.opportunityKind === 'knowledge_gap' && opportunity.knowledgeSpaceId ? (
+          <Link
+            to={`/contribute/knowledge/${opportunity.knowledgeSpaceId}`}
+            className="text-sm font-medium text-primary"
+          >
+            {t('contribute.opportunities.originGap')}
+          </Link>
+        ) : null}
+        {opportunity.opportunityKind === 'community_implementation' ? (
+          <Link
+            to={originChallengeId ? `/contribute/challenges/${originChallengeId}` : '/contribute/challenges'}
+            className="text-sm font-medium text-primary"
+          >
+            {t('contribute.opportunities.originChallenge')}
+          </Link>
+        ) : null}
 
         {mine ? (
           <Card className="space-y-2 border-border/70 bg-card/95 p-4">
@@ -370,6 +410,15 @@ export default function OpportunityDetail() {
               {t(`contribute.opportunities.evaluationDecision.${evaluations[0].decision}`)}
               {evaluations[0].feedback ? ` — ${evaluations[0].feedback}` : ''}
             </p>
+          </Card>
+        ) : null}
+
+        {assessment && !manages && opportunityUsesEvaluation(opportunity) ? (
+          <Card className="space-y-2 border-border/70 bg-card/95 p-4">
+            <OpportunityAssessmentView
+              dimensions={opportunity.evaluationDimensions}
+              assessment={assessment}
+            />
           </Card>
         ) : null}
 

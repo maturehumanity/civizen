@@ -1,9 +1,19 @@
 /**
- * Education-to-Contribution opportunity domain (Slice 1).
- * Participations are the workflow record. Score events are a derived projection.
+ * Education-to-Contribution opportunity domain (Slice 1 + Slice 2 evaluation).
+ * Participations are the workflow record. Verification stays on that record.
+ * Work assessments are an optional quality layer. Score events are a derived projection.
  */
-export const OPPORTUNITY_KINDS = ['education_to_contribution'] as const;
+export const OPPORTUNITY_KINDS = [
+  'education_to_contribution',
+  'community_implementation',
+  'knowledge_gap',
+] as const;
 export type OpportunityKind = (typeof OPPORTUNITY_KINDS)[number];
+const OPPORTUNITY_KIND_SET = new Set<string>(OPPORTUNITY_KINDS);
+
+export function isOpportunityKind(value: unknown): value is OpportunityKind {
+  return typeof value === 'string' && OPPORTUNITY_KIND_SET.has(value);
+}
 
 export const OPPORTUNITY_STATUSES = ['draft', 'open', 'closed', 'cancelled'] as const;
 export type OpportunityStatus = (typeof OPPORTUNITY_STATUSES)[number];
@@ -42,6 +52,23 @@ export type CompensationStatus = (typeof COMPENSATION_STATUSES)[number];
 export const EVALUATION_DECISIONS = ['verified', 'rejected', 'disputed'] as const;
 export type EvaluationDecision = (typeof EVALUATION_DECISIONS)[number];
 
+/** Optional post-verification assessment dimensions. Not every opportunity uses all of them. */
+export const EVALUATION_DIMENSIONS = [
+  'completion',
+  'quality',
+  'reliability',
+  'collaboration',
+  'outcome',
+  'impact',
+] as const;
+export type EvaluationDimension = (typeof EVALUATION_DIMENSIONS)[number];
+
+/** Only these assessment dimensions may influence derived Performance estimates. */
+export const PERFORMANCE_EVALUATION_DIMENSIONS = ['quality', 'impact', 'collaboration'] as const;
+export type PerformanceEvaluationDimension = (typeof PERFORMANCE_EVALUATION_DIMENSIONS)[number];
+
+const EVALUATION_DIMENSION_SET = new Set<string>(EVALUATION_DIMENSIONS);
+
 export const APPLICATION_REVIEW_DECISIONS = ['accept', 'decline'] as const;
 export type ApplicationReviewDecision = (typeof APPLICATION_REVIEW_DECISIONS)[number];
 
@@ -69,6 +96,11 @@ export type ContributionOpportunity = {
   expectedOutcome: string | null;
   evidenceRequirements: string | null;
   evaluationCriteria: string | null;
+  evaluationDimensions: EvaluationDimension[];
+  programId?: string | null;
+  knowledgeGapId?: string | null;
+  knowledgeSpaceId?: string | null;
+  implementationProjectId?: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -118,6 +150,18 @@ export type OpportunityEvaluation = {
   createdAt: string;
 };
 
+export type OpportunityWorkAssessmentScores = Partial<Record<EvaluationDimension, number | null>>;
+
+export type OpportunityWorkAssessment = {
+  id: string;
+  participationId: string;
+  evaluatorProfileId: string;
+  notes: string | null;
+  scores: OpportunityWorkAssessmentScores;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type OpportunitySkillEvidence = {
   id: string;
   participationId: string;
@@ -145,6 +189,7 @@ export type OpportunityPayload = {
   expectedOutcome?: string | null;
   evidenceRequirements?: string | null;
   evaluationCriteria?: string | null;
+  evaluationDimensions?: EvaluationDimension[];
 };
 
 export type ParticipantNextAction =
@@ -159,6 +204,7 @@ export type ParticipantNextAction =
 export type OrganizerNextAction =
   | 'review_application'
   | 'evaluate'
+  | 'assess'
   | 'none';
 
 const OPPORTUNITY_STATUS_SET = new Set<string>(OPPORTUNITY_STATUSES);
@@ -270,6 +316,81 @@ export function canEvaluateWork(participation: Pick<OpportunityParticipation, 's
   );
 }
 
+export function sanitizeEvaluationDimensions(values: unknown): EvaluationDimension[] {
+  if (!Array.isArray(values)) return [];
+  const selected = new Set<EvaluationDimension>();
+  for (const value of values) {
+    if (typeof value !== 'string') continue;
+    if (!EVALUATION_DIMENSION_SET.has(value)) continue;
+    selected.add(value as EvaluationDimension);
+  }
+  return EVALUATION_DIMENSIONS.filter((dimension) => selected.has(dimension));
+}
+
+export function opportunityUsesEvaluation(
+  opportunity: Pick<ContributionOpportunity, 'evaluationDimensions'> | null | undefined,
+): boolean {
+  return (opportunity?.evaluationDimensions.length ?? 0) > 0;
+}
+
+export function canRecordWorkAssessment(args: {
+  participation: Pick<OpportunityParticipation, 'status' | 'verificationStatus'> | null | undefined;
+  evaluationDimensions?: readonly string[] | null;
+}): boolean {
+  if (!args.participation) return false;
+  if (!isVerifiedCompletedParticipation(args.participation)) return false;
+  return sanitizeEvaluationDimensions(args.evaluationDimensions ?? []).length > 0;
+}
+
+export function scoredEvaluationDimensions(
+  scores: OpportunityWorkAssessmentScores | null | undefined,
+  dimensions?: readonly EvaluationDimension[],
+): EvaluationDimension[] {
+  const enabled = dimensions ? sanitizeEvaluationDimensions(dimensions) : [...EVALUATION_DIMENSIONS];
+  return enabled.filter((dimension) => {
+    const value = scores?.[dimension];
+    return typeof value === 'number' && Number.isFinite(value);
+  });
+}
+
+export function assessmentSummaryScore(
+  scores: OpportunityWorkAssessmentScores | null | undefined,
+  dimensions?: readonly EvaluationDimension[],
+): number | null {
+  const scored = scoredEvaluationDimensions(scores, dimensions)
+    .map((dimension) => scores?.[dimension])
+    .filter((value): value is number => typeof value === 'number' && Number.isFinite(value));
+  if (scored.length === 0) return null;
+  return Math.round(scored.reduce((sum, value) => sum + value, 0) / scored.length);
+}
+
+/**
+ * Conservative Performance mapping: only quality, impact, and collaboration
+ * may update derived contribution-event estimates. Other dimensions stay on the assessment.
+ */
+export function performanceFactorsFromAssessment(args: {
+  assessment?: Pick<OpportunityWorkAssessment, 'scores'> | null;
+  verificationEvaluation?: Pick<OpportunityEvaluation, 'qualityScore' | 'impactScore'> | null;
+}): {
+  capacityEstimate: number;
+  impactEstimate: number;
+  collaborationEstimate: number;
+} {
+  if (args.assessment) {
+    const scores = args.assessment.scores;
+    return {
+      capacityEstimate: clampScoreFactor(scores.quality ?? 75),
+      impactEstimate: clampScoreFactor(scores.impact ?? 70),
+      collaborationEstimate: clampScoreFactor(scores.collaboration ?? 40),
+    };
+  }
+  return {
+    capacityEstimate: clampScoreFactor(args.verificationEvaluation?.qualityScore ?? 75),
+    impactEstimate: clampScoreFactor(args.verificationEvaluation?.impactScore ?? 70),
+    collaborationEstimate: 40,
+  };
+}
+
 export function forbidSelfEvaluation(
   participantProfileId: string,
   evaluatorProfileId: string | null | undefined,
@@ -310,10 +431,19 @@ export function participantNextAction(args: {
 
 export function organizerNextAction(
   participation: Pick<OpportunityParticipation, 'status' | 'verificationStatus'> | null,
+  opportunity?: Pick<ContributionOpportunity, 'evaluationDimensions'> | null,
 ): OrganizerNextAction {
   if (!participation) return 'none';
   if (canReviewApplication(participation.status)) return 'review_application';
   if (canEvaluateWork(participation)) return 'evaluate';
+  if (
+    canRecordWorkAssessment({
+      participation,
+      evaluationDimensions: opportunity?.evaluationDimensions,
+    })
+  ) {
+    return 'assess';
+  }
   return 'none';
 }
 
@@ -343,6 +473,7 @@ export function buildOpportunityScoreEvent(args: {
   participation: OpportunityParticipation;
   opportunity: Pick<ContributionOpportunity, 'title' | 'opportunityKind'>;
   evaluation?: Pick<OpportunityEvaluation, 'qualityScore' | 'impactScore'> | null;
+  assessment?: Pick<OpportunityWorkAssessment, 'scores'> | null;
 }): {
   profileId: string;
   sourceTable: string;
@@ -358,10 +489,10 @@ export function buildOpportunityScoreEvent(args: {
   occurredAt: string;
   rawMeta: { kind: OpportunityKind };
 } {
-  const quality = args.evaluation?.qualityScore;
-  const impact = args.evaluation?.impactScore;
-  const capacityEstimate = clampScoreFactor(quality ?? 75);
-  const impactEstimate = clampScoreFactor((impact ?? 70) * 1.25);
+  const factors = performanceFactorsFromAssessment({
+    assessment: args.assessment,
+    verificationEvaluation: args.evaluation,
+  });
   return {
     profileId: args.participation.participantProfileId,
     sourceTable: OPPORTUNITY_CONTRIBUTION_SOURCE_TABLE,
@@ -369,9 +500,9 @@ export function buildOpportunityScoreEvent(args: {
     eventType: OPPORTUNITY_CONTRIBUTION_EVENT_TYPE,
     title: args.opportunity.title.trim().slice(0, 120) || 'Verified contribution',
     summary: args.opportunity.opportunityKind,
-    capacityEstimate,
-    impactEstimate,
-    collaborationEstimate: 40,
+    capacityEstimate: factors.capacityEstimate,
+    impactEstimate: factors.impactEstimate,
+    collaborationEstimate: factors.collaborationEstimate,
     beneficiaryEstimate: 65,
     verified: true,
     occurredAt: args.participation.completedAt ?? args.participation.updatedAt,
@@ -391,9 +522,11 @@ export {
   mapOpportunityEvidence,
   mapOpportunityParticipation,
   mapOpportunitySkillEvidence,
+  mapOpportunityWorkAssessment,
   mapOpportunityApplicantIdentity,
   opportunityCardSkills,
   parseOptionalEvaluationScore,
   toOpportunityPayloadJson,
+  workAssessmentScoresPayload,
 } from '@/lib/opportunities-map';
 export type { DemonstratedExperience, OpportunityApplicantIdentity } from '@/lib/opportunities-map';

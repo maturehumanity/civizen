@@ -3,14 +3,17 @@
  * Heuristics are deterministic (v1). AI classification and off-platform declaration come later.
  */
 
-import {
-  clampScore,
-  diminishingQuantityScore,
-  type CategoryScoreInput,
-  type ScoreConfidence,
-  type ScoreMetric,
-} from '@/lib/civizen-score';
+export {
+  contributionEvidenceRoots,
+  scoreContributionsFromEvents,
+  demonstratedSkillsFromContributionEvents,
+  demonstratedProjectsFromContributionEvents,
+} from '@/lib/civizen-contribution-score';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  groupDevelopmentStoriesToContributions,
+  storyFromDevelopmentRow,
+} from '@/lib/civizen-development-evidence';
 
 export type ContributionEventType =
   | 'law_contribution'
@@ -118,8 +121,16 @@ export function contentSizeFactor(textLen: number): number {
   return 1;
 }
 
-export function applyVerifiedImpactBoost(impact: number, verified: boolean): number {
-  return clampFactor(verified ? impact * 1.25 : impact);
+/**
+ * Verification must not change the semantic activity rating.
+ * Kept as a named function so call sites stay explicit.
+ */
+export function applyVerifiedImpactBoost(impact: number, _verified: boolean): number {
+  return clampFactor(impact);
+}
+
+export function applyVerifiedEvidenceWeight(verified: boolean): number {
+  return verified ? 1.25 : 0.55;
 }
 
 export type EstimateContributionInput = {
@@ -154,7 +165,7 @@ export function estimateContributionEvent(input: EstimateContributionInput): Con
     input.impactOverride != null && Number.isFinite(input.impactOverride)
       ? Number(input.impactOverride)
       : base.impact;
-  const impact = applyVerifiedImpactBoost(impactBase, verified);
+  const impact = clampFactor(impactBase);
 
   const beneficiaries = clampFactor(
     input.beneficiaryOverride != null && Number.isFinite(input.beneficiaryOverride)
@@ -182,112 +193,6 @@ export function estimateContributionEvent(input: EstimateContributionInput): Con
   };
 }
 
-function confidenceFromVerified(verifiedCount: number, total: number): ScoreConfidence {
-  if (total <= 0) return 'insufficient';
-  if (verifiedCount <= 0) return 'low';
-  if (verifiedCount < 3) return 'moderate';
-  if (verifiedCount < 10) return 'high';
-  return 'very_high';
-}
-
-/**
- * Score Contributions from estimated events.
- * Quantity uses a higher soft-cap so sustained platform builders are not stuck near ~40
- * after a handful of mid-tier content items; impact + capacity still dominate over spam.
- */
-export function scoreContributionsFromEvents(
-  events: ContributionEvent[],
-): CategoryScoreInput | null {
-  if (events.length === 0) return null;
-
-  // Weight quantity by relative impact so many high-impact stories outrank many empty posts.
-  const impactWeightedCount = events.reduce((sum, e) => {
-    const weight = Math.max(0.35, Math.min(1.5, e.impactEstimate / 50));
-    return sum + weight;
-  }, 0);
-  const quantityPart = diminishingQuantityScore(
-    impactWeightedCount,
-    CONTRIBUTION_QUANTITY_SOFT_CAP,
-    CONTRIBUTION_QUANTITY_MAX,
-  );
-  const capacityPart = mean(events.map((e) => e.capacityEstimate)) * 0.2;
-  const impactWeights = events.map((e) => (e.verified ? e.impactEstimate * 1.25 : e.impactEstimate));
-  const impactPart = Math.min(30, mean(impactWeights.map((v) => Math.min(100, v))) * 0.3);
-  const uniqueTypes = new Set(events.map((e) => e.eventType)).size;
-  const diversityPart = Math.min(10, uniqueTypes * 2);
-  const collabMean = mean(events.map((e) => e.collaborationEstimate));
-  const collabBoost = Math.min(5, (collabMean / 100) * 5);
-  // Reward long-running contribution without letting raw count linear-scale the score.
-  const sustainedBoost = Math.min(8, Math.log1p(events.length) * 1.15);
-
-  const score = clampScore(
-    quantityPart + capacityPart + impactPart + diversityPart + collabBoost + sustainedBoost,
-  );
-
-  const verifiedCount = events.filter((e) => e.verified).length;
-  const now = Date.now();
-  const recentCutoff = now - 90 * 24 * 60 * 60 * 1000;
-  const recentEvents = events.filter((e) => {
-    const t = Date.parse(e.occurredAt);
-    return Number.isFinite(t) && t >= recentCutoff;
-  });
-
-  const metrics: ScoreMetric[] = [
-    {
-      id: 'recent',
-      label: 'Recent Contributions',
-      value: clampScore(diminishingQuantityScore(recentEvents.length, 8, 70)),
-      sourceCount: recentEvents.length,
-      confidence: confidenceFromVerified(
-        recentEvents.filter((e) => e.verified).length,
-        recentEvents.length,
-      ),
-    },
-    {
-      id: 'verified',
-      label: 'Verified Contributions',
-      value: verifiedCount > 0 ? clampScore(diminishingQuantityScore(verifiedCount, 6, 80)) : null,
-      sourceCount: verifiedCount,
-      confidence: confidenceFromVerified(verifiedCount, events.length),
-    },
-    {
-      id: 'impact',
-      label: 'Impact',
-      value: clampScore(mean(events.map((e) => e.impactEstimate))),
-      sourceCount: events.length,
-      confidence: confidenceFromVerified(verifiedCount, events.length),
-    },
-    {
-      id: 'collaboration',
-      label: 'Collaboration',
-      value: clampScore(collabMean),
-      sourceCount: events.length,
-      confidence: confidenceFromVerified(verifiedCount, events.length),
-    },
-    {
-      id: 'beneficiaries',
-      label: 'Beneficiaries',
-      value: clampScore(mean(events.map((e) => e.beneficiaryEstimate))),
-      sourceCount: events.length,
-      confidence: confidenceFromVerified(verifiedCount, events.length),
-    },
-    {
-      id: 'ratings',
-      label: 'Ratings',
-      value: null,
-      sourceCount: 0,
-      confidence: 'insufficient',
-    },
-  ];
-
-  return {
-    score,
-    sourceCount: events.length,
-    verifiedSourceCount: verifiedCount,
-    confidence: confidenceFromVerified(verifiedCount, events.length),
-    metrics,
-  };
-}
 
 function asText(value: unknown): string {
   return typeof value === 'string' ? value : '';
@@ -360,7 +265,7 @@ export async function collectContributionSources(
     db
       .from('development_stories')
       .select(
-        'id, title, original_instruction, rephrased_description, section, area, created_features, requested_at, created_at',
+        'id, title, original_instruction, rephrased_description, section, area, created_features, requested_at, created_at, commit_sha, pr_number, reviewed_by, source, source_type, source_story_key, chat_id, metadata, status',
       )
       .eq('author_id', profileId),
     db
@@ -529,31 +434,39 @@ export async function collectContributionSources(
     );
   }
 
-  for (const row of storiesRes.data ?? []) {
-    const instruction = asText(row.original_instruction) || asText(row.rephrased_description);
-    const features = Array.isArray(row.created_features) ? row.created_features : [];
-    const hasFeatures = features.length > 0;
-    events.push(
-      estimateContributionEvent({
-        profileId,
-        sourceTable: 'development_stories',
-        sourceId: String(row.id),
-        eventType: 'development_story',
-        title: asText(row.title) || 'Platform improvement',
-        summary: [asText(row.section), asText(row.area)].filter(Boolean).join(' · ') || 'story',
-        textLen: instruction.length,
-        verified: hasFeatures,
-        // Stories with shipped features get a modest impact lift.
-        impactOverride: hasFeatures ? 78 : 62,
-        capacityOverride: hasFeatures ? 78 : 68,
-        occurredAt: asText(row.requested_at) || asText(row.created_at),
-        rawMeta: {
-          section: row.section,
-          area: row.area,
-          feature_count: features.length,
-        },
-      }),
-    );
+  if (!storiesRes.error) {
+    for (const item of groupDevelopmentStoriesToContributions(
+      (storiesRes.data ?? []).map((row: Record<string, unknown>) => storyFromDevelopmentRow(row)),
+    )) {
+      events.push(
+        estimateContributionEvent({
+          profileId,
+          sourceTable: 'development_stories',
+          sourceId: item.sourceId,
+          eventType: 'development_story',
+          title: item.title,
+          summary: item.summary,
+          textLen: item.instruction.length,
+          verified: item.verified,
+          impactOverride: item.verified ? 78 : 62,
+          capacityOverride: item.verified ? 78 : 68,
+          occurredAt: item.occurredAt,
+          rawMeta: {
+            eligibility: item.eligibility,
+            provenanceCount: item.provenanceStoryIds.length,
+            provenanceStoryIds: item.provenanceStoryIds,
+            commitShas: item.commitShas,
+            contributionRoles: item.roles,
+            implementationAssisted: item.implementationAssisted,
+            independentValidation: item.independentValidation,
+            outcomeValidated: item.outcomeValidated,
+            realFeatures: item.realFeatures,
+            contributionFunction: item.contributionFunction,
+            domain: item.classifiedDomain,
+          },
+        }),
+      );
+    }
   }
 
   const opportunityRows = opportunityRes.data ?? [];
@@ -569,30 +482,74 @@ export async function collectContributionSources(
         .in('id', opportunityIds),
       db
         .from('opportunity_evaluations')
-        .select('participation_id, quality_score, impact_score, created_at, decision')
+        .select('participation_id, evaluator_profile_id, quality_score, impact_score, created_at, decision')
         .in('participation_id', participationIds)
         .eq('decision', 'verified'),
     ]);
+    const assessmentsRes = await db
+      .from('opportunity_work_assessments')
+      .select(
+        'participation_id, evaluator_profile_id, quality_score, impact_score, collaboration_score, created_at',
+      )
+      .in('participation_id', participationIds);
+    const skillsRes = await db
+      .from('opportunity_skill_evidence')
+      .select('participation_id, skill_name')
+      .in('participation_id', participationIds);
     const opportunityById = new Map(
       ((opportunityRecords ?? []) as Array<{ id: unknown; title?: unknown; opportunity_kind?: unknown }>).map(
         (row): [string, { title?: unknown; opportunity_kind?: unknown }] => [String(row.id), row],
       ),
     );
-    const evaluationByParticipation = new Map<string, { quality_score?: unknown; impact_score?: unknown }>();
-    const orderedEvals = [...(evaluationRecords ?? [])].sort(
-      (a: { created_at?: unknown }, b: { created_at?: unknown }) =>
-        Date.parse(asText(b.created_at)) - Date.parse(asText(a.created_at)),
-    );
-    for (const row of orderedEvals) {
+    const evaluationsByParticipation = new Map<
+      string,
+      Array<{ quality_score?: unknown; impact_score?: unknown; evaluator_profile_id?: unknown }>
+    >();
+    for (const row of evaluationRecords ?? []) {
       const key = String(row.participation_id);
-      if (!evaluationByParticipation.has(key)) {
-        evaluationByParticipation.set(key, row);
+      const list = evaluationsByParticipation.get(key) ?? [];
+      list.push(row);
+      evaluationsByParticipation.set(key, list);
+    }
+    const assessmentByParticipation = new Map<
+      string,
+      {
+        quality_score?: unknown;
+        impact_score?: unknown;
+        collaboration_score?: unknown;
+        evaluator_profile_id?: unknown;
       }
+    >();
+    for (const row of assessmentsRes.data ?? []) {
+      assessmentByParticipation.set(String(row.participation_id), row);
+    }
+    const skillsByParticipation = new Map<string, string[]>();
+    for (const row of skillsRes.data ?? []) {
+      const key = String(row.participation_id);
+      const name = asText(row.skill_name);
+      if (!name) continue;
+      const list = skillsByParticipation.get(key) ?? [];
+      if (!list.some((item) => item.toLowerCase() === name.toLowerCase())) list.push(name);
+      skillsByParticipation.set(key, list);
     }
 
     for (const row of opportunityRows) {
       const opportunity = opportunityById.get(String(row.opportunity_id));
-      const evaluation = evaluationByParticipation.get(String(row.id));
+      const evaluations = evaluationsByParticipation.get(String(row.id)) ?? [];
+      const assessment = assessmentByParticipation.get(String(row.id));
+      const qualityValues = [
+        ...evaluations.map((item) => asNumber(item.quality_score)),
+        asNumber(assessment?.quality_score),
+      ].filter((value): value is number => value != null);
+      const impactValues = [
+        ...evaluations.map((item) => asNumber(item.impact_score)),
+        asNumber(assessment?.impact_score),
+      ].filter((value): value is number => value != null);
+      const collaboration = asNumber(assessment?.collaboration_score);
+      const evaluatorIds = [
+        ...evaluations.map((item) => asText(item.evaluator_profile_id)),
+        asText(assessment?.evaluator_profile_id),
+      ].filter(Boolean);
       events.push(
         estimateContributionEvent({
           profileId,
@@ -602,12 +559,23 @@ export async function collectContributionSources(
           title: asText(opportunity?.title) || 'Verified contribution',
           summary: asText(opportunity?.opportunity_kind) || 'education_to_contribution',
           verified: true,
-          capacityOverride: asNumber(evaluation?.quality_score) ?? 75,
-          impactOverride: asNumber(evaluation?.impact_score) ?? 70,
+          capacityOverride: qualityValues.length > 0 ? mean(qualityValues) : 75,
+          impactOverride: impactValues.length > 0 ? mean(impactValues) : 70,
           occurredAt: asText(row.completed_at) || asText(row.updated_at),
-          rawMeta: { kind: asText(opportunity?.opportunity_kind) || 'education_to_contribution' },
+          rawMeta: {
+            kind: asText(opportunity?.opportunity_kind) || 'education_to_contribution',
+            opportunityId: String(row.opportunity_id),
+            evaluationCount: evaluations.length,
+            evaluatorIds: [...new Set(evaluatorIds)],
+            demonstratedSkills: skillsByParticipation.get(String(row.id)) ?? [],
+            collaborationOverride: collaboration,
+          },
         }),
       );
+      const last = events[events.length - 1];
+      if (collaboration != null) {
+        last.collaborationEstimate = clampFactor(collaboration);
+      }
     }
   }
 
@@ -729,6 +697,29 @@ export async function syncContributionEvents(
   const promise = (async () => {
     const events = await collectContributionSources(profileId, userId, client);
     const db = client as any;
+    const eligibleDevelopmentSourceIds = events
+      .filter((event) => event.sourceTable === 'development_stories')
+      .map((event) => event.sourceId);
+    const { data: existingDevelopment } = await db
+      .from('profile_contribution_events')
+      .select('id, source_id')
+      .eq('profile_id', profileId)
+      .eq('source_table', 'development_stories');
+    const eligible = new Set(eligibleDevelopmentSourceIds);
+    const staleIds = ((existingDevelopment ?? []) as Array<{ id?: unknown; source_id?: unknown }>)
+      .filter((row) => !eligible.has(String(row.source_id ?? '')))
+      .map((row) => row.id)
+      .filter((id): id is string => typeof id === 'string');
+    for (let i = 0; i < staleIds.length; i += 100) {
+      const { error: pruneError } = await db
+        .from('profile_contribution_events')
+        .delete()
+        .in('id', staleIds.slice(i, i + 100));
+      if (pruneError) {
+        console.error('syncContributionEvents prune failed', pruneError);
+        break;
+      }
+    }
 
     if (events.length === 0) {
       const { data } = await db
@@ -875,3 +866,4 @@ export async function loadContributionEvents(
 
   return (data ?? []).map((row: Record<string, unknown>) => mapContributionEventRow(row));
 }
+

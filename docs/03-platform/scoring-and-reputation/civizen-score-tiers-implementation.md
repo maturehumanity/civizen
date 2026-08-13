@@ -103,6 +103,14 @@ function getBaseTier(score: number): CivizenTier {
 
 It is a separate score state for users who do not yet have sufficient data to calculate a meaningful Civizen Score.
 
+### Score thresholds are necessary but not sufficient (v1.1.0)
+
+`TIER_RULES_VERSION = '1.1.0'` in `src/lib/civizen-score-tiers.ts`. Named score ranges above still define the **base** tier from the numerical estimate. Advancement also requires independent verified evidence, category coverage, history/recurrence, and confidence gates. Constants live in `TIER_EVIDENCE_GATES` (`src/lib/civizen-score-model.ts`).
+
+Do not show “N points to {next tier}” unless the non-score readiness gates for that next tier are already met. Otherwise show **{tier} readiness** and the blocking gates.
+
+A sparse profile must not become Builder or Contributor merely because a small-sample estimate crossed a score threshold. When `overallStatus` is present and is not `established`, a provisional estimate cannot unlock any tier above Explorer.
+
 ---
 
 ## 4. Tier Definitions

@@ -24,6 +24,23 @@ The design must also clearly distinguish:
 
 The score is intended to summarize demonstrated activity and reliability. It must never be described as a measure of a person's intrinsic value or human worth.
 
+### Score model v2.0 (implemented)
+
+`SCORE_CALCULATION_VERSION = 'civizen-score-v2.0'` in `src/lib/civizen-score-model.ts`. Central engine; no parallel Score V2 UI.
+
+The model distinguishes:
+
+1. **Activity evaluation** — how a particular activity went (Quality, Impact, and other evaluator-entered ratings). Verification does **not** change those ratings.
+2. **Canonical evidence root** — one participation/activity has one identity (`sourceTable:sourceId`). It may project into Contributions, Performance, Skills, and Experience, but Evidence & Validation counts it once. Duplicate rows of the same root do not add independent evidence volume after canonicalization. Multiple genuine evaluator IDs may raise certainty around that one activity; they do not mint a second activity.
+3. **Category reputation** — Bayesian-style shrinkage toward a neutral prior (`prior_center = 50`, `prior_strength = 6`). Zero evidence stays unknown/null, never 0 and never the prior.
+4. **Confidence** — from evidence maturity (independent verified roots, breadth, recurrence, time span, evaluators). Independent of whether scores are high or low. One activity cannot reach Moderate.
+5. **Coverage and overall maturity** — missing categories stay unknown (not zero). `provisionalEstimate` averages currently observed categories. The public Civizen Score (`overall.score`) is null until coverage, confidence, and independent verified evidence meet establishment gates. Sparse high category scores must not appear as a mature overall Civizen Score.
+6. **Tier readiness** — score thresholds remain necessary but not sufficient. A provisional estimate cannot unlock a tier. See [`civizen-score-tiers-implementation.md`](./civizen-score-tiers-implementation.md).
+
+Declared skills stay user-entered. Demonstrated skill evidence merges onto the same canonical skill (prefer a stable skill ID when present; otherwise lowercase name as a temporary fallback). User-entered experience duration remains primary. Unique verified projects add a shrunk, bounded support signal on the Experience scale (prior center 0, cap 12) only on top of entered history; they do not manufacture tenure or create an Experience score by themselves.
+
+Historical snapshots keep their stored values. Missing `calculationVersion` is treated as `legacy/unversioned`. New calculations persist `civizen-score-v2.0`. There is still no persisted user score-snapshot table; displayed scores are recomputed.
+
 ---
 
 ## 2. Final Five Score Categories
@@ -141,7 +158,9 @@ Important implementation rule:
 
 The category must not privilege formal university education as the only valid form of learning. Vocational, community-based, self-directed, practical, and assessed learning must also be supported.
 
-**Preliminary scoring (v1.2):** Learning is driven primarily by **highest education level** (middle school → doctorate), not by record count. Custom labels such as a **5-year diploma / specialist degree** normalize to master’s-equivalent. **Trainings** (continuing courses attended) are a secondary boost, capped so they cannot outrank degree attainment. Additional credentials add a small breadth bonus; verification raises the score and confidence. When level data is missing, the older quantity curve remains as a fallback.
+**Preliminary scoring (v1.2 Learning):** Learning is driven primarily by **highest education level** (middle school → doctorate), not by record count. Custom labels such as a **5-year diploma / specialist degree** normalize to master’s-equivalent. **Trainings** (continuing courses attended) are a secondary boost, capped so they cannot outrank degree attainment. Additional credentials add a small breadth bonus; verification of credentials raises the Learning score. When level data is missing, the older quantity curve remains as a fallback.
+
+**v2.0 Contributions / Performance:** Activity Quality and Impact stay as entered. Accumulated category reputation is evidence-weighted and small-sample-shrunk. Verification changes evidential weight, not the semantic rating.
 
 Suggested expanded subsections:
 
@@ -332,6 +351,12 @@ As of 2026-08-02, Contributions is estimated from existing in-app activity (not 
 4. Score page dial/card opens an **activity ledger** (`ContributionsDetailsPanel`) listing estimated events and factors.
 
 Historical rows are backfilled by migration; client `syncContributionEvents` refreshes the ledger on Score/Home load.
+
+Development stories are stored journal/provenance. They mint a contribution evidence root only when `evaluateDevelopmentContributionEvidence` finds a traceable implemented/tested/published outcome. A nonempty `created_features` array is not verification: chat and git backfill placeholders stay stored and are excluded from independent reputation volume unless linked to a qualifying outcome. Related prompts and commits collapse to one root when a known outcome identity exists (outcome id, PR, or existing work unit). System verification does not require a second human; independent review strengthens the same root. Platform/enabling work is not assigned a fabricated Civizen domain.
+
+Live capture of a completed development work unit uses `recordDevelopmentOutcome` (`src/lib/civizen-development-capture.ts`) and `ingest_development_story`. Required metadata going forward: `outcomeRootId`, originating instruction, real `created_features`, `commit_sha` or PR, `testsPassed`, contribution roles, `implementationAssisted`. `syncContributionEvents({ force: true })` then Score V2 on read. Historical chat/git journal is reconstructed into coherent outcomes by `reconstructHistoricalDevelopmentOutcomes` (not by text similarity alone); see `docs/04-operations/dev/historical-development-reconstruction.md`. Do not score the journal rows themselves.
+
+The owner’s profile ring may show a **provisional estimate** with an Estimate caption. That is not an established Civizen Score and cannot unlock a higher tier.
 
 Include:
 
@@ -1021,7 +1046,7 @@ Civizen Domains
 
 A domain indicates where activity occurred. A score category indicates how that activity is evaluated.
 
-**Current product:** Activity by Domain still uses live `PILLARS` (`src/lib/constants.ts`). The V1 classification registry ([`../model-evolution/shared-classification-registry-v1.md`](../model-evolution/shared-classification-registry-v1.md)) may later be referenced here; it does **not** change Score calculations, categories, or persist score snapshots.
+**Current product:** Activity by Domain still uses live `PILLARS` (`src/lib/constants.ts`). Empty copy is **No classified domain activity yet.** — activity may exist without a justified Education/Culture/Responsibility/Community/Economy classification. Platform/enabling development is left unclassified rather than mapped onto those domains. The V1 classification registry ([`../model-evolution/shared-classification-registry-v1.md`](../model-evolution/shared-classification-registry-v1.md)) may later be referenced here; it does **not** change Score calculations, categories, or persist score snapshots.
 
 Example:
 

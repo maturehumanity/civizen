@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { formatScore } from '@/lib/scoring';
+import { formatScoreValue } from '@/lib/civizen-score';
 import {
   formatScorePercent,
   getDevelopmentalScoreColor,
@@ -17,6 +17,9 @@ interface CivizenScoreProps {
   /** When score is null, show this instead of the percent. */
   emptyLabel?: string;
   tier?: CivizenTier | null;
+  /** Owner-only provisional estimate. Never treat as an established Civizen Score. */
+  presentation?: 'established' | 'provisional';
+  centerCaption?: string | null;
 }
 
 export function CivizenScore({
@@ -26,6 +29,8 @@ export function CivizenScore({
   animate = true,
   emptyLabel,
   tier = null,
+  presentation = 'established',
+  centerCaption,
 }: CivizenScoreProps) {
   const { t } = useLanguage();
   const sizeClasses = {
@@ -44,10 +49,13 @@ export function CivizenScore({
   const strokeDashoffset = circumference - progress * circumference;
   const cx = 50;
   const cy = 50;
-  const progressColor = getTierColorHex(displayTier);
 
   const Component = animate ? motion.div : 'div';
-  const scoreColor = getDevelopmentalScoreColor(displayScore, displayTier);
+  const provisional = presentation === 'provisional' && hasScore;
+  const scoreColor = provisional
+    ? 'text-muted-foreground'
+    : getDevelopmentalScoreColor(hasScore ? displayScore : null, displayTier);
+  const progressColor = provisional ? 'hsl(var(--muted-foreground) / 0.55)' : getTierColorHex(displayTier);
 
   return (
     <div className="flex flex-col items-center gap-2">
@@ -115,12 +123,23 @@ export function CivizenScore({
           })}
         </svg>
         <motion.span
-          className={`font-display font-bold leading-none ${scoreColor}`}
+          className={`flex flex-col items-center font-display font-bold leading-none ${scoreColor}`}
           initial={animate ? { opacity: 0 } : undefined}
           animate={animate ? { opacity: 1 } : undefined}
           transition={{ delay: 0.5 }}
         >
-          {emptyLabel && !hasScore ? emptyLabel : formatScorePercent(displayScore)}
+          <span>
+            {emptyLabel && !hasScore
+              ? emptyLabel
+              : provisional
+                ? formatScoreValue(score)
+                : formatScorePercent(displayScore)}
+          </span>
+          {provisional && centerCaption ? (
+            <span className="mt-0.5 text-[0.55em] font-semibold uppercase tracking-wide text-muted-foreground">
+              {centerCaption}
+            </span>
+          ) : null}
         </motion.span>
       </Component>
       {showLabel && (

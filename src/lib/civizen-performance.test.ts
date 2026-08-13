@@ -146,4 +146,32 @@ describe('civizen performance', () => {
     expect(activities[0].peerCount).toBe(1);
     expect(activities[0].peerAverage).toBe(77);
   });
+
+  it('lets opportunity assessments change system ratings without using peer ratings', () => {
+    const withoutAssessment = makeEvent({
+      eventType: 'opportunity_participation',
+      sourceTable: 'opportunity_participations',
+      capacityEstimate: 75,
+      impactEstimate: 87.5,
+      collaborationEstimate: 40,
+      verified: true,
+      sourceId: 'part-1',
+    });
+    const withAssessment = makeEvent({
+      eventType: 'opportunity_participation',
+      sourceTable: 'opportunity_participations',
+      capacityEstimate: 90,
+      impactEstimate: 75,
+      collaborationEstimate: 80,
+      verified: true,
+      sourceId: 'part-1',
+    });
+    expect(deriveSystemRating(withAssessment)).not.toBe(deriveSystemRating(withoutAssessment));
+    const scored = scorePerformanceFromEvents([withAssessment]);
+    expect(scored).not.toBeNull();
+    expect(scored!.metrics?.find((m) => m.id === 'ratings')?.value).toBeNull();
+    expect(scored!.metrics?.find((m) => m.id === 'accomplishment')?.value).toBe(
+      deriveSystemRating(withAssessment),
+    );
+  });
 });

@@ -104,10 +104,10 @@ export default function ProfessionalOpportunities() {
       ]);
       const participationIds = [...new Set(participations.map((row) => row.opportunityId))];
       const extra = participationIds.length > 0 ? await listOpportunitiesByIds(participationIds) : [];
-      setOpenOpps(openRows);
-      setManaged(managedRows);
+      setOpenOpps(openRows.filter((row) => row.opportunityKind === 'education_to_contribution'));
+      setManaged(managedRows.filter((row) => row.opportunityKind === 'education_to_contribution'));
       setMine(participations);
-      setParticipationOpps(extra);
+      setParticipationOpps(extra.filter((row) => row.opportunityKind === 'education_to_contribution'));
     } catch {
       setError(tRef.current('contribute.opportunities.loadFailed'));
     } finally {

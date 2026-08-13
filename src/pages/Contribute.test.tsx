@@ -53,14 +53,14 @@ describe('Contribute hub', () => {
 describe('ContributeLane', () => {
   it('renders placeholder content for a known lane', () => {
     render(
-      <MemoryRouter initialEntries={['/contribute/tasks']}>
+      <MemoryRouter initialEntries={['/contribute/improvements']}>
         <Routes>
           <Route path="/contribute/:laneId" element={<ContributeLane />} />
         </Routes>
       </MemoryRouter>,
     );
 
-    expect(screen.getByText('contribute.lanes.tasks.title')).toBeInTheDocument();
+    expect(screen.getByText('contribute.lanes.improvements.title')).toBeInTheDocument();
     expect(screen.getByText('contribute.placeholder.comingSoonTitle')).toBeInTheDocument();
     expect(screen.getByTestId('app-page-header-back')).toBeInTheDocument();
   });

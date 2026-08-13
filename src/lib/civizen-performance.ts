@@ -7,10 +7,15 @@ import {
   clampScore,
   diminishingQuantityScore,
   type CategoryScoreInput,
-  type ScoreConfidence,
   type ScoreMetric,
 } from '@/lib/civizen-score';
 import type { ContributionEvent } from '@/lib/civizen-contributions';
+import { contributionEvidenceRoots } from '@/lib/civizen-contributions';
+import {
+  evidenceRootId,
+  reputationFromObservations,
+  type CategoryObservation,
+} from '@/lib/civizen-score-model';
 import { supabase } from '@/integrations/supabase/client';
 
 export type PerformancePeerRating = {
@@ -66,23 +71,14 @@ function asNumber(value: unknown): number | null {
   return null;
 }
 
-function confidenceFromVerified(verified: number, total: number): ScoreConfidence {
-  if (total <= 0) return 'low';
-  const ratio = verified / total;
-  if (ratio >= 0.6 && total >= 5) return 'high';
-  if (ratio >= 0.3 || total >= 3) return 'moderate';
-  return 'low';
-}
-
 /**
  * Derive a 0–100 system rating from contribution factor estimates.
- * Verified / platform-direct work scores higher; social posts stay lower via impact.
+ * Verification does not change the rating; it only affects evidential weight later.
  */
 export function deriveSystemRating(event: ContributionEvent): number {
   const blend = event.impactEstimate * 0.55 + event.capacityEstimate * 0.35 + event.collaborationEstimate * 0.1;
-  const verifiedBoost = event.verified ? 1.1 : 1;
   const typeWeight = PLATFORM_DIRECT_TYPES.has(event.eventType) ? 1 : 0.85;
-  return clampScore(blend * verifiedBoost * typeWeight);
+  return clampScore(blend * typeWeight);
 }
 
 export function canRatePerformance(args: {
@@ -189,56 +185,84 @@ export function buildPerformanceActivities(
 }
 
 /**
- * Score Performance from contribution activities + peer ratings.
- * Returns null when there is no activity (category stays unscored).
+ * Score Performance as accumulated reputation from activity evaluations.
+ * System ratings remain activity evaluations; the category score is small-sample shrunk.
  */
 export function scorePerformanceFromActivities(
   activities: PerformanceActivity[],
 ): CategoryScoreInput | null {
   if (activities.length === 0) return null;
 
-  const systemRatings = activities.map((a) => a.systemRating);
-  const verifiedCount = activities.filter((a) => a.event.verified).length;
-  const peerFlat = activities.flatMap((a) => {
-    if (a.peerAverage == null || a.peerCount <= 0) return [];
-    // Weight each activity's peer average once (not per rater) to avoid spam inflation.
-    return [a.peerAverage];
-  });
-  const peerCount = activities.reduce((sum, a) => sum + a.peerCount, 0);
+  const byRoot = new Map<string, PerformanceActivity>();
+  for (const activity of activities) {
+    const root = evidenceRootId(activity.event.sourceTable, activity.event.sourceId);
+    if (!byRoot.has(root)) byRoot.set(root, activity);
+  }
+  const unique = [...byRoot.values()];
 
+  const observations: CategoryObservation[] = unique.map((activity) => {
+    const evaluatorIds: string[] = [];
+    if (activity.peerCount > 0) {
+      evaluatorIds.push(`peers:${activity.peerCount}`);
+    }
+    const stored = Array.isArray(activity.event.rawMeta.evaluatorIds)
+      ? activity.event.rawMeta.evaluatorIds.filter((id): id is string => typeof id === 'string')
+      : [];
+    return {
+      evidenceRootId: evidenceRootId(activity.event.sourceTable, activity.event.sourceId),
+      value: activity.systemRating,
+      verified: activity.event.verified,
+      occurredAt: activity.event.occurredAt,
+      evaluatorIds: [...stored, ...evaluatorIds],
+      evaluationCount: Math.max(
+        typeof activity.event.rawMeta.evaluationCount === 'number'
+          ? activity.event.rawMeta.evaluationCount
+          : 0,
+        activity.peerCount,
+        stored.length,
+      ),
+    };
+  });
+  const peerObservations: CategoryObservation[] = unique.flatMap((activity) => {
+    if (activity.peerAverage == null || activity.peerCount <= 0) return [];
+    return [
+      {
+        evidenceRootId: evidenceRootId(activity.event.sourceTable, activity.event.sourceId),
+        value: activity.peerAverage,
+        verified: activity.event.verified,
+        occurredAt: activity.event.occurredAt,
+        evaluatorIds: [`peer-avg:${activity.peerCount}`],
+        evaluationCount: activity.peerCount,
+      },
+    ];
+  });
+
+  const reputation = reputationFromObservations([...observations, ...peerObservations]);
+  if (reputation.score == null) return null;
+
+  const verifiedCount = unique.filter((activity) => activity.event.verified).length;
+  const peerCount = unique.reduce((sum, activity) => sum + activity.peerCount, 0);
   const now = Date.now();
   const recentCutoff = now - 90 * 24 * 60 * 60 * 1000;
-  const recentActivities = activities.filter((a) => {
-    const t = Date.parse(a.event.occurredAt);
+  const recentActivities = unique.filter((activity) => {
+    const t = Date.parse(activity.event.occurredAt);
     return Number.isFinite(t) && t >= recentCutoff;
   });
 
+  const systemRatings = unique.map((activity) => activity.systemRating);
+  const accomplishmentMetric = clampScore(mean(systemRatings));
+  const peerFlat = unique.flatMap((activity) =>
+    activity.peerAverage == null || activity.peerCount <= 0 ? [] : [activity.peerAverage],
+  );
+  const ratingsMetric = peerFlat.length > 0 ? clampScore(mean(peerFlat)) : null;
   const activityMetric = diminishingQuantityScore(
-    activities.length,
+    unique.length,
     PERFORMANCE_QUANTITY_SOFT_CAP,
     70,
   );
-  const accomplishmentMetric = clampScore(mean(systemRatings));
-  const ratingsMetric = peerFlat.length > 0 ? clampScore(mean(peerFlat)) : null;
-  const verifiedRatio = verifiedCount / activities.length;
+  const verifiedRatio = unique.length > 0 ? verifiedCount / unique.length : 0;
   const reliabilityMetric = clampScore(verifiedRatio * 40 + accomplishmentMetric * 0.6);
-  const engagementMetric = clampScore(
-    diminishingQuantityScore(recentActivities.length, 8, 70),
-  );
-
-  const activityPart = activityMetric * 0.2;
-  const accomplishmentPart = accomplishmentMetric * 0.3;
-  const ratingsPart =
-    ratingsMetric != null ? ratingsMetric * 0.2 : accomplishmentMetric * 0.15;
-  const reliabilityPart = reliabilityMetric * 0.2;
-  const engagementPart = engagementMetric * 0.1;
-  // When no peer ratings, the 0.05 leftover from ratings fallback stays unused → slight dampen is fine.
-
-  const score = clampScore(
-    activityPart + accomplishmentPart + ratingsPart + reliabilityPart + engagementPart,
-  );
-
-  const confidence = confidenceFromVerified(verifiedCount + Math.min(peerCount, 5), activities.length);
+  const engagementMetric = clampScore(diminishingQuantityScore(recentActivities.length, 8, 70));
 
   const metrics: ScoreMetric[] = [
     {
@@ -246,43 +270,48 @@ export function scorePerformanceFromActivities(
       label: 'Engagement',
       value: engagementMetric,
       sourceCount: recentActivities.length,
-      confidence,
+      confidence: 'low',
     },
     {
       id: 'activity',
       label: 'Activity',
       value: activityMetric,
-      sourceCount: activities.length,
-      confidence,
+      sourceCount: unique.length,
+      confidence: 'low',
     },
     {
       id: 'reliability',
       label: 'Reliability',
       value: reliabilityMetric,
       sourceCount: verifiedCount,
-      confidence: confidenceFromVerified(verifiedCount, activities.length),
+      confidence: 'low',
     },
     {
       id: 'accomplishment',
       label: 'Accomplishment',
       value: accomplishmentMetric,
-      sourceCount: activities.length,
-      confidence,
+      sourceCount: unique.length,
+      confidence: 'low',
     },
     {
       id: 'ratings',
       label: 'Ratings',
       value: ratingsMetric,
       sourceCount: peerCount,
-      confidence: peerCount > 0 ? confidenceFromVerified(peerCount, Math.max(peerCount, 3)) : 'low',
+      confidence: peerCount > 0 ? 'low' : 'insufficient',
     },
   ];
 
   return {
-    score,
-    sourceCount: activities.length,
+    score: reputation.score,
+    sourceCount: unique.length,
     verifiedSourceCount: verifiedCount,
-    confidence,
+    confidence: 'low',
+    status: reputation.status,
+    independentEvidenceCount: reputation.independentEvidenceCount,
+    effectiveEvidenceVolume: reputation.effectiveEvidenceVolume,
+    evidenceRoots: reputation.evidenceRoots,
+    evidenceRootRefs: contributionEvidenceRoots(unique.map((activity) => activity.event)),
     metrics,
   };
 }

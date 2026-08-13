@@ -1,20 +1,54 @@
 /**
- * Civizen Score — five category model.
- * Categories summarize demonstrated activity; they are not a measure of human worth.
+ * Civizen Score — five category model (V2).
+ * Categories summarize demonstrated reputation from evidence; they are not a measure of human worth.
+ * Activity evaluation (how one activity went) is kept separate from accumulated reputation.
  * Domains/pillars remain separate (where activity occurred vs how it is scored).
  */
 
 import {
   calculateTierStatus,
   type CivizenTierStatus,
+  type TierReadiness,
 } from '@/lib/civizen-score-tiers';
 import {
   EDUCATION_LEVEL_BASE_SCORE,
   highestEducationLevel,
   type EducationLevel,
 } from '@/lib/education-institutions';
+import {
+  CIVIZEN_SCORE_MODEL_VERSION,
+  SCORE_CALCULATION_VERSION as SCORE_MODEL_VERSION,
+  SCORE_CALCULATION_VERSION_LEGACY,
+  SCORE_MODEL_VERSION_UNVERSIONED,
+  computeConfidence,
+  computeCoverage,
+  computeEvidenceMaturity,
+  countRecentlyDemonstratedSkills,
+  countVerifiedUniqueSkills,
+  deriveOverallStatus,
+  mergeCanonicalSkills,
+  projectSupportForExperience,
+  reputationFromObservations,
+  resolveScoreModelVersion,
+  uniqueEvidenceRoots,
+  uniqueProjectRoots,
+  type CanonicalSkillState,
+  type CategoryMaturityStatus,
+  type CategoryObservation,
+  type ConfidenceFactor,
+  type DemonstratedProjectEvidence,
+  type EvidenceRootRef,
+  type ScoreCoverage,
+  type ScoreMaturityStatus,
+} from '@/lib/civizen-score-model';
 
-export const SCORE_CALCULATION_VERSION = 'civizen-score-v1.2';
+export const SCORE_CALCULATION_VERSION = SCORE_MODEL_VERSION;
+export {
+  CIVIZEN_SCORE_MODEL_VERSION,
+  SCORE_CALCULATION_VERSION_LEGACY,
+  SCORE_MODEL_VERSION_UNVERSIONED,
+  resolveScoreModelVersion,
+};
 
 /** Education row input for Learning (level-aware). */
 export type EducationScoreEntry = {
@@ -177,6 +211,11 @@ export interface CategoryScoreInput {
   sourceCount?: number;
   verifiedSourceCount?: number;
   metrics?: ScoreMetric[];
+  status?: CategoryMaturityStatus;
+  independentEvidenceCount?: number;
+  effectiveEvidenceVolume?: number;
+  evidenceRoots?: string[];
+  evidenceRootRefs?: EvidenceRootRef[];
 }
 
 export interface ScoreHistoryItem {
@@ -207,6 +246,9 @@ export interface ScoreValidationSummary {
   endorsementCount: number;
   institutionalConfirmationCount: number;
   disputedItemCount: number;
+  independentEvidenceCount?: number;
+  independentVerifiedCount?: number;
+  evaluationCount?: number;
 }
 
 export interface CategoryScoreResult {
@@ -219,16 +261,28 @@ export interface CategoryScoreResult {
   verifiedSourceCount: number;
   metrics: ScoreMetric[];
   weight: number;
+  status?: CategoryMaturityStatus;
+  independentEvidenceCount?: number;
+  effectiveEvidenceVolume?: number;
+  evidenceRoots?: string[];
 }
 
 export interface CivizenScoreResponse {
   userId: string;
   overall: {
+    /** Public established Civizen Score. Null until status is established. */
     score: number | null;
+    /**
+     * Observed-category average. Present whenever any category is scored.
+     * Not a mature Civizen Score; UI must not present it as one.
+     */
+    provisionalEstimate: number | null;
     stage: ScoreStage;
     confidence: ScoreConfidence;
     lastCalculatedAt: string | null;
     calculationVersion: string;
+    status?: ScoreMaturityStatus;
+    modelVersion?: string;
   };
   tier: CivizenTierStatus;
   categories: CategoryScoreResult[];
@@ -242,6 +296,17 @@ export interface CivizenScoreResponse {
     missingData: string[];
     notes: string[];
   };
+  coverage?: ScoreCoverage;
+  confidenceFactors?: ConfidenceFactor[];
+  tierReadiness?: TierReadiness;
+  independentEvidenceCount?: number;
+  effectiveEvidenceVolume?: number;
+  explanations?: {
+    modelVersion: string;
+    coverageLimited: boolean;
+    provisionalReasons: string[];
+    keyFactors: string[];
+  };
 }
 
 export interface ScoreCalculationInput {
@@ -254,6 +319,10 @@ export interface ScoreCalculationInput {
   hasSustainedActivity?: boolean;
   hasSubstantialImpact?: boolean;
   hasUnresolvedSeriousIntegrityIssue?: boolean;
+  evidenceRoots?: EvidenceRootRef[];
+  evaluatorCount?: number;
+  timeSpanDays?: number;
+  hasRecurrence?: boolean;
 }
 
 export function clampScore(value: number): number {
@@ -279,40 +348,19 @@ function emptyMetrics(id: ScoreCategoryId): ScoreMetric[] {
   }));
 }
 
-function deriveConfidence(args: {
+function deriveCategoryConfidence(args: {
   score: number | null;
-  sourceCount: number;
-  verifiedSourceCount: number;
+  independentEvidenceCount: number;
+  independentVerifiedCount: number;
   explicit?: ScoreConfidence;
 }): ScoreConfidence {
-  if (args.explicit) return args.explicit;
-  if (args.score == null && args.sourceCount === 0) return 'insufficient';
-  if (args.verifiedSourceCount <= 0) return 'low';
-  if (args.verifiedSourceCount < 3) return 'moderate';
-  if (args.verifiedSourceCount < 10) return 'high';
-  return 'very_high';
-}
-
-function rankConfidence(value: ScoreConfidence): number {
-  switch (value) {
-    case 'insufficient':
-      return 0;
-    case 'low':
-      return 1;
-    case 'moderate':
-      return 2;
-    case 'high':
-      return 3;
-    case 'very_high':
-      return 4;
-  }
-}
-
-function minConfidence(values: ScoreConfidence[]): ScoreConfidence {
-  if (values.length === 0) return 'insufficient';
-  return values.reduce((lowest, current) =>
-    rankConfidence(current) < rankConfidence(lowest) ? current : lowest,
-  );
+  if (args.score == null && args.independentEvidenceCount === 0) return 'insufficient';
+  // Category confidence is capped by local evidence volume; overall gates still apply.
+  if (args.independentVerifiedCount <= 0) return args.independentEvidenceCount > 0 ? 'low' : 'insufficient';
+  if (args.independentVerifiedCount < 5) return 'low';
+  if (args.explicit && args.independentVerifiedCount >= 5) return args.explicit;
+  if (args.independentVerifiedCount < 12) return 'low';
+  return 'low';
 }
 
 function deriveStage(args: {
@@ -345,6 +393,7 @@ function deriveStage(args: {
 function buildNextSteps(
   categories: CategoryScoreResult[],
   validation: ScoreValidationSummary,
+  options?: { skills?: CanonicalSkillState[] },
 ): ScoreNextStep[] {
   const steps: ScoreNextStep[] = [];
   const byId = Object.fromEntries(categories.map((c) => [c.id, c])) as Record<
@@ -352,10 +401,40 @@ function buildNextSteps(
     CategoryScoreResult
   >;
 
-  if (byId.skills.score == null || byId.skills.verifiedSourceCount < 2) {
+  const skills = options?.skills ?? [];
+  const declaredOnly = skills.filter((skill) => skill.declared && !skill.demonstrated);
+  const demonstrated = skills.filter((skill) => skill.demonstrated && skill.verifiedDemonstrations > 0);
+  const staleDemonstrated = demonstrated.filter((skill) => !skill.lastDemonstratedAt);
+
+  if (declaredOnly.length > 0) {
+    const sample = declaredOnly[0].name;
+    steps.push({
+      id: 'demonstrate-declared-skill',
+      label: `Demonstrate ${sample} through verified contribution.`,
+      actionType: 'add_skill_evidence',
+      actionTarget: '/contribute',
+      priority: 1,
+    });
+  } else if (demonstrated.length > 0 && demonstrated.every((skill) => skill.verifiedDemonstrations < 2)) {
+    steps.push({
+      id: 'add-independent-skill-evidence',
+      label: 'Add more independent verified evidence for a demonstrated skill.',
+      actionType: 'add_skill_evidence',
+      actionTarget: '/contribute',
+      priority: 1,
+    });
+  } else if (staleDemonstrated.length > 0) {
+    steps.push({
+      id: 'refresh-skill-evidence',
+      label: `Add a recent demonstration of ${staleDemonstrated[0].name}.`,
+      actionType: 'add_skill_evidence',
+      actionTarget: '/contribute',
+      priority: 1,
+    });
+  } else if (byId.skills.score == null) {
     steps.push({
       id: 'add-skill-evidence',
-      label: 'Add evidence for two skills.',
+      label: 'Add a skill and later demonstrate it through verified work.',
       actionType: 'add_skill_evidence',
       actionTarget: '/profile',
       priority: 1,
@@ -428,8 +507,10 @@ function buildNextSteps(
 }
 
 /**
- * Weighted overall from scored categories only.
- * Missing categories are excluded and weights are renormalized — never treated as zero.
+ * Numerical estimate from scored categories only.
+ * Missing categories are never treated as zero. Weights are renormalized for the
+ * estimate, but coverage remains first-class so a sparse profile is not presented
+ * as a mature overall reputation.
  */
 export function computeWeightedOverall(
   categoryScores: Record<ScoreCategoryId, number | null>,
@@ -464,16 +545,10 @@ export function computeWeightedOverall(
 
 export function calculateCivizenScoreModel(
   input: ScoreCalculationInput = {},
+  options?: { skills?: CanonicalSkillState[] },
 ): CivizenScoreResponse {
   const weights = mergeWeights(input.weights);
-  const validation: ScoreValidationSummary = {
-    evidenceCount: input.validation?.evidenceCount ?? 0,
-    verifiedEvidenceCount: input.validation?.verifiedEvidenceCount ?? 0,
-    ratingCount: input.validation?.ratingCount ?? 0,
-    endorsementCount: input.validation?.endorsementCount ?? 0,
-    institutionalConfirmationCount: input.validation?.institutionalConfirmationCount ?? 0,
-    disputedItemCount: input.validation?.disputedItemCount ?? 0,
-  };
+  const collectedRoots: EvidenceRootRef[] = [...(input.evidenceRoots ?? [])];
 
   const categories: CategoryScoreResult[] = SCORE_CATEGORY_ORDER.map((id) => {
     const meta = metaFor(id);
@@ -482,12 +557,34 @@ export function calculateCivizenScoreModel(
       raw?.score == null || Number.isNaN(raw.score) ? null : clampScore(raw.score);
     const sourceCount = raw?.sourceCount ?? 0;
     const verifiedSourceCount = raw?.verifiedSourceCount ?? 0;
-    const confidence = deriveConfidence({
+    const independentEvidenceCount = raw?.independentEvidenceCount ?? sourceCount;
+    const independentVerifiedCount = raw?.verifiedSourceCount ?? 0;
+    const confidence = deriveCategoryConfidence({
       score,
-      sourceCount,
-      verifiedSourceCount,
+      independentEvidenceCount,
+      independentVerifiedCount,
       explicit: raw?.confidence,
     });
+    if (raw?.evidenceRootRefs?.length) {
+      collectedRoots.push(...raw.evidenceRootRefs);
+    } else if (raw?.evidenceRoots?.length) {
+      for (const rootId of raw.evidenceRoots) {
+        const [sourceTable, ...rest] = rootId.split(':');
+        collectedRoots.push({
+          id: rootId,
+          sourceTable: sourceTable || id,
+          sourceId: rest.join(':') || rootId,
+          verified: independentVerifiedCount > 0,
+        });
+      }
+    }
+    const status: CategoryMaturityStatus =
+      raw?.status ??
+      (score == null
+        ? 'unknown'
+        : (raw?.effectiveEvidenceVolume ?? independentEvidenceCount) >= 4
+          ? 'established'
+          : 'provisional');
     return {
       id,
       shortLabel: meta.shortLabel,
@@ -498,6 +595,10 @@ export function calculateCivizenScoreModel(
       verifiedSourceCount,
       metrics: raw?.metrics?.length ? raw.metrics : emptyMetrics(id),
       weight: weights[id],
+      status,
+      independentEvidenceCount,
+      effectiveEvidenceVolume: raw?.effectiveEvidenceVolume,
+      evidenceRoots: raw?.evidenceRoots,
     };
   });
 
@@ -505,53 +606,127 @@ export function calculateCivizenScoreModel(
     categories.map((c) => [c.id, c.score]),
   ) as Record<ScoreCategoryId, number | null>;
 
-  const { overall, included, excluded } = computeWeightedOverall(scoreMap, weights);
-  const scoredConfidences = categories
-    .filter((c) => c.score != null)
-    .map((c) => c.confidence);
-  let confidence =
-    overall == null
-      ? validation.evidenceCount > 0
-        ? 'low'
-        : 'insufficient'
-      : minConfidence(scoredConfidences);
+  const { overall: provisionalEstimate, included, excluded } = computeWeightedOverall(scoreMap, weights);
+  const coverage = computeCoverage(scoreMap, SCORE_CATEGORY_ORDER);
+  const establishedCategoryCount = categories.filter((c) => c.status === 'established').length;
+  const effectiveEvidenceVolume = categories.reduce(
+    (sum, c) => sum + (c.effectiveEvidenceVolume ?? 0),
+    0,
+  );
 
-  if (overall != null && validation.verifiedEvidenceCount === 0) {
-    confidence = minConfidence([confidence, 'low']);
-  } else if (overall != null && validation.verifiedEvidenceCount >= 20 && confidence === 'high') {
-    confidence = 'very_high';
+  const maturity = computeEvidenceMaturity({
+    roots: collectedRoots,
+    scoredCategoryCount: included.length,
+    establishedCategoryCount,
+    effectiveEvidenceVolume,
+  });
+  if (typeof input.timeSpanDays === 'number') {
+    maturity.timeSpanDays = input.timeSpanDays;
+  }
+  if (typeof input.hasRecurrence === 'boolean') {
+    maturity.hasRecurrence = input.hasRecurrence;
+  }
+  if (typeof input.evaluatorCount === 'number' && input.evaluatorCount > maturity.evaluatorCount) {
+    maturity.evaluatorCount = input.evaluatorCount;
   }
 
+  const independentVerifiedCount = Math.max(
+    maturity.independentVerifiedCount,
+    input.validation?.independentVerifiedCount ?? 0,
+    collectedRoots.length === 0 ? (input.validation?.verifiedEvidenceCount ?? 0) : 0,
+  );
+  const independentEvidenceCount = Math.max(
+    maturity.independentEvidenceCount,
+    input.validation?.independentEvidenceCount ?? 0,
+    collectedRoots.length === 0 ? (input.validation?.evidenceCount ?? 0) : 0,
+  );
+
+  const confidenceResult = computeConfidence({
+    ...maturity,
+    independentVerifiedCount,
+    independentEvidenceCount,
+  });
+  const confidence = confidenceResult.confidence;
+
+  const uniqueCollectedRoots = uniqueEvidenceRoots(collectedRoots);
+  const validation: ScoreValidationSummary = {
+    evidenceCount:
+      uniqueCollectedRoots.length > 0
+        ? uniqueCollectedRoots.length
+        : (input.validation?.evidenceCount ?? independentEvidenceCount),
+    verifiedEvidenceCount:
+      uniqueCollectedRoots.length > 0
+        ? uniqueCollectedRoots.filter((root) => root.verified).length
+        : (input.validation?.verifiedEvidenceCount ?? independentVerifiedCount),
+    ratingCount: input.validation?.ratingCount ?? 0,
+    endorsementCount: input.validation?.endorsementCount ?? 0,
+    institutionalConfirmationCount: input.validation?.institutionalConfirmationCount ?? 0,
+    disputedItemCount: input.validation?.disputedItemCount ?? 0,
+    independentEvidenceCount,
+    independentVerifiedCount,
+    evaluationCount: input.validation?.evaluationCount ?? maturity.evaluationCount,
+  };
+
+  const overallStatus = deriveOverallStatus({
+    overallScore: provisionalEstimate,
+    coverage,
+    confidence,
+    independentVerifiedCount,
+  });
+  const publicScore = overallStatus === 'established' ? provisionalEstimate : null;
+
   const stage = deriveStage({
-    overallScore: overall,
+    overallScore: provisionalEstimate,
     confidence,
     evidenceCount: validation.evidenceCount,
-    verifiedEvidenceCount: validation.verifiedEvidenceCount,
+    verifiedEvidenceCount: independentVerifiedCount,
     scoredCategoryCount: included.length,
   });
 
   const missingData = excluded.map((id) => `${metaFor(id).fullLabel} not yet scored`);
+  const provisionalReasons: string[] = [];
+  if (coverage.limited) {
+    provisionalReasons.push('Category coverage is limited; missing categories stay unknown.');
+  }
+  if (confidence === 'insufficient' || confidence === 'low') {
+    provisionalReasons.push('Confidence is low until more independent verified evidence exists.');
+  }
+  if (independentVerifiedCount < 5) {
+    provisionalReasons.push(
+      `Independent verified evidence is ${independentVerifiedCount}; one activity cannot establish mature reputation.`,
+    );
+  }
+
   const notes: string[] = [
-    'Unavailable category scores are excluded and weights are renormalized; missing data is never treated as zero.',
-    'Ratings, endorsements, evidence, and verification support categories; they are not a sixth circle segment.',
-    'The Civizen Score reflects demonstrated activity and reliability. It does not measure a person’s intrinsic value or human worth.',
+    'Unavailable category scores stay unknown. They are not treated as zero and do not imply full coverage.',
+    'A provisional estimate averages observed categories only. It is not an established Civizen Score.',
+    'Verification confirms evidence; it does not increase an evaluator’s rating.',
+    'The Civizen Score reflects demonstrated participation history. It does not measure a person’s intrinsic value or human worth.',
     'Tiers recognize demonstrated participation within Civizen. They do not measure dignity, social worth, or citizenship status.',
   ];
+  if (provisionalReasons.length > 0) {
+    notes.push(...provisionalReasons);
+  }
 
   const performance = categories.find((c) => c.id === 'performance');
   const contributions = categories.find((c) => c.id === 'contributions');
   const lastCalculatedAt =
-    input.calculatedAt ?? (overall != null ? new Date().toISOString() : null);
+    input.calculatedAt ?? (provisionalEstimate != null ? new Date().toISOString() : null);
 
-  const hasVerifiedActivity = validation.verifiedEvidenceCount > 0;
+  const hasVerifiedActivity = independentVerifiedCount > 0;
   const hasSustainedActivity =
-    input.hasSustainedActivity ?? validation.verifiedEvidenceCount >= 8;
+    input.hasSustainedActivity ?? (maturity.hasRecurrence && maturity.timeSpanDays >= 90);
   const hasSubstantialImpact =
-    input.hasSubstantialImpact ?? validation.verifiedEvidenceCount >= 20;
+    input.hasSubstantialImpact ?? independentVerifiedCount >= 20;
+
+  const history = (input.history ?? []).map((item) => ({
+    ...item,
+    calculationVersion: resolveScoreModelVersion(item.calculationVersion),
+  }));
 
   const tier = calculateTierStatus(
     {
-      overallScore: overall,
+      overallScore: provisionalEstimate,
       performanceScore: performance?.score ?? null,
       contributionsScore: contributions?.score ?? null,
       confidence,
@@ -559,6 +734,12 @@ export function calculateCivizenScoreModel(
       hasSustainedActivity,
       hasSubstantialImpact,
       hasUnresolvedSeriousIntegrityIssue: input.hasUnresolvedSeriousIntegrityIssue ?? false,
+      independentVerifiedEvidenceCount: independentVerifiedCount,
+      scoredCategoryCount: included.length,
+      establishedCategoryCount,
+      hasRecurrence: maturity.hasRecurrence,
+      timeSpanDays: maturity.timeSpanDays,
+      overallStatus,
     },
     lastCalculatedAt,
   );
@@ -566,23 +747,41 @@ export function calculateCivizenScoreModel(
   return {
     userId: input.userId ?? '',
     overall: {
-      score: overall,
+      score: publicScore,
+      provisionalEstimate,
       stage,
       confidence,
       lastCalculatedAt,
       calculationVersion: SCORE_CALCULATION_VERSION,
+      status: overallStatus,
+      modelVersion: SCORE_CALCULATION_VERSION,
     },
     tier,
     categories,
     validation,
-    history: input.history ?? [],
-    nextSteps: buildNextSteps(categories, validation),
+    history,
+    nextSteps: buildNextSteps(categories, validation, { skills: options?.skills }),
     explanation: {
       weights,
       includedCategories: included,
       excludedCategories: excluded,
       missingData,
       notes,
+    },
+    coverage,
+    confidenceFactors: confidenceResult.factors,
+    tierReadiness: tier.readiness,
+    independentEvidenceCount,
+    effectiveEvidenceVolume,
+    explanations: {
+      modelVersion: SCORE_CALCULATION_VERSION,
+      coverageLimited: coverage.limited,
+      provisionalReasons,
+      keyFactors: [
+        `Independent verified evidence: ${independentVerifiedCount}`,
+        `Coverage: ${coverage.scoredCount}/${coverage.totalCount} categories`,
+        `Confidence: ${confidence}`,
+      ],
     },
   };
 }
@@ -661,10 +860,21 @@ export function buildScoreFromProfileActivity(args: {
   trainingCount?: number;
   skillCount?: number;
   verifiedSkillCount?: number;
+  declaredSkillNames?: string[];
+  demonstratedSkills?: Array<{
+    skillName: string;
+    skillId?: string | null;
+    participationId?: string;
+    opportunityId?: string;
+    evidenceRootId?: string;
+    verified?: boolean;
+    demonstratedAt?: string | null;
+  }>;
   experienceCount?: number;
   verifiedExperienceCount?: number;
   /** Cumulative months of experience (union of intervals). Primary Experience factor. */
   experienceMonths?: number;
+  demonstratedProjects?: DemonstratedProjectEvidence[];
   endorsementCount?: number;
   /** Precomputed Contributions category from estimated activity events. */
   contributions?: CategoryScoreInput | null;
@@ -686,11 +896,31 @@ export function buildScoreFromProfileActivity(args: {
     educationEntries?.filter((entry) => isEducationVerified(entry.verificationStatus)).length ?? 0,
   );
   const trainingCount = Math.max(0, args.trainingCount ?? 0);
-  const skillCount = args.skillCount ?? 0;
-  const verifiedSkillCount = args.verifiedSkillCount ?? 0;
+  const declaredSkillNames = args.declaredSkillNames ?? [];
+  const skillCount = Math.max(args.skillCount ?? 0, declaredSkillNames.length);
+  const canonicalSkills = mergeCanonicalSkills({
+    declaredNames: declaredSkillNames,
+    demonstrated: (args.demonstratedSkills ?? []).map((item) => ({
+      skillName: item.skillName,
+      skillId: item.skillId,
+      evidenceRootId:
+        item.evidenceRootId ||
+        (item.participationId
+          ? `opportunity_participations:${item.participationId}`
+          : `skill:${item.skillName.toLowerCase()}`),
+      verified: item.verified !== false,
+      demonstratedAt: item.demonstratedAt,
+    })),
+  });
+  const verifiedUniqueSkills = countVerifiedUniqueSkills(canonicalSkills);
+  const recentlyDemonstratedSkills = countRecentlyDemonstratedSkills(canonicalSkills);
+  const verifiedSkillCount = Math.max(args.verifiedSkillCount ?? 0, verifiedUniqueSkills);
   const experienceCount = args.experienceCount ?? 0;
   const verifiedExperienceCount = args.verifiedExperienceCount ?? 0;
   const experienceMonths = Math.max(0, args.experienceMonths ?? 0);
+  const demonstratedProjects = args.demonstratedProjects ?? [];
+  const projectSupportResult = projectSupportForExperience(demonstratedProjects);
+  const projectRoots = uniqueProjectRoots(demonstratedProjects);
   const endorsementCount = args.endorsementCount ?? 0;
 
   const categories: Partial<Record<ScoreCategoryId, CategoryScoreInput>> = {
@@ -717,109 +947,180 @@ export function buildScoreFromProfileActivity(args: {
       score,
       sourceCount: Math.max(1, sourceCount),
       verifiedSourceCount: verifiedEducationCount,
-      confidence: verifiedEducationCount > 0 ? 'moderate' : 'low',
+      confidence: 'low',
       metrics: [
         {
           id: 'education',
           label: 'Education',
           value: score,
           sourceCount: Math.max(educationCount, trainingCount > 0 ? 1 : 0),
-          confidence: verifiedEducationCount > 0 ? 'moderate' : 'low',
+          confidence: 'low',
         },
         ...emptyMetrics('learning').filter((m) => m.id !== 'education'),
       ],
     };
   }
 
-  if (!categories.skills && skillCount > 0) {
-    // Same preliminary curve as Learning so a few declared skills surface a rating
-    // immediately; verification later raises confidence and score.
-    const base = diminishingQuantityScore(skillCount, 8, 55);
-    const verifiedBoost = Math.min(30, verifiedSkillCount * 8);
-    const score = clampScore(base + verifiedBoost);
+  if (!categories.skills && (skillCount > 0 || canonicalSkills.length > 0)) {
+    const declaredCount = Math.max(skillCount, canonicalSkills.filter((skill) => skill.declared).length);
+    const declaredBase = declaredCount > 0 ? diminishingQuantityScore(declaredCount, 8, 55) : 0;
+    const demonstratedObservations: CategoryObservation[] = canonicalSkills
+      .filter((skill) => skill.demonstrated && skill.verifiedDemonstrations > 0)
+      .flatMap((skill) =>
+        skill.evidenceRoots.map((root) => ({
+          evidenceRootId: root,
+          value: 62,
+          verified: true,
+          occurredAt: skill.lastDemonstratedAt,
+        })),
+      );
+    const demonstratedReputation = reputationFromObservations(demonstratedObservations);
+    const uniqueCanonical = canonicalSkills.length || declaredCount;
+    // Matching declared + demonstrated skills stay one canonical skill (no double count).
+    const score =
+      demonstratedReputation.score != null
+        ? clampScore(declaredBase * 0.45 + demonstratedReputation.score * 0.55)
+        : declaredCount > 0
+          ? clampScore(declaredBase)
+          : null;
+    const skillsMetrics = emptyMetrics('skills').map((metric) => {
+      if (metric.id === 'top') {
+        return { ...metric, value: score, sourceCount: uniqueCanonical, confidence: 'low' as const };
+      }
+      if (metric.id === 'verified') {
+        return {
+          ...metric,
+          value: verifiedUniqueSkills > 0 ? clampScore(verifiedUniqueSkills * 8) : null,
+          sourceCount: verifiedUniqueSkills,
+        };
+      }
+      if (metric.id === 'recent') {
+        return {
+          ...metric,
+          value: recentlyDemonstratedSkills > 0 ? clampScore(recentlyDemonstratedSkills * 10) : null,
+          sourceCount: recentlyDemonstratedSkills,
+        };
+      }
+      return metric;
+    });
     categories.skills = {
       score,
-      sourceCount: skillCount,
-      verifiedSourceCount: verifiedSkillCount,
-      confidence: verifiedSkillCount > 0 ? 'moderate' : 'low',
-      metrics: [
-        {
-          id: 'top',
-          label: 'Top Skills',
-          value: score,
-          sourceCount: skillCount,
-          confidence: verifiedSkillCount > 0 ? 'moderate' : 'low',
-        },
-        ...emptyMetrics('skills').filter((m) => m.id !== 'top'),
-      ],
+      sourceCount: uniqueCanonical,
+      verifiedSourceCount: verifiedUniqueSkills,
+      confidence: 'low',
+      independentEvidenceCount: demonstratedReputation.independentEvidenceCount || uniqueCanonical,
+      effectiveEvidenceVolume: demonstratedReputation.effectiveEvidenceVolume,
+      evidenceRoots: demonstratedReputation.evidenceRoots,
+      status: demonstratedReputation.status === 'unknown' && score != null ? 'provisional' : demonstratedReputation.status,
+      metrics: skillsMetrics,
     };
   }
 
-  if (!categories.experience && (experienceMonths > 0 || experienceCount > 0)) {
-    // Primary: cumulative years with diminishing returns (years alone do not run away).
+  if (!categories.experience && (experienceMonths > 0 || experienceCount > 0 || projectRoots.length > 0)) {
     const years = experienceMonths / 12;
-    const durationScore = diminishingQuantityScore(years, 15, 72);
-    // Secondary: modest breadth for additional distinct roles (cannot beat long tenure).
+    const durationScore = years > 0 || experienceCount > 0 ? diminishingQuantityScore(years, 15, 72) : 0;
     const breadthBonus =
       experienceCount > 1
         ? Math.min(12, diminishingQuantityScore(experienceCount - 1, 3, 12))
         : 0;
-    const verifiedBoost = Math.min(20, verifiedExperienceCount * 8);
-    const score = clampScore(durationScore + breadthBonus + verifiedBoost);
+    const { support: projectSupport, uniqueCount: uniqueProjectCount } = projectSupportResult;
+    const hasEnteredHistory = durationScore > 0 || experienceCount > 0;
+    const score = hasEnteredHistory
+      ? clampScore(durationScore + breadthBonus + projectSupport)
+      : null;
+    const experienceMetrics = emptyMetrics('experience').map((metric) => {
+      if (metric.id === 'professional') {
+        return {
+          ...metric,
+          value: durationScore > 0 ? clampScore(durationScore + breadthBonus) : null,
+          sourceCount: Math.max(experienceCount, experienceMonths > 0 ? 1 : 0),
+          confidence: 'low' as const,
+        };
+      }
+      if (metric.id === 'projects') {
+        return {
+          ...metric,
+          value: uniqueProjectCount > 0 ? clampScore(projectSupport) : null,
+          sourceCount: uniqueProjectCount,
+        };
+      }
+      return metric;
+    });
     categories.experience = {
       score,
-      sourceCount: Math.max(experienceCount, experienceMonths > 0 ? 1 : 0),
-      verifiedSourceCount: verifiedExperienceCount,
-      confidence: verifiedExperienceCount > 0 ? 'moderate' : 'low',
-      metrics: [
-        {
-          id: 'professional',
-          label: 'Professional',
-          value: score,
-          sourceCount: Math.max(experienceCount, experienceMonths > 0 ? 1 : 0),
-          confidence: verifiedExperienceCount > 0 ? 'moderate' : 'low',
-        },
-        ...emptyMetrics('experience').filter((m) => m.id !== 'professional'),
-      ],
+      sourceCount: Math.max(experienceCount, experienceMonths > 0 ? 1 : 0, projectRoots.length),
+      verifiedSourceCount: Math.max(verifiedExperienceCount, projectRoots.length),
+      confidence: 'low',
+      independentEvidenceCount: Math.max(experienceCount, projectRoots.length),
+      evidenceRoots: experienceCount > 0 ? undefined : projectRoots,
+      status: score == null ? 'unknown' : 'provisional',
+      metrics: experienceMetrics,
     };
   }
 
-  const contributionSourceCount = args.contributions?.sourceCount ?? 0;
-  const contributionVerifiedCount = args.contributions?.verifiedSourceCount ?? 0;
-  const performanceSourceCount = args.performance?.sourceCount ?? 0;
-  const performanceVerifiedCount = args.performance?.verifiedSourceCount ?? 0;
+  const contributionRoots = args.contributions?.evidenceRootRefs ?? [];
+  const performanceRoots = args.performance?.evidenceRootRefs ?? [];
+  const skillRoots = canonicalSkills.flatMap((skill) =>
+    skill.evidenceRoots.map((id) => ({
+      id,
+      sourceTable: id.split(':')[0] || 'opportunity_participations',
+      sourceId: id.split(':').slice(1).join(':') || id,
+      verified: skill.verifiedDemonstrations > 0,
+      occurredAt: skill.lastDemonstratedAt,
+    })),
+  );
+  const projectRootRefs: EvidenceRootRef[] = projectRoots.map((id) => ({
+    id,
+    sourceTable: id.split(':')[0] || 'contribution_opportunities',
+    sourceId: id.split(':').slice(1).join(':') || id,
+    verified: true,
+  }));
+  const educationRoots: EvidenceRootRef[] = Array.from({ length: educationCount }, (_, index) => ({
+    id: `profile_education_entries:${index}`,
+    sourceTable: 'profile_education_entries',
+    sourceId: String(index),
+    verified: index < verifiedEducationCount,
+  }));
+  const experienceRoots: EvidenceRootRef[] = Array.from({ length: experienceCount }, (_, index) => ({
+    id: `profile_experience_entries:${index}`,
+    sourceTable: 'profile_experience_entries',
+    sourceId: String(index),
+    verified: index < verifiedExperienceCount,
+  }));
+
   const performanceRatingCount =
     args.performance?.metrics?.find((m) => m.id === 'ratings')?.sourceCount ?? 0;
-  const evidenceCount =
-    educationCount +
-    trainingCount +
-    skillCount +
-    experienceCount +
-    endorsementCount +
-    contributionSourceCount +
-    performanceSourceCount;
-  const verifiedEvidenceCount =
-    verifiedEducationCount +
-    verifiedSkillCount +
-    verifiedExperienceCount +
-    contributionVerifiedCount +
-    performanceVerifiedCount;
 
-  return calculateCivizenScoreModel({
-    userId: args.userId,
-    categories,
-    validation: {
-      evidenceCount,
-      verifiedEvidenceCount,
-      endorsementCount,
-      ratingCount: performanceRatingCount,
-      institutionalConfirmationCount: 0,
-      disputedItemCount: 0,
+  const allRoots = uniqueEvidenceRoots([
+    ...contributionRoots,
+    ...performanceRoots,
+    ...skillRoots,
+    ...educationRoots,
+    ...experienceRoots,
+    ...projectRootRefs,
+  ]);
+
+  return calculateCivizenScoreModel(
+    {
+      userId: args.userId,
+      categories,
+      evidenceRoots: allRoots,
+      validation: {
+        evidenceCount: allRoots.length,
+        verifiedEvidenceCount: allRoots.filter((root) => root.verified).length,
+        independentEvidenceCount: args.contributions?.independentEvidenceCount,
+        independentVerifiedCount: args.contributions?.verifiedSourceCount,
+        endorsementCount,
+        ratingCount: performanceRatingCount,
+        institutionalConfirmationCount: 0,
+        disputedItemCount: 0,
+      },
+      history: args.history,
+      calculatedAt:
+        allRoots.length > 0 || Object.keys(categories).length > 0 ? new Date().toISOString() : null,
     },
-    history: args.history,
-    calculatedAt:
-      evidenceCount > 0 || Object.keys(categories).length > 0 ? new Date().toISOString() : null,
-  });
+    { skills: canonicalSkills },
+  );
 }
 
 export function formatScoreValue(score: number | null | undefined): string {
@@ -834,6 +1135,19 @@ export function formatScoreOutOf100(score: number | null | undefined): string {
 
 export function getCategoryMeta(id: ScoreCategoryId): ScoreCategoryMeta {
   return metaFor(id);
+}
+
+function fixtureEvidenceRoots(count: number, verified = true): EvidenceRootRef[] {
+  const now = Date.now();
+  return Array.from({ length: count }, (_, index) => ({
+    id: `fixture:${index}`,
+    sourceTable: 'fixture',
+    sourceId: String(index),
+    verified,
+    occurredAt: new Date(now - index * 4 * 24 * 60 * 60 * 1000).toISOString(),
+    evaluatorIds: [`evaluator-${index % 8}`],
+    evaluationCount: 1,
+  }));
 }
 
 /** Representative fixtures for automated tests and demos. */
@@ -910,6 +1224,9 @@ export const SCORE_TEST_PROFILES = {
       endorsementCount: 12,
       institutionalConfirmationCount: 4,
     },
+    evidenceRoots: fixtureEvidenceRoots(45),
+    hasSustainedActivity: true,
+    hasSubstantialImpact: true,
     history: [
       {
         id: 'h1',
@@ -983,6 +1300,7 @@ export const SCORE_TEST_PROFILES = {
       ratingCount: 10,
       endorsementCount: 2,
     },
+    evidenceRoots: fixtureEvidenceRoots(20),
   }),
   F_highQuantityLowImpact: (): ScoreCalculationInput => {
     const quantityOnly = diminishingQuantityScore(40, 12, 70);

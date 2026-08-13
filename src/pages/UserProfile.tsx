@@ -12,10 +12,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { PILLARS, type PillarId } from '@/lib/constants';
 import { calculateCivizenScore, type Endorsement } from '@/lib/scoring';
 import { buildScoreFromProfileActivity, formatScoreValue, type CategoryScoreInput } from '@/lib/civizen-score';
-import { countSkillsFromEntry } from '@/lib/profile-skills';
+import { scorePublicSubtitle } from '@/lib/civizen-score-caption';
+import { ownProfileRingDisplay } from '@/lib/civizen-score-ring-display';
+import { countSkillsFromEntry, declaredSkillNamesFromEntry } from '@/lib/profile-skills';
 import { countTrainingsFromEntry } from '@/lib/profile-trainings';
-import { parseExperienceEntries } from '@/lib/profile-experience';
+import { parseExperienceEntries, cumulativeExperienceMonths } from '@/lib/profile-experience';
 import {
+  demonstratedProjectsFromContributionEvents,
+  demonstratedSkillsFromContributionEvents,
   loadContributionEvents,
   loadContributionEventsThenSync,
   scoreContributionsFromEvents,
@@ -54,7 +58,9 @@ export default function UserProfile() {
   const [educationLevels, setEducationLevels] = useState<string[]>([]);
   const [trainingCount, setTrainingCount] = useState(0);
   const [skillCount, setSkillCount] = useState(0);
+  const [declaredSkillNames, setDeclaredSkillNames] = useState<string[]>([]);
   const [experienceCount, setExperienceCount] = useState(0);
+  const [experienceMonths, setExperienceMonths] = useState(0);
   const [contributionInput, setContributionInput] = useState<CategoryScoreInput | null>(null);
   const [performanceInput, setPerformanceInput] = useState<CategoryScoreInput | null>(null);
   const [performanceActivities, setPerformanceActivities] = useState<PerformanceActivity[]>([]);
@@ -142,7 +148,10 @@ export default function UserProfile() {
 
     setTrainingCount(countTrainingsFromEntry(trainingData));
     setSkillCount(countSkillsFromEntry(skillsData));
-    setExperienceCount(parseExperienceEntries(experienceData?.experiences).length);
+    setDeclaredSkillNames(declaredSkillNamesFromEntry(skillsData));
+    const experienceEntries = parseExperienceEntries(experienceData?.experiences);
+    setExperienceCount(experienceEntries.length);
+    setExperienceMonths(cumulativeExperienceMonths(experienceEntries));
 
     try {
       const isOwn = currentProfile?.id === userId;
@@ -195,7 +204,11 @@ export default function UserProfile() {
         educationLevels,
         trainingCount,
         skillCount,
+        declaredSkillNames,
+        demonstratedSkills: demonstratedSkillsFromContributionEvents(contributionEvents),
+        demonstratedProjects: demonstratedProjectsFromContributionEvents(contributionEvents),
         experienceCount,
+        experienceMonths,
         endorsementCount: endorsements.length,
         contributions: contributionInput,
         performance: performanceInput,
@@ -207,7 +220,10 @@ export default function UserProfile() {
       educationLevels,
       trainingCount,
       skillCount,
+      declaredSkillNames,
+      contributionEvents,
       experienceCount,
+      experienceMonths,
       endorsements.length,
       contributionInput,
       performanceInput,
@@ -244,6 +260,8 @@ export default function UserProfile() {
       </AppLayout>
     );
   }
+
+  const ownRing = currentProfile?.id === profile.id ? ownProfileRingDisplay(score) : null;
 
   return (
     <AppLayout>
@@ -301,21 +319,20 @@ export default function UserProfile() {
           className="flex justify-center"
         >
           <Card className="border-border/50 bg-card p-6 shadow-soft">
-            <CivizenScore score={score.overall.score} size="lg" tier={score.tier.finalTier} />
+            <CivizenScore
+              score={ownRing ? ownRing.value : score.overall.score}
+              size="lg"
+              tier={score.tier.finalTier}
+              emptyLabel="—"
+              presentation={ownRing?.presentation === 'provisional' ? 'provisional' : 'established'}
+              centerCaption={ownRing?.presentation === 'provisional' ? t('score.estimateLabel') : null}
+            />
             {score.tier.finalTier ? (
               <p className="mt-2 text-center text-sm font-semibold uppercase tracking-wide text-primary">
                 {t(`score.tier.${score.tier.finalTier}`)}
               </p>
             ) : null}
-            <p className="mt-2 text-center text-sm text-muted-foreground">
-              {t(`score.confidence.${score.overall.confidence}`)}
-              {score.tier.pointsToNextTier != null && score.tier.nextTier
-                ? ` · ${t('score.pointsToTier', {
-                    points: score.tier.pointsToNextTier,
-                    tier: t(`score.tier.${score.tier.nextTier}`),
-                  })}`
-                : null}
-            </p>
+            <p className="mt-2 text-center text-sm text-muted-foreground">{scorePublicSubtitle(score, t)}</p>
             <p className="mt-2 text-center text-sm text-muted-foreground">
               {score.validation.verifiedEvidenceCount > 0
                 ? t('userProfile.basedOnVerified', {

@@ -55,9 +55,12 @@ describe('OpportunityForm', () => {
     expect(screen.getByLabelText('contribute.opportunities.titleLabel')).toBeInTheDocument();
     expect(screen.getByLabelText('contribute.opportunities.summaryLabel')).toBeInTheDocument();
     expect(screen.queryByLabelText('contribute.opportunities.requirements')).not.toBeInTheDocument();
+    expect(screen.queryByText('contribute.opportunities.assessmentDimensionsLabel')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByText('contribute.opportunities.moreDetails'));
     expect(screen.getByLabelText('contribute.opportunities.requirements')).toBeInTheDocument();
+    expect(screen.getByText('contribute.opportunities.assessmentDimensionsLabel')).toBeInTheDocument();
+    expect(screen.getByLabelText('contribute.opportunities.dimension.quality')).toBeInTheDocument();
   });
 
   it('creates an opportunity through the RPC wrapper', async () => {

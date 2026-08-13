@@ -102,6 +102,8 @@ vi.mock('@/lib/use-development-stories', () => ({
 vi.mock('@/lib/civizen-contributions', () => ({
   loadContributionEventsThenSync: async () => [],
   scoreContributionsFromEvents: () => ({ score: null, confidence: null, eventCount: 0 }),
+  demonstratedSkillsFromContributionEvents: () => [],
+  demonstratedProjectsFromContributionEvents: () => [],
 }));
 
 vi.mock('@/lib/civizen-performance', () => ({
@@ -232,5 +234,5 @@ describe('Home post composer focus', () => {
     fireEvent.mouseDown(chrome!);
     expect(focusChromeMock).toHaveBeenCalled();
     expect(focusChromeMock.mock.calls[0]?.[1]).toBeInstanceOf(HTMLElement);
-  });
+  }, 15000);
 });

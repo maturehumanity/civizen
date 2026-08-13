@@ -6,6 +6,8 @@ import { OpportunityOrganizerPanel } from '@/pages/contribute/OpportunityOrganiz
 
 const listOpportunityApplicantIdentities = vi.fn();
 const evaluateOpportunityWork = vi.fn();
+const listWorkAssessmentsForParticipations = vi.fn();
+const recordOpportunityWorkAssessment = vi.fn();
 const toastError = vi.fn();
 
 vi.mock('@/contexts/LanguageContext', () => ({
@@ -18,6 +20,8 @@ vi.mock('@/contexts/LanguageContext', () => ({
 vi.mock('@/lib/opportunities-api', () => ({
   listOpportunityApplicantIdentities: (...args: unknown[]) => listOpportunityApplicantIdentities(...args),
   evaluateOpportunityWork: (...args: unknown[]) => evaluateOpportunityWork(...args),
+  listWorkAssessmentsForParticipations: (...args: unknown[]) => listWorkAssessmentsForParticipations(...args),
+  recordOpportunityWorkAssessment: (...args: unknown[]) => recordOpportunityWorkAssessment(...args),
   reviewOpportunityApplication: vi.fn(),
   setContributionOpportunityStatus: vi.fn(),
 }));
@@ -47,6 +51,7 @@ const opportunity = {
   expectedOutcome: null,
   evidenceRequirements: null,
   evaluationCriteria: null,
+  evaluationDimensions: [] as Array<'quality' | 'impact' | 'completion'>,
   createdAt: '2026-08-13T00:00:00.000Z',
   updatedAt: '2026-08-13T00:00:00.000Z',
 };
@@ -75,7 +80,14 @@ const applicant = {
   updatedAt: '2026-08-14T00:00:00.000Z',
 };
 
-describe('OpportunityOrganizerPanel evaluation scores', () => {
+const verifiedApplicant = {
+  ...applicant,
+  status: 'completed' as const,
+  verificationStatus: 'verified' as const,
+  completedAt: '2026-08-15T00:00:00.000Z',
+};
+
+describe('OpportunityOrganizerPanel verification and evaluation', () => {
   beforeEach(() => {
     listOpportunityApplicantIdentities.mockResolvedValue([
       {
@@ -86,12 +98,15 @@ describe('OpportunityOrganizerPanel evaluation scores', () => {
         avatarUrl: null,
       },
     ]);
+    listWorkAssessmentsForParticipations.mockResolvedValue([]);
     evaluateOpportunityWork.mockReset();
     evaluateOpportunityWork.mockResolvedValue('eval-1');
+    recordOpportunityWorkAssessment.mockReset();
+    recordOpportunityWorkAssessment.mockResolvedValue('assess-1');
     toastError.mockReset();
   });
 
-  it('keeps quality and impact secondary and passes valid scores through evaluate', async () => {
+  it('verifies submitted work without requiring evaluation scores', async () => {
     const onAction = vi.fn(async (action: () => Promise<unknown>) => {
       await action();
     });
@@ -114,15 +129,7 @@ describe('OpportunityOrganizerPanel evaluation scores', () => {
     );
 
     expect(await screen.findByText('Ada Example')).toBeInTheDocument();
-    expect(screen.queryByLabelText('contribute.opportunities.qualityScore')).not.toBeInTheDocument();
-
-    fireEvent.click(screen.getByText('contribute.opportunities.moreDetails'));
-    fireEvent.change(screen.getByLabelText('contribute.opportunities.qualityScore'), {
-      target: { value: '80' },
-    });
-    fireEvent.change(screen.getByLabelText('contribute.opportunities.impactScore'), {
-      target: { value: '70' },
-    });
+    expect(screen.queryByLabelText('contribute.opportunities.dimension.quality')).not.toBeInTheDocument();
     fireEvent.click(screen.getByText('contribute.opportunities.verify'));
 
     await waitFor(() => {
@@ -130,19 +137,85 @@ describe('OpportunityOrganizerPanel evaluation scores', () => {
         participationId: 'part-1',
         decision: 'verified',
         feedback: 'Clear write-up.',
-        qualityScore: 80,
-        impactScore: 70,
         skillNames: ['Documentation'],
       });
     });
+    expect(recordOpportunityWorkAssessment).not.toHaveBeenCalled();
   });
 
-  it('blocks verification when a score is outside 0–100', async () => {
+  it('does not offer evaluation when the opportunity has no dimensions', async () => {
     render(
       <MemoryRouter>
         <OpportunityOrganizerPanel
           opportunity={opportunity}
-          applicants={[applicant]}
+          applicants={[verifiedApplicant]}
+          busy={false}
+          reviewingId={null}
+          reviewEvidence={[]}
+          evalFeedback=""
+          evalSkills=""
+          onReviewingId={vi.fn()}
+          onEvalFeedback={vi.fn()}
+          onEvalSkills={vi.fn()}
+          onAction={vi.fn()}
+        />
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText('Ada Example')).toBeInTheDocument();
+    expect(screen.queryByText('contribute.opportunities.assessmentEnter')).not.toBeInTheDocument();
+    expect(screen.queryByText('contribute.opportunities.verify')).not.toBeInTheDocument();
+  });
+
+  it('records selected evaluation dimensions after verification', async () => {
+    const onAction = vi.fn(async (action: () => Promise<unknown>) => {
+      await action();
+    });
+    render(
+      <MemoryRouter>
+        <OpportunityOrganizerPanel
+          opportunity={{ ...opportunity, evaluationDimensions: ['quality', 'impact'] }}
+          applicants={[verifiedApplicant]}
+          busy={false}
+          reviewingId="part-1"
+          reviewEvidence={[]}
+          evalFeedback=""
+          evalSkills=""
+          onReviewingId={vi.fn()}
+          onEvalFeedback={vi.fn()}
+          onEvalSkills={vi.fn()}
+          onAction={onAction}
+        />
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByLabelText('contribute.opportunities.dimension.quality')).toBeInTheDocument();
+    expect(screen.queryByLabelText('contribute.opportunities.dimension.completion')).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('contribute.opportunities.dimension.quality'), {
+      target: { value: '82' },
+    });
+    fireEvent.change(screen.getByLabelText('contribute.opportunities.dimension.impact'), {
+      target: { value: '70' },
+    });
+    fireEvent.click(screen.getByText('contribute.opportunities.assessmentSave'));
+
+    await waitFor(() => {
+      expect(recordOpportunityWorkAssessment).toHaveBeenCalledWith({
+        participationId: 'part-1',
+        scores: { quality: 82, impact: 70 },
+        dimensions: ['quality', 'impact'],
+        notes: '',
+      });
+    });
+    expect(evaluateOpportunityWork).not.toHaveBeenCalled();
+  });
+
+  it('blocks evaluation scores outside 0–100', async () => {
+    render(
+      <MemoryRouter>
+        <OpportunityOrganizerPanel
+          opportunity={{ ...opportunity, evaluationDimensions: ['quality'] }}
+          applicants={[verifiedApplicant]}
           busy={false}
           reviewingId="part-1"
           reviewEvidence={[]}
@@ -156,12 +229,11 @@ describe('OpportunityOrganizerPanel evaluation scores', () => {
       </MemoryRouter>,
     );
 
-    fireEvent.click(await screen.findByText('contribute.opportunities.moreDetails'));
-    fireEvent.change(screen.getByLabelText('contribute.opportunities.qualityScore'), {
+    fireEvent.change(await screen.findByLabelText('contribute.opportunities.dimension.quality'), {
       target: { value: '140' },
     });
-    fireEvent.click(screen.getByText('contribute.opportunities.verify'));
-    expect(toastError).toHaveBeenCalledWith('contribute.opportunities.evaluationScoresInvalid');
-    expect(evaluateOpportunityWork).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByText('contribute.opportunities.assessmentSave'));
+    expect(toastError).toHaveBeenCalledWith('contribute.opportunities.assessmentScoresInvalid');
+    expect(recordOpportunityWorkAssessment).not.toHaveBeenCalled();
   });
 });

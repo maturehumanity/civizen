@@ -985,8 +985,8 @@ This appendix records what the repository already has. It does **not** authorize
 
 | Item | Location | Versioning today |
 | --- | --- | --- |
-| Current Score model (Learning, Skills, Experience, Performance, Contributions) | `src/lib/civizen-score.ts`; spec [`civizen-score-page-reorganization.md`](../scoring-and-reputation/civizen-score-page-reorganization.md) | `SCORE_CALCULATION_VERSION = 'civizen-score-v1.2'` on in-memory responses |
-| Tier rules | `src/lib/civizen-score-tiers.ts`; spec [`civizen-score-tiers-implementation.md`](../scoring-and-reputation/civizen-score-tiers-implementation.md) | `TIER_RULES_VERSION = '1.0.0'` on in-memory tier results |
+| Current Score model (Learning, Skills, Experience, Performance, Contributions) | `src/lib/civizen-score.ts` + `src/lib/civizen-score-model.ts`; spec [`civizen-score-page-reorganization.md`](../scoring-and-reputation/civizen-score-page-reorganization.md) | `SCORE_CALCULATION_VERSION = 'civizen-score-v2.0'` on new in-memory responses. Legacy history without a version is `legacy/unversioned`; stored v1.2 identities are kept. |
+| Tier rules | `src/lib/civizen-score-tiers.ts`; spec [`civizen-score-tiers-implementation.md`](../scoring-and-reputation/civizen-score-tiers-implementation.md) | `TIER_RULES_VERSION = '1.1.0'` — score thresholds plus evidence/coverage/history/confidence gates |
 | Score history | Optional `history[]` on the in-memory response; fixture data only | History items *can* carry `calculationVersion`; there is **no** persisted user score-snapshot table |
 | Governance eligibility snapshots | `governance_eligibility_snapshots.calculation_version` (default `phase1-v1`) | Version field exists for **eligibility**, not for the displayed Civizen Score |
 

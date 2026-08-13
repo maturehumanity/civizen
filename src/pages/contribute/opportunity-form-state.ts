@@ -1,6 +1,8 @@
 import {
+  sanitizeEvaluationDimensions,
   type CompensationStatus,
   type ContributionOpportunity,
+  type EvaluationDimension,
   type OpportunityPayload,
 } from '@/lib/opportunities';
 
@@ -38,6 +40,7 @@ export type OpportunityFormState = {
   expectedOutcome: string;
   evidenceRequirements: string;
   evaluationCriteria: string;
+  evaluationDimensions: EvaluationDimension[];
 };
 
 export function emptyOpportunityForm(): OpportunityFormState {
@@ -58,6 +61,7 @@ export function emptyOpportunityForm(): OpportunityFormState {
     expectedOutcome: '',
     evidenceRequirements: '',
     evaluationCriteria: '',
+    evaluationDimensions: [],
   };
 }
 
@@ -79,6 +83,7 @@ export function formFromOpportunity(row: ContributionOpportunity): OpportunityFo
     expectedOutcome: row.expectedOutcome ?? '',
     evidenceRequirements: row.evidenceRequirements ?? '',
     evaluationCriteria: row.evaluationCriteria ?? '',
+    evaluationDimensions: sanitizeEvaluationDimensions(row.evaluationDimensions),
   };
 }
 
@@ -101,5 +106,6 @@ export function formToPayload(form: OpportunityFormState, status: 'draft' | 'ope
     expectedOutcome: form.expectedOutcome.trim() || null,
     evidenceRequirements: form.evidenceRequirements.trim() || null,
     evaluationCriteria: form.evaluationCriteria.trim() || null,
+    evaluationDimensions: sanitizeEvaluationDimensions(form.evaluationDimensions),
   };
 }

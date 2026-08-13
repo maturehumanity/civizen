@@ -18,7 +18,7 @@ describe('contribute-lanes', () => {
       'financial',
       'organization',
     ]);
-    expect(CONTRIBUTE_LANES).toHaveLength(10);
+    expect(CONTRIBUTE_LANES).toHaveLength(8);
   });
 
   it('wires existing surfaces for volunteer, funding, partners, and professional opportunities', () => {
@@ -27,6 +27,14 @@ describe('contribute-lanes', () => {
     expect(CONTRIBUTE_LANES.find((lane) => lane.id === 'organization')?.path).toBe('/partners');
     expect(CONTRIBUTE_LANES.find((lane) => lane.id === 'professional')?.path).toBe('/contribute/professional');
     expect(CONTRIBUTE_LANES.find((lane) => lane.id === 'professional')?.placeholder).toBe(false);
+    expect(CONTRIBUTE_LANES.find((lane) => lane.id === 'challenges')?.path).toBe('/contribute/challenges');
+    expect(CONTRIBUTE_LANES.find((lane) => lane.id === 'challenges')?.placeholder).toBe(false);
+    expect(CONTRIBUTE_LANES.find((lane) => lane.id === 'knowledge')?.path).toBe('/contribute/knowledge');
+    expect(CONTRIBUTE_LANES.find((lane) => lane.id === 'knowledge')?.placeholder).toBe(false);
+    expect(CONTRIBUTE_LANES.find((lane) => lane.id === 'impact')?.path).toBe('/contribute/impact');
+    expect(CONTRIBUTE_LANES.find((lane) => lane.id === 'impact')?.placeholder).toBe(false);
+    expect(CONTRIBUTE_LANES.find((lane) => lane.id === 'tasks')).toBeUndefined();
+    expect(CONTRIBUTE_LANES.find((lane) => lane.id === 'projects')).toBeUndefined();
   });
 
   it('exposes placeholder lanes under /contribute/*', () => {
