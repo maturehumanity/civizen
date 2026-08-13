@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Live + Testing v0.1.179 (2026-08-13):** Build 181 (`20260813-v0.1.179`) published to Testing and Live. Includes Phase 1 contribution pilots, Score V2, development outcome capture, Challenge export crash fix, and Home Score V2 `demonstratedProjects` guard.
+
 **Historical reconstruction (2026-08-13):** Coherent historical development outcomes are reconstructed from git + journal provenance + surviving implementation (`src/lib/civizen-historical-reconstruction.ts`). Chat/git journal rows remain excluded as independent contributions. Reconstruction confidence is stored separately from contribution evidence confidence. No Score V2 formula change and no score-target restoration. Spec: `docs/04-operations/dev/historical-development-reconstruction.md`. LANGUAGE_PACK_VERSION 154. Concurrent Slice 2/3/4 / Phase 1 pilot work preserved.
 
 **Development contribution capture (2026-08-13):** Live pipeline so a completed development outcome (`outcomeRootId` + artifacts + passing tests) can become one system-verified contribution root via `recordDevelopmentOutcome` → `development_stories` → `profile_contribution_events` → Score V2 on read. Chat/git journal stays excluded. Owner profile ring shows a provisional estimate without presenting it as established. LANGUAGE_PACK_VERSION 154. No Score V2 formula change. Concurrent Slice 2/3/4 / Phase 1 pilot work preserved.
