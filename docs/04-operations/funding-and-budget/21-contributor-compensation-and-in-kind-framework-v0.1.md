@@ -1,5 +1,5 @@
 ---
-title: Contributor Compensation and In-Kind Framework v0.1
+title: Contributor Compensation and In-Kind Planning v0.1
 status: scenario-framework
 version: 0.1
 date: 2026-08-11
@@ -13,7 +13,9 @@ related:
   - 26-comprehensive-financial-classification-and-chart-of-accounts-v0.1.md
 canonical: false
 ---
-# Contributor compensation and in-kind framework v0.1
+# Contributor compensation and in-kind planning v0.1
+
+> **Not the canonical Contributor Framework.** Institutional Contribution Record design is [`docs/institutional/contributor-framework.md`](../../institutional/contributor-framework.md). This file is **compensation planning** only. Public/legal floor: [`contributor-participation-and-recognition.md`](../../02-policies/institutional/contributor-participation-and-recognition.md).
 
 > **Participation policy status (2026-08-11, rev 0.1.1):** Founder Participation Pool = **1% of Eligible External Monetary Receipts**, assessed once at first receipt (`founder_allocation_assessed`). Eligible distributable commercial profit (after costs and after founder receipt allocation): **10% Investor / 10% Contributor / 80% Ecosystem**. Dual Founder Funding + Founder Profit pools and the **10/10/1/79** profit pie are **superseded**. Spec: `27` (+ CSV); entity/legal: `28`. CoA: `26`. Unapproved; no app units/payouts.
 

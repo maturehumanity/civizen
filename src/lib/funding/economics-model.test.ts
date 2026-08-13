@@ -18,6 +18,7 @@ import {
   founderParticipationPoolUsdM,
   paybackYear,
   policyFormulaExample,
+  reconcilePrivateCapitalEligibility,
   selectedModelWaterfall,
   vehicleCapitalUsdM,
 } from './economics-model';
@@ -175,14 +176,22 @@ describe('economics-model v0.1.4 — selected model + deficit recovery', () => {
       terminalValueUsdM: 0,
     });
     expect(inv.moicIncludingTerminalValue).toBeNull();
-    expect(ECONOMICS_MODEL_VERSION).toBe('0.1.5');
+    expect(ECONOMICS_MODEL_VERSION).toBe('0.1.6');
   });
 
-  it('uses Validation Budget v0.2 restricted ask and keeps FPP eligible base unchanged', () => {
-    expect(VALIDATION_ASK_USD_M).toEqual({ low: 438.3, base: 530.2, high: 654.5 });
+  it('uses Validation Budget v0.3 restricted ask and keeps FPP eligible base unchanged', () => {
+    expect(VALIDATION_ASK_USD_M).toEqual({ low: 552.4, base: 634.4, high: 833.2 });
     expect(VALIDATION_ASK_V01_BASE_USD_M).toBe(446);
     expect(BASE_FPP_ELIGIBLE_TOTAL_USD_M).toBe(1470);
     expect(founderParticipationPoolUsdM(BASE_FPP_ELIGIBLE_TOTAL_USD_M)).toBe(14.7);
+    const baseCase = reconcilePrivateCapitalEligibility('base');
+    expect(baseCase.validationRestrictedUsdM).toBe(634.4);
+    expect(baseCase.receiptsEnteringParticipatingEntitiesUsdM).toBe(3434.4);
+    expect(baseCase.excludedRestrictedUsdM).toBe(1164.4);
+    expect(baseCase.fppEligibleReceiptsUsdM).toBe(1470);
+    expect(baseCase.founderParticipationPoolUsdM).toBe(14.7);
+    expect(baseCase.netDeployableReceiptsUsdM).toBe(3419.7);
+    expect(baseCase.lifecycle).toEqual({ accruedUsdM: 14.7, vestedUsdM: 0, payableUsdM: 0, paidUsdM: 0 });
     const uses = commercialCapitalSourcesAndUsesBase();
     expect(uses.envelopeUsdM).toBe(1200);
     expect(uses.committedUsdM + uses.receivedUsdM + uses.drawnUsdM).toBe(0);

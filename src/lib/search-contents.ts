@@ -97,6 +97,7 @@ export function buildSearchContentsCatalog(
     { id: 'home', path: '/', labelKey: pageRegistry.home.labelKey },
     { id: 'features', path: '/features', labelKey: pageRegistry.features.labelKey },
     { id: 'governance', path: '/governance', labelKey: 'settings.governanceHub' },
+    { id: 'areas', path: '/areas', labelKey: 'areas.title' },
     { id: 'fund', path: '/fund', labelKey: 'common.footerFund' },
     { id: 'documents', path: '/documents', labelKey: 'documents.indexTitle' },
   ] as const) {

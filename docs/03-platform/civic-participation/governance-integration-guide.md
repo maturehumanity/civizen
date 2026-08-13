@@ -2,6 +2,8 @@
 
 This guide explains how the new Governance UI components and Steward Consoles have been integrated into the Civizen Mobile MVP to achieve full decentralization.
 
+Working institutional model (project reference, not this product guide): [Institutional Blueprint](../../institutional/institutional-blueprint.md) · [Governance Framework](../../institutional/governance-framework.md) · [Pilot Framework](../../institutional/pilot-framework.md) (civic voting is one possible Governance Pilot, not all Civizen governance). In-app proposal `decision_class` values (`ordinary` / `elevated` / `constitutional`) are a product scaffold and are not the Framework’s seven decision classes.
+
 ## Architecture Overview
 
 The decentralization program consists of three main layers:

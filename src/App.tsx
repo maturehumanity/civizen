@@ -25,9 +25,16 @@ const ForgotPassword = lazyWithChunkReload(() => import('@/pages/auth/ForgotPass
 const ResetPassword = lazyWithChunkReload(() => import('@/pages/auth/ResetPassword'));
 const Contribute = lazyWithChunkReload(() => import('@/pages/Contribute'));
 const ContributeLane = lazyWithChunkReload(() => import('@/pages/ContributeLane'));
+const ProfessionalOpportunities = lazyWithChunkReload(
+  () => import('@/pages/contribute/ProfessionalOpportunities'),
+);
+const OpportunityDetail = lazyWithChunkReload(() => import('@/pages/contribute/OpportunityDetail'));
+const OpportunityForm = lazyWithChunkReload(() => import('@/pages/contribute/OpportunityForm'));
 const Messaging = lazyWithChunkReload(() => import('@/pages/Messaging'));
 const DownloadPage = lazyWithChunkReload(() => import('@/pages/Download'));
 const WhyThisExists = lazyWithChunkReload(() => import('@/pages/WhyThisExists'));
+const Areas = lazyWithChunkReload(() => import('@/pages/Areas'));
+const AreaDetail = lazyWithChunkReload(() => import('@/pages/AreaDetail'));
 const FundHub = lazyWithChunkReload(() => import('@/pages/fund/FundHub'));
 const FundSupport = lazyWithChunkReload(() => import('@/pages/fund/FundSupport'));
 const FundInvest = lazyWithChunkReload(() => import('@/pages/fund/FundInvest'));
@@ -232,6 +239,8 @@ const App = () => (
                   <Route path="/signup" element={<AuthRedirect><SignUp /></AuthRedirect>} />
                   <Route path="/download" element={<DownloadPage />} />
                   <Route path="/why-this-exists" element={<WhyThisExists />} />
+                  <Route path="/areas" element={<Areas />} />
+                  <Route path="/areas/:slug" element={<AreaDetail />} />
                   <Route path="/fund" element={<FundHub />} />
                   <Route path="/fund/support" element={<FundSupport />} />
                   <Route path="/fund/invest" element={<FundInvest />} />
@@ -265,6 +274,22 @@ const App = () => (
                   {/* Protected routes */}
                   <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
                   <Route path="/contribute" element={<ProtectedRoute><Contribute /></ProtectedRoute>} />
+                  <Route
+                    path="/contribute/professional"
+                    element={<ProtectedRoute><ProfessionalOpportunities /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/contribute/professional/new"
+                    element={<ProtectedRoute><OpportunityForm /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/contribute/professional/:opportunityId/edit"
+                    element={<ProtectedRoute><OpportunityForm /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/contribute/professional/:opportunityId"
+                    element={<ProtectedRoute><OpportunityDetail /></ProtectedRoute>}
+                  />
                   <Route
                     path="/contribute/:laneId"
                     element={<ProtectedRoute><ContributeLane /></ProtectedRoute>}

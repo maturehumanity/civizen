@@ -19,6 +19,7 @@ canonical: true
 
 **Status:** Planning program definition — **not** an approved budget, bid, commitment, or authorization to begin production construction.  
 **Companions:** `14-validation-workstreams-and-budget-v0.1.csv` · `.meta.json` · `15-independent-review-and-domain-study-briefs-v0.1.md` · `14-external-concept-summary-v0.1.md`.  
+**Institutional parent:** [`../../institutional/pilot-framework.md`](../../institutional/pilot-framework.md) (Working Pilot Framework). This validation program remains an operational planning child; it is not a Pilot Portfolio.  
 **Database:** Unchanged. Demonstration Draft Budget remains **0** / draft / unapproved / unpublished.
 
 ## Hypothesis discipline

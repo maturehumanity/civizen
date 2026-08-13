@@ -1,0 +1,20 @@
+{
+  "current_base": 530.2,
+  "current_direct": 410.2,
+  "current_contingency": 65,
+  "current_safe_pause": 55,
+  "adequacy_direct_low": 323.9,
+  "adequacy_direct_base": 510.6,
+  "adequacy_direct_high": 900.7,
+  "recalc_contingency_low": 29.2,
+  "recalc_contingency_base": 81.7,
+  "recalc_contingency_high": 171.1,
+  "recalc_safe_pause_low": 32.4,
+  "recalc_safe_pause_base": 69.4,
+  "recalc_safe_pause_high": 135.1,
+  "revised_total_low": 385.5,
+  "revised_total_base": 661.7,
+  "revised_total_high": 1206.9,
+  "direct_uplift_base": 100.4,
+  "note": "Analysis only \u2014 not applied. Reserves recalculated once after revised direct Base."
+}

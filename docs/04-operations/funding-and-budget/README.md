@@ -5,6 +5,8 @@ Index only. Substantive content lives in the linked documents.
 
 Standards: [`../../03-platform/product-design/information-architecture-and-content-standards.md`](../../03-platform/product-design/information-architecture-and-content-standards.md) · Funding map: [`../../03-platform/product-design/funding-workspace-information-architecture.md`](../../03-platform/product-design/funding-workspace-information-architecture.md).
 
+Institutional architecture: [`../../institutional/institutional-blueprint.md`](../../institutional/institutional-blueprint.md) · [`../../institutional/governance-framework.md`](../../institutional/governance-framework.md) · [`../../institutional/stakeholder-partnership-framework.md`](../../institutional/stakeholder-partnership-framework.md) · [`../../institutional/pilot-framework.md`](../../institutional/pilot-framework.md) · [`../../institutional/founder-transition-succession-framework.md`](../../institutional/founder-transition-succession-framework.md) · [`../../institutional/contributor-framework.md`](../../institutional/contributor-framework.md) · [`../../institutional/areas-domains-participation-framework.md`](../../institutional/areas-domains-participation-framework.md). Detailed percentages remain outside those Blueprints/Frameworks.
+
 ## 1. Start here
 
 | Document | Purpose | Status | Reader | Role |
@@ -40,13 +42,13 @@ Standards: [`../../03-platform/product-design/information-architecture-and-conte
 | [`13-ten-and-twenty-year-program-cost-framework-v0.1.md`](./13-ten-and-twenty-year-program-cost-framework-v0.1.md) | Long-range **lifecycle scenarios** (Y6–20) — not budgets | low-confidence scenario | planners | **canonical** for long-range scenarios |
 | [`12-comprehensive-system-inventory-v0.1.md`](./12-comprehensive-system-inventory-v0.1.md) | **Canonical** system inventory (467 entries) | hypothesis | architects, domain leads | **canonical** for inventory |
 | [`20-capital-stack-revenue-and-roi-model-v0.1.md`](./20-capital-stack-revenue-and-roi-model-v0.1.md) | Capital stack, revenue, ROI, payout waterfall (scenario) | scenario model | owner, finance | **canonical** for private-capital / ROI scenarios |
-| [`21-contributor-compensation-and-in-kind-framework-v0.1.md`](./21-contributor-compensation-and-in-kind-framework-v0.1.md) | Contributor pay + fair-value in-kind ledger | scenario framework | owner, stewards | companion to `20` |
+| [`21-contributor-compensation-and-in-kind-framework-v0.1.md`](./21-contributor-compensation-and-in-kind-framework-v0.1.md) | Compensation **planning** (pay + fair-value in-kind ledger). **Not** the canonical Contributor Framework (`../../institutional/contributor-framework.md`) | scenario / planning | owner, stewards | companion to `20`; unapproved |
 | [`22-private-investor-economics-brief-v0.1.md`](./22-private-investor-economics-brief-v0.1.md) | Concise investor economics — **internal; investability redesign required** | internal brief | owner | **not** externally authorized; see `23`–`25` |
 | [`23-investable-vehicles-and-private-capital-architecture-v0.1.md`](./23-investable-vehicles-and-private-capital-architecture-v0.1.md) | Ring-fenced vehicles, ad/discovery upside, benchmarks | scenario architecture | owner, finance | redesign of investable private capital |
-| [`24-investor-return-and-contributor-waterfall-v0.1.md`](./24-investor-return-and-contributor-waterfall-v0.1.md) | Revised debt→preferred→surplus 10%/10% waterfall | scenario policy | owner | companion to `23` |
+| [`24-investor-return-and-contributor-waterfall-v0.1.md`](./24-investor-return-and-contributor-waterfall-v0.1.md) | **Economic/funding planning:** revised debt→preferred→surplus 10%/10% waterfall. Not Contribution Record design | scenario policy | owner | companion to `23` |
 | [`25-private-capital-readiness-gap-analysis-v0.1.md`](./25-private-capital-readiness-gap-analysis-v0.1.md) | Gaps blocking external investable presentation | gap analysis | owner | companion to `23` |
 | [`26-comprehensive-financial-classification-and-chart-of-accounts-v0.1.md`](./26-comprehensive-financial-classification-and-chart-of-accounts-v0.1.md) | Expense CoA (31 groups) + accounting dimensions | planning framework | finance, builders | classification baseline |
-| [`27-founder-investor-and-contributor-participation-policy-v0.1.md`](./27-founder-investor-and-contributor-participation-policy-v0.1.md) | 1% Founder Participation on eligible receipts (once); profit 10/10/80; FPP recon $14.7M / $1,470M | provisional policy model | owner | **unapproved**; v0.1.2 reconciliation |
+| [`27-founder-investor-and-contributor-participation-policy-v0.1.md`](./27-founder-investor-and-contributor-participation-policy-v0.1.md) | **Economic/funding planning:** 1% FPP on eligible receipts (once); profit 10/10/80. Not the Contributor Framework | provisional policy model | owner | **unapproved**; v0.1.2 reconciliation |
 | [`28-entity-legal-and-implementation-action-plan-v0.1.md`](./28-entity-legal-and-implementation-action-plan-v0.1.md) | Entity separation + legal/implementation actions | action plan | owner, counsel | companion to `27` |
 | [`program-plan-summary-v0.1.json`](./program-plan-summary-v0.1.json) | Generated app-readable Program plan summary | working artifact | builders, UI | generated from `11`/`13`/`14` metas |
 
@@ -62,6 +64,9 @@ Standards: [`../../03-platform/product-design/information-architecture-and-conte
 | [`30-validation-budget-v0.2-financial-model.csv`](./30-validation-budget-v0.2-financial-model.csv) (+ `.meta.json`) | Bridge, studies, EX-02/16, JP/II matrix, scenarios | planning data | finance, builders | companion to `30` |
 | [`30-validation-budget-v0.2-reconciliation-and-adoption.md`](./30-validation-budget-v0.2-reconciliation-and-adoption.md) | Adoption bridge notes; exact $530.2M Base after coverage adds | reconciliation | owner, finance | companion to adoption |
 | [`31-validation-budget-v0.2-coa-coverage-review.md`](./31-validation-budget-v0.2-coa-coverage-review.md) | CoA coverage + accepted Base adds (+$6.2M → exact $530.2M) | coverage-review | owner, finance | contingency/safe-pause held flat |
+| [`32-validation-budget-v0.2-line-adequacy-audit.md`](./32-validation-budget-v0.2-line-adequacy-audit.md) (+ CSV + bridge JSON) | Line-item cost-adequacy audit; WS-10/15/22 deep dives; L/B/H bridge ~$662M Base **not applied** | analysis-only | owner, finance | no app/DB/$530.2M change |
+| [`33-validation-scope-priority-tranche-decision.md`](./33-validation-scope-priority-tranche-decision.md) (+ CSV + bridge JSON) | Decision memo: fixed Base scope, same-scope vs alternatives, corrected travel math, tranches; **Recommended Base selected as v0.3** (exact $634.4M) | decision-applied | owner | working draft v0.3 |
+| [`validation-budget-v0.3.meta.json`](./validation-budget-v0.3.meta.json) | Canonical meta for Validation Program v0.3 Recommended Base | working draft | finance, builders | Program plan + app seed source |
 
 ## 5. Implementation specifications
 
@@ -99,5 +104,5 @@ Standards: [`../../03-platform/product-design/information-architecture-and-conte
 Settings → Funding: **Budget** (default) · **Program plan** · **Economics** · Overview · Sources · Interest; legacy tools behind `?legacy=1`. Economics is internal scenario planning only (`?section=economics`) — not an offer or public page.  
 Public: `/fund/project-finance` (approved+published budgets only — no Program plan).  
 Draft Budget in app: demonstration skeleton amounts **zero**, `draft`, `is_demonstration=true`, unapproved, unpublished; Phase 1–3 = **Timing TBD**.  
-Validation working draft: **Civizen Pre-Major-Build Validation Program v0.1** — base planned **exact $446,000,000.00**, 12 groups / 25 lines (WS-01…WS-25), committed/actual 0, draft/unapproved/unpublished; preferred selection in Settings → Funding → Budget. Seed: `scripts/db/seed-validation-budget-v01.sql` (idempotent).  
+Validation working draft: **Civizen Pre-Major-Build Validation Program v0.3** — Recommended Base planned **exact $634,400,000.00**, 13 groups / 53 lines, committed/actual 0, draft/unapproved/unpublished; preferred selection in Settings → Funding → Budget. Historical: v0.2 $530.2M · early v0.2 $524M · v0.1 $446M (superseded). Seeds: `scripts/db/seed-validation-budget-v03.sql` (current) · `v02`/`v01` retained.  
 Regenerate Program plan: `python3 scripts/generate-program-plan-summary.py`.

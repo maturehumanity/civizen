@@ -1461,6 +1461,503 @@ export type Database = {
           },
         ]
       }
+      classification_sets: {
+        Row: {
+          change_rationale: string | null
+          created_at: string
+          description: string
+          effective_from: string | null
+          effective_to: string | null
+          family_key: string
+          id: string
+          is_current: boolean
+          methodology_doc_ref: string | null
+          name: string
+          predecessor_id: string | null
+          status: string
+          successor_id: string | null
+          updated_at: string
+          version_key: string
+        }
+        Insert: {
+          change_rationale?: string | null
+          created_at?: string
+          description?: string
+          effective_from?: string | null
+          effective_to?: string | null
+          family_key: string
+          id: string
+          is_current?: boolean
+          methodology_doc_ref?: string | null
+          name: string
+          predecessor_id?: string | null
+          status?: string
+          successor_id?: string | null
+          updated_at?: string
+          version_key: string
+        }
+        Update: {
+          change_rationale?: string | null
+          created_at?: string
+          description?: string
+          effective_from?: string | null
+          effective_to?: string | null
+          family_key?: string
+          id?: string
+          is_current?: boolean
+          methodology_doc_ref?: string | null
+          name?: string
+          predecessor_id?: string | null
+          status?: string
+          successor_id?: string | null
+          updated_at?: string
+          version_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "classification_sets_predecessor_id_fkey"
+            columns: ["predecessor_id"]
+            isOneToOne: false
+            referencedRelation: "classification_sets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "classification_sets_successor_id_fkey"
+            columns: ["successor_id"]
+            isOneToOne: false
+            referencedRelation: "classification_sets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      classification_nodes: {
+        Row: {
+          code: string
+          concept_key: string
+          created_at: string
+          description: string
+          display_name: string
+          id: string
+          node_type: string
+          replaced_by_node_id: string | null
+          set_id: string
+          short_name: string
+          sort_order: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          concept_key: string
+          created_at?: string
+          description?: string
+          display_name: string
+          id: string
+          node_type: string
+          replaced_by_node_id?: string | null
+          set_id: string
+          short_name: string
+          sort_order?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          concept_key?: string
+          created_at?: string
+          description?: string
+          display_name?: string
+          id?: string
+          node_type?: string
+          replaced_by_node_id?: string | null
+          set_id?: string
+          short_name?: string
+          sort_order?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "classification_nodes_set_id_fkey"
+            columns: ["set_id"]
+            isOneToOne: false
+            referencedRelation: "classification_sets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "classification_nodes_replaced_by_node_id_fkey"
+            columns: ["replaced_by_node_id"]
+            isOneToOne: false
+            referencedRelation: "classification_nodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      classification_aliases: {
+        Row: {
+          alias: string
+          created_at: string
+          id: string
+          kind: string
+          locale: string
+          node_id: string
+        }
+        Insert: {
+          alias: string
+          created_at?: string
+          id?: string
+          kind?: string
+          locale?: string
+          node_id: string
+        }
+        Update: {
+          alias?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          locale?: string
+          node_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "classification_aliases_node_id_fkey"
+            columns: ["node_id"]
+            isOneToOne: false
+            referencedRelation: "classification_nodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      classification_relationships: {
+        Row: {
+          created_at: string
+          from_node_id: string
+          id: string
+          note: string | null
+          relationship_type: string
+          to_node_id: string
+        }
+        Insert: {
+          created_at?: string
+          from_node_id: string
+          id?: string
+          note?: string | null
+          relationship_type: string
+          to_node_id: string
+        }
+        Update: {
+          created_at?: string
+          from_node_id?: string
+          id?: string
+          note?: string | null
+          relationship_type?: string
+          to_node_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "classification_relationships_from_node_id_fkey"
+            columns: ["from_node_id"]
+            isOneToOne: false
+            referencedRelation: "classification_nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "classification_relationships_to_node_id_fkey"
+            columns: ["to_node_id"]
+            isOneToOne: false
+            referencedRelation: "classification_nodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contribution_opportunities: {
+        Row: {
+          application_deadline: string | null
+          area_node_id: string | null
+          compensation_status: string
+          created_at: string
+          description: string | null
+          estimated_effort: string | null
+          evaluation_criteria: string | null
+          evidence_requirements: string | null
+          expected_outcome: string | null
+          id: string
+          is_remote: boolean
+          location_text: string | null
+          opportunity_kind: string
+          optional_skills: string[]
+          publisher_profile_id: string
+          required_skills: string[]
+          status: string
+          summary: string
+          title: string
+          updated_at: string
+          work_ends_at: string | null
+          work_starts_at: string | null
+        }
+        Insert: {
+          application_deadline?: string | null
+          area_node_id?: string | null
+          compensation_status?: string
+          created_at?: string
+          description?: string | null
+          estimated_effort?: string | null
+          evaluation_criteria?: string | null
+          evidence_requirements?: string | null
+          expected_outcome?: string | null
+          id?: string
+          is_remote?: boolean
+          location_text?: string | null
+          opportunity_kind?: string
+          optional_skills?: string[]
+          publisher_profile_id: string
+          required_skills?: string[]
+          status?: string
+          summary: string
+          title: string
+          updated_at?: string
+          work_ends_at?: string | null
+          work_starts_at?: string | null
+        }
+        Update: {
+          application_deadline?: string | null
+          area_node_id?: string | null
+          compensation_status?: string
+          created_at?: string
+          description?: string | null
+          estimated_effort?: string | null
+          evaluation_criteria?: string | null
+          evidence_requirements?: string | null
+          expected_outcome?: string | null
+          id?: string
+          is_remote?: boolean
+          location_text?: string | null
+          opportunity_kind?: string
+          optional_skills?: string[]
+          publisher_profile_id?: string
+          required_skills?: string[]
+          status?: string
+          summary?: string
+          title?: string
+          updated_at?: string
+          work_ends_at?: string | null
+          work_starts_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contribution_opportunities_publisher_profile_id_fkey"
+            columns: ["publisher_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contribution_opportunities_area_node_id_fkey"
+            columns: ["area_node_id"]
+            isOneToOne: false
+            referencedRelation: "classification_nodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      opportunity_participations: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          activated_at: string | null
+          application_message: string | null
+          applied_at: string
+          cancelled_at: string | null
+          cancelled_by: string | null
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          decline_note: string | null
+          declined_at: string | null
+          declined_by: string | null
+          id: string
+          opportunity_id: string
+          participant_profile_id: string
+          status: string
+          submitted_at: string | null
+          updated_at: string
+          verification_status: string
+          withdrawn_at: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          activated_at?: string | null
+          application_message?: string | null
+          applied_at?: string
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          decline_note?: string | null
+          declined_at?: string | null
+          declined_by?: string | null
+          id?: string
+          opportunity_id: string
+          participant_profile_id: string
+          status?: string
+          submitted_at?: string | null
+          updated_at?: string
+          verification_status?: string
+          withdrawn_at?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          activated_at?: string | null
+          application_message?: string | null
+          applied_at?: string
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          decline_note?: string | null
+          declined_at?: string | null
+          declined_by?: string | null
+          id?: string
+          opportunity_id?: string
+          participant_profile_id?: string
+          status?: string
+          submitted_at?: string | null
+          updated_at?: string
+          verification_status?: string
+          withdrawn_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opportunity_participations_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "contribution_opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "opportunity_participations_participant_profile_id_fkey"
+            columns: ["participant_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      opportunity_participation_evidence: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string
+          id: string
+          participation_id: string
+          reference_label: string | null
+          reference_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description: string
+          id?: string
+          participation_id: string
+          reference_label?: string | null
+          reference_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string
+          id?: string
+          participation_id?: string
+          reference_label?: string | null
+          reference_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opportunity_participation_evidence_participation_id_fkey"
+            columns: ["participation_id"]
+            isOneToOne: false
+            referencedRelation: "opportunity_participations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      opportunity_evaluations: {
+        Row: {
+          created_at: string
+          decision: string
+          evaluator_profile_id: string
+          feedback: string | null
+          id: string
+          impact_score: number | null
+          participation_id: string
+          quality_score: number | null
+        }
+        Insert: {
+          created_at?: string
+          decision: string
+          evaluator_profile_id: string
+          feedback?: string | null
+          id?: string
+          impact_score?: number | null
+          participation_id: string
+          quality_score?: number | null
+        }
+        Update: {
+          created_at?: string
+          decision?: string
+          evaluator_profile_id?: string
+          feedback?: string | null
+          id?: string
+          impact_score?: number | null
+          participation_id?: string
+          quality_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opportunity_evaluations_participation_id_fkey"
+            columns: ["participation_id"]
+            isOneToOne: false
+            referencedRelation: "opportunity_participations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      opportunity_skill_evidence: {
+        Row: {
+          created_at: string
+          evaluation_id: string | null
+          id: string
+          participation_id: string
+          skill_name: string
+        }
+        Insert: {
+          created_at?: string
+          evaluation_id?: string | null
+          id?: string
+          participation_id: string
+          skill_name: string
+        }
+        Update: {
+          created_at?: string
+          evaluation_id?: string | null
+          id?: string
+          participation_id?: string
+          skill_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opportunity_skill_evidence_participation_id_fkey"
+            columns: ["participation_id"]
+            isOneToOne: false
+            referencedRelation: "opportunity_participations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       content_categories: {
         Row: {
           allowed_professions: string[]
@@ -6574,6 +7071,96 @@ export type Database = {
       profile_has_approved_profession: {
         Args: { allowed_professions: string[]; target_profile_id: string }
         Returns: boolean
+      }
+      apply_to_contribution_opportunity: {
+        Args: { p_message?: string | null; p_opportunity_id: string }
+        Returns: string
+      }
+      create_contribution_opportunity: {
+        Args: { payload: Json }
+        Returns: string
+      }
+      current_profile_can_read_participation: {
+        Args: { p_participation_id: string }
+        Returns: boolean
+      }
+      current_profile_has_opportunity_participation: {
+        Args: { p_opportunity_id: string }
+        Returns: boolean
+      }
+      current_profile_manages_publisher: {
+        Args: { p_publisher_profile_id: string }
+        Returns: boolean
+      }
+      list_opportunity_applicant_identities: {
+        Args: { p_opportunity_id: string }
+        Returns: {
+          avatar_url: string | null
+          display_name: string
+          participation_id: string
+          profile_id: string
+          username: string | null
+        }[]
+      }
+      evaluate_opportunity_work: {
+        Args: {
+          p_decision: string
+          p_feedback?: string | null
+          p_impact_score?: number | null
+          p_participation_id: string
+          p_quality_score?: number | null
+          p_skill_names?: string[]
+        }
+        Returns: string
+      }
+      add_opportunity_evidence: {
+        Args: {
+          p_description: string
+          p_participation_id: string
+          p_reference_label?: string | null
+          p_reference_url?: string | null
+        }
+        Returns: string
+      }
+      cancel_opportunity_participation: {
+        Args: { p_participation_id: string }
+        Returns: undefined
+      }
+      opportunity_publisher_id: {
+        Args: { p_opportunity_id: string }
+        Returns: string
+      }
+      participation_is_verified_completed: {
+        Args: { p_participation_id: string }
+        Returns: boolean
+      }
+      project_opportunity_contribution_event: {
+        Args: { p_participation_id: string }
+        Returns: undefined
+      }
+      review_opportunity_application: {
+        Args: { p_decision: string; p_note?: string | null; p_participation_id: string }
+        Returns: undefined
+      }
+      set_contribution_opportunity_status: {
+        Args: { p_opportunity_id: string; p_status: string }
+        Returns: undefined
+      }
+      start_opportunity_work: {
+        Args: { p_participation_id: string }
+        Returns: undefined
+      }
+      submit_opportunity_work: {
+        Args: { p_participation_id: string }
+        Returns: undefined
+      }
+      update_contribution_opportunity: {
+        Args: { p_opportunity_id: string; payload: Json }
+        Returns: undefined
+      }
+      withdraw_opportunity_participation: {
+        Args: { p_participation_id: string }
+        Returns: undefined
       }
       resolve_login_email: {
         Args: { identifier: string }

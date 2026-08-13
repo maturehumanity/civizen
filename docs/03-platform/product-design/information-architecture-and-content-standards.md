@@ -21,6 +21,7 @@ Do **not** solve confusion by adding long explanatory text to already long pages
 
 | Principle | Requirement |
 | --- | --- |
+| **Simple by default. Detailed by choice.** | Public and onboarding experiences prioritize clarity; deeper detail remains available. Users are not required to understand full institutional architecture before participating. Complexity is progressively disclosed. This does **not** authorize stripping necessary detail from internal/reference documentation. Canonical public-participation spec: [`../areas-and-initiatives/public-areas-initiatives-v1.md`](../areas-and-initiatives/public-areas-initiatives-v1.md). |
 | Answer-first | Lead with status, totals that matter, and next actions |
 | One purpose per view | Overview ≠ detail ≠ audit ≠ create/edit |
 | Progressive disclosure | Show decision-relevant fields first; advanced/metadata on demand |

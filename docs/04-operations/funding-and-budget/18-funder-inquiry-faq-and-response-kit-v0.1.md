@@ -21,7 +21,7 @@ canonical: false
 
 ## A. One-paragraph opener (safe)
 
-> Civizen is developing voluntary planetary citizenship infrastructure and related civic systems. Before irreversible production, we are seeking support for an **18–24 month validation and institutional formation program** (provisional working base estimate ~**$530M** (exact $530.2M), range ~$438.3M–$654.5M; prior v0.2 working total ~$524M and v0.1 Base ~$446M are superseded estimates). That program funds independent review, named domain studies, architecture and security work, explicit operating provisions (benefits gap and program insurance), and stoppable demonstrators. Civizen currently maintains a detailed 18–24-month validation plan and a preliminary five-year first-wave ecosystem plan. Longer horizons are retained as internal scenario analysis and will be replaced by rolling plans as evidence develops. We are not claiming recognized statehood. Conversations at this stage are inquiries pending legal receiving capacity and owner decisions. These figures are planning estimates — not bids, commitments, or guaranteed sufficiency.
+> Civizen’s recommended 18–24 month pre-major-build validation program currently has a provisional Base of approximately $634M, with a same-scope planning range of approximately $552–833M pending quotations and professional validation. This is separate from the approximately $37.5–38B five-year first-wave implementation hypothesis. That program funds independent review, named domain studies, architecture and security work, explicit operating provisions (benefits gap and quote-dependent program insurance), and stoppable demonstrators. First committed tranche framing is approximately $132M; initial received/escrowed floor is provisionally $60M. Constrained (~$374M) and Expanded (~$1.03B) cases are different scopes — not equally capable cheaper/same versions. We are not claiming recognized statehood, guaranteed sufficiency, or private investment returns from validation funding. Conversations at this stage are inquiries pending legal receiving capacity and owner decisions. Historical superseded estimates: $530.2M (v0.2 coverage), $524M (early v0.2), $446M (v0.1).
 
 ---
 
@@ -29,8 +29,8 @@ canonical: false
 
 ### B1. How much are you raising?
 
-**Now:** Validation program — low ~$438.3M / base ~$530M (exact $530.2M) / high ~$654.5M (`30`/`31`; prior $524M and v0.1 $446M superseded).
-**Primary program context (not the immediate ask):** preliminary five-year first-wave ecosystem plan (`11`) — ~$30–50B range, modeled base ~$37.5B.  
+**Now:** Validation program — same-scope low ~$552.4M / Recommended base ~$634M (exact $634.4M) / high ~$833.2M (`33` / app draft v0.3). First committed tranche ~$132M; initial received/escrowed floor provisionally $60M. Constrained (~$374M) and Expanded (~$1.03B) = different scopes. Historical superseded: $530.2M · $524M · $446M.  
+**Primary program context (not the immediate ask):** preliminary five-year first-wave ecosystem plan (`11`) — ~$30–50B range, modeled base ~$37.5B (~$37.5–38B hypothesis).  
 **Not ordinary intro content:** Years 6–20 long-range **scenarios** (`13`) — low-confidence lifecycle outlooks, not budgets.
 
 ### B2. Is $37.5B your budget? What about longer horizons?
@@ -47,7 +47,7 @@ Validation outputs (reports, standards drafts, reviewed architecture, domain vol
 
 ### B5. Who controls the funds?
 
-Validation base split (approx.): core-controlled ~$312M; independent review ~$34M (ring-fenced); grants/pass-through ~$58M; protected reserve ~$42M. Five-year ecosystem capital is majority **not** core-controlled.
+Validation Recommended Base split (approx.): core-controlled ~$437.8M; independent review ~$36.0M (ring-fenced); grants/pass-through ~$94.0M; protected reserve ~$66.6M. Five-year ecosystem capital is majority **not** core-controlled.
 
 ### B6. Are you a government / creating a country?
 
@@ -59,7 +59,7 @@ Do not invent product. Response: *We are not offering securities, tokens, or inv
 
 ### B8. Where is your audited budget in the app?
 
-The in-app ordinary Budget selector defaults to **`Civizen Pre-Major-Build Validation Program v0.1`**. The obsolete Draft Budget demonstration skeleton (`Civizen Draft Budget v0.1`, zeros) was **retired** from ordinary application use and is not shown in the selector. Public finance pages only show approved-and-published budgets. Settings → Funding → **Program plan** shows read-only planning summaries (not public).
+The in-app ordinary Budget selector defaults to **`Civizen Pre-Major-Build Validation Program v0.3`** (exact Recommended Base **$634,400,000.00**; draft/unapproved/unpublished). Superseded v0.2 / v0.1 remain in history, not primary selector clutter. The obsolete Draft Budget demonstration skeleton (`Civizen Draft Budget v0.1`, zeros) was **retired** from ordinary application use. Public finance pages only show approved-and-published budgets. Settings → Funding → **Program plan** shows read-only planning summaries (not public).
 
 ### B9. How do tranche releases work?
 

@@ -15,7 +15,21 @@ Before planning or editing, read (in order):
    - **`docs/04-operations/dev/nav-secondary-carousel.md`** (canonical UX + geometry spec)
 4. If the task touches onboarding, identity, citizenship, governance, elections, legal status, partnerships, or public mission copy:
    - **`docs/00-foundation/recognized-planetary-citizenship-pathway.md`**
-5. Documentation map: `docs/README.md` (purpose-based IA: foundation · governance · policies · platform · operations · research · proposals · archive)
+5. If the task touches institutional architecture, proposed legal entities, funding allocation principles, contributor economic claims, how governance authority is distributed, stakeholder/partnership classification, pilots/validation, founder transition/succession, contribution recording, or Area/Domain taxonomy:
+   - **`docs/institutional/institutional-blueprint.md`** (what institutions are)
+   - **`docs/institutional/governance-framework.md`** (how authority is exercised; subordinate to the Blueprint)
+   - **`docs/institutional/stakeholder-partnership-framework.md`** (who Civizen engages; subordinate to the Blueprint)
+   - **`docs/institutional/pilot-framework.md`** (what Civizen tests with participants; subordinate to the Blueprint)
+   - **`docs/institutional/founder-transition-succession-framework.md`** (how founder authority evolves; do not merge; do not reduce founder bootstrap access)
+   - **`docs/institutional/contributor-framework.md`** (Contribution Record design; public `/contribute/policy` remains adopted)
+   - **`docs/institutional/areas-domains-participation-framework.md`** (shared Area/Domain taxonomy; current foundational Area model, evolvable; do not migrate product pillars here)
+6. If the task touches Area/Domain taxonomy, Score methodology, contribution measurement models, or other major conceptual models:
+   - **`docs/03-platform/model-evolution/shared-classification-and-model-evolution-architecture.md`** (working product architecture; not institutional reading-path item 8)
+   - **`docs/03-platform/model-evolution/shared-classification-registry-v1.md`** (V1 persisted registry; do not wire existing UI; do not migrate `PILLARS`)
+7. If the task touches public Areas / Initiatives, `/contribute`, `/partners`, or public participation discovery:
+   - **`docs/03-platform/areas-and-initiatives/public-areas-initiatives-v1.md`** (working product spec; not `/documents`; do not implement `/areas` without a separate task)
+   - **`docs/04-operations/dev/contribute-page.md`** when touching `/contribute`
+8. Documentation map: `docs/README.md` (purpose-based IA: foundation · governance · policies · platform · operations · research · proposals · archive · institutional)
 
 Do not rely on conversation memory alone for component behavior.
 

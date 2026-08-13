@@ -14,6 +14,19 @@ Documentation is organized by **purpose and subject**, not by moderation lane or
 | `historical` | Completed implementation or phase record |
 | `unknown` | Status not established from repository evidence |
 
+Working institutional and platform documents also use **display** labels that map onto this vocabulary without requiring a mass retag:
+
+| Display label | Typical YAML `status` | Meaning |
+| --- | --- | --- |
+| **Working** | `draft` | Authoritative project design direction; not adopted public policy |
+| **Proposed** | `draft` | Named structure or rule not yet formed or adopted |
+| **Adopted** | `current` / `accepted` | Controlling public or operational instrument |
+| **Experimental** | `draft` | Trial design; not controlling |
+| **Current** | `current` | In-force for that domain until a successor is adopted |
+| **Historical** / **Superseded** | `historical` / `superseded` | Kept for continuity |
+
+Do not treat `canonical: true` as “permanently immutable.” Canonical means the single editable source for the topic **as it currently stands**.
+
 Substantive documents may include YAML front matter (`title`, `status`, `version`, `owners`, `last_reviewed`, `canonical`). Fields are omitted or set to `unknown` when evidence is missing. Do not invent owners or approval dates.
 
 **Canonical** (`canonical: true`) means this is the single editable source for that topic. Prefer linking to canonical paths; do not maintain a second editable copy.
@@ -24,9 +37,16 @@ Substantive documents may include YAML front matter (`title`, `status`, `version
 | --- | --- |
 | Understand why Civizen exists | [`00-foundation/why-civizen-exists-page-brief.md`](./00-foundation/why-civizen-exists-page-brief.md) · [`00-foundation/the-civizen-charter.md`](./00-foundation/the-civizen-charter.md) |
 | Read the Philosophy of Mature Humanity | [`00-foundation/philosophy-of-mature-humanity.md`](./00-foundation/philosophy-of-mature-humanity.md) |
-| Understand Civizen governance | [`01-governance/README.md`](./01-governance/README.md) |
+| Read the Institutional Blueprint (working architecture) | [`institutional/institutional-blueprint.md`](./institutional/institutional-blueprint.md) |
+| Read the Governance Framework (how authority is exercised) | [`institutional/governance-framework.md`](./institutional/governance-framework.md) |
+| Read the Stakeholder & Partnership Framework (who Civizen engages) | [`institutional/stakeholder-partnership-framework.md`](./institutional/stakeholder-partnership-framework.md) |
+| Read the Pilot Framework (what Civizen tests with participants) | [`institutional/pilot-framework.md`](./institutional/pilot-framework.md) |
+| Read the Founder Transition & Succession Framework | [`institutional/founder-transition-succession-framework.md`](./institutional/founder-transition-succession-framework.md) |
+| Read the Contributor Framework (Contribution Record design) | [`institutional/contributor-framework.md`](./institutional/contributor-framework.md) |
+| Read the Areas, Domains & Participation Framework | [`institutional/areas-domains-participation-framework.md`](./institutional/areas-domains-participation-framework.md) |
+| Understand Civizen governance | [`01-governance/README.md`](./01-governance/README.md) · working Framework: [`institutional/governance-framework.md`](./institutional/governance-framework.md) |
 | Review current policies | [`02-policies/README.md`](./02-policies/README.md) · especially [`02-policies/institutional/`](./02-policies/institutional/) |
-| Understand the platform architecture | [`03-platform/README.md`](./03-platform/README.md) · product IA: [`03-platform/product-design/information-architecture-and-content-standards.md`](./03-platform/product-design/information-architecture-and-content-standards.md) |
+| Understand the platform architecture | [`03-platform/README.md`](./03-platform/README.md) · product IA: [`03-platform/product-design/information-architecture-and-content-standards.md`](./03-platform/product-design/information-architecture-and-content-standards.md) · model evolution: [`03-platform/model-evolution/shared-classification-and-model-evolution-architecture.md`](./03-platform/model-evolution/shared-classification-and-model-evolution-architecture.md) · V1 registry: [`03-platform/model-evolution/shared-classification-registry-v1.md`](./03-platform/model-evolution/shared-classification-registry-v1.md) · public Areas & Initiatives: [`03-platform/areas-and-initiatives/public-areas-initiatives-v1.md`](./03-platform/areas-and-initiatives/public-areas-initiatives-v1.md) |
 | Browse funding & budget planning index | [`04-operations/funding-and-budget/README.md`](./04-operations/funding-and-budget/README.md) |
 | Review research and background | [`05-research/README.md`](./05-research/README.md) |
 | Propose or review a change | [`proposals/README.md`](./proposals/README.md) |
@@ -43,6 +63,7 @@ docs/
 ├── 03-platform/       Software architecture, decentralization, scoring
 ├── 04-operations/     Development, release, contributor processes
 ├── 05-research/       Academic, professional, and study materials
+├── institutional/     Institutional Architecture — Blueprint · Governance · Stakeholder · Pilot · Founder Transition · Contributor · Areas/Domains (project reference)
 ├── proposals/         Draft and in-flight proposals
 └── archive/           Superseded docs and implementation history
 ```

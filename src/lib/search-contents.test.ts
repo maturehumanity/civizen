@@ -32,6 +32,7 @@ describe('filterSearchContents', () => {
       'features.catalog.adminRoles.title': 'Roles administration',
       'features.catalog.adminRoles.summary': 'Assign and manage user roles',
       'settings.governanceHub': 'Governance',
+      'areas.title': 'Areas',
       'common.footerFund': 'Fund Civizen',
       'documents.indexTitle': 'Documents',
     };

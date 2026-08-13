@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { PlusCircle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card } from '@/components/ui/card';
@@ -81,6 +81,15 @@ export default function Contribute() {
             </motion.section>
           );
         })}
+
+        <p className="text-sm text-muted-foreground">
+          <Link
+            to="/areas"
+            className="underline-offset-4 hover:text-foreground hover:underline"
+          >
+            {t('contribute.related.areas')}
+          </Link>
+        </p>
       </div>
     </AppLayout>
   );

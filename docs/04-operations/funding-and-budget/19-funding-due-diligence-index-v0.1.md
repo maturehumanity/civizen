@@ -29,7 +29,7 @@ canonical: false
 | External brief | `16-external-funding-brief-v0.1.md` | Controlled sharing after clarity review |
 | Internal readiness / decisions / rolling policy | `17-funding-readiness-memorandum-v0.1.md` | Provisional D1–D11; D6 unresolved |
 | Inquiry language | `18-funder-inquiry-faq-and-response-kit-v0.1.md` | Ready for steward use |
-| Validation program & envelope | `30`/`31` provisional working draft (~$438.3M / **~$530M** exact $530.2M / ~$654.5M); prior v0.2 $524M and `14` Base ~$446M superseded | Provisional working draft — not a bid/commitment |
+| Validation program & envelope | `33` provisional Recommended working draft (~$552.4M / **~$634M** exact $634.4M / ~$833.2M); Constrained ~$374M / Expanded ~$1.03B = different scopes; historical $530.2M · $524M · $446M superseded | Provisional working draft — not a bid/commitment |
 | Independent panels / studies | `15-independent-review-and-domain-study-briefs-v0.1.md` | Design; chairs not seated |
 | 5y first-wave model | `11-program-financial-model-and-funding-responsibility-v0.1.md` + CSV | Preliminary ecosystem hypothesis |
 | Capital stack / revenue / ROI scenarios | `20-capital-stack-revenue-and-roi-model-v0.1.md` + CSV | Scenario model; private addressable ~$0.9–6.3B of ~$37.5B; **not** an offering |
@@ -48,7 +48,7 @@ canonical: false
 | Scope / decisions | `01-decisions-and-scope.md` | Active |
 | Pathway (mission / legal posture) | `docs/00-foundation/recognized-planetary-citizenship-pathway.md` | Canonical foundation |
 | Strategy roadmap | `docs/01-governance/funding-and-monetary/funding-readiness-roadmap.md` | Strategy |
-| App Draft Budget | Funding admin / DB | Obsolete demonstration fixture retired; **Validation Program v0.2** (exact $530.2M / ~$530M) is default working draft; prior $524M and v0.1 (~$446M) superseded/historical |
+| App Draft Budget | Funding admin / DB | Obsolete demonstration fixture retired; **Validation Program v0.3** (exact $634.4M / ~$634M) is default working draft; v0.2 ($530.2M), early v0.2 ($524M), and v0.1 (~$446M) superseded/historical |
 
 ---
 
@@ -74,7 +74,7 @@ canonical: false
 | 16 | Data protection / privacy DPIA for demos | Partial | Principles; formal DPIAs pending |
 | 17 | IP / open licensing stance for validation outputs | Partial | Needs owner policy memo |
 | 18 | Governance / board / stewardship chart | Partial | Institutional formation is part of ask |
-| 19 | Key-person / succession | **Gap** | |
+| 19 | Key-person / succession | Partial | Working design: [`../../institutional/founder-transition-succession-framework.md`](../../institutional/founder-transition-succession-framework.md). No operational succession plan, multi-person credential escrow, or adopted continuity package |
 | 20 | Political / recognition risk disclosure | Partial | Pathway honest; counsel review for packs |
 | 21 | Prospect pipeline / CRM with real leads | Research OK | Ledger ≠ interest/commitment (D5) |
 | 22 | In-app approved published budget | No (correct) | Demo zeros; Phase Timing TBD |

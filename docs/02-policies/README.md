@@ -26,6 +26,7 @@ Start with [`institutional/README.md`](./institutional/README.md). Foundation pa
 
 ## Related
 
+- Institutional Architecture (working project reference, not public policy): [`../institutional/institutional-blueprint.md`](../institutional/institutional-blueprint.md) · [`../institutional/governance-framework.md`](../institutional/governance-framework.md) · [`../institutional/stakeholder-partnership-framework.md`](../institutional/stakeholder-partnership-framework.md) · [`../institutional/pilot-framework.md`](../institutional/pilot-framework.md) · [`../institutional/founder-transition-succession-framework.md`](../institutional/founder-transition-succession-framework.md) · [`../institutional/contributor-framework.md`](../institutional/contributor-framework.md) · [`../institutional/areas-domains-participation-framework.md`](../institutional/areas-domains-participation-framework.md)
 - Governance models (not all current public policy): [`../01-governance/`](../01-governance/)
 - Foundation: [`../00-foundation/`](../00-foundation/)
 

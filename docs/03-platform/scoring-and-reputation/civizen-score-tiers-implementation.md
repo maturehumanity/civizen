@@ -27,6 +27,8 @@ The tier system must work together with the existing five Civizen Score categori
 4. Performance
 5. Contributions
 
+These five categories are the **current Score model** (see [`civizen-score-page-reorganization.md`](./civizen-score-page-reorganization.md)). They are not permanently immutable. Model evolution: [`../model-evolution/shared-classification-and-model-evolution-architecture.md`](../model-evolution/shared-classification-and-model-evolution-architecture.md). Do not change live score categories, weights, calculations, or tiers from this documentation task.
+
 The tier must be derived from the overall Civizen Score, but higher tiers must also require minimum supporting conditions so that a user cannot reach a high tier through education, experience, or self-declared information alone.
 
 ---

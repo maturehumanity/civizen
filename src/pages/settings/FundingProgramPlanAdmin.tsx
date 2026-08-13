@@ -277,10 +277,11 @@ export default function FundingProgramPlanAdmin({
           <ul className="mt-1 space-y-0.5 text-sm">
             {v.baseTranchePacing.map((row) => (
               <li key={row.id}>
-                {row.label}: ~{Math.round(row.shareOfBase * 100)}%
+                {row.label}: {formatUsdM(row.indicativeDirectUsdM)} (~{Math.round(row.shareOfBase * 100)}%)
               </li>
             ))}
           </ul>
+          <p className="mt-2 text-xs text-muted-foreground">{v.fundingControlsNote}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button type="button" size="sm" variant="outline" onClick={() => setShowWorkstreams((x) => !x)}>

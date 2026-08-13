@@ -22,7 +22,7 @@ def read_csv(name: str) -> list[dict]:
 
 def main() -> None:
     meta14 = read_json("14-validation-workstreams-and-budget-v0.1.meta.json")
-    meta_v02 = read_json("validation-budget-v0.2.meta.json")
+    meta_v03 = read_json("validation-budget-v0.3.meta.json")
     meta11 = read_json("11-program-financial-model-v0.1.meta.json")
     meta13 = read_json("13-ten-and-twenty-year-program-cost-v0.1.meta.json")
     rows14 = read_csv("14-validation-workstreams-and-budget-v0.1.csv")
@@ -48,22 +48,37 @@ def main() -> None:
 
     base13 = next(s for s in meta13["scenarios"] if s["scenario"] == "base")
 
-    fc = meta_v02["by_funding_control_base_usd_m"]
+    fc = meta_v03["by_funding_control_base_usd_m"]
     fc_sum = fc["core"] + fc["independent"] + fc["grant_pass_through"] + fc["reserve"]
-    if abs(fc_sum - meta_v02["totals_usd_m"]["base"]) > 0.05:
+    if abs(fc_sum - meta_v03["totals_usd_m"]["base"]) > 0.05:
         raise SystemExit(
-            f"v0.2 funding-control split does not sum to Base: {fc_sum} vs {meta_v02['totals_usd_m']['base']}"
+            f"v0.3 funding-control split does not sum to Base: {fc_sum} vs {meta_v03['totals_usd_m']['base']}"
         )
 
+    direct = meta_v03["direct_usd_m"]
+    cont = meta_v03["contingency_usd_m"]
+    pause = meta_v03["safe_pause_usd_m"]
+    if abs(direct + cont + pause - meta_v03["totals_usd_m"]["base"]) > 0.05:
+        raise SystemExit("v0.3 direct+contingency+safe-pause must equal Base")
+
+    tranche = meta_v03["tranche_direct_usd_m"]
+    tranche_sum = sum(tranche.values())
+    if abs(tranche_sum - meta_v03["totals_usd_m"]["base"]) > 0.05:
+        raise SystemExit(f"v0.3 tranche direct sum {tranche_sum} != Base")
+
+    base_total = meta_v03["totals_usd_m"]["base"]
+
     summary = {
-        "modelVersion": "0.2",
+        "modelVersion": "0.3",
         "generatedAt": "2026-08-11",
         "currency": "USD",
         "status": "non_approved_planning_estimates",
         "disclaimer": (
             "Read-only strategic estimates and scenarios. Not approved budgets, commitments, "
             "receipts, or actual spending. Not worldwide completion or one organization’s budget. "
-            "Validation Base is provisional v0.2 exact $530.2M (~$530M externally); historical v0.1 $446M and prior v0.2 $524M are superseded estimates."
+            "Validation Base is provisional owner-selected Recommended v0.3 exact $634.4M (~$634M); "
+            "same-scope range ~$552–833M pending quotations. Historical: v0.1 $446M; early v0.2 $524M; "
+            "v0.2 coverage draft $530.2M. Constrained (~$374M) and Expanded (~$1.03B) are different scopes."
         ),
         "hierarchy": {
             "detailedOperatingPlan": "validation_18_24_months",
@@ -74,34 +89,82 @@ def main() -> None:
         "validation": {
             "status": "provisional_working_draft",
             "durationMonths": "18-24",
-            "sourceDoc": "30-validation-budget-v0.2-and-five-year-domain-allocation-proposal.md",
-            "sourceMeta": "validation-budget-v0.2.meta.json",
-            "reconciliationDoc": "30-validation-budget-v0.2-reconciliation-and-adoption.md",
-            "modelVersion": meta_v02["version"],
-            "updatedAt": meta_v02["date"],
+            "sourceDoc": "33-validation-scope-priority-tranche-decision.md",
+            "sourceMeta": "validation-budget-v0.3.meta.json",
+            "reconciliationDoc": "33-validation-scope-priority-tranche-decision.md",
+            "modelVersion": meta_v03["version"],
+            "updatedAt": meta_v03["date"],
             "totalsUsdM": {
-                "low": meta_v02["totals_usd_m"]["low"],
-                "base": meta_v02["totals_usd_m"]["base"],
-                "high": meta_v02["totals_usd_m"]["high"],
+                "low": meta_v03["totals_usd_m"]["low"],
+                "base": meta_v03["totals_usd_m"]["base"],
+                "high": meta_v03["totals_usd_m"]["high"],
             },
-            "historicalV01TotalsUsdM": meta_v02["historical_v01_totals_usd_m"],
-            "fundingControlBaseUsdM": meta_v02["by_funding_control_base_usd_m"],
+            "scopeAlternativesUsdM": meta_v03["scope_alternatives_usd_m"],
+            "historicalV01TotalsUsdM": meta_v03["historical_v01_totals_usd_m"],
+            "historicalV02CoverageDraftUsdM": meta_v03["historical_v02_coverage_draft_usd_m"],
+            "fundingControlBaseUsdM": meta_v03["by_funding_control_base_usd_m"],
+            "directContingencySafePauseUsdM": {
+                "direct": direct,
+                "contingency": cont,
+                "safePause": pause,
+            },
             "scenarioDiffNote": (
-                "Low (~$438.3M): compressed studies/continuity plus thinner coverage-add set — not equivalent deliverables. "
-                "Base (exact $530.2M / ~$530M externally): provisional working draft after coverage adds; contingency/safe-pause held flat. "
-                "High (~$654.5M): expanded studies, insurance, contingency, safe-pause, and high coverage adds. "
-                "Historical v0.1 Base $446M and prior v0.2 working total $524M retained as superseded estimates."
+                "Same-scope Low (~$552.4M) / Base (exact $634.4M / ~$634M) / High (~$833.2M): unit-cost "
+                "and quotation variance for the Recommended deliverable set — not scope cuts. "
+                "Constrained (~$373.8M) and Expanded (~$1.0327B) are different scopes and must not be "
+                "presented as equally capable cheaper/same programs. VAL-EX16 is quote-dependent. "
+                "Historical: v0.1 $446M; early v0.2 $524M; v0.2 coverage $530.2M."
             ),
             "baseTranchePacing": [
-                {"id": "T1", "label": "Validation launch", "shareOfBase": 0.25},
-                {"id": "T2", "label": "Validation execute", "shareOfBase": 0.45},
-                {"id": "T3", "label": "Validation close", "shareOfBase": 0.2},
-                {"id": "reserve", "label": "Safe-pause reserve", "shareOfBase": 0.1},
+                {
+                    "id": "T1",
+                    "label": "Formation & quotation (first required legal commitment ~$132M)",
+                    "shareOfBase": round(tranche["T1_formation_quotation"] / base_total, 4),
+                    "indicativeDirectUsdM": tranche["T1_formation_quotation"],
+                },
+                {
+                    "id": "T2",
+                    "label": "Core research & design",
+                    "shareOfBase": round(tranche["T2_core_research_design"] / base_total, 4),
+                    "indicativeDirectUsdM": tranche["T2_core_research_design"],
+                },
+                {
+                    "id": "T3",
+                    "label": "Participation & domain studies",
+                    "shareOfBase": round(tranche["T3_participation_domain"] / base_total, 4),
+                    "indicativeDirectUsdM": tranche["T3_participation_domain"],
+                },
+                {
+                    "id": "T5",
+                    "label": "Independent assurance",
+                    "shareOfBase": round(tranche["T5_independent_assurance"] / base_total, 4),
+                    "indicativeDirectUsdM": tranche["T5_independent_assurance"],
+                },
+                {
+                    "id": "T4",
+                    "label": "Controlled prototypes (after insurance bind path)",
+                    "shareOfBase": round(tranche["T4_controlled_prototypes"] / base_total, 4),
+                    "indicativeDirectUsdM": tranche["T4_controlled_prototypes"],
+                },
+                {
+                    "id": "T6",
+                    "label": "Safe-pause & continuity (tranche-specific)",
+                    "shareOfBase": round(tranche["T6_safe_pause_continuity"] / base_total, 4),
+                    "indicativeDirectUsdM": tranche["T6_safe_pause_continuity"],
+                },
             ],
-            "workstreamCount": meta_v02["line_count"],
-            "groupCount": meta_v02["group_count"],
-            "workstreamsDoc": "30-validation-budget-v0.2-reconciliation-and-adoption.md",
-            "appBudgetName": "Civizen Pre-Major-Build Validation Program v0.2",
+            "fundingControlsNote": (
+                "Distinguish expression of interest, pledge, conditional commitment, legally binding "
+                "commitment, received cash, escrowed cash, and available cash. Do not begin T1 on "
+                "nonbinding interest alone. Initial received/escrowed working floor provisional $60M. "
+                "No obligations dependent on an uncommitted later tranche. Insurance binding or an "
+                "approved binding path before field activity. Receiving-entity path unresolved — "
+                "do not accept funds until authorized."
+            ),
+            "workstreamCount": meta_v03["line_count"],
+            "groupCount": meta_v03["group_count"],
+            "workstreamsDoc": "33-validation-scope-priority-tranche-decision.md",
+            "appBudgetName": meta_v03["app_budget_name"],
         },
         "fiveYearFirstWave": {
             "status": "preliminary_ecosystem_hypothesis",
@@ -171,7 +234,7 @@ def main() -> None:
         },
         "reconciliation": {
             "historicalValidationCsvMatchesMetaV01": True,
-            "validationWorkingDraft": "v0.2",
+            "validationWorkingDraft": "v0.3",
             "fiveYearCashflowSumsToBase": True,
             "sdInsCarveNetZeroToFiveYearTotal": True,
         },

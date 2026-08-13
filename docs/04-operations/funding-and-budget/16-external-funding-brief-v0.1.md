@@ -29,15 +29,19 @@ canonical: false
 
 | Scenario | Indicative cash (USD) | Source |
 | --- | ---: | --- |
-| Low | ~$438.3M | `30`/`31` / Validation Budget v0.2 |
-| **Base (working)** | **~$530M** (exact **$530,200,000.00**) | **`30`/`31`** / app draft v0.2 |
-| High | ~$654.5M | `30`/`31` / Validation Budget v0.2 |
+| Same-scope Low | ~$552.4M | `33` / Validation Budget v0.3 |
+| **Base (working Recommended)** | **~$634M** (exact **$634,400,000.00**) | **`33`** / app draft v0.3 |
+| Same-scope High | ~$833.2M | `33` / Validation Budget v0.3 |
 
-Historical Validation Program v0.1 Base was **~$446M** (range ~$202M–$898M in `14`) — retained as superseded estimate, not the current working ask.
+**Inquiry sentence (current):** Civizen’s recommended 18–24 month pre-major-build validation program currently has a provisional Base of approximately $634M, with a same-scope planning range of approximately $552–833M pending quotations and professional validation. This is separate from the approximately $37.5–38B five-year first-wave implementation hypothesis.
 
-**What changes among scenarios (summary):** Low assumes lean staffing, fewer consultations, thinner contingency, and slower panel cadence. Base funds the full validation workstream set in `14` at planned intensity. High expands consultations, demonstrators, contingency, and assurance depth when scope or risk rises. Always present the base with the full range.
+Historical progression (superseded estimates, retained for provenance): Validation Program v0.1 Base **~$446M**; early v0.2 proposal **~$524M**; completed v0.2 coverage draft **exact $530.2M**. Constrained (~$374M) and Expanded (~$1.03B) cases in `33` are **different scopes** — not equally capable cheaper/same versions of the Recommended program.
 
-This is **not** the cost of completing Civizen worldwide, deploying ~200 jurisdictions, or funding mature global operations.
+**What changes among same-scope scenarios (summary):** Low/High reflect unit-cost and quotation variance for the Recommended deliverable set. Always present the Base with the same-scope range. Do **not** claim guaranteed sufficiency. VAL-EX16 (program insurance planning allowance) remains **quote-dependent**.
+
+**Funding stages (not a Budget table dashboard):** Distinguish expression of interest · pledge · conditional commitment · legally binding commitment · received cash · escrowed cash · available cash. First required legal commitment ~**$132M** (T1). Initial received/escrowed working floor provisionally **$60M**. Do not begin T1 on nonbinding interest alone. Insurance binding or an approved binding path before field activity. No obligations dependent on an uncommitted later tranche. Receiving-entity path unresolved — do not accept funds until authorized.
+
+This is **not** the cost of completing Civizen worldwide, deploying ~200 jurisdictions, or funding mature global operations. This brief is **not** an investment offer and does **not** imply that validation funding generates private returns.
 
 ---
 
@@ -68,7 +72,7 @@ Civilization-scale civic infrastructure that touches identity, rights, administr
 
 | Horizon | Canonical doc | Indicative figure | Epistemic status |
 | --- | --- | ---: | --- |
-| Validation 18–24 mo | **`30`/`31`** (working) · historical `14` | ~$438.3M / **~$530M** (exact $530.2M) / ~$654.5M (prior v0.2 $524M; v0.1 $446M superseded) | provisional working draft |
+| Validation 18–24 mo | **`33`** (working Recommended) · historical `30`/`31`/`14` | ~$552.4M / **~$634M** (exact $634.4M) / ~$833.2M (prior: $530.2M · $524M · $446M superseded) | provisional working draft |
 | Five-year first-wave **ecosystem** | **`11`** | ~$30–50B range; modeled base ~$37.5B | preliminary ecosystem hypothesis |
 | of which core **primary** | `11` | ~$4.8B | hypothesis |
 | of which core **must raise** (incl. co-finance shares) | `11` | ~$8.2B | hypothesis |
@@ -82,14 +86,14 @@ Civilization-scale civic infrastructure that touches identity, rights, administr
 
 ## 5. Core-controlled vs broader ecosystem
 
-### Validation program (`14` base)
+### Validation program (v0.3 Recommended Base)
 
 | Control | ~$M | Role |
 | --- | ---: | --- |
-| Civizen-controlled (core) | ~312 | Stewardship, design, demos, coordination |
-| Independently controlled review | ~34 | Ring-fenced panels |
-| Grants / pass-through | ~58 | Domain studies + civil-society participation |
-| Protected reserve | ~42 | Safe-pause for validation phase |
+| Civizen-controlled (core) | ~437.8 | Stewardship, design, demos, coordination |
+| Independently controlled review | ~36.0 | Ring-fenced panels |
+| Grants / pass-through | ~94.0 | Domain studies + civil-society participation |
+| Protected reserve | ~66.6 | Safe-pause for validation phase |
 
 ### Five-year first wave (`11` base ecosystem ~$37.5B)
 
@@ -99,15 +103,18 @@ Major primary-responsibility shares include participating public institutions, g
 
 ## 6. Proposed funding tranches (validation-first)
 
-| Tranche | Timing | Purpose | Indicative scale (base framing) |
-| --- | --- | --- | --- |
-| **T0 — Inquiry / formation** | Immediate | Entity counsel path, CoI, inquiry CRM hygiene, DD pack | Low seven to low eight figures (owner-scoped) |
-| **T1 — Validation start** | Months 0–6 | Program office, panels kickoff, inventory method, early studies | ~20–30% of validation envelope |
-| **T2 — Validation deepen** | Months 6–18 | Studies, architecture/security, consultations, demos | ~40–50% |
-| **T3 — Validation close / gates** | Months 18–24 | Cost validation report, readiness gates V-G1…V-G12, safe-pause escrow | Remainder + reserve |
-| **T4 — Continuity (only if gates pass)** | After validation | Production continuity package (`11` §7.2) | Separate instruments; ~$2–4B class |
+Internal Program-plan documentation (not the main Budget expense table) uses decision-pack `33` tranche framing:
 
-Tranche releases should be **gate-conditioned**. Failure → revise, narrow, or pause — not relabel demos as production.
+| Tranche | Purpose | Indicative direct (Recommended Base) |
+| --- | --- | ---: |
+| **T1 — Formation & quotation** | First required **legally binding** commitment class; entity/counsel path; early quotations | ~**$132M** |
+| **T2 — Core research & design** | Architecture, security, inventory, standards | ~$146.2M |
+| **T3 — Participation & domain** | Domain studies, consultations, inclusion | ~$144.5M |
+| **T5 — Independent assurance** | Ring-fenced panels / secretariat | ~$38.0M |
+| **T4 — Controlled prototypes** | Only after insurance binding or approved binding path | ~$28.8M |
+| **T6 — Safe-pause & continuity** | Tranche-specific pause funding | ~$144.9M |
+
+**Working floor:** initial received/escrowed cash provisionally **$60M** — distinct from T1 legal commitment size. Do **not** start T1 based only on expression of interest or nonbinding pledges. Gate-conditioned releases; no obligations on an uncommitted later tranche. Continuity after validation (`11` §7.2) remains separate instruments.
 
 ---
 

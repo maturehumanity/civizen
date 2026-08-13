@@ -126,6 +126,15 @@ export default function PublicGovernanceLanding() {
           </Card>
         )}
 
+        <p className="text-sm text-muted-foreground">
+          <Link
+            to="/areas"
+            className="underline-offset-4 hover:text-foreground hover:underline"
+          >
+            {t('civicVoting.publicLanding.areasLink')}
+          </Link>
+        </p>
+
         <PublicPageFooter />
       </div>
     </PublicPageShell>

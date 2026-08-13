@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Loader2 } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -8,6 +9,11 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import {
+  buildPartnerInquiryPrefill,
+  getPublicAreaPage,
+  getPublicInitiative,
+} from '@/lib/areas';
 import { submitFundingInterest } from '@/lib/funding/submit-interest';
 import type { FundingInterestLane } from '@/lib/funding/types';
 
@@ -34,6 +40,7 @@ export function FundingInterestForm({
 }: FundingInterestFormProps) {
   const { t } = useLanguage();
   const { user, profile } = useAuth();
+  const [searchParams] = useSearchParams();
   const [fullName, setFullName] = useState(() => trimOrEmpty(profile?.full_name));
   const [email, setEmail] = useState(() => trimOrEmpty(user?.email));
   const [organization, setOrganization] = useState('');
@@ -55,6 +62,18 @@ export function FundingInterestForm({
     if (nextEmail) setEmail((current) => trimOrEmpty(current) || nextEmail);
     if (nextCountry) setCountry((current) => trimOrEmpty(current) || nextCountry);
   }, [profile?.full_name, profile?.country, user?.email]);
+
+  useEffect(() => {
+    if (lane !== 'institutional') return;
+    const areaSlug = searchParams.get('area')?.trim();
+    if (!areaSlug) return;
+    const area = getPublicAreaPage(areaSlug);
+    if (!area) return;
+    const initiativeId = searchParams.get('initiative')?.trim();
+    const initiative = initiativeId ? getPublicInitiative(area, initiativeId) : undefined;
+    const prefill = buildPartnerInquiryPrefill(area.name, initiative?.title);
+    setMessage((current) => trimOrEmpty(current) || prefill);
+  }, [lane, searchParams]);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();

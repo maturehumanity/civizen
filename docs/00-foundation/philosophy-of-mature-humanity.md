@@ -8,6 +8,7 @@ canonical: true
 
 > **Document role.** This is Civizen’s living philosophical foundation — a design philosophy for civilization.
 > It is **not** Terms of Service, a legal constitution, a product specification, or a belief users must accept to use Civizen.
+> *Mature Humanity* is a foundational intellectual source and parent vision of Civizen, **not** an immutable software or institutional specification. Civizen may improve beyond individual structures proposed in the book. Future editions of the book may incorporate learning from Civizen implementation, research, pilots, institutional experience, governance, and contributors.
 
 # Philosophy of Mature Humanity
 

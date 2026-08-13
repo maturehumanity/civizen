@@ -35,6 +35,8 @@ Copy and notices must stay aligned with:
 
 - `docs/02-policies/institutional/world-citizenship-and-civic-status-notice.md`
 - `docs/01-governance/participation/community-readiness-and-program-availability-framework.md`
+- `docs/institutional/governance-framework.md` (working authority-distribution model; civic elections are one decision pathway, not all Civizen governance)
+- `docs/institutional/pilot-framework.md` (Working Pilot Framework; current civic voting is one possible **Governance Pilot / governance mechanism**, not the complete Civizen governance system)
 
 UI notice:
 

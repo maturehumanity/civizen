@@ -12,6 +12,21 @@ Before planning or editing, agents **must read**:
    **`docs/04-operations/dev/nav-secondary-carousel.md`** (canonical UX + geometry)
 4. When work touches onboarding, identity, citizenship, governance, elections, legal status, partnerships, or public mission copy:
    **`docs/00-foundation/recognized-planetary-citizenship-pathway.md`** (controlling long-term pathway)
+5. When work touches institutional architecture, proposed legal entities, funding allocation principles, contributor economic claims, how governance authority is distributed, stakeholder/partnership classification, pilots/validation programs, founder transition/succession, contribution recording, or Area/Domain taxonomy:
+   **`docs/institutional/institutional-blueprint.md`** (what institutions are — working blueprint, proposed structures)
+   **`docs/institutional/governance-framework.md`** (how authority is exercised — subordinate Working Governance Framework; do not merge with the Blueprint)
+   **`docs/institutional/stakeholder-partnership-framework.md`** (who Civizen engages — subordinate Working Stakeholder & Partnership Framework; do not merge)
+   **`docs/institutional/pilot-framework.md`** (what Civizen tests with those participants — subordinate Working Pilot Framework; do not merge)
+   **`docs/institutional/founder-transition-succession-framework.md`** (how founder authority evolves — specialized implementation of Blueprint/Governance principles; do not merge; do not reduce founder bootstrap access)
+   **`docs/institutional/contributor-framework.md`** (Contribution Record design — working institutional design; public `/contribute/policy` remains adopted contributor policy; do not merge)
+   **`docs/institutional/areas-domains-participation-framework.md`** (shared Area/Domain/Initiative taxonomy — working design; **current foundational Area model**, evolvable; do not migrate product `PILLARS` without a separate mapping task)
+6. When work touches Area/Domain taxonomy, Score methodology, contribution measurement models, or other major conceptual models:
+   **`docs/03-platform/model-evolution/shared-classification-and-model-evolution-architecture.md`** (working product architecture; **not** institutional reading-path item 8; do not implement a Model Registry from this document)
+   V1 Area/Domain registry (infrastructure only; do not wire existing UI): **`docs/03-platform/model-evolution/shared-classification-registry-v1.md`** · `src/lib/classification/`
+7. When work touches public Areas / Initiatives, `/contribute`, `/partners`, or public participation discovery:
+   **`docs/03-platform/areas-and-initiatives/public-areas-initiatives-v1.md`** (working product spec; **not** `/documents`; V1 read-only `/areas` is implemented — do not expand matching, initiative schema, or nav without a separate task)
+   and **`docs/04-operations/dev/contribute-page.md`** when touching `/contribute`
+8. Documentation map: `docs/README.md`
 
 Cursor enforces the same list via `.cursor/rules/civizen-project.mdc` (`alwaysApply: true`).
 
@@ -55,9 +70,10 @@ When restricted ops configuration is available to the agent, perform production 
 ## 3. Persistent User Directives
 
 - **Project-purpose preservation rule:** Legal and institutional disclaimers must accurately describe Civizen's current status, but must never erase, renounce, or permanently confine its long-term mission to unite people as citizens of humanity and develop a legitimate pathway toward recognized planetary citizenship. Always distinguish “not currently” from “never.”
+- **Simple by default. Detailed by choice.** Public and onboarding experiences prioritize clarity; partner/contributor entry starts with what is relevant; deeper detail remains available. Users must not be required to understand full institutional architecture before participating. Do **not** strip necessary detail from internal/reference documentation. Canonical: `docs/03-platform/product-design/information-architecture-and-content-standards.md` §2 and `docs/03-platform/areas-and-initiatives/public-areas-initiatives-v1.md`.
 - Do not ask the user to do work the agent can do itself (run commands, read or edit repo files, search the tree, run tests, inspect local config under the workspace). Only ask when something is genuinely impossible from here (for example passphrase entry on their TTY, secrets only they hold, or actions inside an account or UI only they control)—and then say briefly why.
 - **Install and configuration default:** When a feature needs an install or environment setup (database extensions, migration apply, `.env` keys the agent can write, or production work the agent can reach via restricted ops configuration), **perform it in-session**. Do **not** hand those steps back to the user unless blocked after a direct attempt—then state the blocker and what was already tried. When restricted ops configuration is available, perform production steps privately without publishing details.
-- Founder authority bootstrap rule: until the user explicitly says otherwise, keep `founder` as full-access across app and admin settings (including users/roles/permissions/governance/modules). Do not reduce founder access as part of decentralization refactors unless the user explicitly requests that transition in the same session.
+- Founder authority bootstrap rule: until the user explicitly says otherwise, keep `founder` as full-access across app and admin settings (including users/roles/permissions/governance/modules). Do not reduce founder access as part of decentralization refactors unless the user explicitly requests that transition in the same session. Institutional parent: `docs/institutional/founder-transition-succession-framework.md` (current conceptual stage **F0**; public availability ≠ official deployment; **functional self-sufficiency**, not official-use designation alone, governs later step-back).
 - **Delegation stop rule:** Never end a turn with “you should apply the migration” (or similar) when the agent can run the project’s non-interactive migration path with restricted ops configuration available. Capture the outcome in-session, and only involve the developer if that path fails after a direct attempt. Do not publish hostnames, keys, or paths in the public repo.
 - When the user gives recursive or standing instructions using phrases such as `Always`, `Never`, `make sure`, `don't`, `keep`, `preserve`, or similar strong directive language, treat them as persistent project rules, not one-off comments.
 - Capture those instructions in context and continue following them across later requests unless the user explicitly changes or cancels them.

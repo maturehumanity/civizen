@@ -23,7 +23,8 @@ export type ContributionEventType =
   | 'development_story'
   | 'post'
   | 'post_comment'
-  | 'content_item';
+  | 'content_item'
+  | 'opportunity_participation';
 
 export type ContributionEvent = {
   id?: string;
@@ -62,6 +63,7 @@ export const CONTRIBUTION_TYPE_BASES: Record<ContributionEventType, TypeBase> = 
   post: { capacity: 25, impact: 15, collaboration: 20, beneficiaries: 20 },
   post_comment: { capacity: 15, impact: 10, collaboration: 55, beneficiaries: 15 },
   content_item: { capacity: 50, impact: 40, collaboration: 25, beneficiaries: 45 },
+  opportunity_participation: { capacity: 75, impact: 70, collaboration: 40, beneficiaries: 65 },
 };
 
 export const CONTRIBUTION_EVENT_TYPE_LABELS: Record<ContributionEventType, string> = {
@@ -76,6 +78,7 @@ export const CONTRIBUTION_EVENT_TYPE_LABELS: Record<ContributionEventType, strin
   post: 'Post',
   post_comment: 'Comment',
   content_item: 'Content',
+  opportunity_participation: 'Verified contribution',
 };
 
 /** Soft-cap for quantity curve — sustained builders need room before diminishing returns flatten. */
@@ -92,6 +95,7 @@ const SKIP_CONTENT_SOURCE_TABLES = new Set([
   'governance_proposal_votes',
   'contribution_records',
   'development_stories',
+  'opportunity_participations',
   // Chat mirrors are not civic contribution artifacts; development_stories capture product work.
   'private_messages',
   'messages',
@@ -321,6 +325,7 @@ export async function collectContributionSources(
     postCommentsRes,
     contentRes,
     storiesRes,
+    opportunityRes,
   ] = await Promise.all([
     db
       .from('law_contributions')
@@ -358,6 +363,12 @@ export async function collectContributionSources(
         'id, title, original_instruction, rephrased_description, section, area, created_features, requested_at, created_at',
       )
       .eq('author_id', profileId),
+    db
+      .from('opportunity_participations')
+      .select('id, completed_at, updated_at, opportunity_id')
+      .eq('participant_profile_id', profileId)
+      .eq('status', 'completed')
+      .eq('verification_status', 'verified'),
   ]);
 
   for (const row of lawRes.data ?? []) {
@@ -543,6 +554,61 @@ export async function collectContributionSources(
         },
       }),
     );
+  }
+
+  const opportunityRows = opportunityRes.data ?? [];
+  if (opportunityRows.length > 0) {
+    const participationIds = opportunityRows.map((row: { id: unknown }) => String(row.id));
+    const opportunityIds = [
+      ...new Set(opportunityRows.map((row: { opportunity_id: unknown }) => String(row.opportunity_id))),
+    ];
+    const [{ data: opportunityRecords }, { data: evaluationRecords }] = await Promise.all([
+      db
+        .from('contribution_opportunities')
+        .select('id, title, opportunity_kind')
+        .in('id', opportunityIds),
+      db
+        .from('opportunity_evaluations')
+        .select('participation_id, quality_score, impact_score, created_at, decision')
+        .in('participation_id', participationIds)
+        .eq('decision', 'verified'),
+    ]);
+    const opportunityById = new Map(
+      ((opportunityRecords ?? []) as Array<{ id: unknown; title?: unknown; opportunity_kind?: unknown }>).map(
+        (row): [string, { title?: unknown; opportunity_kind?: unknown }] => [String(row.id), row],
+      ),
+    );
+    const evaluationByParticipation = new Map<string, { quality_score?: unknown; impact_score?: unknown }>();
+    const orderedEvals = [...(evaluationRecords ?? [])].sort(
+      (a: { created_at?: unknown }, b: { created_at?: unknown }) =>
+        Date.parse(asText(b.created_at)) - Date.parse(asText(a.created_at)),
+    );
+    for (const row of orderedEvals) {
+      const key = String(row.participation_id);
+      if (!evaluationByParticipation.has(key)) {
+        evaluationByParticipation.set(key, row);
+      }
+    }
+
+    for (const row of opportunityRows) {
+      const opportunity = opportunityById.get(String(row.opportunity_id));
+      const evaluation = evaluationByParticipation.get(String(row.id));
+      events.push(
+        estimateContributionEvent({
+          profileId,
+          sourceTable: 'opportunity_participations',
+          sourceId: String(row.id),
+          eventType: 'opportunity_participation',
+          title: asText(opportunity?.title) || 'Verified contribution',
+          summary: asText(opportunity?.opportunity_kind) || 'education_to_contribution',
+          verified: true,
+          capacityOverride: asNumber(evaluation?.quality_score) ?? 75,
+          impactOverride: asNumber(evaluation?.impact_score) ?? 70,
+          occurredAt: asText(row.completed_at) || asText(row.updated_at),
+          rawMeta: { kind: asText(opportunity?.opportunity_kind) || 'education_to_contribution' },
+        }),
+      );
+    }
   }
 
   if (userId) {

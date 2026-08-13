@@ -61,6 +61,7 @@ import { useBudgetStructureWideLayout } from '@/lib/finance/use-budget-structure
 import { canEditBudgetLifecycle, sumLineAmounts } from '@/lib/finance/budget-rules';
 import { VALIDATION_BUDGET_V01 } from '@/lib/finance/validation-budget-v01';
 import { VALIDATION_BUDGET_V02 } from '@/lib/finance/validation-budget-v02';
+import { VALIDATION_BUDGET_V03 } from '@/lib/finance/validation-budget-v03';
 import { parseMajorToMinor } from '@/lib/finance/money';
 import {
   canApproveOwnSubmission,
@@ -140,7 +141,8 @@ export function historicalBudgetsForSelector(budgets: ProjectBudgetRow[]): Proje
 export function preferredWorkingBudgetId(budgets: ProjectBudgetRow[]): string | null {
   const ordinary = ordinaryBudgetsForSelector(budgets);
   return (
-    ordinary.find((b) => b.name === VALIDATION_BUDGET_V02.name)?.id
+    ordinary.find((b) => b.name === VALIDATION_BUDGET_V03.name)?.id
+    ?? ordinary.find((b) => b.name === VALIDATION_BUDGET_V02.name)?.id
     ?? ordinary.find((b) => b.name === VALIDATION_BUDGET_V01.name)?.id
     ?? ordinary[0]?.id
     ?? null
@@ -254,7 +256,8 @@ export default function FundingBudgetAdmin({ onGoToSection }: FundingBudgetAdmin
   const structureFilterActive = structureQuery.trim().length > 0;
 
   const isValidationBudget =
-    selected?.name === VALIDATION_BUDGET_V02.name
+    selected?.name === VALIDATION_BUDGET_V03.name
+    || selected?.name === VALIDATION_BUDGET_V02.name
     || selected?.name === VALIDATION_BUDGET_V01.name;
 
   const ordinaryBudgets = useMemo(() => ordinaryBudgetsForSelector(budgets), [budgets]);

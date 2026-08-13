@@ -43,6 +43,7 @@ const PLATFORM_DIRECT_TYPES = new Set([
   'governance_proposal',
   'content_item',
   'solution_problem',
+  'opportunity_participation',
 ]);
 
 type DbClient = typeof supabase;

@@ -116,6 +116,7 @@ export const baseTranslations = {
     "footerDocuments": "Documents",
     "footerLegalStatus": "Legal status",
     "footerWhy": "Why this exists",
+    "footerAreas": "Areas",
     "statusTitle": "Project status",
     "statusBadge": "Early access",
     "statusVersion": "Current build: {version}",
@@ -196,6 +197,7 @@ export const baseTranslations = {
     "faqNowQuestion": "What works today versus what is still expanding?",
     "faqNowAnswer": "Study, profiles, governance tooling, market features, messaging, and Android testing builds are live. iPhone distribution, fuller federation rollout, and comprehensive insurance modules are still expanding.",
     "footerWhy": "Why this exists",
+    "footerAreas": "Areas",
     "footerFund": "Fund Civizen",
     "footerDocuments": "Documents",
     "footerLegalStatus": "Legal status"
@@ -2049,7 +2051,149 @@ export const baseTranslations = {
       "governance": "Governance",
       "solutions": "Solutions",
       "study": "Study",
-      "score": "Review your score"
+      "score": "Review your score",
+      "areas": "See where Civizen needs help"
+    },
+    "opportunities": {
+      "subtitle": "Find a short contribution, apply, and submit what you completed.",
+      "create": "Create",
+      "formHint": "Start with the title, purpose, and next useful details. Add the rest only if needed.",
+      "loadFailed": "Could not load opportunities.",
+      "actionFailed": "Could not complete that action.",
+      "myWorkTitle": "My contributions",
+      "openTitle": "Open opportunities",
+      "empty": "No open professional opportunities yet.",
+      "managedTitle": "Your drafts and closed listings",
+      "managing": "Managing",
+      "deadlineOn": "Apply by {date}",
+      "remote": "Remote",
+      "onSite": "On site",
+      "missingTitle": "Opportunity not found",
+      "missingBody": "This opportunity is unavailable or no longer public.",
+      "unauthorized": "You can view this listing, but only the publisher can edit it.",
+      "newTitle": "New opportunity",
+      "editTitle": "Edit opportunity",
+      "titleLabel": "Title",
+      "summaryLabel": "Short purpose",
+      "titleRequired": "Add a short title.",
+      "summaryRequired": "Add a short purpose.",
+      "requiredSkills": "Required skills",
+      "requiredSkillsHint": "Separate skills with commas",
+      "optionalSkills": "Optional skills",
+      "effortLabel": "Estimated effort",
+      "effortHint": "For example, 6 hours or 2 weeks",
+      "remoteToggle": "This work can be done remotely",
+      "locationLabel": "Location",
+      "compensationLabel": "Compensation",
+      "descriptionLabel": "Detailed description",
+      "areaLabel": "Area",
+      "areaNone": "No area selected",
+      "deadlineLabel": "Application deadline",
+      "workStartsLabel": "Work starts",
+      "workEndsLabel": "Work ends",
+      "saveDraft": "Save draft",
+      "saved": "Opportunity saved.",
+      "publish": "Publish",
+      "published": "Opportunity published.",
+      "closeOpportunity": "Close to new applications",
+      "closed": "Opportunity closed.",
+      "apply": "Apply",
+      "applyMessage": "Short message",
+      "applyPlaceholder": "Why you can help, in a few sentences.",
+      "applySuccess": "Application sent.",
+      "withdraw": "Withdraw application",
+      "withdrawSuccess": "Application withdrawn.",
+      "startWork": "Start work",
+      "startSuccess": "Work started.",
+      "evidenceTitle": "What was completed",
+      "evidenceHint": "Describe the work and add a supporting link if you have one.",
+      "evidenceDescription": "What you completed",
+      "evidenceUrl": "Supporting reference",
+      "addEvidence": "Add evidence",
+      "evidenceAdded": "Evidence added.",
+      "submitWork": "Submit for review",
+      "submitSuccess": "Work submitted for review.",
+      "reference": "Reference",
+      "noEvidence": "No evidence items yet.",
+      "moreDetails": "More details",
+      "expectedOutcome": "Expected outcome",
+      "requirements": "Evidence requirements",
+      "criteria": "Evaluation criteria",
+      "latestReview": "Latest review",
+      "applicantsTitle": "Applicants and work",
+      "noApplicants": "No applications yet.",
+      "accept": "Accept",
+      "accepted": "Application accepted.",
+      "decline": "Decline",
+      "declined": "Application declined.",
+      "evaluate": "Review evidence",
+      "feedbackPlaceholder": "Concise feedback",
+      "qualityScore": "Quality (0–100, optional)",
+      "impactScore": "Impact (0–100, optional)",
+      "evaluationScoresHint": "Optional. Leave blank if you do not need numeric scores.",
+      "evaluationScoresInvalid": "Quality and impact must be numbers from 0 to 100.",
+      "unnamedApplicant": "Applicant",
+      "skillsPlaceholder": "Demonstrated skills, separated by commas",
+      "verify": "Verify",
+      "verified": "Work verified.",
+      "requestRevision": "Ask for revision",
+      "revisionRequested": "Revision requested.",
+      "backToList": "Back to opportunities",
+      "status": {
+        "draft": "Draft",
+        "open": "Open",
+        "closed": "Closed",
+        "cancelled": "Cancelled"
+      },
+      "participationStatus": {
+        "applied": "Applied",
+        "accepted": "Accepted",
+        "active": "In progress",
+        "submitted": "Submitted",
+        "completed": "Completed",
+        "declined": "Declined",
+        "withdrawn": "Withdrawn",
+        "cancelled": "Cancelled"
+      },
+      "verification": {
+        "not_submitted": "Not submitted",
+        "pending": "Pending review",
+        "verified": "Verified",
+        "rejected": "Needs revision",
+        "disputed": "Disputed"
+      },
+      "nextAction": {
+        "apply": "Apply",
+        "withdraw": "Withdraw",
+        "start": "Start work",
+        "submit_evidence": "Submit evidence",
+        "wait_review": "Waiting for review",
+        "revise": "Revise and resubmit"
+      },
+      "compensation": {
+        "volunteer": "Volunteer",
+        "paid": "Paid",
+        "stipend": "Stipend",
+        "credit": "Credit",
+        "learning": "Learning",
+        "mixed": "Mixed"
+      },
+      "evaluationDecision": {
+        "verified": "Verified",
+        "rejected": "Needs revision",
+        "disputed": "Disputed"
+      },
+      "errors": {
+        "already_applied": "You already applied to this opportunity.",
+        "cannot_apply_to_own_opportunity": "You cannot apply to an opportunity you manage.",
+        "opportunity_not_open": "This opportunity is not open for applications.",
+        "opportunity_deadline_passed": "The application deadline has passed.",
+        "self_evaluation_forbidden": "You cannot evaluate your own work.",
+        "not_authorized": "You are not authorized to do that.",
+        "evidence_required": "Add at least one evidence item before submitting.",
+        "invalid_evaluation_score": "Quality and impact must be numbers from 0 to 100.",
+        "request_failed": "Could not complete that action."
+      }
     }
   },
   "features": {
@@ -3185,7 +3329,9 @@ export const baseTranslations = {
       "autoSaved": "Saved",
       "saved": "Skills saved.",
       "saveFailed": "Could not save skills.",
-      "loadFailed": "Could not load skills."
+      "loadFailed": "Could not load skills.",
+      "demonstratedTitle": "Demonstrated through verified contribution",
+      "demonstratedHint": "Verified work can support these skills. It does not replace the skills you entered."
     },
     "experienceDetails": {
       "title": "Experience",
@@ -3225,7 +3371,9 @@ export const baseTranslations = {
       "autoSaving": "Saving…",
       "autoSaved": "Saved",
       "saveFailed": "Could not save experience.",
-      "loadFailed": "Could not load experience."
+      "loadFailed": "Could not load experience.",
+      "demonstratedTitle": "Demonstrated through verified contribution",
+      "demonstratedHint": "Verified completed work can appear here as experience evidence. It does not replace the history you entered."
     },
     "contributionsDetails": {
       "title": "Contributions",
@@ -3254,7 +3402,8 @@ export const baseTranslations = {
         "development_story": "Platform improvement",
         "post": "Post",
         "post_comment": "Comment",
-        "content_item": "Content"
+        "content_item": "Content",
+        "opportunity_participation": "Verified contribution"
       }
     },
     "performanceDetails": {
@@ -4559,7 +4708,8 @@ export const baseTranslations = {
       "signInTitle": "Participate as a member",
       "signInBody": "Anyone can review public election information. Sign in to use the member workspace and voting session tools.",
       "signIn": "Sign in",
-      "signUp": "Create account"
+      "signUp": "Create account",
+      "areasLink": "See what Civizen is working on"
     },
     "demoCatalogHint": "Demo catalog for the P0 scaffold. Live rows will load from civic_elections after migration and admin create flows.",
     "openElection": "View election",
@@ -4789,6 +4939,37 @@ export const baseTranslations = {
       "gemini": "Gemini",
       "claude": "Claude",
       "coalition": "Coalition"
+    }
+  },
+  "areas": {
+    "title": "Areas",
+    "metaTitle": "Areas — Civizen",
+    "metaDescription": "See what Civizen is working on, and how you can help.",
+    "subtitle": "What Civizen is working on.",
+    "explore": "Explore",
+    "open": "Open",
+    "contribute": "Contribute",
+    "partner": "Partner with us",
+    "happeningTitle": "What's happening",
+    "systemsTitle": "Current Civizen systems",
+    "helpTitle": "Ways to help",
+    "emptyInitiatives": "No public initiatives are listed here yet.",
+    "moreTitle": "More about this Area",
+    "learnMoreLabel": "Learn more",
+    "backToAreas": "Back to Areas",
+    "notFoundTitle": "Area not found",
+    "notFoundBody": "This Area is not on the public list. You can return to Areas to see current work.",
+    "status": {
+      "proposed": "Proposed",
+      "in_development": "In Development",
+      "active": "Active",
+      "seeking_partners": "Seeking Partners",
+      "seeking_contributors": "Seeking Contributors",
+      "seeking_funding": "Seeking Funding",
+      "evaluation": "Evaluation",
+      "validated": "Validated",
+      "paused": "Paused",
+      "completed": "Completed"
     }
   }
 } as const;

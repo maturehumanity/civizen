@@ -1,4 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
+import type { ReactElement } from 'react';
+import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 
 import { FundingInterestForm } from '@/components/funding/FundingInterestForm';
@@ -37,12 +39,16 @@ vi.mock('@/lib/funding/submit-interest', () => ({
   submitFundingInterest: vi.fn(async () => ({ ok: true })),
 }));
 
+function renderForm(ui: ReactElement, initialEntry = '/fund/institutional') {
+  return render(<MemoryRouter initialEntries={[initialEntry]}>{ui}</MemoryRouter>);
+}
+
 describe('FundingInterestForm', () => {
   it('prefills name, email, and country for a signed-in user', async () => {
     authState.user = { id: 'user-1', email: 'armen@example.com' };
     authState.profile = { full_name: 'Armen Yeremyan', country: 'United States' };
 
-    render(<FundingInterestForm lane="donation" showAccredited={false} />);
+    renderForm(<FundingInterestForm lane="donation" showAccredited={false} />);
 
     await waitFor(() => {
       expect(screen.getByLabelText(/full name/i)).toHaveValue('Armen Yeremyan');
@@ -55,10 +61,26 @@ describe('FundingInterestForm', () => {
     authState.user = null;
     authState.profile = null;
 
-    render(<FundingInterestForm lane="donation" showAccredited={false} />);
+    renderForm(<FundingInterestForm lane="donation" showAccredited={false} />);
 
     expect(screen.getByLabelText(/full name/i)).toHaveValue('');
     expect(screen.getByLabelText(/^email$/i)).toHaveValue('');
     expect(screen.getByLabelText(/country/i)).toHaveValue('');
+  });
+
+  it('prefills the institutional message from Area query params', async () => {
+    authState.user = null;
+    authState.profile = null;
+
+    renderForm(
+      <FundingInterestForm lane="institutional" />,
+      '/fund/institutional?area=education',
+    );
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/message/i)).toHaveValue(
+        'I am inquiring about partnership related to Education.',
+      );
+    });
   });
 });

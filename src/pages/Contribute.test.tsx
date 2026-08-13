@@ -43,6 +43,10 @@ describe('Contribute hub', () => {
     expect(screen.getByText('contribute.lanes.professional.title')).toBeInTheDocument();
     expect(screen.getByText('contribute.lanes.financial.title')).toBeInTheDocument();
     expect(screen.queryByText('contribute.actions.endorse.title')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'contribute.related.areas' })).toHaveAttribute(
+      'href',
+      '/areas',
+    );
   });
 });
 

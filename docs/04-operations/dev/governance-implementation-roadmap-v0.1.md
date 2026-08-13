@@ -15,6 +15,8 @@ historical_note: Historical implementation planning notes. References to “acti
 
 > **Historical document.** Some sections still use legacy “activation review” terminology for schema and migration planning. Present user-facing language is **program readiness and availability**. See `docs/01-governance/participation/community-readiness-and-program-availability-framework.md` and `/about/planetary-citizenship-pathway`.
 
+> **Institutional alignment (2026-08-12):** How institutions are structured is the [Institutional Blueprint](../../institutional/institutional-blueprint.md). How authority is distributed is the [Governance Framework](../../institutional/governance-framework.md). Who Civizen engages is the [Stakeholder & Partnership Framework](../../institutional/stakeholder-partnership-framework.md). What Civizen tests with those participants is the [Pilot Framework](../../institutional/pilot-framework.md). How founder authority evolves is the [Founder Transition & Succession Framework](../../institutional/founder-transition-succession-framework.md) (current conceptual stage **F0**; public availability ≠ official deployment). The public community process is the [Community Governance Charter](../../02-policies/governance/civizen-community-governance-charter.md), which replaced `civizen-constitution-v0.1.md`. This roadmap remains a historical implementation plan. Do not treat a minimum Civizen score as a rule that a numeric score determines voting power, and do not treat the in-app `ordinary` / `elevated` / `constitutional` scaffold as the Framework’s seven decision classes. Do not reduce founder bootstrap access from this historical roadmap.
+
 ## 1. Purpose
 
 This roadmap turns the current governance draft set into an implementation sequence for the actual Civizen codebase. It maps constitutional and policy concepts to:
@@ -29,8 +31,14 @@ This roadmap turns the current governance draft set into an implementation seque
 
 The policy source of truth for this roadmap is currently:
 
+- `docs/institutional/institutional-blueprint.md` (working institutional architecture)
+- `docs/institutional/governance-framework.md` (working governance / authority distribution)
+- `docs/institutional/stakeholder-partnership-framework.md` (who Civizen engages)
+- `docs/institutional/pilot-framework.md` (what Civizen tests with participants)
+- `docs/institutional/founder-transition-succession-framework.md` (how founder authority evolves; F0 current conceptual stage)
+- `docs/02-policies/governance/civizen-community-governance-charter.md` (current public community charter)
 - `docs/02-policies/legal/civizen-terms-of-use.md`
-- `docs/01-governance/constitution/civizen-constitution-v0.1.md`
+- `docs/01-governance/constitution/civizen-constitution-v0.1.md` (historical / superseded)
 - `docs/02-policies/citizenship-and-verification/citizenship-and-verification-policy-v0.1.md`
 - `docs/archive/superseded/founder-role-charter-v0.2.md`
 - `docs/01-governance/roles-and-permissions/role-domains-and-maturity-thresholds-v0.1.md`

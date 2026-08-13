@@ -267,7 +267,36 @@ describe('civizen contributions estimator', () => {
     expect(diverse!.score!).toBeGreaterThan(sameType!.score!);
   });
 
-  it('keeps a contribution sync TTL so remounts do not recollect every visit', () => {
+  it('estimates verified opportunity participations as platform-direct work', () => {
+    const event = estimateContributionEvent({
+      profileId: 'p1',
+      sourceTable: 'opportunity_participations',
+      sourceId: 'part-1',
+      eventType: 'opportunity_participation',
+      title: 'Clinic workflow',
+      verified: true,
+      capacityOverride: 80,
+      impactOverride: 60,
+    });
+    expect(event.verified).toBe(true);
+    expect(event.capacityEstimate).toBe(80);
+    expect(event.impactEstimate).toBe(75);
+    expect(event.sourceTable).toBe('opportunity_participations');
+  });
+
+  it('does not treat unverified activity as a verified opportunity contribution', () => {
+    const event = estimateContributionEvent({
+      profileId: 'p1',
+      sourceTable: 'posts',
+      sourceId: '2',
+      eventType: 'post',
+      verified: false,
+    });
+    expect(event.eventType).not.toBe('opportunity_participation');
+    expect(event.verified).toBe(false);
+  });
+
+  it('keeps contribution sync from hammering the ledger', () => {
     expect(CONTRIBUTION_SYNC_TTL_MS).toBeGreaterThanOrEqual(60_000);
   });
 });

@@ -19,6 +19,8 @@ Academic, professional, and exploratory study materials. These are **not** autom
 
 - Governance constitution draft: [`../01-governance/constitution/`](../01-governance/constitution/)
 - Policies: [`../02-policies/`](../02-policies/)
+- Pilot Framework (parent institutional reference for research/validation pilots): [`../institutional/pilot-framework.md`](../institutional/pilot-framework.md)
+- Areas, Domains & Participation Framework (shared taxonomy; Study domains remain a learning catalog): [`../institutional/areas-domains-participation-framework.md`](../institutional/areas-domains-participation-framework.md)
 
 ## Proposing changes
 

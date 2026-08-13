@@ -21,10 +21,12 @@ describe('contribute-lanes', () => {
     expect(CONTRIBUTE_LANES).toHaveLength(10);
   });
 
-  it('wires existing surfaces for volunteer, funding, and partners', () => {
+  it('wires existing surfaces for volunteer, funding, partners, and professional opportunities', () => {
     expect(CONTRIBUTE_LANES.find((lane) => lane.id === 'volunteer')?.path).toBe('/fund/contribute');
     expect(CONTRIBUTE_LANES.find((lane) => lane.id === 'financial')?.path).toBe('/fund');
     expect(CONTRIBUTE_LANES.find((lane) => lane.id === 'organization')?.path).toBe('/partners');
+    expect(CONTRIBUTE_LANES.find((lane) => lane.id === 'professional')?.path).toBe('/contribute/professional');
+    expect(CONTRIBUTE_LANES.find((lane) => lane.id === 'professional')?.placeholder).toBe(false);
   });
 
   it('exposes placeholder lanes under /contribute/*', () => {

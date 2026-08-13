@@ -16,6 +16,12 @@ export function PublicPageFooter() {
         <span aria-hidden className="text-border">
           ·
         </span>
+        <Link to="/areas" className="transition-colors hover:text-foreground">
+          {t('onboarding.footerAreas')}
+        </Link>
+        <span aria-hidden className="text-border">
+          ·
+        </span>
         <Link to="/fund" className="transition-colors hover:text-foreground">
           {t('onboarding.footerFund')}
         </Link>

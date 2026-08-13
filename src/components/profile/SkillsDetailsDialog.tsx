@@ -26,6 +26,7 @@ import { getSkillDescription } from '@/lib/profile-skill-descriptions';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { DemonstratedSkillEvidence } from '@/components/profile/DemonstratedSkillEvidence';
 
 type SkillsDetailsDialogProps = {
   open: boolean;
@@ -443,6 +444,7 @@ export function SkillsDetailsDialog({
             <Loader2 className="h-5 w-5 animate-spin" />
           </div>
         ) : (
+          <div className="space-y-4">
           <p className="text-sm leading-relaxed text-foreground">
             {t('profile.skillsDetails.sentenceLead')}{' '}
             <SentenceToken
@@ -548,6 +550,8 @@ export function SkillsDetailsDialog({
             </SentenceToken>
             .
           </p>
+          <DemonstratedSkillEvidence profileId={profileId} active={open && !loading} />
+          </div>
         )}
       </CardContent>
     </Card>

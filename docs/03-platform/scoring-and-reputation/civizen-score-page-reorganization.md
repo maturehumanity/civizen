@@ -36,7 +36,7 @@ Use the following single-word labels on the circular visualization:
 4. **Performance**
 5. **Contributions**
 
-These are the official short labels for the five circle segments.
+These are the official short labels for the five circle segments. They are the **current Score model**, not a permanently immutable structure. Live categories, weights, calculations, tiers, UI, and historical values must not be changed by documentation-only architecture work. Evolution is described in [`../model-evolution/shared-classification-and-model-evolution-architecture.md`](../model-evolution/shared-classification-and-model-evolution-architecture.md). This specification remains the current product implementation spec until a successor is adopted.
 
 When additional space is available, such as in cards, expanded panels, tooltips, accessibility labels, or explanatory text, use the following full category names:
 
@@ -1020,6 +1020,8 @@ Civizen Domains
 ```
 
 A domain indicates where activity occurred. A score category indicates how that activity is evaluated.
+
+**Current product:** Activity by Domain still uses live `PILLARS` (`src/lib/constants.ts`). The V1 classification registry ([`../model-evolution/shared-classification-registry-v1.md`](../model-evolution/shared-classification-registry-v1.md)) may later be referenced here; it does **not** change Score calculations, categories, or persist score snapshots.
 
 Example:
 

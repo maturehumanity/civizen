@@ -36,6 +36,63 @@ if (!agents.includes('00-foundation/recognized-planetary-citizenship-pathway.md'
 if (!existsSync('docs/00-foundation/philosophy-of-mature-humanity.md')) {
   fail('missing docs/00-foundation/philosophy-of-mature-humanity.md');
 }
+if (!existsSync('docs/institutional/institutional-blueprint.md')) {
+  fail('missing docs/institutional/institutional-blueprint.md');
+}
+if (!existsSync('docs/institutional/governance-framework.md')) {
+  fail('missing docs/institutional/governance-framework.md');
+}
+if (!existsSync('docs/institutional/stakeholder-partnership-framework.md')) {
+  fail('missing docs/institutional/stakeholder-partnership-framework.md');
+}
+if (!existsSync('docs/institutional/pilot-framework.md')) {
+  fail('missing docs/institutional/pilot-framework.md');
+}
+if (!existsSync('docs/institutional/founder-transition-succession-framework.md')) {
+  fail('missing docs/institutional/founder-transition-succession-framework.md');
+}
+if (!existsSync('docs/institutional/contributor-framework.md')) {
+  fail('missing docs/institutional/contributor-framework.md');
+}
+if (!existsSync('docs/institutional/areas-domains-participation-framework.md')) {
+  fail('missing docs/institutional/areas-domains-participation-framework.md');
+}
+if (!existsSync('docs/03-platform/model-evolution/shared-classification-and-model-evolution-architecture.md')) {
+  fail('missing docs/03-platform/model-evolution/shared-classification-and-model-evolution-architecture.md');
+}
+if (!existsSync('docs/03-platform/model-evolution/shared-classification-registry-v1.md')) {
+  fail('missing docs/03-platform/model-evolution/shared-classification-registry-v1.md');
+}
+if (!existsSync('docs/03-platform/areas-and-initiatives/public-areas-initiatives-v1.md')) {
+  fail('missing docs/03-platform/areas-and-initiatives/public-areas-initiatives-v1.md');
+}
+if (!agents.includes('institutional/institutional-blueprint.md')) {
+  fail('AGENTS.md must reference docs/institutional/institutional-blueprint.md');
+}
+if (!agents.includes('institutional/governance-framework.md')) {
+  fail('AGENTS.md must reference docs/institutional/governance-framework.md');
+}
+if (!agents.includes('institutional/stakeholder-partnership-framework.md')) {
+  fail('AGENTS.md must reference docs/institutional/stakeholder-partnership-framework.md');
+}
+if (!agents.includes('institutional/pilot-framework.md')) {
+  fail('AGENTS.md must reference docs/institutional/pilot-framework.md');
+}
+if (!agents.includes('institutional/founder-transition-succession-framework.md')) {
+  fail('AGENTS.md must reference docs/institutional/founder-transition-succession-framework.md');
+}
+if (!agents.includes('institutional/contributor-framework.md')) {
+  fail('AGENTS.md must reference docs/institutional/contributor-framework.md');
+}
+if (!agents.includes('institutional/areas-domains-participation-framework.md')) {
+  fail('AGENTS.md must reference docs/institutional/areas-domains-participation-framework.md');
+}
+if (!agents.includes('model-evolution/shared-classification-and-model-evolution-architecture.md')) {
+  fail('AGENTS.md must reference docs/03-platform/model-evolution/shared-classification-and-model-evolution-architecture.md');
+}
+if (!agents.includes('areas-and-initiatives/public-areas-initiatives-v1.md')) {
+  fail('AGENTS.md must reference docs/03-platform/areas-and-initiatives/public-areas-initiatives-v1.md');
+}
 if (!agents.includes('memory-bank/activeContext.md')) {
   fail('AGENTS.md must reference memory-bank/activeContext.md');
 }

@@ -1,7 +1,7 @@
 # Sponsorship policy v0.1
 
 **Status:** Current Draft — subject to legal and institutional review.  
-**Related:** [`funding-and-financial-integrity.md`](../../02-policies/institutional/funding-and-financial-integrity.md)  
+**Related:** [`funding-and-financial-integrity.md`](../../02-policies/institutional/funding-and-financial-integrity.md) · working [`stakeholder-partnership-framework.md`](../../institutional/stakeholder-partnership-framework.md) (partnership modules/roles; not a prestige tier)  
 **Counsel review:** Not started
 
 ## Purpose

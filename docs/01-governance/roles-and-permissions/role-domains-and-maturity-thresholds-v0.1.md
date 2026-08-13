@@ -16,6 +16,8 @@ review_status: draft
 
 Founder stewardship ends by domain, not all at once. A domain is mature only when enough verified and authorized people exist to sustain it safely without Founder operational dependence.
 
+Institutional parent for founder-stage transition: [`founder-transition-succession-framework.md`](../../institutional/founder-transition-succession-framework.md) (current conceptual stage **F0**; this draft is not an operational founder-exit switch).
+
 ## 2. Universal Governance Baseline
 
 No person should hold governance responsibility without:

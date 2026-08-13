@@ -27,7 +27,7 @@ export type {
   PrivateCapitalEligibilityCase,
 } from './economics-model.types';
 
-export const ECONOMICS_MODEL_VERSION = '0.1.5';
+export const ECONOMICS_MODEL_VERSION = '0.1.6';
 export const ECONOMICS_MODEL_AS_OF = '2026-08-11';
 export const ECONOMICS_CURRENCY = 'USD';
 
@@ -47,12 +47,18 @@ export const POLICY_FORMULA_EXAMPLE_DISTRIBUTABLE_USD_M = 310;
 
 export const ECOSYSTEM_5Y_BASE_USD_M = 37_500;
 
-/** Validation Program restricted ask — v0.2 provisional working draft (historical v0.1 was 202/446/898). */
+/**
+ * Validation Program restricted ask — v0.3 Recommended working draft (doc 33).
+ * Same-scope Low/Base/High; Constrained (~$374M) and Expanded (~$1.03B) are different scopes.
+ */
 export const VALIDATION_ASK_USD_M: Record<PrivateCapitalEligibilityCase, number> = {
-  low: 438.3,
-  base: 530.2,
-  high: 654.5,
+  low: 552.4,
+  base: 634.4,
+  high: 833.2,
 };
+
+/** Completed v0.2 coverage draft Base — superseded by v0.3; provenance only. */
+export const VALIDATION_ASK_V02_BASE_USD_M = 530.2;
 
 /** Prior v0.2 working total before coverage adds (superseded estimate). */
 export const VALIDATION_ASK_V02_PRE_COVERAGE_BASE_USD_M = 524;

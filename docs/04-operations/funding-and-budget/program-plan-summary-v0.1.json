@@ -1,9 +1,9 @@
 {
-  "modelVersion": "0.2",
+  "modelVersion": "0.3",
   "generatedAt": "2026-08-11",
   "currency": "USD",
   "status": "non_approved_planning_estimates",
-  "disclaimer": "Read-only strategic estimates and scenarios. Not approved budgets, commitments, receipts, or actual spending. Not worldwide completion or one organization\u2019s budget. Validation Base is provisional v0.2 exact $530.2M (~$530M externally); historical v0.1 $446M and prior v0.2 $524M are superseded estimates.",
+  "disclaimer": "Read-only strategic estimates and scenarios. Not approved budgets, commitments, receipts, or actual spending. Not worldwide completion or one organization\u2019s budget. Validation Base is provisional owner-selected Recommended v0.3 exact $634.4M (~$634M); same-scope range ~$552\u2013833M pending quotations. Historical: v0.1 $446M; early v0.2 $524M; v0.2 coverage draft $530.2M. Constrained (~$374M) and Expanded (~$1.03B) are different scopes.",
   "hierarchy": {
     "detailedOperatingPlan": "validation_18_24_months",
     "primaryProgramPlan": "five_year_first_wave",
@@ -13,54 +13,86 @@
   "validation": {
     "status": "provisional_working_draft",
     "durationMonths": "18-24",
-    "sourceDoc": "30-validation-budget-v0.2-and-five-year-domain-allocation-proposal.md",
-    "sourceMeta": "validation-budget-v0.2.meta.json",
-    "reconciliationDoc": "30-validation-budget-v0.2-reconciliation-and-adoption.md",
-    "modelVersion": "0.2.1",
+    "sourceDoc": "33-validation-scope-priority-tranche-decision.md",
+    "sourceMeta": "validation-budget-v0.3.meta.json",
+    "reconciliationDoc": "33-validation-scope-priority-tranche-decision.md",
+    "modelVersion": "0.3.0",
     "updatedAt": "2026-08-11",
     "totalsUsdM": {
-      "low": 438.3,
-      "base": 530.2,
-      "high": 654.5
+      "low": 552.4,
+      "base": 634.4,
+      "high": 833.2
+    },
+    "scopeAlternativesUsdM": {
+      "constrained_different_scope": 373.8,
+      "recommended_same_scope_base": 634.4,
+      "expanded_different_scope": 1032.7
     },
     "historicalV01TotalsUsdM": {
       "low": 202,
       "base": 446,
       "high": 898
     },
-    "fundingControlBaseUsdM": {
-      "core": 363.7,
-      "independent": 34.0,
-      "grant_pass_through": 77.5,
-      "reserve": 55.0
+    "historicalV02CoverageDraftUsdM": {
+      "low": 438.3,
+      "base": 530.2,
+      "high": 654.5
     },
-    "scenarioDiffNote": "Low (~$438.3M): compressed studies/continuity plus thinner coverage-add set \u2014 not equivalent deliverables. Base (exact $530.2M / ~$530M externally): provisional working draft after coverage adds; contingency/safe-pause held flat. High (~$654.5M): expanded studies, insurance, contingency, safe-pause, and high coverage adds. Historical v0.1 Base $446M and prior v0.2 working total $524M retained as superseded estimates.",
+    "fundingControlBaseUsdM": {
+      "core": 437.8,
+      "independent": 36.0,
+      "grant_pass_through": 94.0,
+      "reserve": 66.6
+    },
+    "directContingencySafePauseUsdM": {
+      "direct": 489.5,
+      "contingency": 78.3,
+      "safePause": 66.6
+    },
+    "scenarioDiffNote": "Same-scope Low (~$552.4M) / Base (exact $634.4M / ~$634M) / High (~$833.2M): unit-cost and quotation variance for the Recommended deliverable set \u2014 not scope cuts. Constrained (~$373.8M) and Expanded (~$1.0327B) are different scopes and must not be presented as equally capable cheaper/same programs. VAL-EX16 is quote-dependent. Historical: v0.1 $446M; early v0.2 $524M; v0.2 coverage $530.2M.",
     "baseTranchePacing": [
       {
         "id": "T1",
-        "label": "Validation launch",
-        "shareOfBase": 0.25
+        "label": "Formation & quotation (first required legal commitment ~$132M)",
+        "shareOfBase": 0.2081,
+        "indicativeDirectUsdM": 132.0
       },
       {
         "id": "T2",
-        "label": "Validation execute",
-        "shareOfBase": 0.45
+        "label": "Core research & design",
+        "shareOfBase": 0.2305,
+        "indicativeDirectUsdM": 146.2
       },
       {
         "id": "T3",
-        "label": "Validation close",
-        "shareOfBase": 0.2
+        "label": "Participation & domain studies",
+        "shareOfBase": 0.2278,
+        "indicativeDirectUsdM": 144.5
       },
       {
-        "id": "reserve",
-        "label": "Safe-pause reserve",
-        "shareOfBase": 0.1
+        "id": "T5",
+        "label": "Independent assurance",
+        "shareOfBase": 0.0599,
+        "indicativeDirectUsdM": 38.0
+      },
+      {
+        "id": "T4",
+        "label": "Controlled prototypes (after insurance bind path)",
+        "shareOfBase": 0.0454,
+        "indicativeDirectUsdM": 28.8
+      },
+      {
+        "id": "T6",
+        "label": "Safe-pause & continuity (tranche-specific)",
+        "shareOfBase": 0.2284,
+        "indicativeDirectUsdM": 144.9
       }
     ],
+    "fundingControlsNote": "Distinguish expression of interest, pledge, conditional commitment, legally binding commitment, received cash, escrowed cash, and available cash. Do not begin T1 on nonbinding interest alone. Initial received/escrowed working floor provisional $60M. No obligations dependent on an uncommitted later tranche. Insurance binding or an approved binding path before field activity. Receiving-entity path unresolved \u2014 do not accept funds until authorized.",
     "workstreamCount": 53,
     "groupCount": 13,
-    "workstreamsDoc": "30-validation-budget-v0.2-reconciliation-and-adoption.md",
-    "appBudgetName": "Civizen Pre-Major-Build Validation Program v0.2"
+    "workstreamsDoc": "33-validation-scope-priority-tranche-decision.md",
+    "appBudgetName": "Civizen Pre-Major-Build Validation Program v0.3"
   },
   "fiveYearFirstWave": {
     "status": "preliminary_ecosystem_hypothesis",
@@ -142,7 +174,7 @@
   },
   "reconciliation": {
     "historicalValidationCsvMatchesMetaV01": true,
-    "validationWorkingDraft": "v0.2",
+    "validationWorkingDraft": "v0.3",
     "fiveYearCashflowSumsToBase": true,
     "sdInsCarveNetZeroToFiveYearTotal": true
   }

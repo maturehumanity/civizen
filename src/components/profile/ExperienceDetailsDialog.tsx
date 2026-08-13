@@ -41,6 +41,7 @@ import {
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { DemonstratedExperienceEvidence } from '@/components/profile/DemonstratedExperienceEvidence';
 
 type ExperienceDetailsDialogProps = {
   open: boolean;
@@ -1198,6 +1199,7 @@ export function ExperienceDetailsDialog({
               </SentenceToken>
               .
             </p>
+            <DemonstratedExperienceEvidence profileId={profileId} active={open && !loading} />
           </div>
         )}
       </CardContent>

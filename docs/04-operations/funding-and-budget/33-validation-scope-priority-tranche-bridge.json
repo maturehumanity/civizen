@@ -1,0 +1,37 @@
+{
+  "current_draft_total": 634.4,
+  "current_draft_version": "v0.3",
+  "prior_draft_total_v02_coverage": 530.2,
+  "selection_status": "owner_selected_recommended_applied_as_v0.3",
+  "current_direct": 489.5,
+  "recommended_direct_base": 489.5,
+  "recommended_direct_delta_vs_410_2": 79.3,
+  "same_scope_direct_low": 426.2,
+  "same_scope_direct_high": 642.9,
+  "contingency_once_base": 78.3,
+  "safe_pause_once_base_total": 66.6,
+  "safe_pause_core": 61.6,
+  "safe_pause_ir": 5.0,
+  "recommended_total_base": 634.4,
+  "same_scope_total_low": 552.4,
+  "same_scope_total_high": 833.2,
+  "constrained_total": 373.8,
+  "expanded_total": 1032.7,
+  "prior_audit_661_7_status": "superseded_as_recommended_base_after_travel_math_correction",
+  "increase_buckets": {
+    "mandatory_corrections": 58.4,
+    "gate_conditioned_additions": 18.9,
+    "unresolved_quotation_allowance": 3.0
+  },
+  "tranche_direct_usd_m": {
+    "T1_formation_quotation": 132.0,
+    "T2_core_research_design": 146.2,
+    "T3_participation_domain": 144.5,
+    "T5_independent_assurance": 38.0,
+    "T4_controlled_prototypes": 28.8,
+    "T6_safe_pause_continuity": 144.9
+  },
+  "ws22_corrected_base": 11.5,
+  "ws22_note": "Prior $14M/320 person-trips implied $43.75k/trip \u2014 inconsistent. Corrected to ~450 person-trips \u00d7 ~$5.2k + logistics.",
+  "val_ex16_note": "Planning allowance $12M Base \u2014 NOT validated coverage; quote-dependent"
+}

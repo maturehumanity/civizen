@@ -1,0 +1,96 @@
+{
+  "version": "0.3.0",
+  "date": "2026-08-11",
+  "currency": "USD",
+  "horizon_months": "18-24",
+  "disclaimer": "Provisional owner-selected Recommended Validation Program Base exact $634,400,000.00 (~$634M). Same-scope planning range ~$552.4–833.2M pending quotations. Not verified quotes. Not an approved budget, bid, commitment, or authorization to accept funds. Constrained (~$373.8M) and Expanded (~$1.0327B) are different scopes — not equally capable cheaper/same programs. Historical: v0.1 $446M; early v0.2 $524M; v0.2 coverage $530.2M.",
+  "totals_usd_m": {
+    "low": 552.4,
+    "base": 634.4,
+    "high": 833.2
+  },
+  "scope_alternatives_usd_m": {
+    "constrained_different_scope": 373.8,
+    "recommended_same_scope_base": 634.4,
+    "expanded_different_scope": 1032.7
+  },
+  "historical_totals_usd_m": {
+    "v01": {
+      "low": 202,
+      "base": 446,
+      "high": 898
+    },
+    "v02_pre_coverage_adds": {
+      "low": 436,
+      "base": 524,
+      "high": 642
+    },
+    "v02_coverage_draft": {
+      "low": 438.3,
+      "base": 530.2,
+      "high": 654.5
+    }
+  },
+  "by_funding_control_base_usd_m": {
+    "core": 437.8,
+    "independent": 36.0,
+    "grant_pass_through": 94.0,
+    "reserve": 66.6
+  },
+  "direct_usd_m": 489.5,
+  "contingency_usd_m": 78.3,
+  "safe_pause_usd_m": 66.6,
+  "safe_pause_core_usd_m": 61.6,
+  "safe_pause_ir_usd_m": 5.0,
+  "work_program_denominator_usd_m": 489.5,
+  "contingency_formula_note": "Contingency calculated once at ~16% of Recommended direct $489.5M = $78.3M.",
+  "safe_pause_formula_note": "Safe-pause calculated once: core $61.6M + independent-review ring-fence $5.0M = $66.6M.",
+  "line_count": 53,
+  "group_count": 13,
+  "relationship": "Supersedes Validation Program v0.2 ($530.2M coverage draft) as working draft; preserves v0.1 ($446M), early v0.2 ($524M), and v0.2 coverage draft historically.",
+  "historical_v01_totals_usd_m": {
+    "low": 202,
+    "base": 446,
+    "high": 898
+  },
+  "historical_v02_pre_coverage_adds_usd_m": {
+    "low": 436,
+    "base": 524,
+    "high": 642
+  },
+  "historical_v02_coverage_draft_usd_m": {
+    "low": 438.3,
+    "base": 530.2,
+    "high": 654.5
+  },
+  "source_decision_pack": "33-validation-scope-priority-tranche-decision.md",
+  "tranche_direct_usd_m": {
+    "T1_formation_quotation": 132.0,
+    "T2_core_research_design": 146.2,
+    "T3_participation_domain": 144.5,
+    "T5_independent_assurance": 38.0,
+    "T4_controlled_prototypes": 28.8,
+    "T6_safe_pause_continuity": 144.9
+  },
+  "first_required_legal_commitment_usd_m": 132.0,
+  "initial_received_escrowed_working_floor_usd_m_provisional": 60.0,
+  "funding_stage_vocabulary": [
+    "expression_of_interest",
+    "pledge",
+    "conditional_commitment",
+    "legally_binding_commitment",
+    "received_cash",
+    "escrowed_cash",
+    "available_cash"
+  ],
+  "quote_dependent_lines": ["VAL-EX16"],
+  "app_budget_name": "Civizen Pre-Major-Build Validation Program v0.3",
+  "lifecycle": {
+    "status": "draft",
+    "approved": false,
+    "published": false,
+    "demonstration": false,
+    "committed_and_actual": 0,
+    "public_flags": false
+  }
+}

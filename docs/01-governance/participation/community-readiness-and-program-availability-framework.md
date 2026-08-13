@@ -26,6 +26,8 @@ This framework describes how Civizen may assess **participation readiness** and 
 
 At the current stage, readiness is a Civizen platform and program concept. It does not by itself establish public authority, but it may help measure whether the network has developed sufficient participation, integrity, representation, and operational capacity for later public and institutional consideration.
 
+This framework is an operational child of the [Pilot Framework](../../institutional/pilot-framework.md). Community/program readiness is not the same as the Pilot Framework’s conceptual P0–P6 maturity ladder.
+
 ## Relationship to the Long-Term Mission
 
 Civizen's long-term goal includes a legitimate pathway toward recognized planetary citizenship. Readiness data may inform that journey, but population percentages, account counts, or platform declarations cannot substitute for democratic consent, representative legitimacy, legal authorization, constitutional safeguards, or institutional recognition.

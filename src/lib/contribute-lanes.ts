@@ -32,9 +32,8 @@ export type ContributeLane = {
   relatedLinks?: readonly ContributeRelatedLink[];
 };
 
-/** Placeholder lane path segments (excludes /contribute/policy). */
+/** Placeholder lane path segments (excludes /contribute/policy and live Slice 1 professional). */
 export const CONTRIBUTE_PLACEHOLDER_IDS = [
-  'professional',
   'projects',
   'tasks',
   'challenges',
@@ -64,9 +63,8 @@ export const CONTRIBUTE_LANES: readonly ContributeLane[] = [
     iconClassName: 'text-primary',
     titleKey: 'contribute.lanes.professional.title',
     descriptionKey: 'contribute.lanes.professional.description',
-    placeholder: true,
+    placeholder: false,
     relatedLinks: [
-      { path: '/fund/contribute', labelKey: 'contribute.related.volunteerInterest' },
       { path: '/contribute/policy', labelKey: 'contribute.related.policy' },
     ],
   },

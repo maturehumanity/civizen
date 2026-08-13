@@ -44,6 +44,8 @@ An active citizen is a citizen whose civic standing is active because published 
 
 A governance-eligible citizen is an active, verified citizen who also satisfies the minimum Civizen score, good-standing, device trust, and any required training or certification needed for governance rights.
 
+A minimum score, if used, is an **eligibility** condition in this draft model. It must not be treated as a rule that a single numeric contribution or Civizen score determines voting power. See the [Working Governance Framework](../../institutional/governance-framework.md) §§25–26.
+
 ## 7. Badge Principle
 
 Verified, Citizen, Active, and Governance Eligible should remain separate badges so that users and institutions can understand status clearly. Founder, where shown, should be a distinct office badge rather than a replacement for these civic states.

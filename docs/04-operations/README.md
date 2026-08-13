@@ -20,6 +20,7 @@ Production host topology, secrets, and privileged runbooks are **not** published
 
 ## Related
 
+- Institutional Architecture: [`../institutional/`](../institutional/)
 - Platform architecture: [`../03-platform/`](../03-platform/)
 - Policies for public copy: [`../02-policies/institutional/`](../02-policies/institutional/)
 

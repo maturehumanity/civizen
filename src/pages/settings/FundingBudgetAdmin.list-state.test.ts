@@ -5,8 +5,10 @@ import {
   budgetLifecycleBadgeKey,
   budgetSelectorSizingLabel,
   classifyBudgetListState,
+  historicalBudgetsForSelector,
   ordinaryBudgetsForSelector,
   partitionBudgetsForSelector,
+  preferredWorkingBudgetId,
   primaryBudgetWorkflowAction,
   shouldUseBudgetSelector,
 } from '@/pages/settings/FundingBudgetAdmin';
@@ -118,6 +120,34 @@ describe('ordinaryBudgetsForSelector', () => {
       budget({ id: 'd', name: 'Civizen Draft Budget v0.1', is_demonstration: true }),
     ];
     expect(ordinaryBudgetsForSelector(rows).map((b) => b.id)).toEqual(['v']);
+  });
+
+  it('excludes superseded revisions from the primary selector', () => {
+    const rows = [
+      budget({
+        id: 'v03',
+        name: 'Civizen Pre-Major-Build Validation Program v0.3',
+        lifecycle_status: 'draft',
+      }),
+      budget({
+        id: 'v02',
+        name: 'Civizen Pre-Major-Build Validation Program v0.2',
+        lifecycle_status: 'superseded',
+      }),
+    ];
+    expect(ordinaryBudgetsForSelector(rows).map((b) => b.id)).toEqual(['v03']);
+    expect(historicalBudgetsForSelector(rows).map((b) => b.id)).toEqual(['v02']);
+  });
+});
+
+describe('preferredWorkingBudgetId', () => {
+  it('prefers Validation Program v0.3 over earlier revisions', () => {
+    const rows = [
+      budget({ id: 'v01', name: 'Civizen Pre-Major-Build Validation Program v0.1' }),
+      budget({ id: 'v02', name: 'Civizen Pre-Major-Build Validation Program v0.2' }),
+      budget({ id: 'v03', name: 'Civizen Pre-Major-Build Validation Program v0.3' }),
+    ];
+    expect(preferredWorkingBudgetId(rows)).toBe('v03');
   });
 });
 
