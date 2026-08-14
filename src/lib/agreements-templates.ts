@@ -5,10 +5,16 @@
  */
 
 import {
+  addCalendarYears,
   compactEmploymentTerms,
   compactLeaseTerms,
   compactSalePurchaseTerms,
+  formatAgreementDate,
+  isContributionLaunchSource,
   isCustomAgreementCreateType,
+  localIsoDate,
+  partyNameLooksLikeOrganization,
+  suggestedPartyReference,
   type AgreementContent,
   type AgreementLaunchContext,
   type AgreementPartyKind,
@@ -19,6 +25,7 @@ import {
   type SalePurchaseTerms,
   type SelectedAgreementParty,
 } from '@/lib/agreements-model';
+import { agreementHtmlToPlainText } from '@/lib/agreements-html';
 
 export type AgreementTokenKind = 'text' | 'date' | 'multiline' | 'party';
 
@@ -50,6 +57,19 @@ export type AgreementChoiceOption = {
   label: string;
 };
 
+export type AgreementEndConditionId =
+  | 'specific_date'
+  | 'until_completed'
+  | 'ongoing'
+  | 'until_terminated';
+
+export const AGREEMENT_END_CONDITIONS_ALL: AgreementEndConditionId[] = [
+  'specific_date',
+  'until_completed',
+  'ongoing',
+  'until_terminated',
+];
+
 export type AgreementDocumentTemplate = {
   type: AgreementType;
   documentHeading: string;
@@ -57,10 +77,17 @@ export type AgreementDocumentTemplate = {
   defaultHeadingId: string;
   defaultRoles: Record<string, string>;
   rolesByHeading?: Record<string, Record<string, string>>;
+  rolePairs?: Array<readonly [string, string]>;
   roleOptions: Record<string, string[]>;
+  endConditions?: AgreementEndConditionId[];
   essential: AgreementTemplateSection[];
   optional: AgreementTemplateSection[];
   allowCustomSections?: boolean;
+};
+
+export type AgreementRequiredGap = {
+  tokenId: string;
+  messageKey: string;
 };
 
 export type PartySlotState = {
@@ -74,10 +101,14 @@ export type AgreementDocumentState = {
   parties: Record<string, PartySlotState>;
   visibleOptional: string[];
   extraSections: { id: string; title: string; body: string }[];
-  referenceNumber: string;
+  partyReference: string;
+  partyReferenceManual: boolean;
+  partyReferenceAuto: string;
   documentHeading: string;
   headingOptionId: string;
   partyRoles: Record<string, string>;
+  paragraphWording: Record<string, string>;
+  sectionTitles: Record<string, string>;
 };
 
 export type CompiledAgreementParty = {
@@ -104,18 +135,18 @@ const PARTY_ROLE_LABELS: Record<string, string> = {
 };
 
 const PARTY_PLACEHOLDERS: Record<string, { placeholder: string; ariaLabel: string }> = {
-  employer: { placeholder: 'Employer', ariaLabel: 'Search or enter employer' },
-  employee: { placeholder: 'Employee', ariaLabel: 'Search or enter employee' },
-  seller: { placeholder: 'Seller', ariaLabel: 'Search or enter seller' },
-  buyer: { placeholder: 'Buyer', ariaLabel: 'Search or enter buyer' },
-  lessor: { placeholder: 'Landlord', ariaLabel: 'Search or enter landlord' },
-  lessee: { placeholder: 'Tenant', ariaLabel: 'Search or enter tenant' },
-  party_a: { placeholder: 'Party', ariaLabel: 'Search or enter person or organization' },
-  party_b: { placeholder: 'Party', ariaLabel: 'Search or enter person or organization' },
-  funder: { placeholder: 'Funder', ariaLabel: 'Search or enter funder' },
-  recipient: { placeholder: 'Recipient', ariaLabel: 'Search or enter recipient' },
-  disclosing: { placeholder: 'Disclosing party', ariaLabel: 'Search or enter disclosing party' },
-  receiving: { placeholder: 'Receiving party', ariaLabel: 'Search or enter receiving party' },
+  employer: { placeholder: 'Select or enter employer', ariaLabel: 'Select or enter employer' },
+  employee: { placeholder: 'Select or enter employee', ariaLabel: 'Select or enter employee' },
+  seller: { placeholder: 'Select or enter seller', ariaLabel: 'Select or enter seller' },
+  buyer: { placeholder: 'Select or enter buyer', ariaLabel: 'Select or enter buyer' },
+  lessor: { placeholder: 'Select or enter landlord', ariaLabel: 'Select or enter landlord' },
+  lessee: { placeholder: 'Select or enter tenant', ariaLabel: 'Select or enter tenant' },
+  party_a: { placeholder: 'Select or enter party', ariaLabel: 'Select or enter party' },
+  party_b: { placeholder: 'Select or enter party', ariaLabel: 'Select or enter party' },
+  funder: { placeholder: 'Select or enter funder', ariaLabel: 'Select or enter funder' },
+  recipient: { placeholder: 'Select or enter recipient', ariaLabel: 'Select or enter recipient' },
+  disclosing: { placeholder: 'Select or enter disclosing party', ariaLabel: 'Select or enter disclosing party' },
+  receiving: { placeholder: 'Select or enter receiving party', ariaLabel: 'Select or enter receiving party' },
 };
 
 const GENERIC_ROLES = { party_a: 'Party', party_b: 'Party' };
@@ -124,8 +155,95 @@ const GENERIC_ROLE_OPTIONS = {
   party_b: ['Party', 'Service Provider', 'Partner', 'Collaborator', 'Contributor'],
 };
 
+function complementRole(pairs: Array<readonly [string, string]> | undefined, label: string) {
+  const pair = pairs?.find((item) => item[0] === label || item[1] === label);
+  if (!pair) return undefined;
+  return pair[0] === label ? pair[1] : pair[0];
+}
+
+function counterpartPartyId(roles: Record<string, string>, partyId: string) {
+  const ids = Object.keys(roles);
+  if (ids.length !== 2) return undefined;
+  return ids.find((id) => id !== partyId);
+}
+
+export function applyPartyRole(
+  template: AgreementDocumentTemplate,
+  state: AgreementDocumentState,
+  partyId: string,
+  label: string,
+): AgreementDocumentState {
+  const partyRoles = { ...state.partyRoles, [partyId]: label };
+  const otherId = counterpartPartyId(template.defaultRoles, partyId);
+  const complement = complementRole(template.rolePairs, label);
+  if (otherId && complement) {
+    const previous = state.partyRoles[partyId];
+    const otherCurrent = state.partyRoles[otherId];
+    const previousComplement = complementRole(template.rolePairs, previous);
+    if (otherCurrent === label || otherCurrent === previousComplement) {
+      partyRoles[otherId] = complement;
+    }
+  }
+  return { ...state, partyRoles };
+}
+
+const ISSUER_ROLE_LABELS = new Set([
+  'Organization / Project',
+  'Service Provider',
+  'Contributor',
+  'Employer',
+  'Seller',
+  'Landlord',
+  'Lessor',
+  'Funder',
+  'Disclosing party',
+  'Contractor',
+  'Consultant',
+]);
+
+function partySlotKind(slot: PartySlotState): PartyPersonOrOrg | null {
+  if (slot.classification) return slot.classification;
+  if (slot.selected?.civizenKind === 'organization') return 'organization';
+  if (slot.selected?.civizenKind === 'individual') return 'person';
+  return null;
+}
+
+function partySlotName(slot: PartySlotState): string {
+  return slot.selected?.displayName || slot.query.trim();
+}
+
+export function issuerPartySlotId(state: AgreementDocumentState): string | undefined {
+  const byRole = Object.entries(state.partyRoles).find(([, role]) => ISSUER_ROLE_LABELS.has(role));
+  if (byRole) return byRole[0];
+  const organization = Object.entries(state.parties).find(([, slot]) => {
+    const name = partySlotName(slot);
+    if (!name) return false;
+    return partyNameLooksLikeOrganization(name, partySlotKind(slot));
+  });
+  return organization?.[0];
+}
+
+export function suggestedPartyReferenceFromDocument(state: AgreementDocumentState): string {
+  const id = issuerPartySlotId(state);
+  if (!id) return '';
+  const slot = state.parties[id];
+  if (!slot) return '';
+  const name = partySlotName(slot);
+  if (!name) return '';
+  return suggestedPartyReference(name, partySlotKind(slot));
+}
+
+export function syncPartyReference(state: AgreementDocumentState): AgreementDocumentState {
+  if (state.partyReferenceManual) return state;
+  const suggestion = suggestedPartyReferenceFromDocument(state);
+  if (state.partyReference === suggestion && state.partyReferenceAuto === suggestion) return state;
+  return { ...state, partyReference: suggestion, partyReferenceAuto: suggestion };
+}
+
 function headingMeta(options: AgreementChoiceOption[], defaultRoles: Record<string, string>, roleOptions: Record<string, string[]>, extra?: {
   rolesByHeading?: Record<string, Record<string, string>>;
+  rolePairs?: Array<readonly [string, string]>;
+  endConditions?: AgreementEndConditionId[];
 }) {
   const defaultHeadingId = options[0]?.id || 'custom';
   return {
@@ -172,8 +290,17 @@ function token(id: string, placeholder: string, kind: AgreementTokenKind = 'text
 }
 
 function party(id: string): AgreementTemplateToken {
-  const named = PARTY_PLACEHOLDERS[id] || { placeholder: 'Party', ariaLabel: 'Search or enter person or organization' };
+  const named = PARTY_PLACEHOLDERS[id] || { placeholder: 'Select or enter party', ariaLabel: 'Select or enter party' };
   return { id, kind: 'party', placeholder: named.placeholder, ariaLabel: named.ariaLabel, partyRole: id };
+}
+
+function termRuns(lead: string): AgreementTemplateRun[] {
+  return [
+    lead,
+    token('startAt', 'Select start date', 'date', 'Select start date'),
+    token('endAt', 'Select end date', 'date', 'Select end date'),
+    '.',
+  ];
 }
 
 function paragraph(id: string, runs: AgreementTemplateRun[]): AgreementTemplateParagraph {
@@ -229,9 +356,10 @@ function employmentTemplate(): AgreementDocumentTemplate {
       [{ id: 'employment', label: 'Employment' }],
       { employer: 'Employer', employee: 'Employee' },
       {
-        employer: ['Employer', 'Company', 'Organization'],
-        employee: ['Employee', 'Worker', 'Staff member'],
+        employer: ['Employer', 'Employee', 'Company', 'Organization'],
+        employee: ['Employee', 'Employer', 'Worker', 'Staff member'],
       },
+      { rolePairs: [['Employer', 'Employee']] },
     ),
     essential: [
       section('opening', undefined, [
@@ -241,7 +369,7 @@ function employmentTemplate(): AgreementDocumentTemplate {
           ' and ',
           party('employee'),
           ' for the position of ',
-          token('position', 'position', 'text', 'Position title'),
+          token('position', 'Enter the position', 'text', 'Enter the position'),
           '.',
         ]),
         paragraph('role', [
@@ -249,9 +377,9 @@ function employmentTemplate(): AgreementDocumentTemplate {
         ]),
         paragraph('start_location', [
           'The employment starts on ',
-          token('startAt', 'start date', 'date'),
+          token('startAt', 'Select start date', 'date', 'Select start date'),
           '. Work will take place ',
-          token('workLocation', 'location', 'text', 'Work location or remote arrangement'),
+          token('workLocation', 'Enter the work location', 'text', 'Enter the work location'),
           '.',
         ]),
       ]),
@@ -344,9 +472,10 @@ function salePurchaseTemplate(): AgreementDocumentTemplate {
       ],
       { seller: 'Seller', buyer: 'Buyer' },
       {
-        seller: ['Seller', 'Vendor', 'Provider'],
-        buyer: ['Buyer', 'Purchaser', 'Customer'],
+        seller: ['Seller', 'Buyer', 'Vendor', 'Provider'],
+        buyer: ['Buyer', 'Seller', 'Purchaser', 'Customer'],
       },
+      { rolePairs: [['Seller', 'Buyer']] },
     ),
     essential: [
       section('opening', undefined, [
@@ -359,7 +488,7 @@ function salePurchaseTemplate(): AgreementDocumentTemplate {
         ]),
         paragraph('goods', [
           'The Seller agrees to sell, and the Buyer agrees to purchase, ',
-          token('goods', 'goods', 'text', 'Product or goods'),
+          token('goods', 'Describe the goods', 'text', 'Describe the goods'),
           '.',
         ]),
         paragraph('price', [
@@ -447,10 +576,14 @@ function leaseTemplate(): AgreementDocumentTemplate {
       ],
       { lessor: 'Landlord', lessee: 'Tenant' },
       {
-        lessor: ['Landlord', 'Lessor', 'Owner', 'Property owner'],
-        lessee: ['Tenant', 'Lessee', 'Renter', 'Occupant'],
+        lessor: ['Landlord', 'Tenant', 'Lessor', 'Lessee', 'Owner', 'Property owner'],
+        lessee: ['Tenant', 'Landlord', 'Lessee', 'Lessor', 'Renter', 'Occupant'],
       },
       {
+        rolePairs: [
+          ['Landlord', 'Tenant'],
+          ['Lessor', 'Lessee'],
+        ],
         rolesByHeading: {
           lease: { lessor: 'Landlord', lessee: 'Tenant' },
           residential: { lessor: 'Landlord', lessee: 'Tenant' },
@@ -461,6 +594,7 @@ function leaseTemplate(): AgreementDocumentTemplate {
           vehicle: { lessor: 'Lessor', lessee: 'Lessee' },
           equipment: { lessor: 'Lessor', lessee: 'Lessee' },
         },
+        endConditions: ['specific_date', 'until_terminated', 'ongoing'],
       },
     ),
     essential: [
@@ -474,16 +608,10 @@ function leaseTemplate(): AgreementDocumentTemplate {
         ]),
         paragraph('premises', [
           'This lease covers ',
-          token('premises', 'property or item', 'text', 'Leased property or item'),
+          token('premises', 'Describe the property or item', 'text', 'Describe the property or item'),
           '.',
         ]),
-        paragraph('term', [
-          'The lease starts on ',
-          token('startAt', 'start date', 'date'),
-          ' until ',
-          token('endAt', 'end date', 'date'),
-          '.',
-        ]),
+        paragraph('term', termRuns('The lease starts on ')),
         paragraph('rent', [
           'Rent is ',
           token('rent', 'amount'),
@@ -536,19 +664,27 @@ function serviceContributionTemplate(): AgreementDocumentTemplate {
     type: 'service_contribution',
     ...headingMeta(
       [
-        { id: 'service', label: 'Service(s) Provision' },
-        { id: 'contribution', label: 'Contribution(s)' },
+        { id: 'service', label: 'Service Provision' },
+        { id: 'contribution', label: 'Contribution' },
       ],
       { party_a: 'Client', party_b: 'Service Provider' },
       {
-        party_a: ['Client', 'Recipient', 'Customer', 'Principal', 'Partner'],
-        party_b: ['Service Provider', 'Contributor', 'Contractor', 'Consultant', 'Volunteer'],
+        party_a: ['Client', 'Service Provider', 'Organization / Project', 'Contributor', 'Recipient', 'Customer', 'Contractor', 'Principal', 'Consultant', 'Partner', 'Volunteer'],
+        party_b: ['Service Provider', 'Client', 'Contributor', 'Organization / Project', 'Recipient', 'Contractor', 'Consultant', 'Volunteer', 'Customer', 'Principal', 'Partner'],
       },
       {
+        rolePairs: [
+          ['Client', 'Service Provider'],
+          ['Organization / Project', 'Contributor'],
+          ['Recipient', 'Contributor'],
+          ['Customer', 'Contractor'],
+          ['Principal', 'Consultant'],
+        ],
         rolesByHeading: {
           service: { party_a: 'Client', party_b: 'Service Provider' },
-          contribution: { party_a: 'Recipient', party_b: 'Contributor' },
+          contribution: { party_a: 'Organization / Project', party_b: 'Contributor' },
         },
+        endConditions: AGREEMENT_END_CONDITIONS_ALL,
       },
     ),
     essential: [
@@ -565,23 +701,17 @@ function serviceContributionTemplate(): AgreementDocumentTemplate {
         ]),
         paragraph('scope', [
           'The service or contribution is: ',
-          token('purpose', 'Scope of the service or contribution', 'multiline'),
+          token('purpose', 'Describe the service or contribution', 'multiline'),
           '.',
         ]),
       ]),
       section('responsibilities', 'Responsibilities', [
         paragraph('responsibilities', [
-          token('responsibilities', 'Responsibilities and terms', 'multiline'),
+          token('responsibilities', 'Describe responsibilities and terms', 'multiline'),
         ]),
       ]),
       section('term', undefined, [
-        paragraph('term', [
-          'This agreement is effective from ',
-          token('startAt', 'start date', 'date'),
-          ' until ',
-          token('endAt', 'end date', 'date'),
-          '.',
-        ]),
+        paragraph('term', termRuns('This agreement is effective from ')),
       ]),
     ],
     optional: [
@@ -623,13 +753,13 @@ function partnershipTemplate(): AgreementDocumentTemplate {
         ]),
         paragraph('purpose', [
           'The parties agree to collaborate on: ',
-          token('purpose', 'Purpose of the collaboration', 'multiline'),
+          token('purpose', 'Describe the collaboration', 'multiline'),
           '.',
         ]),
       ]),
       section('responsibilities', 'Responsibilities', [
         paragraph('responsibilities', [
-          token('responsibilities', 'How the parties will work together', 'multiline'),
+          token('responsibilities', 'Describe how the parties will work together', 'multiline'),
         ]),
       ]),
     ],
@@ -660,6 +790,7 @@ function generalLike(
       [{ id: type, label: heading.replace(/\s+Agreement$/, '') || heading }],
       GENERIC_ROLES,
       GENERIC_ROLE_OPTIONS,
+      { endConditions: AGREEMENT_END_CONDITIONS_ALL },
     ),
     essential: [
       section('opening', undefined, [
@@ -677,17 +808,11 @@ function generalLike(
       ]),
       section('responsibilities', 'Responsibilities / Terms', [
         paragraph('responsibilities', [
-          token('responsibilities', 'Responsibilities and terms', 'multiline'),
+          token('responsibilities', 'Describe responsibilities and terms', 'multiline'),
         ]),
       ]),
       section('term', 'Effective period', [
-        paragraph('term', [
-          'This agreement is effective from ',
-          token('startAt', 'start date', 'date'),
-          ' until ',
-          token('endAt', 'end date', 'date'),
-          '.',
-        ]),
+        paragraph('term', termRuns('This agreement is effective from ')),
       ]),
     ],
     optional,
@@ -705,7 +830,7 @@ const TEMPLATES: Partial<Record<AgreementType, AgreementDocumentTemplate>> = {
     'general',
     'General Agreement',
     'This Agreement is entered into between ',
-    'Purpose of this agreement',
+    'Describe the purpose of this agreement',
   ),
   funding: {
     type: 'funding',
@@ -720,6 +845,7 @@ const TEMPLATES: Partial<Record<AgreementType, AgreementDocumentTemplate>> = {
         funder: ['Funder', 'Sponsor', 'Donor'],
         recipient: ['Recipient', 'Grantee', 'Beneficiary'],
       },
+      { endConditions: ['specific_date', 'until_completed', 'until_terminated'] },
     ),
     essential: [
       section('opening', undefined, [
@@ -732,23 +858,17 @@ const TEMPLATES: Partial<Record<AgreementType, AgreementDocumentTemplate>> = {
         ]),
         paragraph('purpose', [
           'The support is for: ',
-          token('purpose', 'Purpose of the funding or sponsorship', 'multiline'),
+          token('purpose', 'Describe the funding or sponsorship', 'multiline'),
           '.',
         ]),
       ]),
       section('support', 'Support', [
         paragraph('support', [
-          token('financialTerms', 'What support is being provided', 'multiline'),
+          token('financialTerms', 'Describe the support being provided', 'multiline'),
         ]),
       ]),
       section('term', 'Effective period', [
-        paragraph('term', [
-          'This agreement is effective from ',
-          token('startAt', 'start date', 'date'),
-          ' until ',
-          token('endAt', 'end date', 'date'),
-          '.',
-        ]),
+        paragraph('term', termRuns('This agreement is effective from ')),
       ]),
     ],
     optional: COMMON_OPTIONAL,
@@ -757,7 +877,7 @@ const TEMPLATES: Partial<Record<AgreementType, AgreementDocumentTemplate>> = {
     'mou',
     'Memorandum of Understanding',
     'This Memorandum of Understanding is entered into between ',
-    'Shared understanding',
+    'Describe the shared understanding',
   ),
   pilot: {
     type: 'pilot',
@@ -780,12 +900,12 @@ const TEMPLATES: Partial<Record<AgreementType, AgreementDocumentTemplate>> = {
         ]),
         paragraph('purpose', [
           'This pilot concerns: ',
-          token('purpose', 'Purpose of the pilot', 'multiline'),
+          token('purpose', 'Describe the purpose of the pilot', 'multiline'),
           '.',
         ]),
         paragraph('scope', [
           'Scope: ',
-          token('responsibilities', 'Scope of the pilot', 'multiline'),
+          token('responsibilities', 'Describe the scope of the pilot', 'multiline'),
           '.',
         ]),
       ]),
@@ -805,13 +925,13 @@ const TEMPLATES: Partial<Record<AgreementType, AgreementDocumentTemplate>> = {
     'program',
     'Program Agreement',
     'This Program Agreement is entered into between ',
-    'Purpose of the program',
+    'Describe the purpose of the program',
   ),
   data_research: generalLike(
     'data_research',
     'Data / Research Agreement',
     'This Data / Research Agreement is entered into between ',
-    'Data or research this agreement covers',
+    'Describe the data or research this agreement covers',
     [],
     COMMON_OPTIONAL,
   ),
@@ -828,6 +948,7 @@ const TEMPLATES: Partial<Record<AgreementType, AgreementDocumentTemplate>> = {
         disclosing: ['Disclosing party', 'Provider', 'Client'],
         receiving: ['Receiving party', 'Recipient', 'Contractor'],
       },
+      { endConditions: ['specific_date', 'until_terminated', 'ongoing'] },
     ),
     essential: [
       section('opening', undefined, [
@@ -840,23 +961,17 @@ const TEMPLATES: Partial<Record<AgreementType, AgreementDocumentTemplate>> = {
         ]),
         paragraph('purpose', [
           'The confidential information is: ',
-          token('purpose', 'What information needs protecting', 'multiline'),
+          token('purpose', 'Describe the information that needs protecting', 'multiline'),
           '.',
         ]),
       ]),
       section('confidentiality', 'Confidentiality', [
         paragraph('confidentiality', [
-          token('confidentiality', 'Confidentiality terms', 'multiline'),
+          token('confidentiality', 'Describe the confidentiality terms', 'multiline'),
         ]),
       ]),
       section('term', 'Effective period', [
-        paragraph('term', [
-          'These confidentiality obligations are effective from ',
-          token('startAt', 'start date', 'date'),
-          ' until ',
-          token('endAt', 'end date', 'date'),
-          '.',
-        ]),
+        paragraph('term', termRuns('These confidentiality obligations are effective from ')),
       ]),
     ],
     optional: COMMON_OPTIONAL.filter((item) => item.id !== 'confidentiality'),
@@ -865,13 +980,13 @@ const TEMPLATES: Partial<Record<AgreementType, AgreementDocumentTemplate>> = {
     'custom',
     'Agreement',
     'This agreement is entered into between ',
-    'Purpose / subject',
+    'Describe the purpose or subject',
   ),
   other: generalLike(
     'other',
     'Agreement',
     'This agreement is entered into between ',
-    'Purpose / subject',
+    'Describe the purpose or subject',
   ),
 };
 
@@ -921,6 +1036,54 @@ function partyFromKnown(args: {
 function genericRelatedTitle(title?: string | null): boolean {
   const value = title?.trim().toLowerCase() || '';
   return !value || value === 'jobs' || value === 'job';
+}
+
+function essentialTemplateTokens(template: AgreementDocumentTemplate): AgreementTemplateToken[] {
+  return template.essential.flatMap((section) => (
+    section.paragraphs.flatMap((paragraphItem) => (
+      paragraphItem.runs.filter((run): run is AgreementTemplateToken => typeof run !== 'string')
+    ))
+  ));
+}
+
+function templateHasToken(template: AgreementDocumentTemplate, id: string): boolean {
+  return essentialTemplateTokens(template).some((item) => item.id === id)
+    || template.optional.some((section) => section.paragraphs.some((paragraphItem) => (
+      paragraphItem.runs.some((run) => typeof run !== 'string' && run.id === id)
+    )));
+}
+
+export function agreementEndIsSpecific(state: AgreementDocumentState): boolean {
+  const open = state.values.endOpen?.trim();
+  return !open || open === 'specific_date';
+}
+
+export function agreementEndCondition(state: AgreementDocumentState): AgreementEndConditionId {
+  const open = state.values.endOpen?.trim();
+  if (open === 'until_completed' || open === 'ongoing' || open === 'until_terminated') return open;
+  return 'specific_date';
+}
+
+function applyDefaultAgreementDates(template: AgreementDocumentTemplate, values: Record<string, string>) {
+  const start = localIsoDate();
+  if (templateHasToken(template, 'startAt') && !values.startAt?.trim()) {
+    values.startAt = start;
+  }
+  if (templateHasToken(template, 'endAt')) {
+    if (!values.endAt?.trim()) {
+      values.endAt = addCalendarYears(values.startAt?.trim() || start, 1);
+    }
+    if (!values.endOpen?.trim()) values.endOpen = 'specific_date';
+  }
+}
+
+function endConditionPlain(state: AgreementDocumentState): string {
+  const condition = agreementEndCondition(state);
+  if (condition === 'until_completed') return 'until completed';
+  if (condition === 'ongoing') return 'on an ongoing basis';
+  if (condition === 'until_terminated') return 'until terminated';
+  const date = state.values.endAt?.trim();
+  return date ? `until ${formatAgreementDate(date)}` : 'until Select end date';
 }
 
 export function seedAgreementDocumentState(args: {
@@ -1003,16 +1166,37 @@ export function seedAgreementDocumentState(args: {
   }
 
   const template = agreementDocumentTemplate(type, launch.customType);
-  return {
+  let documentHeading = template.documentHeading;
+  let headingOptionId = template.defaultHeadingId;
+  let partyRoles = { ...template.defaultRoles };
+
+  if (type === 'service_contribution' && isContributionLaunchSource(launch.source)) {
+    documentHeading = 'Contribution';
+    headingOptionId = 'contribution';
+    partyRoles = { ...(template.rolesByHeading?.contribution || { party_a: 'Organization / Project', party_b: 'Contributor' }) };
+    const otherName = partySlotName(otherParty);
+    if (otherName && partyNameLooksLikeOrganization(otherName, partySlotKind(otherParty))) {
+      parties.party_a = otherParty;
+      parties.party_b = actorParty;
+    }
+  }
+
+  applyDefaultAgreementDates(template, values);
+
+  return syncPartyReference({
     values,
     parties,
     visibleOptional,
     extraSections: [],
-    referenceNumber: '1',
-    documentHeading: template.documentHeading,
-    headingOptionId: template.defaultHeadingId,
-    partyRoles: { ...template.defaultRoles },
-  };
+    partyReference: '',
+    partyReferenceManual: false,
+    partyReferenceAuto: '',
+    documentHeading,
+    headingOptionId,
+    partyRoles,
+    paragraphWording: {},
+    sectionTitles: {},
+  });
 }
 
 export function tokenDisplayValue(
@@ -1026,16 +1210,37 @@ export function tokenDisplayValue(
   return state.values[tokenItem.id]?.trim() || '';
 }
 
+function escapeAgreementHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
 export function renderTemplateRun(run: AgreementTemplateRun, state: AgreementDocumentState): string {
   if (typeof run === 'string') return run;
-  if (run.id === 'endAt' && state.values.endOpen === 'until_completed') return 'completed';
+  if (run.id === 'endAt') return endConditionPlain(state);
   const value = tokenDisplayValue(run, state);
   if (run.kind === 'party') {
     const role = partyRoleLabel(state, run.id, run.placeholder || 'Party');
-    const name = value || `[${run.placeholder}]`;
-    return `${name} (the ${role})`;
+    const name = value || run.placeholder;
+    return `${escapeAgreementHtml(name)} (<em>the ${escapeAgreementHtml(role)}</em>)`;
   }
-  return value || `[${run.placeholder}]`;
+  if (run.kind === 'date' && value) return formatAgreementDate(value);
+  return value || run.placeholder;
+}
+
+export function templateParagraphText(paragraph: AgreementTemplateParagraph, state: AgreementDocumentState): string {
+  return paragraph.runs.map((run) => renderTemplateRun(run, state)).join('');
+}
+
+export function paragraphDisplayText(paragraph: AgreementTemplateParagraph, state: AgreementDocumentState): string {
+  const override = state.paragraphWording?.[paragraph.id];
+  return override == null ? templateParagraphText(paragraph, state) : override;
+}
+
+function plainMultiline(value?: string | null): string | null {
+  return agreementHtmlToPlainText(value || '') || null;
 }
 
 export function visibleTemplateSections(template: AgreementDocumentTemplate, state: AgreementDocumentState): AgreementTemplateSection[] {
@@ -1064,21 +1269,21 @@ export function compileAgreementDocument(args: {
   const sections = [
     ...visibleTemplateSections(template, state).map((item) => ({
       id: item.id,
-      title: item.title || state.documentHeading || template.documentHeading,
+      title: state.sectionTitles?.[item.id] || item.title || state.documentHeading || template.documentHeading,
       body: item.paragraphs
-        .map((paragraphItem) => paragraphItem.runs.map((run) => renderTemplateRun(run, state)).join(''))
+        .map((paragraphItem) => paragraphDisplayText(paragraphItem, state))
         .join('\n\n'),
     })),
     ...state.extraSections
-      .filter((item) => item.title.trim() || item.body.trim())
+      .filter((item) => item.title.trim() || agreementHtmlToPlainText(item.body))
       .map((item) => ({
         id: item.id,
         title: item.title.trim() || 'Additional terms',
         body: item.body.trim(),
       })),
   ];
-  const purpose = state.values.purpose?.trim()
-    || state.values.duties?.trim()
+  const purpose = plainMultiline(state.values.purpose)
+    || plainMultiline(state.values.duties)
     || state.values.goods?.trim()
     || state.values.premises?.trim()
     || customTypeName
@@ -1093,20 +1298,20 @@ export function compileAgreementDocument(args: {
       employer: tokenDisplayValue(party('employer'), state) || null,
       employee: tokenDisplayValue(party('employee'), state) || null,
       position: state.values.position || null,
-      duties: state.values.duties || null,
+      duties: plainMultiline(state.values.duties),
       startAt: state.values.startAt || null,
       workLocation: state.values.workLocation || null,
       employmentStatus: state.values.employmentStatus || null,
       compensation: state.values.compensation || null,
       payFrequency: state.values.payFrequency || null,
       schedule: state.values.schedule || null,
-      benefits: state.values.benefits || null,
+      benefits: plainMultiline(state.values.benefits),
       probation: state.values.probation || null,
-      expenses: state.values.expenses || null,
-      confidentiality: state.values.confidentiality || null,
-      intellectualProperty: state.values.intellectualProperty || null,
-      policies: state.values.policies || null,
-      termination: state.values.termination || null,
+      expenses: plainMultiline(state.values.expenses),
+      confidentiality: plainMultiline(state.values.confidentiality),
+      intellectualProperty: plainMultiline(state.values.intellectualProperty),
+      policies: plainMultiline(state.values.policies),
+      termination: plainMultiline(state.values.termination),
     } satisfies EmploymentTerms)
     : undefined;
 
@@ -1119,20 +1324,20 @@ export function compileAgreementDocument(args: {
       unitPrice: state.values.price || null,
       totalPrice: state.values.price || null,
       currency: state.values.currency || null,
-      paymentTerms: state.values.paymentTerms || null,
+      paymentTerms: plainMultiline(state.values.paymentTerms),
       deliveryMethod: state.values.deliveryMethod || null,
       deliverySchedule: state.values.deliverySchedule || null,
       deliveryLocation: state.values.deliveryLocation || null,
-      inspectionAcceptance: state.values.inspectionAcceptance || null,
-      warranty: state.values.warranty || null,
-      returnsRefunds: state.values.returnsRefunds || null,
+      inspectionAcceptance: plainMultiline(state.values.inspectionAcceptance),
+      warranty: plainMultiline(state.values.warranty),
+      returnsRefunds: plainMultiline(state.values.returnsRefunds),
       titleTransfer: state.values.titleTransfer || null,
       riskOfLoss: state.values.riskOfLoss || null,
-      additionalTerms: state.values.additionalTerms || null,
+      additionalTerms: plainMultiline(state.values.additionalTerms),
     } satisfies SalePurchaseTerms)
     : undefined;
 
-  const openEnded = state.values.endOpen === 'until_completed';
+  const openEnded = !agreementEndIsSpecific(state);
   const lease = type === 'lease'
     ? compactLeaseTerms({
       lessor: tokenDisplayValue(party('lessor'), state) || null,
@@ -1144,10 +1349,10 @@ export function compileAgreementDocument(args: {
       rentFrequency: state.values.rentFrequency || null,
       currency: state.values.currency || null,
       deposit: state.values.deposit || null,
-      permittedUse: state.values.permittedUse || null,
-      maintenance: state.values.maintenance || null,
-      insurance: state.values.insurance || null,
-      termination: state.values.termination || null,
+      permittedUse: plainMultiline(state.values.permittedUse),
+      maintenance: plainMultiline(state.values.maintenance),
+      insurance: plainMultiline(state.values.insurance),
+      termination: plainMultiline(state.values.termination),
     } satisfies LeaseTerms)
     : undefined;
   return {
@@ -1159,17 +1364,17 @@ export function compileAgreementDocument(args: {
       purpose,
       structured: {
         purpose,
-        rolesResponsibilities: state.values.responsibilities || state.values.duties || null,
+        rolesResponsibilities: plainMultiline(state.values.responsibilities || state.values.duties),
         term: openEnded
-          ? [state.values.startAt, 'until completed'].filter(Boolean).join(' – ')
+          ? [state.values.startAt, endConditionPlain(state)].filter(Boolean).join(' – ')
           : [state.values.startAt, state.values.endAt].filter(Boolean).join(' – ') || null,
         startAt: state.values.startAt || null,
         endAt: openEnded ? null : (state.values.endAt || null),
-        financialTerms: state.values.financialTerms || state.values.compensation || state.values.rent || null,
-        confidentiality: state.values.confidentiality || null,
-        intellectualProperty: state.values.intellectualProperty || null,
-        dataPrivacy: state.values.dataPrivacy || null,
-        termination: state.values.termination || null,
+        financialTerms: plainMultiline(state.values.financialTerms || state.values.compensation || state.values.rent),
+        confidentiality: plainMultiline(state.values.confidentiality),
+        intellectualProperty: plainMultiline(state.values.intellectualProperty),
+        dataPrivacy: plainMultiline(state.values.dataPrivacy),
+        termination: plainMultiline(state.values.termination),
         salePurchase,
         employment,
         lease,
@@ -1177,7 +1382,10 @@ export function compileAgreementDocument(args: {
         documentHeading: state.documentHeading || null,
         headingOptionId: state.headingOptionId || null,
         partyRoles: state.partyRoles,
-        referenceNumber: state.referenceNumber || null,
+        paragraphWording: Object.keys(state.paragraphWording || {}).length ? state.paragraphWording : null,
+        sectionTitles: Object.keys(state.sectionTitles || {}).length ? state.sectionTitles : null,
+        partyReference: state.partyReference || null,
+        referenceNumber: state.partyReference || null,
       },
       sections,
     },
@@ -1227,6 +1435,67 @@ export function compiledPartiesFromDocument(
     });
   }
   return { parties, needsClassification };
+}
+
+const VALIDATION_SKIP_IDS = new Set([
+  'workLocation',
+  'quantity',
+  'price',
+  'currency',
+  'rent',
+  'rentFrequency',
+  'payFrequency',
+  'compensation',
+  'endOpen',
+  'customTypeName',
+]);
+
+const GAP_MESSAGE_BY_TOKEN: Record<string, string> = {
+  purpose: 'agreements.missing.scope',
+  position: 'agreements.missing.position',
+  goods: 'agreements.missing.goods',
+  premises: 'agreements.missing.premises',
+  responsibilities: 'agreements.missing.responsibilities',
+  duties: 'agreements.missing.duties',
+  startAt: 'agreements.missing.startDate',
+  endAt: 'agreements.missing.endDate',
+  confidentiality: 'agreements.missing.confidentiality',
+  financialTerms: 'agreements.missing.support',
+};
+
+function tokenValueIsFilled(tokenItem: AgreementTemplateToken, state: AgreementDocumentState): boolean {
+  if (tokenItem.kind === 'party') return Boolean(tokenDisplayValue(tokenItem, state));
+  if (tokenItem.kind === 'multiline') return Boolean(plainMultiline(state.values[tokenItem.id]));
+  return Boolean(state.values[tokenItem.id]?.trim());
+}
+
+export function requiredAgreementGaps(
+  template: AgreementDocumentTemplate,
+  state: AgreementDocumentState,
+): AgreementRequiredGap[] {
+  const gaps: AgreementRequiredGap[] = [];
+  for (const tokenItem of essentialTemplateTokens(template)) {
+    if (tokenItem.kind === 'party') {
+      if (!tokenValueIsFilled(tokenItem, state)) {
+        gaps.push({ tokenId: tokenItem.id, messageKey: 'agreements.missing.party' });
+      }
+      continue;
+    }
+    if (tokenItem.id === 'endAt') {
+      if (agreementEndIsSpecific(state) && !state.values.endAt?.trim()) {
+        gaps.push({ tokenId: 'endAt', messageKey: 'agreements.missing.endDate' });
+      }
+      continue;
+    }
+    if (VALIDATION_SKIP_IDS.has(tokenItem.id)) continue;
+    if (!tokenValueIsFilled(tokenItem, state)) {
+      gaps.push({
+        tokenId: tokenItem.id,
+        messageKey: GAP_MESSAGE_BY_TOKEN[tokenItem.id] || 'agreements.missing.scope',
+      });
+    }
+  }
+  return gaps;
 }
 
 export function unusedOptionalSections(

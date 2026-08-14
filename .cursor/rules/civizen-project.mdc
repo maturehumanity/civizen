@@ -31,8 +31,8 @@ Before planning or editing, read (in order):
    - **`docs/04-operations/dev/contribute-page.md`** when touching `/contribute`
    - **`docs/04-operations/dev/phase-1-pilot-operating-model.md`** when touching `/contribute` pilots
    - **`docs/04-operations/dev/agreements.md`** when touching Agreements (`/agreements` is platform-level; Marketplace is an entry point)
-8. If the task touches Nela / the built-in assistant:
-   - **`docs/assistant/README.md`** and **`docs/assistant/civizen-assistant-cheatsheet.md`**. After product-fact changes, run `npm run assistant:knowledge`. Nela is internal-first; external resources must not override current Civizen project information.
+8. If the task touches Civi / the built-in assistant:
+   - **`docs/assistant/README.md`**, **`docs/assistant/civizen-identity.md`**, and **`docs/assistant/civizen-assistant-cheatsheet.md`**. Identity questions use the identity source first. After product-fact changes, run `npm run assistant:knowledge`. Civi is internal-first; external resources must not override current Civizen project information.
 9. Documentation map: `docs/README.md` (purpose-based IA: foundation · governance · policies · platform · operations · research · proposals · archive · institutional)
 
 Do not rely on conversation memory alone for component behavior.
@@ -59,7 +59,7 @@ Run:
 npm run verify:post-dev
 ```
 
-That sequence includes **`verify:home-post-composer`** (Home empty field click → focus → type). Do not tell the user a UI fix is done until `verify:post-dev` passes **and** the change matches the relevant spec (not just scripts).
+That sequence includes **`verify:home-post-composer`** (Home empty field click → focus → type) and **`verify:profile-score-dial`** (`/profile` Score dial after login). Do not tell the user a UI fix is done until `verify:post-dev` passes **and** the change matches the relevant spec (not just scripts).
 
 ## Input-control replacements
 

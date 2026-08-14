@@ -1,5 +1,10 @@
 /** Development contribution evidence: journal stays stored; only outcomes mint score roots. */
 
+import {
+  inferHumanContributionRolesFromText,
+  isTrivialCosmeticHumanInput,
+} from '@/lib/civizen-human-contribution-substance';
+
 export type DevelopmentEvidenceEligibility =
   | 'journal_only'
   | 'provenance_only'
@@ -9,8 +14,8 @@ export type DevelopmentEvidenceEligibility =
 
 export type DevelopmentContributionRole =
   | 'founder' | 'product_architect' | 'system_architect' | 'product_direction' | 'requirements'
-  | 'problem_identification' | 'research' | 'design' | 'review' | 'implementation'
-  | 'documentation' | 'governance_design' | 'coordination';
+  | 'problem_identification' | 'research' | 'design' | 'ux_design' | 'review' | 'quality_assurance'
+  | 'validation' | 'implementation' | 'documentation' | 'governance_design' | 'coordination';
 
 export type DevelopmentStoryEvidenceInput = {
   id?: string | null; sourceStoryKey?: string | null; source?: string | null; sourceType?: string | null;
@@ -35,7 +40,7 @@ export type EligibleDevelopmentContribution = {
   implementationAssisted: boolean; instruction: string; independentValidation: boolean;
   outcomeValidated: boolean; classifiedDomain: string | null; contributionFunction: string | null;
   testsPassed: boolean; affectedPaths: string[]; reconstructionResult: string | null;
-  survivingImplementation: boolean | null;
+  survivingImplementation: boolean | null; linkedInstructions: string[];
 };
 
 const PLACEHOLDER_FEATURE =
@@ -127,16 +132,10 @@ export function inferDevelopmentContributionRoles(
   const assisted =
     story.implementationAssisted === true || metaBool(story.metadata, 'implementationAssisted');
   if (!assisted && !isSubstantiveInstruction(instruction)) return [];
-  const roles: DevelopmentContributionRole[] = [];
-  if (/\barchitect|architecture|invariant|subsystem|integrat\b/i.test(instruction)) {
-    roles.push('system_architect', 'product_architect');
-  }
-  if (/\brequirement|specify|define|principle\b/i.test(instruction)) roles.push('requirements');
-  if (/\bproblem|defect|missing|identif\b/i.test(instruction)) roles.push('problem_identification');
-  if (/\breview|correct|second-pass|quality\b/i.test(instruction)) roles.push('review');
-  if (/\bgovernance|framework|policy|operating model\b/i.test(instruction)) roles.push('governance_design');
-  if (assisted && roles.length === 0) roles.push('product_direction', 'review');
-  return [...new Set(roles)];
+  const paths = Array.isArray(story.metadata?.affectedPaths)
+    ? story.metadata.affectedPaths.filter((path): path is string => typeof path === 'string')
+    : [];
+  return inferHumanContributionRolesFromText(instruction, { assisted, paths });
 }
 
 function metaBool(metadata: Record<string, unknown> | null | undefined, key: string): boolean {
@@ -256,6 +255,15 @@ export function evaluateDevelopmentContributionEvidence(
       substantive,
     );
   }
+  const paths = Array.isArray(story.metadata?.affectedPaths)
+    ? story.metadata.affectedPaths.filter((path): path is string => typeof path === 'string')
+    : [];
+  if (
+    !metaBool(story.metadata, 'historicalReconstruction') &&
+    isTrivialCosmeticHumanInput({ instruction, affectedPaths: paths, features })
+  ) {
+    return ineligible('provenance_only', story, instruction, features, ['trivial_human_input'], false);
+  }
 
   const groupingKey =
     grouping ||
@@ -358,10 +366,7 @@ export function groupDevelopmentStoriesToContributions(
     const independentValidation = members.some((item) => Boolean(item.reviewedBy) || memberEval.get(item)?.independentValidation);
     const outcomeValidated = members.some((item) => memberEval.get(item)?.outcomeValidated);
     const eligibility: DevelopmentEvidenceEligibility = independentValidation
-      ? 'independently_validated'
-      : outcomeValidated
-        ? 'outcome_validated'
-        : 'system_verified';
+      ? 'independently_validated' : outcomeValidated ? 'outcome_validated' : 'system_verified';
     const occurredAt = [...members].map((item) => item.requestedAt || item.createdAt || '').filter(Boolean).sort().at(-1) || new Date().toISOString();
     contributions.push({
       groupingKey,
@@ -386,6 +391,7 @@ export function groupDevelopmentStoriesToContributions(
         ? item.metadata.affectedPaths.filter((path): path is string => typeof path === 'string') : []))].slice(0, 40),
       reconstructionResult: typeof primary.metadata?.reconstructionResult === 'string' ? primary.metadata.reconstructionResult : null,
       survivingImplementation: typeof primary.metadata?.survivingImplementation === 'boolean' ? primary.metadata.survivingImplementation : null,
+      linkedInstructions: members.map((item) => normalizeInstruction(item.originalInstruction || item.rephrasedDescription)).filter(Boolean).slice(0, 12),
     });
   }
   return contributions;

@@ -1,13 +1,14 @@
 export const KNOWLEDGE_FORMAT = 1;
 
 export const SOURCE_PRIORITY = {
-  runtimeStructured: 1,
-  featureRegistry: 2,
-  schemaPermissions: 3,
-  cheatSheet: 4,
-  canonicalDocs: 5,
-  otherCurrentDocs: 6,
-  historicalPlanning: 7,
+  identityCanonical: 1,
+  runtimeStructured: 2,
+  featureRegistry: 3,
+  schemaPermissions: 4,
+  cheatSheet: 5,
+  canonicalDocs: 6,
+  otherCurrentDocs: 7,
+  historicalPlanning: 8,
 } as const;
 
 export type IndexedSource = {
@@ -19,6 +20,7 @@ export type IndexedSource = {
 
 /** Explicit allowlist. Never add secrets, env files, user data, or node_modules. */
 export const INDEXED_SOURCES: IndexedSource[] = [
+  { path: 'docs/assistant/civizen-identity.md', priority: SOURCE_PRIORITY.identityCanonical, status: 'implemented' },
   { path: 'docs/assistant/civizen-assistant-cheatsheet.md', priority: SOURCE_PRIORITY.cheatSheet, status: 'implemented' },
   { path: 'docs/assistant/README.md', priority: SOURCE_PRIORITY.cheatSheet, status: 'implemented' },
   { path: 'docs/04-operations/dev/agreements.md', priority: SOURCE_PRIORITY.canonicalDocs, status: 'implemented' },

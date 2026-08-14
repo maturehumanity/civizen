@@ -2869,16 +2869,19 @@ export type Database = {
       private_conversation_members: {
         Row: {
           conversation_id: string
+          hidden_at: string | null
           joined_at: string
           profile_id: string
         }
         Insert: {
           conversation_id: string
+          hidden_at?: string | null
           joined_at?: string
           profile_id: string
         }
         Update: {
           conversation_id?: string
+          hidden_at?: string | null
           joined_at?: string
           profile_id?: string
         }
@@ -2902,18 +2905,27 @@ export type Database = {
       private_conversations: {
         Row: {
           created_at: string
+          disappearing_minutes: number
+          disappearing_set_by: string | null
+          disappearing_started_at: string | null
           id: string
           kind: string
           updated_at: string
         }
         Insert: {
           created_at?: string
+          disappearing_minutes?: number
+          disappearing_set_by?: string | null
+          disappearing_started_at?: string | null
           id: string
           kind: string
           updated_at?: string
         }
         Update: {
           created_at?: string
+          disappearing_minutes?: number
+          disappearing_set_by?: string | null
+          disappearing_started_at?: string | null
           id?: string
           kind?: string
           updated_at?: string
@@ -7430,6 +7442,10 @@ export type Database = {
         Args: { p_other_profile_id: string }
         Returns: string
       }
+      private_hide_my_conversation: {
+        Args: { p_conversation_id: string }
+        Returns: undefined
+      }
       private_list_my_conversations: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -7442,7 +7458,17 @@ export type Database = {
           last_content: string | null
           last_at: string | null
           last_is_e2ee: boolean
+          disappearing_minutes: number
+          disappearing_started_at: string | null
         }[]
+      }
+      private_purge_expired_disappearing_messages: {
+        Args: { p_conversation_id: string }
+        Returns: number
+      }
+      private_set_conversation_disappearing: {
+        Args: { p_conversation_id: string; p_minutes: number }
+        Returns: undefined
       }
       cancel_agreement: {
         Args: { p_agreement_id: string }
@@ -7459,6 +7485,16 @@ export type Database = {
           p_query: string
         }
         Returns: Json
+      }
+      lookup_civizen_contacts_by_phone: {
+        Args: { p_phones: string[] }
+        Returns: {
+          phone_digits: string
+          profile_id: string
+          username: string | null
+          full_name: string | null
+          avatar_url: string | null
+        }[]
       }
       sign_agreement: {
         Args: { p_agreement_id: string }

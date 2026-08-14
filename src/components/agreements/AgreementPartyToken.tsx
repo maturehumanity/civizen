@@ -19,6 +19,7 @@ type AgreementPartyTokenProps = {
   selected: SelectedAgreementParty | null;
   classification: PartyPersonOrOrg | null;
   excludeProfileId?: string | null;
+  invalid?: boolean;
   onQueryChange: (query: string) => void;
   onSelect: (party: SelectedAgreementParty) => void;
   onClassification: (value: PartyPersonOrOrg) => void;
@@ -32,6 +33,7 @@ export function AgreementPartyToken({
   selected,
   classification,
   excludeProfileId,
+  invalid,
   onQueryChange,
   onSelect,
   onClassification,
@@ -86,13 +88,14 @@ export function AgreementPartyToken({
     && resolved.needsClassification;
 
   return (
-    <span className="relative inline max-w-full align-baseline">
+    <>
       <AgreementFitInput
         id={`agreement-party-${id}`}
         testId={`agreement-token-${id}`}
         value={query}
         placeholder={placeholder}
         ariaLabel={ariaLabel}
+        invalid={invalid}
         onChange={onQueryChange}
       />
       {suggestions.length > 0 ? (
@@ -135,6 +138,6 @@ export function AgreementPartyToken({
           </Button>
         </span>
       ) : null}
-    </span>
+    </>
   );
 }

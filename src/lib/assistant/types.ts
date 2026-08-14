@@ -9,7 +9,7 @@ export const ASSISTANT_CAPABILITY_STATUSES = [
 
 export type AssistantCapabilityStatus = (typeof ASSISTANT_CAPABILITY_STATUSES)[number];
 
-export type AssistantSourcePriority = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+export type AssistantSourcePriority = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 export type HistoryTurn = { role: 'user' | 'assistant'; content: string };
 
@@ -47,7 +47,7 @@ export type KnowledgeChunk = {
   text: string;
   status: AssistantCapabilityStatus;
   priority: AssistantSourcePriority;
-  kind: 'cheatsheet' | 'faq' | 'capability' | 'doc' | 'registry';
+  kind: 'identity' | 'cheatsheet' | 'faq' | 'capability' | 'doc' | 'registry';
 };
 
 export type KnowledgePackMeta = {

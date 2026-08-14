@@ -1,5 +1,8 @@
 import type { KeyboardEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
+import { AgreementDateToken } from '@/components/agreements/AgreementDateToken';
+import { AgreementRichText } from '@/components/agreements/AgreementRichText';
 import { cn } from '@/lib/utils';
 
 type AgreementFitInputProps = {
@@ -8,58 +11,90 @@ type AgreementFitInputProps = {
   placeholder: string;
   ariaLabel?: string;
   testId: string;
+  tone?: 'fill' | 'muted';
+  className?: string;
   onChange: (value: string) => void;
   onBlur?: () => void;
-  onKeyDown?: (event: KeyboardEvent<HTMLInputElement>) => void;
+  onKeyDown?: (event: KeyboardEvent<HTMLElement>) => void;
   autoFocus?: boolean;
+  invalid?: boolean;
 };
 
-/** Inline input that is only as wide as its value or placeholder. */
+/** Inline field that wraps at words so a first name can stay on the current line. */
 export function AgreementFitInput({
   id,
   value,
   placeholder,
   ariaLabel,
   testId,
+  tone = 'fill',
+  className,
   onChange,
   onBlur,
   onKeyDown,
   autoFocus,
+  invalid,
 }: AgreementFitInputProps) {
+  const editorRef = useRef<HTMLSpanElement>(null);
+  const [focused, setFocused] = useState(false);
   const empty = value.length === 0;
-  const fitText = empty ? placeholder : value;
+
+  useLayoutEffect(() => {
+    const editor = editorRef.current;
+    if (!editor || focused) return;
+    const next = value;
+    if ((editor.textContent || '') !== next) editor.textContent = next;
+  }, [focused, value]);
+
+  useEffect(() => {
+    if (autoFocus) editorRef.current?.focus();
+  }, [autoFocus]);
 
   return (
     <span
+      ref={editorRef}
+      id={id}
+      role="textbox"
+      tabIndex={0}
+      contentEditable
+      suppressContentEditableWarning
+      data-testid={testId}
+      data-placeholder={placeholder}
+      data-agreement-missing={invalid || undefined}
+      aria-invalid={invalid || undefined}
+      aria-label={ariaLabel || placeholder}
+      aria-placeholder={placeholder}
       className={cn(
-        'inline-grid max-w-full align-baseline items-baseline border-b border-dashed',
-        empty ? 'border-primary/70' : 'border-foreground/40',
+        '!inline align-baseline border-b border-dashed bg-transparent leading-[inherit] outline-none break-words',
+        tone === 'muted'
+          ? empty
+            ? 'border-muted-foreground/35 font-normal text-muted-foreground caret-muted-foreground before:pointer-events-none before:text-muted-foreground/55 before:content-[attr(data-placeholder)]'
+            : 'border-muted-foreground/40 font-normal text-muted-foreground'
+          : empty
+            ? 'border-primary/70 font-medium text-primary caret-primary before:pointer-events-none before:text-primary before:content-[attr(data-placeholder)]'
+            : 'border-foreground/40 font-medium text-foreground',
+        invalid && 'rounded-sm ring-2 ring-destructive/70',
+        className,
       )}
-    >
-      <span
-        aria-hidden
-        className="invisible col-start-1 row-start-1 whitespace-pre font-medium leading-[inherit]"
-      >
-        {fitText || '\u00a0'}
-      </span>
-      <input
-        id={id}
-        data-testid={testId}
-        aria-label={ariaLabel || placeholder}
-        value={value}
-        placeholder={placeholder}
-        size={1}
-        autoComplete="off"
-        autoFocus={autoFocus}
-        onChange={(event) => onChange(event.target.value)}
-        onBlur={onBlur}
-        onKeyDown={onKeyDown}
-        className={cn(
-          'col-start-1 row-start-1 m-0 h-auto min-h-0 w-full min-w-0 appearance-none border-0 bg-transparent p-0 font-medium leading-[inherit] outline-none [field-sizing:content] focus:outline-none',
-          empty ? 'text-primary placeholder:text-primary/70' : 'text-foreground',
-        )}
-      />
-    </span>
+      onFocus={() => setFocused(true)}
+      onClick={() => editorRef.current?.focus()}
+      onInput={() => onChange(editorRef.current?.textContent || '')}
+      onBlur={() => {
+        setFocused(false);
+        onChange(editorRef.current?.textContent || '');
+        onBlur?.();
+      }}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter') event.preventDefault();
+        onKeyDown?.(event);
+      }}
+      onPaste={(event) => {
+        event.preventDefault();
+        const text = event.clipboardData.getData('text/plain').replace(/\s+/g, ' ');
+        document.execCommand('insertText', false, text);
+        onChange(editorRef.current?.textContent || '');
+      }}
+    />
   );
 }
 
@@ -69,6 +104,7 @@ type AgreementInlineTokenProps = {
   placeholder: string;
   ariaLabel?: string;
   kind?: 'text' | 'date' | 'multiline';
+  invalid?: boolean;
   onChange: (value: string) => void;
 };
 
@@ -78,28 +114,32 @@ export function AgreementInlineToken({
   placeholder,
   ariaLabel,
   kind = 'text',
+  invalid,
   onChange,
 }: AgreementInlineTokenProps) {
-  const empty = !value.trim();
-  const shared = cn(
-    'border-0 border-b border-dashed bg-transparent font-medium leading-[inherit] focus:border-solid focus:outline-none',
-    empty ? 'border-primary/70 text-primary placeholder:text-primary/70' : 'border-foreground/40 text-foreground',
-  );
-
   if (kind === 'multiline') {
     return (
-      <textarea
-        id={`agreement-token-${id}`}
-        aria-label={ariaLabel || placeholder}
-        data-testid={`agreement-token-${id}`}
+      <AgreementRichText
         value={value}
-        onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        rows={3}
-        className={cn(
-          shared,
-          'mt-1 block min-h-[3.25rem] w-full resize-y px-0 font-normal leading-relaxed',
-        )}
+        ariaLabel={ariaLabel || placeholder}
+        testId={`agreement-token-${id}`}
+        flow="inline"
+        invalid={invalid}
+        onChange={onChange}
+      />
+    );
+  }
+
+  if (kind === 'date') {
+    return (
+      <AgreementDateToken
+        id={id}
+        value={value}
+        placeholder={placeholder}
+        ariaLabel={ariaLabel}
+        invalid={invalid}
+        onChange={onChange}
       />
     );
   }
@@ -111,6 +151,7 @@ export function AgreementInlineToken({
       value={value}
       placeholder={placeholder}
       ariaLabel={ariaLabel}
+      invalid={invalid}
       onChange={onChange}
     />
   );

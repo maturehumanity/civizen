@@ -34,6 +34,7 @@ function rpcErrorMessage(error: QueryError): string {
 export type AgreementListItem = {
   id: string;
   referenceCode: string | null;
+  partyReference: string | null;
   title: string;
   agreementType: string | null;
   status: string;
@@ -149,6 +150,7 @@ function mapListItem(row: Record<string, unknown>): AgreementListItem {
   return {
     id: str(row.id) || '',
     referenceCode: str(row.reference_code) || str(row.referenceCode),
+    partyReference: str(row.party_reference) || str(row.partyReference),
     title: str(row.title) || 'Agreement',
     agreementType: str(row.agreement_type) || str(row.agreementType),
     status,
@@ -284,7 +286,7 @@ export type CreateAgreementInput = {
     signatoryProfileId?: string;
   }[];
   related?: { entityType: string; entityId?: string; label: string }[];
-  referenceCode?: string | null;
+  partyReference?: string | null;
 };
 
 export function payloadFromLaunchContext(
@@ -462,7 +464,7 @@ export async function createCollaborationAgreement(input: CreateAgreementInput):
       entity_id: item.entityId || null,
       label: item.label,
     })),
-    reference_code: input.referenceCode || null,
+    party_reference: input.partyReference || null,
   };
   const { data, error } = await db().rpc('create_collaboration_agreement', { p_payload: payload });
   if (error) throw new Error(rpcErrorMessage(error));

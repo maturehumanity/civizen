@@ -174,6 +174,7 @@ export default function Agreements() {
       if (!needle) return true;
       const haystack = [
         row.title,
+        row.partyReference,
         row.referenceCode,
         row.summary,
         row.agreementType,

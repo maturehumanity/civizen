@@ -4,14 +4,14 @@ status: current
 canonical: true
 version: 1
 last_reviewed: 2026-08-13
-audience: nela
+audience: civi
 ---
 
 # Civizen Assistant Cheat Sheet
 
-Compact high-confidence facts for Nela. Source of truth is **this Civizen application build**, not pretrained model memory.
+Compact high-confidence facts for Civi. Source of truth is **this Civizen application build**, not pretrained model memory.
 
-Nela is internal-first: conversation context → FAQ / this cheat sheet → capability registry → project knowledge search → authorized member data → AI reasoning over that evidence → broader API resources only when the request is actually about the outside world. External resources must never override current Civizen project information.
+Civi is internal-first: conversation context → canonical identity (what Civizen is) → FAQ / this cheat sheet → capability registry (what works now) → project knowledge search → authorized member data → AI reasoning over that evidence → broader API resources only when the request is actually about the outside world. External resources must never override current Civizen project information.
 
 Product principle: **Simple by default. Detailed by choice.**
 
@@ -19,15 +19,17 @@ When telling a member how to open a page, match the question. **Can I / Does Civ
 
 ## What Civizen is
 
-Civizen is a human-centered platform and movement to help people unite, grow, and govern more wisely through education, responsibility, transparency, and AI-assisted civic collaboration.
+Civizen is an open participatory system for organizing how humanity learns, contributes, collaborates, governs, shares resources, solves common challenges, and continuously improves the systems we live and work within.
+
+Authoritative identity source: `docs/assistant/civizen-identity.md`. Do not reconstruct this from feature documentation. Current screens (Challenges, Projects, Market, Study, and the rest) are implementations, not the definition.
 
 Slogan: **For a Mature Humanity**.
 
-Civizen is **not** a generic social network, hobby meetup, government, or recognized public-law citizenship. It is **not currently** a state, nationality, or territorial jurisdiction. Its long-term aim is a legitimate pathway toward recognized planetary citizenship. Distinguish “not currently” from “never.”
+Civizen is **not currently** a state, nationality, or territorial jurisdiction. Its long-term aim includes a legitimate pathway toward recognized planetary citizenship. Distinguish “not currently” from “never.”
 
 ## Core purpose
 
-Help people participate as responsible members of humanity: learn, contribute, cooperate, and practice accountable governance — while remaining a voluntary, non-governmental civic platform today.
+Civizen is not merely a project-management platform, social network, governance app, marketplace, or learning platform. Those may be components. The purpose is the participatory system named above.
 
 ## Current product structure
 
@@ -148,7 +150,7 @@ Luma amounts on listings are **illustrative prototype credits**, not checkout or
 
 `/agreements` is the platform workspace (not Market-only). Create with **+** beside the title. Common types: General · Partnership / Collaboration · **Employment** · Service / Contribution · Sale / Purchase · **Lease** · Funding / Sponsorship, then **More agreement types…** (MOU, Pilot, Program, Data / Research, NDA). Unmatched search offers **+ Create “{name}”** as a custom type for that record only.
 
-Supported types open a purpose-built agreement document with inline facts. The page header is **Agreement #** [number] **on**, then the document heading. Hover the heading for other wordings; click it to rename. Custom names open a flexible skeleton. Jobs / hiring prefills Employment. Employment is distinct from Service / Contribution. Lease heading kinds include Residential, Commercial, Car, Vehicle, Equipment, Office, and Property rental.
+Supported types open a purpose-built agreement document with inline facts. The page header is **Agreement on**. Hover or tap that wording for the same type menu as the list `+`. An optional user/organization reference sits on the right of the type heading (defaults to service-provider initials or an organization abbreviation; parties can edit it or leave it blank). A Civizen **AGR-YYYY-NNNN** is assigned when the first signature arrives and appears in small type at the lower right — not on create. Hover the heading for other wordings (**Service Provision** / **Contribution** for Service / Contribution); click it to rename. Service relationships use Client / Service Provider; contribution relationships use Organization / Project / Contributor. Role labels such as *the Client* are italic in the prose. New drafts prefill today’s start date and the same calendar date one year later, shown as sentence text (**Aug 13, 2026**); hover or tap a date to change it. The ending is one condition (a date, until completed, ongoing, or until terminated). Click a sentence to rewrite it. Names and long fields continue in the sentence and wrap at words, so a first name that fits stays on that line. Enter starts a new line in long fields; a compact formatting bar appears while editing those. Hover or tap font, color, size, list, or alignment to pick an option (sizes 12–24, including justify); bold, italic, and underline toggle directly. Required placeholders name the action needed. **Create agreement** highlights the first missing required fact in the document. Custom names open a flexible skeleton. Jobs / hiring prefills Employment. Employment is distinct from Service / Contribution. Lease heading kinds include Residential, Commercial, Car, Vehicle, Equipment, Office, and Property rental.
 
 Propose, then sign in Civizen (typed name + explicit consent) or record paper/external execution. Native signing is an in-app electronic signature record, not a certified PKI digital signature or a claim of legal enforceability.
 
@@ -174,7 +176,9 @@ Who can create proposals: eligible participants through the platform’s proposa
 
 ## Messaging
 
-`/messaging` — person-to-person chat, including a pinned chat with **Nela**. Device-based keys support E2EE when both participants have keys. Nela is the in-app assistant, not a generic web chatbot.
+`/messaging` — person-to-person chat, including a pinned chat with **Civi**. Device-based keys support E2EE when both participants have keys. Civi is the in-app assistant, not a generic web chatbot.
+
+Person-to-person threads: **Hide chat** removes it from your inbox only; the other person keeps the conversation. **Disappearing messages** is a shared setting both people see and applies to new messages after it is turned on. You can **edit** or **unsend** your own message for one minute (edited messages stay marked Edited). Civi chats can be **cleared** entirely; that does not apply to person-to-person history. Searching for people can use phone contacts (with permission) and **Invite** if they are not on Civizen yet.
 
 ## Profiles
 

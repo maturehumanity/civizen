@@ -42,13 +42,15 @@
     "verify:arc-carousel-layout": "npx tsx scripts/verify-arc-carousel-layout.mjs",
     "verify:arc-carousel-visible": "node scripts/verify-arc-carousel-visible.mjs",
     "verify:home-post-composer": "node scripts/verify-home-post-composer.mjs",
+    "verify:profile-score-dial": "node scripts/verify-profile-score-dial.mjs",
     "verify:ci": "node scripts/verify-ci.mjs",
-    "verify:post-dev": "npm run verify:agent-context && npm run verify:dev-load && npm run verify:arc-carousel-layout && npm run verify:arc-carousel-visible && npm run verify:home-post-composer",
+    "verify:post-dev": "npm run verify:agent-context && npm run verify:dev-load && npm run verify:arc-carousel-layout && npm run verify:arc-carousel-visible && npm run verify:home-post-composer && npm run verify:profile-score-dial",
     "release:guard": "node scripts/verify-release-lifecycle.mjs",
     "release:testing": "CIVIZEN_UPDATE_CHANNEL=testing npm run update:application",
     "release:production:promote": "npm run promote:android-testing-to-release && npm run build"
   },
   "dependencies": {
+    "@capacitor-community/contacts": "^8.0.0",
     "@capacitor/android": "^8.3.0",
     "@capacitor/cli": "^8.0.2",
     "@capacitor/core": "^8.0.2",

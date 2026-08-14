@@ -1,3 +1,4 @@
+import { CANONICAL_CIVIZEN_IDENTITY } from './identity';
 import type {
   AssistantCapability,
   AssistantFaqItem,
@@ -5,7 +6,7 @@ import type {
 } from './types';
 
 /**
- * Curated Nela capability registry.
+ * Curated Civi capability registry.
  * Status must describe the current application, not a roadmap hope.
  * Prefer deriving routes and names from live product surfaces.
  */
@@ -214,7 +215,8 @@ export const ASSISTANT_CAPABILITIES: AssistantCapability[] = [
     id: 'messaging',
     name: 'Messaging',
     status: 'implemented',
-    description: 'Private conversations, including a pinned chat with Nela. Optional device-based E2EE for person-to-person chat.',
+    description:
+      'Private conversations, including a pinned chat with Civi. Person-to-person chats can be hidden from your inbox (the other person keeps their copy). Disappearing messages is a shared thread setting both people see, applying to new messages. You can edit or unsend your own message for one minute. Civi chats can be cleared entirely. Searching for people can use phone contacts with permission; people not on Civizen can be invited. Optional device-based E2EE for person-to-person chat.',
     routes: ['/messaging'],
     roles: ['member'],
     relatedCapabilities: ['nela'],
@@ -223,13 +225,13 @@ export const ASSISTANT_CAPABILITIES: AssistantCapability[] = [
   },
   {
     id: 'nela',
-    name: 'Nela',
+    name: 'Civi',
     status: 'implemented',
     description: 'Built-in Civizen assistant in Messaging. Answers from current project knowledge for this build.',
     routes: ['/messaging'],
     roles: ['member'],
     relatedCapabilities: ['messaging'],
-    aliases: ['assistant', 'in-app assistant', 'ai assistant'],
+    aliases: ['nela', 'civi', 'assistant', 'in-app assistant', 'ai assistant'],
     sourceRefs: ['supabase/functions/messaging-agent-reply/index.ts', 'src/lib/messaging-constants.ts'],
   },
   {
@@ -427,20 +429,30 @@ export const ASSISTANT_FAQ: AssistantFaqItem[] = [
   {
     id: 'what_is_civizen',
     question: 'What is Civizen?',
-    answer:
-      'Civizen is a human-centered platform and movement to help people unite, grow, and govern more wisely through education, responsibility, transparency, and AI-assisted civic collaboration. It is a voluntary civic platform today, not a government or a generic social network.',
-    aliases: ['what’s civizen', 'define civizen', 'civizen in one sentence', 'civizen mission'],
-    capabilityIds: ['contribute_hub', 'governance', 'study'],
-    sourceRefs: ['docs/assistant/civizen-assistant-cheatsheet.md', 'docs/00-foundation/the-civizen-charter.md'],
+    answer: CANONICAL_CIVIZEN_IDENTITY,
+    aliases: [
+      "what's civizen",
+      "what's civizen in one sentence",
+      'civizen in one sentence',
+      'define civizen',
+      'how would you describe civizen',
+      'what kind of system is civizen',
+      'what is the purpose of civizen',
+      'civizen mission',
+      'civizen identity',
+    ],
+    capabilityIds: [],
+    sourceRefs: ['docs/assistant/civizen-identity.md'],
   },
   {
     id: 'what_civizen_trying_to_accomplish',
     question: 'What is Civizen trying to accomplish?',
     answer:
-      'Civizen aims to help people participate as responsible members of humanity — learning, contributing, and practicing accountable governance — and to develop a legitimate long-term pathway toward recognized planetary citizenship. That recognition is not current legal status.',
-    aliases: ['purpose of civizen', 'why civizen exists'],
+      `${CANONICAL_CIVIZEN_IDENTITY} Its long-term aim includes a legitimate pathway toward recognized planetary citizenship. That recognition is not current legal status.`,
+    aliases: ['why civizen exists', 'what is civizen trying to do'],
     capabilityIds: [],
     sourceRefs: [
+      'docs/assistant/civizen-identity.md',
       'docs/00-foundation/why-civizen-exists-page-brief.md',
       'docs/00-foundation/recognized-planetary-citizenship-pathway.md',
     ],
@@ -449,10 +461,10 @@ export const ASSISTANT_FAQ: AssistantFaqItem[] = [
     id: 'is_civizen_a_social_network',
     question: 'Is Civizen a social network?',
     answer:
-      'No. Civizen has profiles, posts, and messaging, but it is a civic participation platform for learning, contribution, and governance — not a hobby or meetup network for shared interests.',
+      'No. Civizen has profiles, posts, and messaging, but those are components of a broader participatory system. Civizen is not merely a social network.',
     aliases: ['is civizen social media'],
-    capabilityIds: ['home', 'messaging'],
-    sourceRefs: ['docs/assistant/civizen-assistant-cheatsheet.md'],
+    capabilityIds: [],
+    sourceRefs: ['docs/assistant/civizen-identity.md'],
   },
   {
     id: 'is_civizen_a_government',
@@ -465,6 +477,33 @@ export const ASSISTANT_FAQ: AssistantFaqItem[] = [
       'docs/00-foundation/recognized-planetary-citizenship-pathway.md',
       'docs/02-policies/institutional/current-legal-status-notice.md',
     ],
+  },
+  {
+    id: 'is_civizen_a_project_collaboration_platform',
+    question: 'Is Civizen basically a project collaboration platform?',
+    answer:
+      'No. Project collaboration is one component. Civizen is an open participatory system for organizing how humanity learns, contributes, collaborates, governs, shares resources, solves common challenges, and continuously improves the systems we live and work within. Challenges, Projects, Market, Study, and similar surfaces are parts of that broader system, not the definition of it.',
+    aliases: [
+      'is civizen a project platform',
+      'is civizen mainly a challenge platform',
+      'is civizen just a collaboration app',
+    ],
+    capabilityIds: [],
+    sourceRefs: ['docs/assistant/civizen-identity.md'],
+  },
+  {
+    id: 'what_can_i_do_in_civizen_now',
+    question: 'What can I do in Civizen right now?',
+    answer:
+      'In this build you can use Home, Study, Contribute (Opportunities, Community Challenges, Learning Commons, My Contributions), Market, Agreements, Messaging, Profile and Score, Areas, and Governance tools such as Civic voting and Governance Solutions. Suggest Improvements is still a placeholder. This is what is implemented today, not a full description of what Civizen is.',
+    aliases: [
+      'what can I currently do in civizen',
+      'what can I do in civizen',
+      'what works in civizen today',
+      'current civizen features',
+    ],
+    capabilityIds: ['home', 'study', 'contribute_hub', 'market', 'messaging'],
+    sourceRefs: ['docs/assistant/civizen-assistant-cheatsheet.md', 'src/lib/main-nav.ts'],
   },
   {
     id: 'how_can_i_contribute',

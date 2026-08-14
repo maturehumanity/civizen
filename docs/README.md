@@ -52,7 +52,7 @@ Substantive documents may include YAML front matter (`title`, `status`, `version
 | Propose or review a change | [`proposals/README.md`](./proposals/README.md) |
 | Browse historical implementation records | [`archive/README.md`](./archive/README.md) |
 | Develop or release the app | [`04-operations/dev/AGENTS.md`](./04-operations/dev/AGENTS.md) · Contribute hub: [`04-operations/dev/contribute-page.md`](./04-operations/dev/contribute-page.md) · Phase 1 pilots: [`04-operations/dev/phase-1-pilot-operating-model.md`](./04-operations/dev/phase-1-pilot-operating-model.md) · Agreements: [`04-operations/dev/agreements.md`](./04-operations/dev/agreements.md) · Historical development reconstruction: [`04-operations/dev/historical-development-reconstruction.md`](./04-operations/dev/historical-development-reconstruction.md) |
-| Maintain Nela (built-in assistant) knowledge | [`assistant/README.md`](./assistant/README.md) · cheat sheet: [`assistant/civizen-assistant-cheatsheet.md`](./assistant/civizen-assistant-cheatsheet.md) · `npm run assistant:knowledge` |
+| Maintain Civi (built-in assistant) knowledge | [`assistant/README.md`](./assistant/README.md) · identity: [`assistant/civizen-identity.md`](./assistant/civizen-identity.md) · cheat sheet: [`assistant/civizen-assistant-cheatsheet.md`](./assistant/civizen-assistant-cheatsheet.md) · `npm run assistant:knowledge` |
 
 ## Top-level map
 

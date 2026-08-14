@@ -55,7 +55,7 @@
     "src/lib/governance-public-audit-verifier-federation.test.ts": 459,
     "src/lib/governance-public-audit-verifier-federation.ts": 460,
     "src/lib/governance-public-audit-verifiers.ts": 430,
-    "src/lib/i18n.base.ts": 5457,
+    "src/lib/i18n.base.ts": 5856,
     "src/lib/i18n.languages.ts": 1189,
     "src/lib/law-catalog.ts": 412,
     "src/lib/opportunities-api.ts": 421,

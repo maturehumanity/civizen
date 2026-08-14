@@ -2,6 +2,7 @@ import { Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { CiviAvatar } from '@/components/ui/civi-avatar';
 import { splitChatPageLinks } from '@/lib/chat-page-links';
 import { NELA_ASSISTANT_PROFILE_ID, resolveMessagingAvatarUrl } from '@/lib/messaging-constants';
 import { splitAssistantMessageBlocks } from '@/lib/split-assistant-message';
@@ -121,24 +122,26 @@ export function ChatMessageRow({
       onPointerCancel={onPointerCancel}
       onPointerLeave={onPointerLeave}
     >
-      <button
-        type="button"
-        className="h-8 w-8 flex-shrink-0 rounded-full"
-        disabled={selectionMode}
-        onClick={(event) => {
-          event.stopPropagation();
-          if (!message.sender_id || message.sender_id === NELA_ASSISTANT_PROFILE_ID) return;
-          onOpenProfile?.(message.sender_id);
-        }}
-        aria-label={labels.openProfile}
-      >
-        <Avatar className="h-8 w-8">
-          <AvatarImage src={resolveMessagingAvatarUrl(message.sender_id, message.sender?.avatar_url ?? null)} />
-          <AvatarFallback className="bg-primary/10 text-xs text-primary">
-            {message.sender_id === NELA_ASSISTANT_PROFILE_ID ? 'N' : senderInitials}
-          </AvatarFallback>
-        </Avatar>
-      </button>
+      {message.sender_id === NELA_ASSISTANT_PROFILE_ID ? (
+        <CiviAvatar className="h-8 w-8" />
+      ) : (
+        <button
+          type="button"
+          className="h-8 w-8 flex-shrink-0 rounded-full"
+          disabled={selectionMode}
+          onClick={(event) => {
+            event.stopPropagation();
+            if (!message.sender_id) return;
+            onOpenProfile?.(message.sender_id);
+          }}
+          aria-label={labels.openProfile}
+        >
+          <Avatar className="h-8 w-8">
+            <AvatarImage src={resolveMessagingAvatarUrl(message.sender_id, message.sender?.avatar_url ?? null)} />
+            <AvatarFallback className="bg-primary/10 text-xs text-primary">{senderInitials}</AvatarFallback>
+          </Avatar>
+        </button>
+      )}
 
       <div className="min-w-0 flex-1">
         <div className="mb-1 flex items-baseline gap-2">

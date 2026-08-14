@@ -8,6 +8,13 @@ import type {
   RetrievedFaqHit,
   RetrievalResult,
 } from './types';
+import {
+  IDENTITY_FAQ_IDS,
+  classifyAssistantTopic,
+  isFoundationIdentityPath,
+  isIdentitySourcePath,
+  type AssistantQueryTopic,
+} from './identity';
 
 const STOP = new Set([
   'a', 'an', 'the', 'and', 'or', 'to', 'of', 'in', 'on', 'for', 'is', 'are', 'was', 'be',
@@ -16,13 +23,14 @@ const STOP = new Set([
 ]);
 
 const PRIORITY_WEIGHT: Record<number, number> = {
-  1: 1.15,
-  2: 1.08,
-  3: 1.04,
-  4: 1.1,
-  5: 1,
-  6: 0.72,
-  7: 0.42,
+  1: 1.22,
+  2: 1.15,
+  3: 1.08,
+  4: 1.04,
+  5: 1.1,
+  6: 1,
+  7: 0.72,
+  8: 0.42,
 };
 
 export function tokenize(text: string): string[] {
@@ -150,8 +158,36 @@ export function searchChunks(
 export function retrieveKnowledge(
   query: string,
   pack: KnowledgePack,
-  options?: { broaden?: boolean },
+  options?: { broaden?: boolean; topic?: AssistantQueryTopic },
 ): RetrievalResult {
+  const topic = options?.topic ?? classifyAssistantTopic(query);
+  if (topic === 'identity') {
+    const identityFaq = pack.faq.filter((item) => IDENTITY_FAQ_IDS.has(item.id));
+    const identityChunks = pack.chunks.filter(
+      (chunk) =>
+        chunk.kind === 'identity' ||
+        isIdentitySourcePath(chunk.path) ||
+        isFoundationIdentityPath(chunk.path),
+    );
+    return {
+      faq: searchFaq(query, identityFaq.length ? identityFaq : pack.faq, options?.broaden ? 5 : 3),
+      capabilities: [],
+      documents: searchChunks(query, identityChunks.length ? identityChunks : pack.chunks, {
+        broaden: options?.broaden,
+      }),
+    };
+  }
+  if (topic === 'current_capability') {
+    const capabilityFaq = pack.faq.filter((item) => !IDENTITY_FAQ_IDS.has(item.id));
+    const capabilityChunks = pack.chunks.filter(
+      (chunk) => chunk.kind !== 'identity' && !isIdentitySourcePath(chunk.path),
+    );
+    return {
+      faq: searchFaq(query, capabilityFaq, options?.broaden ? 5 : 3),
+      capabilities: searchCapabilities(query, pack.capabilities, options?.broaden ? 6 : 4),
+      documents: searchChunks(query, capabilityChunks, { broaden: options?.broaden }),
+    };
+  }
   return {
     faq: searchFaq(query, pack.faq, options?.broaden ? 5 : 3),
     capabilities: searchCapabilities(query, pack.capabilities, options?.broaden ? 6 : 4),

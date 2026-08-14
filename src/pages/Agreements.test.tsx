@@ -32,6 +32,7 @@ function item(overrides: Partial<AgreementListItem>): AgreementListItem {
   return {
     id: 'agr-1',
     referenceCode: 'AGR-2026-0001',
+    partyReference: null,
     title: 'Pilot Collaboration Agreement',
     agreementType: 'pilot',
     status: 'draft',

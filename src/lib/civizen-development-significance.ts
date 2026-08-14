@@ -31,6 +31,7 @@ const SUBSYSTEMS: Array<{ id: string; pattern: RegExp; structural: DevelopmentSt
   { id: 'governance', pattern: /governance|institutional/, structural: 'high', fn: 'governance_design' },
   { id: 'classification', pattern: /classification|areas-and-initiatives/, structural: 'high', fn: 'model_evolution' },
   { id: 'nav', pattern: /nav-secondary|NavSecondary/, structural: 'moderate', fn: 'product_architecture' },
+  { id: 'agreements', pattern: /agreements|AgreementCreate/, structural: 'moderate', fn: 'product_architecture' },
   { id: 'i18n', pattern: /i18n\.(base|runtime)/, structural: 'localized', fn: 'documentation' },
   { id: 'ui', pattern: /src\/(pages|components)\//, structural: 'localized', fn: 'implementation' },
 ];
@@ -44,6 +45,7 @@ const TITLE_HINTS: Array<{ pattern: RegExp; structural: DevelopmentStructuralSig
   { id: 'governance', pattern: /\b(governance|institutional|charter)\b/i, structural: 'high', fn: 'governance_design' },
   { id: 'classification', pattern: /\b(areas?|classification|initiative)\b/i, structural: 'high', fn: 'model_evolution' },
   { id: 'nav', pattern: /\b(carousel|bottom nav|nav chrome)\b/i, structural: 'moderate', fn: 'product_architecture' },
+  { id: 'agreements', pattern: /\b(agreements? capability|document-first|party roles?)\b/i, structural: 'moderate', fn: 'product_architecture' },
   { id: 'schema', pattern: /\b(migration|schema|registry)\b/i, structural: 'high', fn: 'model_evolution' },
 ];
 

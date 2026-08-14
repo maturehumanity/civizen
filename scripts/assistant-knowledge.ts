@@ -13,7 +13,8 @@ import { fileURLToPath } from 'node:url';
 
 import { ANDROID_VERSION_CODE, APP_RELEASE_ID, APP_VERSION } from '../src/lib/app-release.ts';
 import { ASSISTANT_ALIASES, ASSISTANT_CAPABILITIES, ASSISTANT_FAQ } from '../src/lib/assistant/catalog.ts';
-import { INDEXED_SOURCES, KNOWLEDGE_FORMAT } from '../src/lib/assistant/sources.ts';
+import { INDEXED_SOURCES, KNOWLEDGE_FORMAT, SOURCE_PRIORITY } from '../src/lib/assistant/sources.ts';
+import { IDENTITY_FAQ_IDS, isIdentitySourcePath } from '../src/lib/assistant/identity.ts';
 import { validateAssistantCatalog } from '../src/lib/assistant/validate.ts';
 import type {
   AssistantCapabilityStatus,
@@ -98,7 +99,11 @@ function chunkMarkdown(path: string, raw: string, priority: KnowledgeChunk['prio
         text: text.slice(0, 1200),
         status: resolvedStatus,
         priority,
-        kind: path.includes('civizen-assistant-cheatsheet') ? 'cheatsheet' : 'doc',
+        kind: isIdentitySourcePath(path)
+          ? 'identity'
+          : path.includes('civizen-assistant-cheatsheet')
+            ? 'cheatsheet'
+            : 'doc',
       });
       idx += 1;
       if (chunks.length >= 14) return chunks;
@@ -118,7 +123,7 @@ function structuredChunks(): KnowledgeChunk[] {
       path: 'src/lib/main-nav.ts',
       text: `Current bottom navigation paths: ${nav}.`,
       status: 'implemented',
-      priority: 1,
+      priority: SOURCE_PRIORITY.runtimeStructured,
       kind: 'registry',
     },
     {
@@ -127,7 +132,7 @@ function structuredChunks(): KnowledgeChunk[] {
       path: 'src/lib/access-control.ts',
       text: `Current app roles: ${APP_ROLES.join(', ')}. Members have agreements.create.`,
       status: 'implemented',
-      priority: 3,
+      priority: SOURCE_PRIORITY.schemaPermissions,
       kind: 'registry',
     },
     {
@@ -136,7 +141,7 @@ function structuredChunks(): KnowledgeChunk[] {
       path: 'src/lib/contribute-lanes.ts',
       text: `Contribute lanes: ${lanes}.`,
       status: 'implemented',
-      priority: 2,
+      priority: SOURCE_PRIORITY.featureRegistry,
       kind: 'registry',
     },
     {
@@ -145,7 +150,7 @@ function structuredChunks(): KnowledgeChunk[] {
       path: 'src/lib/classification/registry.ts',
       text: `Current foundational Areas: ${areas}.`,
       status: 'implemented',
-      priority: 1,
+      priority: SOURCE_PRIORITY.runtimeStructured,
       kind: 'registry',
     },
     {
@@ -154,7 +159,7 @@ function structuredChunks(): KnowledgeChunk[] {
       path: 'src/lib/agreements-model.ts',
       text: `Implemented agreement types: ${AGREEMENT_TYPES.join(', ')}. Native electronic signing and paper/external execution are supported.`,
       status: 'implemented',
-      priority: 1,
+      priority: SOURCE_PRIORITY.runtimeStructured,
       kind: 'registry',
     },
     {
@@ -163,7 +168,7 @@ function structuredChunks(): KnowledgeChunk[] {
       path: 'src/lib/prototype-credits.ts',
       text: LUMA_PROTOTYPE_NOTICE,
       status: 'experimental',
-      priority: 2,
+      priority: SOURCE_PRIORITY.featureRegistry,
       kind: 'registry',
     },
   ];
@@ -178,7 +183,7 @@ function catalogChunks(): KnowledgeChunk[] {
       path: 'src/lib/assistant/catalog.ts',
       text: `${cap.name} status=${cap.status}. ${cap.description} ${cap.howTo ?? ''} Routes: ${cap.routes.join(', ')}.`,
       status: cap.status,
-      priority: 1,
+      priority: SOURCE_PRIORITY.featureRegistry,
       kind: 'capability',
     });
   }
@@ -189,7 +194,7 @@ function catalogChunks(): KnowledgeChunk[] {
       path: 'src/lib/assistant/catalog.ts',
       text: `Q: ${faq.question} A: ${faq.answer}`,
       status: 'implemented',
-      priority: 4,
+      priority: IDENTITY_FAQ_IDS.has(faq.id) ? SOURCE_PRIORITY.identityCanonical : SOURCE_PRIORITY.cheatSheet,
       kind: 'faq',
     });
   }

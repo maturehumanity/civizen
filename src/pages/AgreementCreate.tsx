@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
+import { AgreementCreateMenu } from '@/components/agreements/AgreementCreateMenu';
 import { AgreementDocumentActions, AgreementDocumentEditor } from '@/components/agreements/AgreementDocumentEditor';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { AppPageHeader } from '@/components/layout/AppPageHeader';
@@ -10,10 +11,9 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import {
   createCollaborationAgreement,
   payloadFromLaunchContext,
-  peekNextAgreementNumber,
 } from '@/lib/agreements-api';
 import {
-  agreementReferenceFromNumber,
+  agreementsCreatePath,
   agreementTypeDefinition,
   normalizeAgreementCreateType,
   parseAgreementLaunchContext,
@@ -24,7 +24,9 @@ import {
   agreementDocumentTemplate,
   compileAgreementDocument,
   compiledPartiesFromDocument,
+  requiredAgreementGaps,
   seedAgreementDocumentState,
+  syncPartyReference,
 } from '@/lib/agreements-templates';
 
 export default function AgreementCreate() {
@@ -60,37 +62,31 @@ export default function AgreementCreate() {
     actor,
   }));
   const [busy, setBusy] = useState(false);
+  const [missingFieldId, setMissingFieldId] = useState<string | null>(null);
   const seedKey = `${agreementType}:${searchParams.toString()}:${actor.profileId || ''}:${actor.fullName || ''}`;
   const seedKeyRef = useRef(seedKey);
 
   useEffect(() => {
     if (seedKeyRef.current === seedKey) return;
     seedKeyRef.current = seedKey;
-    setState((current) => ({
-      ...seedAgreementDocumentState({
+    setMissingFieldId(null);
+    setState((current) => {
+      const seeded = seedAgreementDocumentState({
         type: agreementType,
         launch,
         actor,
-      }),
-      referenceNumber: current.referenceNumber,
-    }));
-  }, [actor, agreementType, launch, seedKey]);
-
-  useEffect(() => {
-    let active = true;
-    void peekNextAgreementNumber().then((peeked) => {
-      if (!active) return;
-      setState((current) => {
-        const next = String(peeked.sequence);
-        if (current.referenceNumber && current.referenceNumber !== '1') return current;
-        if (current.referenceNumber === next) return current;
-        return { ...current, referenceNumber: next };
       });
+      if (current.partyReferenceManual) {
+        return {
+          ...seeded,
+          partyReference: current.partyReference,
+          partyReferenceManual: true,
+          partyReferenceAuto: current.partyReferenceAuto,
+        };
+      }
+      return seeded;
     });
-    return () => {
-      active = false;
-    };
-  }, []);
+  }, [actor, agreementType, launch, seedKey]);
 
   const relatedHref = launch.source ? relatedEntityHref(launch.source, launch.relatedId) : null;
   const typeLabel = state.documentHeading
@@ -114,6 +110,13 @@ export default function AgreementCreate() {
         classification: slot.classification,
       });
     });
+    const gaps = requiredAgreementGaps(template, state);
+    if (gaps.length > 0) {
+      const first = gaps[0];
+      setMissingFieldId(first.tokenId);
+      toast.error(t(first.messageKey));
+      return;
+    }
     if (compiled.title.trim().length < 3) {
       toast.error(t('agreements.createTitleRequired'));
       return;
@@ -134,9 +137,7 @@ export default function AgreementCreate() {
         endAt: compiled.endAt,
         parties: parties.length > 0 ? parties : seeded.parties,
         related: seeded.related,
-        referenceCode: state.referenceNumber.trim()
-          ? agreementReferenceFromNumber(state.referenceNumber)
-          : null,
+        partyReference: state.partyReference.trim() || null,
       });
       toast.success(t('agreements.createdToast'));
       navigate(`/agreements/${id}`);
@@ -152,26 +153,24 @@ export default function AgreementCreate() {
       <div className="mx-auto flex max-w-3xl flex-col gap-3 px-4 py-5">
         <AppPageHeader
           title={(
-            <span className="inline-flex items-baseline gap-[0.35em]">
-              <span>{t('agreements.numberPrefix')}</span>
-              <input
-                data-testid="agreement-number"
-                aria-label={t('agreements.numberLabel')}
-                value={state.referenceNumber}
-                placeholder="1"
-                size={Math.max(state.referenceNumber.length, 1)}
-                inputMode="numeric"
-                autoComplete="off"
-                onChange={(event) => {
-                  setState({
-                    ...state,
-                    referenceNumber: event.target.value.replace(/[^\d]/g, ''),
-                  });
-                }}
-                className="m-0 w-auto min-w-0 border-0 border-b border-dashed border-foreground/40 bg-transparent p-0 font-display text-2xl font-bold leading-snug text-foreground outline-none"
-              />
-              <span>{t('agreements.numberOn')}</span>
-            </span>
+            <AgreementCreateMenu
+              trigger={(
+                <button
+                  type="button"
+                  data-testid="agreements-create-title"
+                  className="m-0 border-0 bg-transparent p-0 text-left font-[inherit] text-[inherit] leading-[inherit] outline-none"
+                >
+                  {t('agreements.createTitle')}
+                </button>
+              )}
+              onSelect={(type, customType) => {
+                navigate(agreementsCreatePath({
+                  ...launch,
+                  agreementType: type,
+                  customType: type === 'custom' ? customType : undefined,
+                }));
+              }}
+            />
           )}
           fallbackPath="/agreements"
         />
@@ -194,7 +193,17 @@ export default function AgreementCreate() {
           template={template}
           state={state}
           excludeProfileId={profile?.id}
-          onChange={setState}
+          highlightTokenId={missingFieldId}
+          onChange={(next) => {
+            const synced = syncPartyReference(next);
+            setState(synced);
+            if (missingFieldId) {
+              const remaining = requiredAgreementGaps(template, synced);
+              setMissingFieldId(remaining.some((gap) => gap.tokenId === missingFieldId)
+                ? missingFieldId
+                : remaining[0]?.tokenId || null);
+            }
+          }}
         />
 
         <p className="text-[11px] leading-snug text-muted-foreground/80">{t('agreements.templateNotLegal')}</p>

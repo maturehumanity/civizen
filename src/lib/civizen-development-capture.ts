@@ -20,6 +20,8 @@ import {
   evaluateDevelopmentSignificance,
   type DevelopmentSignificance,
 } from '@/lib/civizen-development-significance';
+import { executionMethodFromEvidence } from '@/lib/civizen-human-contribution-substance';
+import { involvementFromStories } from '@/lib/civizen-contribution-provenance';
 
 export type DevelopmentOutcomeCaptureInput = {
   outcomeRootId: string;
@@ -74,6 +76,10 @@ export function planDevelopmentOutcomeStories(input: DevelopmentOutcomeCaptureIn
     contributionFunction: significance.contributionFunction,
     significance,
     captureVersion: 'development-outcome-v1',
+    executionMethod: executionMethodFromEvidence({
+      implementationAssisted: input.implementationAssisted === true,
+      roles: input.roles ?? [],
+    }),
   };
   const primary: DevelopmentStoryEvidenceInput = {
     id: `outcome:${outcomeRootId}:implementation`,
@@ -133,8 +139,16 @@ export function contributionEventsFromDevelopmentStories(
       rawMeta: {
         eligibility: item.eligibility,
         provenanceCount: item.provenanceStoryIds.length,
+        provenanceStoryIds: item.provenanceStoryIds,
+        humanInvolvement: involvementFromStories(stories.filter((story) =>
+          item.provenanceStoryIds.includes(story.id || story.sourceStoryKey || ''),
+        )),
         contributionRoles: item.roles,
         implementationAssisted: item.implementationAssisted,
+        executionMethod: executionMethodFromEvidence({
+          implementationAssisted: item.implementationAssisted,
+          roles: item.roles,
+        }),
         independentValidation: item.independentValidation,
         outcomeValidated: item.outcomeValidated,
         realFeatures: item.realFeatures,
@@ -144,6 +158,8 @@ export function contributionEventsFromDevelopmentStories(
         affectedPaths: item.affectedPaths,
         reconstructionResult: item.reconstructionResult,
         survivingImplementation: item.survivingImplementation,
+        instruction: item.instruction,
+        linkedInstructions: item.linkedInstructions,
       },
     }),
   );

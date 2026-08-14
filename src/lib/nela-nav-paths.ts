@@ -1,6 +1,6 @@
 import { agreementsCreatePath } from '@/lib/agreements-model';
 
-/** Visible in-app paths Nela should speak, longest labels first for link matching. */
+/** Visible in-app paths Civi should speak, longest labels first for link matching. */
 export const NELA_PAGE_LINKS: readonly { label: string; href: string }[] = [
   { label: 'Community Governance Charter', href: '/governance/charter' },
   { label: 'Organization Partnership', href: '/partners' },
@@ -28,7 +28,7 @@ export const NELA_PAGE_LINKS: readonly { label: string; href: string }[] = [
   { label: 'Home', href: '/' },
 ];
 
-/** Selectable agreement types in Nela’s main answer → New agreement for that type. */
+/** Selectable agreement types in Civi’s main answer → New agreement for that type. */
 export const NELA_CHOICE_LINKS: readonly { label: string; href: string; listItem?: boolean }[] = [
   { label: 'Partnership / Collaboration', href: agreementsCreatePath({ agreementType: 'partnership' }) },
   { label: 'Service / Contribution', href: agreementsCreatePath({ agreementType: 'service_contribution' }) },

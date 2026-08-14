@@ -2,9 +2,10 @@
 
 import {
   evaluateDevelopmentContributionEvidence,
-  isSubstantiveInstruction,
   type DevelopmentStoryEvidenceInput,
 } from './civizen-development-evidence';
+import { historicalHumanRolesFromProvenance } from './civizen-human-contribution-substance';
+import { attachHumanProvenanceToOutcomes, classifyHumanProvenanceText, evaluationProvenanceInstructions } from './civizen-contribution-provenance';
 import { evaluateDevelopmentSignificance } from './civizen-development-significance';
 import {
   distinctiveTerms,
@@ -26,7 +27,7 @@ import { recoverUnlinkedSurvivingOutcomes } from './civizen-historical-reconstru
 
 export type { HistoricalCommit };
 export { distinctiveTerms, isSatelliteCommit, shouldMergeProductCommits, isSnapshotCommit };
-export const HISTORICAL_RECONSTRUCTION_VERSION = 'historical-reconstruction-v1';
+export const HISTORICAL_RECONSTRUCTION_VERSION = 'historical-reconstruction-v1.2';
 
 export type ReconstructionResultKind =
   | 'reconstructed'
@@ -147,10 +148,21 @@ function attachStories(
   return { ids: ids.filter(Boolean), reasons, attribution };
 }
 
-function buildStory(outcome: Omit<HistoricalReconstructedOutcome, 'implementationStory'>): DevelopmentStoryEvidenceInput {
+function buildStory(
+  outcome: Omit<HistoricalReconstructedOutcome, 'implementationStory'>,
+  linkedInstructions: string[],
+): DevelopmentStoryEvidenceInput {
+  const evalInstructions = evaluationProvenanceInstructions(linkedInstructions);
+  const roles = [...new Set([
+    ...historicalHumanRolesFromProvenance(outcome.instruction, evalInstructions),
+    ...evalInstructions.flatMap((text) => classifyHumanProvenanceText(text).roles),
+  ])];
   const significance = evaluateDevelopmentSignificance({
     affectedPaths: outcome.affectedPaths,
     testsPassed: outcome.testsPassed,
+    title: outcome.title,
+    roles,
+    implementationAssisted: true,
   });
   return {
     id: `outcome:${outcome.outcomeRootId}:implementation`,
@@ -177,13 +189,14 @@ function buildStory(outcome: Omit<HistoricalReconstructedOutcome, 'implementatio
       affectedPaths: outcome.affectedPaths.slice(0, 40),
       contributionFunction: significance.contributionFunction,
       significance,
-      roles: ['founder', 'product_direction', 'review'],
+      roles,
+      linkedInstructions: evalInstructions.slice(0, 12),
       implementationAssisted: true,
       captureVersion: HISTORICAL_RECONSTRUCTION_VERSION,
     },
     outcomeRootId: outcome.outcomeRootId,
     testsPassed: outcome.testsPassed,
-    roles: ['founder', 'product_direction', 'review'],
+    roles,
     implementationAssisted: true,
   };
 }
@@ -238,7 +251,11 @@ function outcomeFromCluster(
     testsPassed,
     survivingImplementation,
   };
-  const implementationStory = buildStory(base);
+  const linkedInstructions = stories
+    .filter((story) => attached.ids.includes(story.id || story.sourceStoryKey || ''))
+    .map((story) => (story.originalInstruction || story.title || '').trim())
+    .filter(Boolean);
+  const implementationStory = buildStory(base, linkedInstructions);
   implementationStory.requestedAt = stamps.at(-1)!;
   return { ...base, implementationStory };
 }
@@ -299,6 +316,20 @@ function outcomesFromCommits(
   return { outcomes, unusedSat };
 }
 
+export function refreshImplementationStories(
+  outcomes: HistoricalReconstructedOutcome[],
+  stories: DevelopmentStoryEvidenceInput[],
+): HistoricalReconstructedOutcome[] {
+  return outcomes.map((outcome) => {
+    const linked = stories
+      .filter((story) => outcome.storyIds.includes(story.id || story.sourceStoryKey || ''))
+      .map((story) => (story.originalInstruction || story.title || '').trim())
+      .filter(Boolean);
+    const { implementationStory: _ignored, ...base } = outcome;
+    return { ...base, implementationStory: buildStory(base, linked) };
+  });
+}
+
 export function reconstructHistoricalDevelopmentOutcomes(input: {
   commits: HistoricalCommit[];
   stories?: DevelopmentStoryEvidenceInput[];
@@ -313,14 +344,16 @@ export function reconstructHistoricalDevelopmentOutcomes(input: {
   const usedStory = new Set<string>();
   const live = outcomesFromCommits(input.commits.filter((commit) => !isSnapshotCommit(commit)), surviving, stories, usedStory);
   const orphaned = outcomesFromCommits(gitJournalCommits(stories, headShas), surviving, stories, usedStory);
-  const outcomes = [...live.outcomes, ...orphaned.outcomes];
+  const clustered = [...live.outcomes, ...orphaned.outcomes];
+  attachHumanProvenanceToOutcomes(clustered, stories, input.survivingPaths);
+  const outcomes = refreshImplementationStories(clustered, stories);
   const recovered = recoverUnlinkedSurvivingOutcomes({
     stories,
     outcomes,
     survivingPaths: input.survivingPaths,
     commits: input.commits,
   });
-  const combined = [...outcomes, ...recovered];
+  const combined = refreshImplementationStories([...outcomes, ...recovered], stories);
   const used = new Set(combined.flatMap((item) => item.storyIds));
   return {
     outcomes: combined,
@@ -334,10 +367,16 @@ export function reconstructHistoricalDevelopmentOutcomes(input: {
       }).map((story) => ({
         kind: 'story' as const,
         id: story.id || story.sourceStoryKey || '',
-        reason: isSubstantiveInstruction(story.originalInstruction) ? 'no_explainable_outcome_link' : 'journal_without_outcome',
+        reason: classifyLinkReason(story),
       })),
     ],
   };
+}
+
+function classifyLinkReason(story: DevelopmentStoryEvidenceInput): string {
+  return classifyHumanProvenanceText(story.originalInstruction || story.title || '').contributionBearing
+    ? 'no_explainable_outcome_link'
+    : 'journal_without_outcome';
 }
 
 export function historicalStoriesForEvaluation(

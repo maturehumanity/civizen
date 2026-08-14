@@ -1,11 +1,11 @@
 /** Reconstruction recall: attach surviving implemented work; do not score prompts. */
 
 import {
-  isProcessOnlyInstruction,
-  isSubstantiveInstruction,
   type DevelopmentStoryEvidenceInput,
 } from '@/lib/civizen-development-evidence';
 import { evaluateDevelopmentSignificance } from '@/lib/civizen-development-significance';
+import { historicalHumanRolesFromProvenance } from '@/lib/civizen-human-contribution-substance';
+import { classifyHumanProvenanceText } from '@/lib/civizen-contribution-provenance';
 import {
   distinctiveTerms,
   inferSurvivingPaths,
@@ -36,20 +36,20 @@ export function classifyReconstructionRecall(args: {
   return args.stories.map((story) => {
     const id = story.id || story.sourceStoryKey || '';
     const instruction = story.originalInstruction || story.title || '';
-    const substantive = isSubstantiveInstruction(instruction);
+    const classified = classifyHumanProvenanceText(instruction);
     const paths = inferSurvivingPaths(instruction, args.survivingPaths);
-    if (isProcessOnlyInstruction(instruction) && !substantive) {
+    if (classified.disposition === 'process_casual' && !classified.contributionBearing) {
       return { storyId: id, bucket: 'process_or_non_contributory', substantive: false, survivingPathCount: paths.length };
     }
     if (attached.has(id)) {
       return {
         storyId: id,
         bucket: 'attached_to_outcome',
-        substantive,
+        substantive: classified.contributionBearing,
         survivingPathCount: paths.length,
       };
     }
-    if (substantive && paths.length >= 3) {
+    if (classified.contributionBearing && paths.length >= 3) {
       return {
         storyId: id,
         bucket: 'unreconstructed_with_surviving_implementation',
@@ -59,8 +59,8 @@ export function classifyReconstructionRecall(args: {
     }
     return {
       storyId: id,
-      bucket: substantive ? 'provenance_only' : 'process_or_non_contributory',
-      substantive,
+      bucket: classified.contributionBearing ? 'provenance_only' : 'process_or_non_contributory',
+      substantive: classified.contributionBearing,
       survivingPathCount: paths.length,
     };
   });
@@ -84,14 +84,18 @@ export function recoverUnlinkedSurvivingOutcomes(args: {
     const id = story.id || story.sourceStoryKey || '';
     if (!id || attached.has(id)) continue;
     const instruction = story.originalInstruction || story.title || '';
-    if (!isSubstantiveInstruction(instruction)) continue;
+    if (!classifyHumanProvenanceText(instruction).contributionBearing) continue;
     const paths = inferSurvivingPaths(instruction, args.survivingPaths);
-    if (paths.length < 3 || !disjoint(paths, occupied)) continue;
+    const productPaths = primaryPaths(paths).filter((path) => args.survivingPaths.includes(path));
+    if (productPaths.length < 3 || !disjoint(productPaths, occupied)) continue;
     const title = (story.title || instruction).replace(/\.$/, '').slice(0, 120);
+    const roles = historicalHumanRolesFromProvenance(instruction);
     const significance = evaluateDevelopmentSignificance({
       affectedPaths: paths,
       testsPassed: story.testsPassed === true,
       title,
+      roles,
+      implementationAssisted: true,
     });
     const sha = (story.commitSha ?? '').trim().toLowerCase();
     const outcome: HistoricalReconstructedOutcome = {
@@ -127,10 +131,15 @@ export function recoverUnlinkedSurvivingOutcomes(args: {
           affectedPaths: paths.slice(0, 40),
           contributionFunction: significance.contributionFunction,
           captureVersion: 'historical-reconstruction-recall-v1',
+          roles,
+          linkedInstructions: [instruction],
+          implementationAssisted: true,
         },
         outcomeRootId: `historical:recall:${id.slice(0, 24)}`,
         testsPassed: story.testsPassed === true,
         requestedAt: story.requestedAt || story.createdAt || undefined,
+        roles,
+        implementationAssisted: true,
       },
     };
     recovered.push(outcome);

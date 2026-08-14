@@ -282,7 +282,11 @@ export type AgreementStructuredTerms = {
   documentHeading?: string | null;
   headingOptionId?: string | null;
   partyRoles?: Record<string, string> | null;
+  paragraphWording?: Record<string, string> | null;
+  sectionTitles?: Record<string, string> | null;
+  /** @deprecated Prefer partyReference. Kept so older drafts still load. */
   referenceNumber?: string | null;
+  partyReference?: string | null;
 };
 
 export type SalePurchaseTerms = {
@@ -1142,8 +1146,111 @@ export function nextAgreementAction(params: {
   return 'view';
 }
 
+/** Local calendar date as `YYYY-MM-DD`, not UTC. */
+export function localIsoDate(date = new Date()): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/** Same month/day, `years` later. Feb 29 falls back to Feb 28 when the next year is not a leap year. */
+export function addCalendarYears(isoDate: string, years = 1): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate.trim());
+  if (!match) return isoDate;
+  const year = Number(match[1]) + years;
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const lastDay = new Date(year, month, 0).getDate();
+  const nextDay = Math.min(day, lastDay);
+  return `${year}-${String(month).padStart(2, '0')}-${String(nextDay).padStart(2, '0')}`;
+}
+
+export function parseAgreementIsoDate(isoDate: string): Date | undefined {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate.trim());
+  if (!match) return undefined;
+  return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+}
+
+export function formatAgreementDate(isoDate: string): string {
+  const date = parseAgreementIsoDate(isoDate);
+  if (!date) return isoDate;
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
+export function isContributionLaunchSource(source: string | null | undefined): boolean {
+  return source === 'opportunity'
+    || source === 'contribution'
+    || source === 'challenge'
+    || source === 'pilot'
+    || source === 'program'
+    || source === 'knowledge_space'
+    || source === 'initiative';
+}
+
 export function formatAgreementReference(year: number, sequence: number): string {
   return `AGR-${year}-${String(sequence).padStart(4, '0')}`;
+}
+
+export function sanitizeAgreementReferenceInput(value: string): string {
+  return value.replace(/#/g, '').replace(/[^A-Za-z0-9-]/g, '').toUpperCase();
+}
+
+const PARTY_REFERENCE_STOPWORDS = new Set(['of', 'the', 'and', 'for', 'a', 'an', 'at', 'in', '&']);
+
+function significantNameWords(name: string): string[] {
+  return name
+    .trim()
+    .replace(/[.,]/g, ' ')
+    .split(/\s+/)
+    .filter((word) => word && !PARTY_REFERENCE_STOPWORDS.has(word.toLowerCase()));
+}
+
+export function partyNameLooksLikeOrganization(
+  name: string,
+  kind?: 'person' | 'organization' | null,
+): boolean {
+  if (kind === 'organization') return true;
+  if (kind === 'person') return false;
+  const words = significantNameWords(name);
+  if (!words.length) return false;
+  return ORGANIZATION_NAME_HINT.test(name)
+    || words.length >= 3
+    || (words.length === 1 && /^[A-Z]{2,6}$/.test(words[0]));
+}
+
+export function partyReferenceStem(
+  name: string,
+  kind?: 'person' | 'organization' | null,
+): string {
+  const words = significantNameWords(name);
+  if (!words.length) return '';
+  const organization = partyNameLooksLikeOrganization(name, kind);
+  if (organization) {
+    if (words.length === 1) {
+      const token = words[0].replace(/[^A-Za-z0-9]/g, '');
+      if (/^[A-Z]{2,6}$/.test(words[0])) return words[0];
+      if (token.length <= 5) return token.toUpperCase();
+      return token.slice(0, 4).toUpperCase();
+    }
+    return words.map((word) => word[0]).join('').toUpperCase().slice(0, 6);
+  }
+  return words.map((word) => word[0]).join('').toUpperCase().slice(0, 4);
+}
+
+export function suggestedPartyReference(
+  name: string,
+  kind?: 'person' | 'organization' | null,
+): string {
+  return partyReferenceStem(name, kind);
+}
+
+export function isCivizenAgreementReference(code: string | null | undefined): boolean {
+  return /^AGR-\d{4}-\d+$/i.test((code || '').trim());
 }
 
 export function agreementNumberFromReference(code: string | null | undefined): string {
@@ -1157,10 +1264,13 @@ export function agreementReferenceFromNumber(
   number: string,
   year = new Date().getUTCFullYear(),
 ): string {
-  const trimmed = number.trim();
-  if (/^AGR-\d{4}-\d+$/i.test(trimmed)) return trimmed.toUpperCase();
-  const sequence = Number.parseInt(trimmed.replace(/\D/g, ''), 10);
-  if (Number.isFinite(sequence) && sequence > 0) return formatAgreementReference(year, sequence);
+  const trimmed = sanitizeAgreementReferenceInput(number);
+  if (!trimmed) return '';
+  if (/^AGR-\d{4}-\d+$/i.test(trimmed)) return trimmed;
+  if (/^\d+$/.test(trimmed)) {
+    const sequence = Number.parseInt(trimmed, 10);
+    if (Number.isFinite(sequence) && sequence > 0) return formatAgreementReference(year, sequence);
+  }
   return trimmed;
 }
 

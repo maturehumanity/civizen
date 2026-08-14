@@ -58,12 +58,20 @@ export function ContributionRecordDetail({
       <h3 className="text-sm font-semibold">{t('profile.contributionsLedger.summary')}</h3>
       <div className="grid gap-2 sm:grid-cols-2">
         <Field label={t('profile.contributionsLedger.date')} value={formatDate(selected.event.occurredAt) || unknown} />
-        <Field label={t('profile.contributionsLedger.function')} value={labelFn(view.contributionFunction)} />
-        <Field label={t('profile.contributionsLedger.contributorRole')} value={view.roles.join(', ') || unknown} />
-        <Field label={t('profile.contributionsLedger.stage')} value={t(`profile.contributionsLedger.stages.${view.stage}`)} />
-        <Field label={t('profile.contributionsLedger.verification')} value={labelKind(view.verificationKind)} />
+        <Field
+          label={t('profile.contributionsLedger.yourRole')}
+          value={view.roles.map((role) => t(`profile.contributionsLedger.roleLabels.${role}`)).join(' · ') || unknown}
+        />
+        <Field label={t('profile.contributionsLedger.method')} value={t(`profile.contributionsLedger.methods.${view.executionMethod}`)} />
+        <Field label={t('profile.contributionsLedger.outcome')} value={labelKind(view.verificationKind)} />
         <Field label={t('profile.contributionsLedger.realizedImpact')} value={view.realizedImpact === 'unknown' ? unknown : String(view.realizedImpact)} />
       </div>
+      {view.humanContributionSummary ? (
+        <div className="rounded-lg bg-muted/40 px-3 py-2">
+          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{t('profile.contributionsLedger.humanContribution')}</p>
+          <p className="text-sm text-foreground" data-testid="human-contribution-summary">{view.humanContributionSummary}</p>
+        </div>
+      ) : null}
       {explanation ? (
         <p className="text-sm text-foreground" data-testid="contribution-change-reason">
           <span className="font-medium">{explanation.title}. </span>
@@ -73,6 +81,8 @@ export function ContributionRecordDetail({
       <details className="text-sm text-muted-foreground">
         <summary className="cursor-pointer text-foreground">{t('profile.contributionsLedger.details')}</summary>
         <div className="mt-3 grid gap-2 sm:grid-cols-2">
+          <Field label={t('profile.contributionsLedger.function')} value={labelFn(view.contributionFunction)} />
+          <Field label={t('profile.contributionsLedger.stage')} value={t(`profile.contributionsLedger.stages.${view.stage}`)} />
           <Field label={t('profile.contributionsLedger.quality')} value={view.quality == null ? unknown : String(Math.round(view.quality))} />
           <Field label={t('profile.contributionsLedger.observation')} value={view.observation == null ? unknown : String(Math.round(view.observation))} />
           <Field label={t('profile.contributionsLedger.expectedImpact')} value={view.expectedImpact === 'unknown' ? unknown : String(view.expectedImpact)} />
@@ -84,13 +94,36 @@ export function ContributionRecordDetail({
           <Field label={t('profile.contributionsLedger.reconstruction')} value={view.reconstructionResult ?? unknown} />
           <Field label={t('profile.contributionsLedger.significance')} value={view.structuralSignificance === 'unknown' ? unknown : view.structuralSignificance} />
           <Field label={t('profile.contributionsLedger.artifactType')} value={labelFn(view.artifactFunction)} />
-          <Field label={t('profile.contributionsLedger.implementationAssisted')} value={view.implementationAssisted ? t('common.yes') : t('common.no')} />
+          <Field
+            label={t('profile.contributionsLedger.humanSubstance')}
+            value={view.humanSubstance ? t(`profile.contributionsLedger.substanceLevels.${view.humanSubstance.level}`) : unknown}
+          />
+          {view.humanInvolvement && view.humanInvolvement.substantiveInteractions > 0 ? (
+            <>
+              <Field
+                label={t('profile.contributionsLedger.humanEvidence')}
+                value={`${view.humanInvolvement.substantiveInteractions} ${t('profile.contributionsLedger.substantiveInteractions')}`}
+              />
+              <Field
+                label={t('profile.contributionsLedger.revisionCycles')}
+                value={String(view.humanInvolvement.revisionCycles)}
+              />
+              <Field
+                label={t('profile.contributionsLedger.involvementSpan')}
+                value={view.humanInvolvement.spanDays == null
+                  ? unknown
+                  : `${view.humanInvolvement.spanDays} ${t('profile.contributionsLedger.days')}`}
+              />
+            </>
+          ) : null}
           <Field label={t('profile.contributionsLedger.evidence')} value={view.evidenceConfidence} />
           <Field label={t('profile.contributionsLedger.project')} value={associatedProjectLabel(selected.event) ?? unknown} />
           <Field label={t('profile.contributionsLedger.state')} value={t(`profile.contributionsLedger.states.${contributionSurvivalState(selected.event)}`)} />
           <Field label={t('profile.contributionsLedger.subsystems')} value={view.subsystems.join(', ') || unknown} />
           <Field label={t('profile.contributionsLedger.provenance')} value={publicCommitShas(selected.event).join(', ') || unknown} />
         </div>
+        <p className="mt-3 text-sm text-muted-foreground">{t('profile.contributionsLedger.methodNote')}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{t('profile.contributionsLedger.humanEvidenceHint')}</p>
         <p className="mt-3 font-medium text-foreground">{t('profile.contributionsLedger.history')}</p>
         <ul className="mt-1 space-y-1">
           {view.evidenceEvents.map((item, index) => (

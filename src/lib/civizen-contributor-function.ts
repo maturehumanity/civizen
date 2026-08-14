@@ -9,6 +9,7 @@ const ROLE_PRIORITY: Array<{ role: DevelopmentContributionRole; fn: DevelopmentC
   { role: 'governance_design', fn: 'governance_design' },
   { role: 'product_direction', fn: 'product_architecture' },
   { role: 'requirements', fn: 'product_architecture' },
+  { role: 'ux_design', fn: 'product_architecture' },
   { role: 'design', fn: 'product_architecture' },
   { role: 'research', fn: 'model_evolution' },
   { role: 'founder', fn: 'product_architecture' },
@@ -37,6 +38,9 @@ export function parseContributionRoles(value: unknown): DevelopmentContributionR
   allowed.add('review');
   allowed.add('problem_identification');
   allowed.add('coordination');
+  allowed.add('ux_design');
+  allowed.add('quality_assurance');
+  allowed.add('validation');
   return [...new Set(value.filter((item): item is DevelopmentContributionRole =>
     typeof item === 'string' && allowed.has(item as DevelopmentContributionRole),
   ))];
@@ -56,7 +60,7 @@ export function contributorFunctionFromRoles(
     if (item.role === 'implementation' && assisted) continue;
     if (item.role === 'implementation' && roles.some((role) =>
       role === 'system_architect' || role === 'product_architect' || role === 'requirements' ||
-      role === 'product_direction' || role === 'design' || role === 'governance_design',
+      role === 'product_direction' || role === 'design' || role === 'ux_design' || role === 'governance_design',
     )) continue;
     return item.fn;
   }

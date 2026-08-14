@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Civi option: Gather">
+  <defs>
+    <linearGradient id="civi-g-bg" x1="18%" y1="8%" x2="86%" y2="96%">
+      <stop offset="0%" stop-color="#10252A"/>
+      <stop offset="55%" stop-color="#16564F"/>
+      <stop offset="100%" stop-color="#218C82"/>
+    </linearGradient>
+  </defs>
+  <circle cx="64" cy="64" r="62" fill="url(#civi-g-bg)"/>
+  <circle cx="64" cy="64" r="36" fill="none" stroke="#F4FBF9" stroke-width="8"/>
+  <circle cx="64" cy="46" r="8" fill="#F5A623"/>
+  <circle cx="47" cy="73" r="8" fill="#99F6E4"/>
+  <circle cx="81" cy="73" r="8" fill="#99F6E4"/>
+</svg>

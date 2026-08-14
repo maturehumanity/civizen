@@ -4,6 +4,14 @@ import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ChatMessageRow, type ChatMessageRowData } from '@/components/ui/chat-message-row';
+import { baseTranslations, translateMessage } from '@/lib/i18n';
+
+vi.mock('@/contexts/LanguageContext', () => ({
+  useLanguage: () => ({
+    t: (key: string, vars?: Record<string, string | number>) => translateMessage(baseTranslations, key, vars),
+    language: 'en',
+  }),
+}));
 
 const message: ChatMessageRowData = {
   id: 'msg-1',
@@ -128,7 +136,7 @@ describe('ChatMessageRow selection', () => {
     expect(onSelect).not.toHaveBeenCalled();
   });
 
-  it('links agreement types in Nela’s main answer to New agreement', () => {
+  it('links agreement types in Civi’s main answer to New agreement', () => {
     const onSelect = vi.fn();
     renderRow(
       <ChatMessageRow
@@ -140,7 +148,7 @@ describe('ChatMessageRow selection', () => {
         }}
         selectionMode={false}
         selected={false}
-        senderInitials="N"
+        senderInitials="C"
         formattedTime="5:35 PM"
         labels={labels}
         onSelect={onSelect}
@@ -173,7 +181,7 @@ describe('ChatMessageRow selection', () => {
     expect(onSelect).not.toHaveBeenCalled();
   });
 
-  it('shows Nela extra notes smaller and dimmed', () => {
+  it('shows Civi extra notes smaller and dimmed', () => {
     renderRow(
       <ChatMessageRow
         message={{
@@ -184,7 +192,7 @@ describe('ChatMessageRow selection', () => {
         }}
         selectionMode={false}
         selected={false}
-        senderInitials="N"
+        senderInitials="C"
         formattedTime="5:28 PM"
         labels={labels}
         onSelect={vi.fn()}

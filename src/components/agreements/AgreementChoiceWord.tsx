@@ -87,6 +87,7 @@ export function AgreementChoiceWord({
           value={draft}
           placeholder={value}
           ariaLabel={ariaLabel}
+          className={className}
           onChange={setDraft}
           autoFocus
           onBlur={commitRename}
@@ -119,7 +120,10 @@ export function AgreementChoiceWord({
         aria-expanded={alternatives.length ? open : undefined}
         aria-label={ariaLabel}
         data-testid="agreement-choice-word"
-        className="inline border-0 border-b border-transparent bg-transparent p-0 font-[inherit] leading-[inherit] text-inherit hover:border-dashed hover:border-foreground/40 focus:border-dashed focus:border-foreground/40 focus:outline-none"
+        className={cn(
+          'inline border-0 border-b border-transparent bg-transparent p-0 font-[inherit] leading-[inherit] text-inherit hover:border-dashed hover:border-foreground/40 focus:border-dashed focus:border-foreground/40 focus:outline-none',
+          className,
+        )}
         onPointerDown={(event) => {
           if (event.pointerType !== 'touch' && event.pointerType !== 'pen') return;
           openedByHold.current = false;
@@ -134,6 +138,10 @@ export function AgreementChoiceWord({
         onClick={() => {
           if (openedByHold.current) {
             openedByHold.current = false;
+            return;
+          }
+          if (!allowRename) {
+            showAlternatives();
             return;
           }
           startRename();

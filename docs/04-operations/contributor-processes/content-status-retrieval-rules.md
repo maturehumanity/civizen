@@ -1,6 +1,6 @@
 # Content status rules for search and AI retrieval
 
-Machine-readable policy for Study search, semantic indexes, Nela system context, and agent documentation retrieval.
+Machine-readable policy for Study search, semantic indexes, Civi system context, and agent documentation retrieval.
 
 | status | default inclusion |
 |---|---|

@@ -1,4 +1,5 @@
 import { shapeAnswerToQuestion } from './answer-shape';
+import { IDENTITY_FAQ_IDS, classifyAssistantTopic } from './identity';
 import { buildNelaSystemPrompt, formatRetrievedContext, shouldSkipLlm } from './prompt';
 import { resolveConversationalQuery } from './query-rewrite';
 import { preferCurrentEvidence, retrieveKnowledge, tokenize } from './retrieval';
@@ -74,12 +75,27 @@ function distinctiveEnough(query: string, text: string): boolean {
   return hits >= 1 && hits / qTerms.length >= 0.28;
 }
 
-function composeFromRetrieval(retrieval: RetrievalResult, query: string): string {
+function composeFromRetrieval(
+  retrieval: RetrievalResult,
+  query: string,
+  topic: ReturnType<typeof classifyAssistantTopic>,
+): string {
   const faq = retrieval.faq[0];
   const cap = retrieval.capabilities[0];
-  const faqRelated = faq ? distinctiveEnough(query, `${faq.item.question} ${faq.item.answer}`) : false;
+  if (topic === 'identity') {
+    const identityFaq =
+      retrieval.faq.find((hit) => IDENTITY_FAQ_IDS.has(hit.item.id)) ?? faq;
+    if (identityFaq) return identityFaq.item.answer.trim();
+  }
+  if (topic === 'current_capability') {
+    const nowFaq = retrieval.faq.find((hit) => hit.item.id === 'what_can_i_do_in_civizen_now') ?? faq;
+    if (nowFaq) return nowFaq.item.answer.trim();
+  }
+  const faqRelated = faq
+    ? distinctiveEnough(query, `${faq.item.question} ${faq.item.aliases.join(' ')} ${faq.item.answer}`)
+    : false;
   const capRelated = cap ? distinctiveEnough(query, `${cap.item.name} ${cap.item.description}`) : false;
-  if (faq && faqRelated && (!cap || !capRelated || retrieval.faq[0].score >= (cap.score ?? 0) * 0.7)) {
+  if (topic !== 'current_capability' && faq && faqRelated && (!cap || !capRelated || retrieval.faq[0].score >= (cap.score ?? 0) * 0.7)) {
     const related = cap && faq.item.capabilityIds.includes(cap.item.id) ? cap.item : cap;
     const prefix = related && capRelated ? statusPrefix(related.status) : '';
     return `${prefix}${faq.item.answer}`.trim();
@@ -89,6 +105,7 @@ function composeFromRetrieval(retrieval: RetrievalResult, query: string): string
     const how = cap.item.howTo ? ` ${cap.item.howTo}` : '';
     return `${prefix}${cap.item.description}${how}`.trim();
   }
+  if (faq && faqRelated) return faq.item.answer.trim();
   const docs = preferCurrentEvidence(retrieval.documents).filter((d) =>
     distinctiveEnough(query, `${d.chunk.title} ${d.chunk.text}`),
   );
@@ -140,12 +157,18 @@ export function prepareNelaTurn(messages: HistoryTurn[], options: PrepareNelaTur
       : resolvedQuery;
   const greeting = isGreetingOnly(latestText);
   const inScope = greeting || isRelevantToCivizen(resolvedQuery, messages);
+  const topic = classifyAssistantTopic(searchQuery);
 
   const rawRetrieval = inScope
-    ? retrieveKnowledge(searchQuery, pack, { broaden: rewritten.isVerification })
+    ? retrieveKnowledge(searchQuery, pack, { broaden: rewritten.isVerification, topic })
     : { faq: [], capabilities: [], documents: [] };
   const retrieval = {
-    faq: rawRetrieval.faq.filter((h) => distinctiveEnough(searchQuery, `${h.item.question} ${h.item.answer}`)),
+    faq:
+      topic === 'identity' || topic === 'current_capability'
+        ? rawRetrieval.faq
+        : rawRetrieval.faq.filter((h) =>
+            distinctiveEnough(searchQuery, `${h.item.question} ${h.item.aliases.join(' ')} ${h.item.answer}`),
+          ),
     capabilities: rawRetrieval.capabilities.filter((h) =>
       distinctiveEnough(searchQuery, `${h.item.name} ${h.item.aliases.join(' ')} ${h.item.description}`),
     ),
@@ -186,10 +209,10 @@ export function prepareNelaTurn(messages: HistoryTurn[], options: PrepareNelaTur
     groundedAnswer = `I don't have your personal Civizen records in project knowledge. ${need?.hint ?? 'Open the relevant page while signed in.'}`;
   } else if (resourcePlan.internalResolution === 'insufficient' && kinds.includes('civizen_product') && !kinds.includes('external_world')) {
     groundedAnswer = retrieval.faq.length || retrieval.capabilities.length || retrieval.documents.length
-      ? composeFromRetrieval(retrieval, searchQuery)
+      ? composeFromRetrieval(retrieval, searchQuery, topic)
       : `${UNVERIFIED} I can help with related current features if you name one.`;
   } else {
-    groundedAnswer = composeFromRetrieval(retrieval, searchQuery);
+    groundedAnswer = composeFromRetrieval(retrieval, searchQuery, topic);
     if (groundedAnswer === UNVERIFIED && kinds.includes('external_world')) {
       groundedAnswer = 'I do not have a Civizen-specific fact for that. I can explain the general topic, separate from current Civizen features.';
     }

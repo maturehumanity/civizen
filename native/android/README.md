@@ -8,5 +8,5 @@ Tracked sources for Android files that Capacitor sync would otherwise leave as s
 |---|---|
 | `ApkUpdaterPlugin.java` | In-app APK download + system installer |
 | `MainActivity.java` | Registers `ApkUpdater` |
-| `AndroidManifest.xml` | `REQUEST_INSTALL_PACKAGES` |
+| `AndroidManifest.xml` | `REQUEST_INSTALL_PACKAGES`, `READ_CONTACTS` (write contacts stripped) |
 | `file_paths.xml` | Cache path for downloaded APKs |

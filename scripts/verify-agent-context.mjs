@@ -111,6 +111,12 @@ if (!existsSync('scripts/verify-home-post-composer.mjs')) {
 if (!agents.includes('verify:home-post-composer')) {
   fail('AGENTS.md must reference verify:home-post-composer in post-dev / interaction gates');
 }
+if (!existsSync('scripts/verify-profile-score-dial.mjs')) {
+  fail('missing scripts/verify-profile-score-dial.mjs');
+}
+if (!agents.includes('verify:profile-score-dial')) {
+  fail('AGENTS.md must reference verify:profile-score-dial in post-dev / Score dial gates');
+}
 
 const cursorRule = readFileSync('.cursor/rules/civizen-project.mdc', 'utf8');
 if (!cursorRule.includes('verify:ci')) {
@@ -118,6 +124,9 @@ if (!cursorRule.includes('verify:ci')) {
 }
 if (!cursorRule.includes('verify:home-post-composer')) {
   fail('.cursor/rules/civizen-project.mdc must require verify:home-post-composer after UI work');
+}
+if (!cursorRule.includes('verify:profile-score-dial')) {
+  fail('.cursor/rules/civizen-project.mdc must require verify:profile-score-dial after UI work');
 }
 
 if (!existsSync('docs/04-operations/dev/phase-1-pilot-operating-model.md')) {
@@ -135,6 +144,12 @@ if (!agents.includes('agreements.md')) {
 if (!existsSync('docs/assistant/civizen-assistant-cheatsheet.md')) {
   fail('missing docs/assistant/civizen-assistant-cheatsheet.md');
 }
+if (!existsSync('docs/assistant/civizen-identity.md')) {
+  fail('missing docs/assistant/civizen-identity.md');
+}
+if (!agents.includes('civizen-identity.md')) {
+  fail('AGENTS.md must reference docs/assistant/civizen-identity.md');
+}
 if (!existsSync('src/lib/assistant/catalog.ts')) {
   fail('missing src/lib/assistant/catalog.ts');
 }
@@ -142,7 +157,7 @@ if (!existsSync('src/lib/assistant/generated/knowledge-pack.ts')) {
   fail('missing generated assistant knowledge pack');
 }
 if (!existsSync('supabase/functions/messaging-agent-reply/nela-bundle.js')) {
-  fail('missing Nela knowledge bundle; run npm run assistant:knowledge');
+  fail('missing Civi knowledge bundle; run npm run assistant:knowledge');
 }
 if (!agents.includes('assistant:knowledge')) {
   fail('AGENTS.md must reference npm run assistant:knowledge');

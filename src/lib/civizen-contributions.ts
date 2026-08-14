@@ -14,6 +14,7 @@ import {
   groupDevelopmentStoriesToContributions,
   storyFromDevelopmentRow,
 } from '@/lib/civizen-development-evidence';
+import { involvementFromStories } from '@/lib/civizen-contribution-provenance';
 import { enrichContributionEventsWithLiveEvidence } from '@/lib/civizen-contribution-evidence-store';
 
 export type ContributionEventType =
@@ -436,9 +437,8 @@ export async function collectContributionSources(
   }
 
   if (!storiesRes.error) {
-    for (const item of groupDevelopmentStoriesToContributions(
-      (storiesRes.data ?? []).map((row: Record<string, unknown>) => storyFromDevelopmentRow(row)),
-    )) {
+    const developmentStories = (storiesRes.data ?? []).map((row: Record<string, unknown>) => storyFromDevelopmentRow(row));
+    for (const item of groupDevelopmentStoriesToContributions(developmentStories)) {
       events.push(
         estimateContributionEvent({
           profileId,
@@ -453,6 +453,10 @@ export async function collectContributionSources(
           rawMeta: {
             eligibility: item.eligibility,
             provenanceCount: item.provenanceStoryIds.length,
+            provenanceStoryIds: item.provenanceStoryIds,
+            humanInvolvement: involvementFromStories(developmentStories.filter((story) =>
+              item.provenanceStoryIds.includes(story.id || story.sourceStoryKey || ''),
+            )),
             commitShas: item.commitShas.slice(0, 8),
             contributionRoles: item.roles,
             implementationAssisted: item.implementationAssisted,
@@ -465,6 +469,8 @@ export async function collectContributionSources(
             affectedPaths: item.affectedPaths,
             reconstructionResult: item.reconstructionResult,
             survivingImplementation: item.survivingImplementation,
+            instruction: item.instruction,
+            linkedInstructions: item.linkedInstructions,
           },
         }),
       );

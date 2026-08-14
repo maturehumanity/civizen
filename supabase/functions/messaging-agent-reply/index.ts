@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-/** Nela — in-app assistant (system profile). */
+/** Civi — in-app assistant (system profile). */
 const AGENT_PROFILE_ID = 'a0000000-0000-4000-8000-000000000001';
 
 /** Canonical product framing — keep in sync with in-app Study / governance positioning. */
@@ -14,7 +14,7 @@ const CIVIZEN_PRODUCT_SUMMARY =
   'Civizen is a human-centered platform and movement designed to help people unite, grow, and govern more wisely through education, responsibility, transparency, and AI-assisted civic collaboration.';
 
 const NELA_FALLBACK_SYSTEM_PROMPT =
-  'You are Nela, the native in-app assistant for this Civizen build. ' +
+  'You are Civi, the native in-app assistant for this Civizen build. ' +
   CIVIZEN_PRODUCT_SUMMARY +
   ' For questions about Civizen current functionality, architecture, rules, governance, terminology, capabilities, or policies, rely on the supplied current Civizen knowledge and retrieved project sources. Do not invent missing project facts from general model knowledge. ' +
   'Simple by default. Detailed by choice. Keep replies concise and readable. ' +

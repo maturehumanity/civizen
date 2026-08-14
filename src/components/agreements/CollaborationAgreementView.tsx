@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { AppPageHeader } from '@/components/layout/AppPageHeader';
+import { AgreementFitInput } from '@/components/agreements/AgreementInlineToken';
+import { AgreementFormattedBody, AgreementRichText } from '@/components/agreements/AgreementRichText';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -33,6 +35,7 @@ import {
   isExecutedStatus,
   isSigningStatus,
   relatedEntityHref,
+  sanitizeAgreementReferenceInput,
   signingProgressLabel,
   type AgreementContent,
 } from '@/lib/agreements-model';
@@ -83,6 +86,11 @@ export function CollaborationAgreementView({ bundle, onReload }: CollaborationAg
   const [section, setSection] = useState<'agreement' | 'parties' | 'attachments' | 'history' | 'amendments' | 'advanced'>('agreement');
   const [purpose, setPurpose] = useState(content.purpose || '');
   const [sectionDrafts, setSectionDrafts] = useState(content.sections || []);
+  const [partyReference, setPartyReference] = useState(
+    text(agreement.party_reference)
+      || text(content.structured?.partyReference)
+      || text(content.structured?.referenceNumber),
+  );
   const [note, setNote] = useState('');
   const [signerName, setSignerName] = useState(profile?.full_name || '');
   const [recordsConsent, setRecordsConsent] = useState(false);
@@ -142,7 +150,17 @@ export function CollaborationAgreementView({ bundle, onReload }: CollaborationAg
     await updateCollaborationAgreementDraft(text(agreement.id), {
       title,
       summary: text(agreement.summary),
-      content: { ...content, purpose, sections: sectionDrafts },
+      party_reference: partyReference.trim() || null,
+      content: {
+        ...content,
+        purpose,
+        sections: sectionDrafts,
+        structured: {
+          ...content.structured,
+          partyReference: partyReference.trim() || null,
+          referenceNumber: partyReference.trim() || null,
+        },
+      },
     });
   }, 'agreements.saveBodySuccess');
 
@@ -150,7 +168,8 @@ export function CollaborationAgreementView({ bundle, onReload }: CollaborationAg
     const version = executedVersion || currentVersion;
     if (!version) return;
     const bytes = buildExecutedAgreementPdf({
-      referenceCode: text(agreement.reference_code) || text(agreement.id),
+      referenceCode: text(agreement.reference_code) || null,
+      partyReference: partyReference.trim() || null,
       title,
       agreementTypeLabel: t(`agreements.types.${text(agreement.agreement_type) || 'general'}`),
       versionNumber: version.version_number,
@@ -175,7 +194,7 @@ export function CollaborationAgreementView({ bundle, onReload }: CollaborationAg
         : t('agreements.externalExecutionPdfNote', { method: text(agreement.execution_method) || 'external' }),
     });
     downloadPdfBytes(
-      executedAgreementFilename(text(agreement.reference_code) || 'agreement', version.version_number),
+      executedAgreementFilename(text(agreement.reference_code) || partyReference.trim() || 'agreement', version.version_number),
       bytes,
     );
   };
@@ -186,9 +205,7 @@ export function CollaborationAgreementView({ bundle, onReload }: CollaborationAg
     <div className="mx-auto flex max-w-3xl flex-col gap-4 px-4 py-6">
       <AppPageHeader
         title={title}
-        subtitle={[text(agreement.reference_code), t(`agreements.types.${text(agreement.agreement_type) || 'general'}`)]
-          .filter(Boolean)
-          .join(' · ')}
+        subtitle={t(`agreements.types.${text(agreement.agreement_type) || 'general'}`)}
         fallbackPath="/agreements"
         actions={<Badge variant="secondary">{t(`agreements.status.${status}`)}</Badge>}
       />
@@ -346,32 +363,73 @@ export function CollaborationAgreementView({ bundle, onReload }: CollaborationAg
 
       {section === 'agreement' ? (
         <div className="space-y-3">
-          <Label htmlFor="purpose">{t('agreements.fieldPurpose')}</Label>
+          <div className="flex items-baseline justify-between gap-4">
+            <h2 className="min-w-0 text-xl font-semibold tracking-tight">
+              {text(content.structured?.documentHeading) || t(`agreements.types.${text(agreement.agreement_type) || 'general'}`)}
+            </h2>
+            {canEdit ? (
+              <AgreementFitInput
+                id="agreement-view-party-reference"
+                testId="agreement-party-reference"
+                value={partyReference}
+                placeholder={t('agreements.partyReferencePlaceholder')}
+                ariaLabel={t('agreements.partyReference')}
+                tone="muted"
+                className="min-w-[4.75rem] shrink-0 text-right text-sm"
+                onChange={(value) => setPartyReference(sanitizeAgreementReferenceInput(value))}
+              />
+            ) : partyReference ? (
+              <p className="shrink-0 text-right text-sm font-normal text-muted-foreground">{partyReference}</p>
+            ) : null}
+          </div>
+          <Label>{t('agreements.fieldPurpose')}</Label>
           {canEdit ? (
-            <Textarea id="purpose" value={purpose} onChange={(event) => setPurpose(event.target.value)} className="min-h-[96px]" />
+            <AgreementRichText
+              value={purpose}
+              placeholder={t('agreements.fieldPurpose')}
+              ariaLabel={t('agreements.fieldPurpose')}
+              testId="agreement-view-purpose"
+              onChange={setPurpose}
+            />
           ) : (
-            <p className="whitespace-pre-wrap rounded-xl border border-border/60 bg-muted/20 p-4 text-sm">{purpose || t('agreements.emptySection')}</p>
+            <AgreementFormattedBody
+              html={purpose}
+              empty={t('agreements.emptySection')}
+              className="rounded-xl border border-border/60 bg-muted/20 p-4 text-sm"
+            />
           )}
           {sectionDrafts.map((item, index) => (
             <div key={item.id || index} className="space-y-2">
               <p className="text-sm font-medium">{item.title}</p>
               {canEdit ? (
-                <Textarea
+                <AgreementRichText
                   value={item.body}
-                  onChange={(event) => {
+                  placeholder={t('agreements.emptySection')}
+                  ariaLabel={item.title || t('agreements.emptySection')}
+                  testId={`agreement-view-section-${item.id || index}`}
+                  onChange={(body) => {
                     const next = [...sectionDrafts];
-                    next[index] = { ...item, body: event.target.value };
+                    next[index] = { ...item, body };
                     setSectionDrafts(next);
                   }}
-                  className="min-h-[88px]"
                 />
               ) : (
-                <p className="whitespace-pre-wrap rounded-xl border border-border/60 bg-muted/20 p-4 text-sm">
-                  {item.body || t('agreements.emptySection')}
-                </p>
+                <AgreementFormattedBody
+                  html={item.body}
+                  empty={t('agreements.emptySection')}
+                  className="rounded-xl border border-border/60 bg-muted/20 p-4 text-sm"
+                />
               )}
             </div>
           ))}
+          {text(agreement.reference_code) ? (
+            <p
+              data-testid="agreement-civizen-reference"
+              className="pt-4 text-right text-[11px] leading-none text-muted-foreground/80"
+            >
+              {text(agreement.reference_code)}
+            </p>
+          ) : null}
           {status === 'in_review' ? (
             <div className="space-y-2">
               <Label htmlFor="review-note">{t('agreements.reviewNote')}</Label>

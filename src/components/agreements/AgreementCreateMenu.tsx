@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { cloneElement, isValidElement, useEffect, useMemo, useRef, useState, type ReactElement, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 
@@ -27,7 +27,12 @@ function typeLabel(type: AgreementType, t: (key: string) => string) {
   return t(agreementTypeDefinition(type)?.labelKey || `agreements.types.${type}`);
 }
 
-export function AgreementCreateMenu() {
+type AgreementCreateMenuProps = {
+  trigger?: ReactNode;
+  onSelect?: (type: AgreementType, customType?: string) => void;
+};
+
+export function AgreementCreateMenu({ trigger, onSelect }: AgreementCreateMenuProps = {}) {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -67,6 +72,10 @@ export function AgreementCreateMenu() {
 
   const chooseType = (type: AgreementType, customType?: string) => {
     closeMenu();
+    if (onSelect) {
+      onSelect(type, customType);
+      return;
+    }
     navigate(agreementsCreatePath({ agreementType: type, customType }));
   };
 
@@ -78,6 +87,56 @@ export function AgreementCreateMenu() {
     }),
     [query, showMore, t],
   );
+
+  const triggerHandlers = {
+    onMouseEnter: () => {
+      if (canHoverOpen()) openMenu();
+    },
+    onMouseLeave: () => {
+      if (canHoverOpen()) scheduleClose();
+    },
+    onPointerDown: (event: { preventDefault: () => void }) => {
+      event.preventDefault();
+    },
+    onClick: (event: { preventDefault: () => void }) => {
+      event.preventDefault();
+      if (canHoverOpen()) {
+        openMenu();
+        return;
+      }
+      setOpen((current) => !current);
+    },
+  };
+
+  const resolvedTrigger = trigger && isValidElement(trigger)
+    ? cloneElement(trigger as ReactElement<{
+      onMouseEnter?: () => void;
+      onMouseLeave?: () => void;
+      onPointerDown?: (event: { preventDefault: () => void }) => void;
+      onClick?: (event: { preventDefault: () => void }) => void;
+      'aria-expanded'?: boolean;
+      'aria-haspopup'?: 'menu';
+    }>, {
+      ...triggerHandlers,
+      'aria-expanded': open,
+      'aria-haspopup': 'menu',
+    })
+    : (
+      <Button
+        type="button"
+        size="icon"
+        variant="ghost"
+        className="h-9 w-9 shrink-0 text-primary hover:bg-primary/10"
+        aria-label={t('agreements.createAction')}
+        aria-expanded={open}
+        aria-haspopup="menu"
+        title={t('agreements.createAction')}
+        data-testid="agreements-create"
+        {...triggerHandlers}
+      >
+        <Plus className="h-5 w-5" aria-hidden />
+      </Button>
+    );
 
   return (
     <Popover
@@ -92,36 +151,7 @@ export function AgreementCreateMenu() {
       }}
     >
       <PopoverTrigger asChild>
-        <Button
-          type="button"
-          size="icon"
-          variant="ghost"
-          className="h-9 w-9 shrink-0 text-primary hover:bg-primary/10"
-          aria-label={t('agreements.createAction')}
-          aria-expanded={open}
-          aria-haspopup="menu"
-          title={t('agreements.createAction')}
-          data-testid="agreements-create"
-          onMouseEnter={() => {
-            if (canHoverOpen()) openMenu();
-          }}
-          onMouseLeave={() => {
-            if (canHoverOpen()) scheduleClose();
-          }}
-          onPointerDown={(event) => {
-            event.preventDefault();
-          }}
-          onClick={(event) => {
-            event.preventDefault();
-            if (canHoverOpen()) {
-              openMenu();
-              return;
-            }
-            setOpen((current) => !current);
-          }}
-        >
-          <Plus className="h-5 w-5" aria-hidden />
-        </Button>
+        {resolvedTrigger}
       </PopoverTrigger>
       <PopoverContent
         align="start"

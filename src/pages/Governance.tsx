@@ -1302,14 +1302,14 @@ export default function Governance() {
     setProposalDraft({
       title: 'Civizen Agreements MVP and Governance Vote-Flow Test',
       summary:
-        'Introduce digital agreement templates linked from Market into a dedicated Agreements workspace, then run this vote with Nela to validate the collective governance flow.',
+        'Introduce digital agreement templates linked from Market into a dedicated Agreements workspace, then run this vote with Civi to validate the collective governance flow.',
       body: [
         'Initiator: ' + initiatorLabel,
         '',
         'Proposal objective',
         '- Launch a minimum viable Agreements module for buyer-seller and service-provider agreements in Civizen.',
         '- Keep Market as the discovery entry point, and route drafting/signing to Agreements workspace.',
-        '- Use this proposal as a live test for multi-citizen voting (initiator + Nela).',
+        '- Use this proposal as a live test for multi-citizen voting (initiator + Civi).',
         '',
         'MVP scope',
         '- Add Agreement templates: Core, Product, and Service.',
@@ -1325,7 +1325,7 @@ export default function Governance() {
         '- Signed agreement appears in both parties history with audit trail.',
         '',
         'Governance acceptance criteria',
-        '- This proposal remains open long enough for both me and Nela to vote.',
+        '- This proposal remains open long enough for both me and Civi to vote.',
         '- Both votes are visible in Governance > Proposals tally and event history.',
         '- Proposal can finalize according to quorum/threshold rules without errors.',
         '- Final decision summary is recorded and visible in proposal details.',
@@ -1335,7 +1335,7 @@ export default function Governance() {
         ...createEmptyGovernanceProposalDraft().execution,
         actionType: 'manual_follow_through',
         notes:
-          'After approval, implement Agreements MVP with Market entry integration and run vote-flow QA with initiator and Nela accounts.',
+          'After approval, implement Agreements MVP with Market entry integration and run vote-flow QA with initiator and Civi accounts.',
       },
     });
   };

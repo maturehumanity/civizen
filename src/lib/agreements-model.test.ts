@@ -17,6 +17,14 @@ import {
   formatAgreementReference,
   agreementNumberFromReference,
   agreementReferenceFromNumber,
+  sanitizeAgreementReferenceInput,
+  addCalendarYears,
+  formatAgreementDate,
+  isContributionLaunchSource,
+  localIsoDate,
+  partyReferenceStem,
+  suggestedPartyReference,
+  isCivizenAgreementReference,
   isEditableStatus,
   marketTypeFromTemplateKey,
   nextAgreementAction,
@@ -93,6 +101,28 @@ describe('agreements identity and signing progress', () => {
     expect(formatAgreementReference(2026, 1)).toBe('AGR-2026-0001');
     expect(agreementNumberFromReference('AGR-2026-0001')).toBe('1');
     expect(agreementReferenceFromNumber('12', 2026)).toBe('AGR-2026-0012');
+    expect(agreementReferenceFromNumber('AGR-2026-0001')).toBe('AGR-2026-0001');
+    expect(agreementReferenceFromNumber('mou-2026-12')).toBe('MOU-2026-12');
+    expect(sanitizeAgreementReferenceInput('#agr-2026-0001!')).toBe('AGR-2026-0001');
+  });
+
+  it('defaults a party reference from person initials or an organization abbreviation', () => {
+    expect(partyReferenceStem('Alex Rivera', 'person')).toBe('AR');
+    expect(partyReferenceStem('Cedar River University', 'organization')).toBe('CRU');
+    expect(partyReferenceStem('USC', 'organization')).toBe('USC');
+    expect(suggestedPartyReference('Cedar River University')).toBe('CRU');
+    expect(isCivizenAgreementReference('AGR-2026-0001')).toBe(true);
+    expect(isCivizenAgreementReference('USC-2026-04')).toBe(false);
+  });
+
+  it('uses a calendar-year increment and a Feb 29 fallback', () => {
+    expect(addCalendarYears('2026-08-13', 1)).toBe('2027-08-13');
+    expect(addCalendarYears('2024-02-29', 1)).toBe('2025-02-28');
+    expect(addCalendarYears('2024-02-29', 4)).toBe('2028-02-29');
+    expect(formatAgreementDate('2026-08-13')).toBe('Aug 13, 2026');
+    expect(localIsoDate(new Date(2026, 7, 13))).toBe('2026-08-13');
+    expect(isContributionLaunchSource('opportunity')).toBe(true);
+    expect(isContributionLaunchSource('market_listing')).toBe(false);
   });
 
   it('shows party-level signing progress', () => {
@@ -181,6 +211,7 @@ describe('executed agreement PDF', () => {
   it('emits a downloadable PDF for the executed record', () => {
     const bytes = buildExecutedAgreementPdf({
       referenceCode: 'AGR-2026-0001',
+      partyReference: 'CRU-2026-04',
       title: 'Pilot Collaboration Agreement',
       agreementTypeLabel: 'Pilot / Collaboration Agreement',
       versionNumber: 2,
@@ -201,6 +232,7 @@ describe('executed agreement PDF', () => {
     const text = new TextDecoder().decode(bytes);
     expect(text.startsWith('%PDF-1.4')).toBe(true);
     expect(text).toContain('AGR-2026-0001');
+    expect(text).toContain('Party reference: CRU-2026-04');
     expect(text).toContain('Integrity fingerprint');
     expect(text).not.toContain('legally certified');
     expect(executedAgreementFilename('AGR-2026-0001', 2)).toBe('AGR-2026-0001-v2.pdf');

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Civi option: Companion">
+  <defs>
+    <linearGradient id="civi-k-bg" x1="18%" y1="8%" x2="86%" y2="96%">
+      <stop offset="0%" stop-color="#10252A"/>
+      <stop offset="55%" stop-color="#16564F"/>
+      <stop offset="100%" stop-color="#218C82"/>
+    </linearGradient>
+  </defs>
+  <circle cx="64" cy="64" r="62" fill="url(#civi-k-bg)"/>
+  <circle cx="50" cy="52" r="6.5" fill="#F4FBF9"/>
+  <circle cx="78" cy="52" r="6.5" fill="#F4FBF9"/>
+  <path
+    d="M40 78c6.5 12 16.5 18.5 24 18.5S81.5 90 88 78"
+    fill="none"
+    stroke="#F5A623"
+    stroke-width="8"
+    stroke-linecap="round"
+  />
+</svg>

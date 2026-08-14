@@ -7,12 +7,29 @@ import {
   parseImpactEvidence,
   type ContributionImpactAssessment,
 } from '@/lib/civizen-contribution-impact';
+import { parseContributionRoles } from '@/lib/civizen-contributor-function';
+import {
+  assessHumanContributionSubstance,
+  blendOutcomeQualityWithHumanSubstance,
+  enrichHumanRolesForEvaluation,
+  executionMethodFromEvidence,
+  humanContributionSummary,
+  HUMAN_CONTRIBUTION_SUBSTANCE_VERSION,
+  type ExecutionMethod,
+  type HumanContributionSubstance,
+} from '@/lib/civizen-human-contribution-substance';
+import {
+  classifyHumanProvenanceText,
+  evaluationProvenanceInstructions,
+  involvementFromClassifications,
+  type HumanInvolvementEvidence,
+} from '@/lib/civizen-contribution-provenance';
 import {
   evaluateDevelopmentSignificance,
   type DevelopmentContributionFunction,
 } from '@/lib/civizen-development-significance';
 
-export const CONTRIBUTION_EVALUATION_VERSION = 'contribution-evaluation-v2';
+export const CONTRIBUTION_EVALUATION_VERSION = 'contribution-evaluation-v3';
 
 export type ContributionMaturityStage =
   | 'initial_evaluation'
@@ -69,6 +86,12 @@ export type ContributionLifecycleView = {
   reconstructionResult: string | null;
   roles: string[];
   implementationAssisted: boolean;
+  executionMethod: ExecutionMethod;
+  humanSubstanceVersion: string;
+  humanSubstance: HumanContributionSubstance | null;
+  humanContributionSummary: string | null;
+  humanInvolvement: HumanInvolvementEvidence | null;
+  provenanceVolume: number | null;
   domain: string | null;
   subsystems: string[];
   adverseOutcome: boolean;
@@ -95,6 +118,23 @@ function metaString(meta: Record<string, unknown>, key: string): string | null {
 
 function asNumber(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function parseInvolvement(meta: Record<string, unknown>, linkedInstructions: string[]): HumanInvolvementEvidence | null {
+  const raw = meta.humanInvolvement;
+  if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+    const rec = raw as Record<string, unknown>;
+    return {
+      substantiveInteractions: asNumber(rec.substantiveInteractions) ?? 0,
+      revisionCycles: asNumber(rec.revisionCycles) ?? 0,
+      spanDays: asNumber(rec.spanDays),
+      promptCountUsedForScore: false,
+    };
+  }
+  if (linkedInstructions.length === 0) return null;
+  return involvementFromClassifications(linkedInstructions.map((instruction) => ({
+    classification: classifyHumanProvenanceText(instruction),
+  })));
 }
 
 export function verificationKind(event: ContributionEvent): ContributionVerificationKind {
@@ -154,6 +194,25 @@ export function evaluateContributionLifecycle(event: ContributionEvent): Contrib
   let subsystems: string[] = [];
   let qualityEvidence = 'unknown';
   let collaboration: number | null = asNumber(event.rawMeta.collaborationScore);
+  const assisted = event.rawMeta.implementationAssisted === true;
+  const linkedInstructions = evaluationProvenanceInstructions(
+    Array.isArray(event.rawMeta.linkedInstructions)
+      ? event.rawMeta.linkedInstructions.filter((item): item is string => typeof item === 'string')
+      : [],
+  );
+  const reconstruction = event.rawMeta.reconstruction === true || typeof event.rawMeta.reconstructionResult === 'string';
+  const roles = event.eventType === 'development_story'
+    ? enrichHumanRolesForEvaluation({
+      storedRoles: parseContributionRoles(event.rawMeta.contributionRoles ?? event.rawMeta.roles),
+      title: event.title,
+      instruction: metaString(event.rawMeta, 'instruction'),
+      linkedInstructions,
+      implementationAssisted: assisted,
+      reconstruction,
+    })
+    : [];
+  const executionMethod = executionMethodFromEvidence({ implementationAssisted: assisted, roles });
+  let humanSubstance: HumanContributionSubstance | null = null;
 
   if (event.eventType === 'development_story') {
     const significance = evaluateDevelopmentSignificance({
@@ -161,10 +220,27 @@ export function evaluateContributionLifecycle(event: ContributionEvent): Contrib
       testsPassed,
       contributionFunction: metaString(event.rawMeta, 'contributionFunction'),
       title: event.title,
-      roles: event.rawMeta.contributionRoles ?? event.rawMeta.roles,
-      implementationAssisted: event.rawMeta.implementationAssisted === true,
+      roles,
+      implementationAssisted: assisted,
     });
-    quality = developmentQuality(significance.structuralSignificance, testsPassed, significance.scope);
+    const outcomeQuality = developmentQuality(significance.structuralSignificance, testsPassed, significance.scope);
+    const involvement = parseInvolvement(event.rawMeta, linkedInstructions);
+    humanSubstance = assessHumanContributionSubstance({
+      title: event.title,
+      instruction: metaString(event.rawMeta, 'instruction'),
+      linkedInstructions,
+      roles,
+      implementationAssisted: assisted,
+      testsPassed,
+      provenanceCount: asNumber(event.rawMeta.provenanceCount),
+      substantiveInteractions: involvement?.substantiveInteractions,
+      revisionCycles: involvement?.revisionCycles,
+      durationMinutes: asNumber(event.rawMeta.durationMinutes),
+      affectedPaths: paths,
+      structuralSignificance: significance.structuralSignificance,
+      historicalReconstruction: reconstruction,
+    });
+    quality = blendOutcomeQualityWithHumanSubstance(outcomeQuality, humanSubstance);
     contributionFunction = significance.contributionFunction;
     artifactFunction = significance.artifactFunction;
     structuralSignificance = significance.structuralSignificance;
@@ -266,10 +342,14 @@ export function evaluateContributionLifecycle(event: ContributionEvent): Contrib
     verificationKind: kind,
     reconstructionResult: metaString(event.rawMeta, 'reconstructionResult') ??
       (event.rawMeta.reconstruction === true ? 'reconstructed' : null),
-    roles: Array.isArray(event.rawMeta.contributionRoles)
-      ? event.rawMeta.contributionRoles.filter((item): item is string => typeof item === 'string')
-      : [],
-    implementationAssisted: event.rawMeta.implementationAssisted === true,
+    roles,
+    implementationAssisted: assisted,
+    executionMethod,
+    humanSubstanceVersion: HUMAN_CONTRIBUTION_SUBSTANCE_VERSION,
+    humanSubstance,
+    humanContributionSummary: humanSubstance ? humanContributionSummary(roles, executionMethod) : null,
+    humanInvolvement: parseInvolvement(event.rawMeta, linkedInstructions),
+    provenanceVolume: asNumber(event.rawMeta.provenanceCount),
     domain: metaString(event.rawMeta, 'domain'),
     subsystems,
     adverseOutcome: impact.adverseOutcome,

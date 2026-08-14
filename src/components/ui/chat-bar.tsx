@@ -16,7 +16,6 @@ import {
   CameraOff,
   Loader2,
   Search,
-  UserPlus,
   ChevronLeft,
   Star,
   Pencil,
@@ -39,7 +38,9 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { CiviAvatar, CiviInboxRow } from '@/components/ui/civi-avatar';
 import { ChatMessageRow } from '@/components/ui/chat-message-row';
+import { MessagingPeopleSearch } from '@/components/ui/messaging-people-search';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -65,7 +66,37 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { NELA_ASSISTANT_PROFILE_ID, resolveMessagingAvatarUrl } from '@/lib/messaging-constants';
+import {
+  CIVI_ASSISTANT_DISPLAY_NAME,
+  CIVI_ASSISTANT_USERNAME,
+  NELA_ASSISTANT_PROFILE_ID,
+  resolveMessagingAvatarUrl,
+} from '@/lib/messaging-constants';
+import { shareCivizenInvite } from '@/lib/civizen-invite';
+import {
+  dialDigitsFromProfileCountry,
+  phoneLookupCandidates,
+  phonesLikelyMatch,
+} from '@/lib/contact-phone';
+import {
+  deviceContactsAreAvailable,
+  filterDeviceContacts,
+  getDeviceContactsAccess,
+  nativeDeviceContactsAreAvailable,
+  pickWebContacts,
+  readDeviceContacts,
+  requestDeviceContactsAccess,
+  type DeviceContact,
+  type DeviceContactsAccess,
+} from '@/lib/device-contacts';
+import {
+  DISAPPEARING_MINUTE_OPTIONS,
+  MESSAGE_EDIT_WINDOW_MS,
+  MESSAGE_UNSEND_WINDOW_MS,
+  isAllowedDisappearingMinutes,
+  isWithinMessageActionWindow,
+  messageIsVisibleUnderDisappearing,
+} from '@/lib/messaging-thread-policy';
 import {
   buildSharedEncryptionKey,
   decryptUtf8Plaintext,
@@ -120,6 +151,8 @@ interface PrivateConversationRow {
   last_content: string | null;
   last_at: string | null;
   last_is_e2ee?: boolean;
+  disappearing_minutes?: number | null;
+  disappearing_started_at?: string | null;
 }
 
 interface PrivateMsgRow {
@@ -184,7 +217,6 @@ const MESSAGING_LAST_READ_PREFIX = 'messaging_last_read_v1';
 const MESSAGING_FAVOURITES_PREFIX = 'messaging_favourites_v1';
 const MESSAGING_MUTED_PREFIX = 'messaging_muted_threads_v1';
 const MESSAGING_STARRED_PREFIX = 'messaging_starred_v1';
-const MESSAGING_DISAPPEARING_PREFIX = 'messaging_disappearing_minutes_v1';
 const MESSAGING_WALLPAPER_PREFIX = 'messaging_wallpaper_v1';
 
 function profileStorageKey(prefix: string, profileId: string) {
@@ -356,7 +388,6 @@ const GROUP_VOICE_MAX_PARTICIPANTS = 8;
 const MESSAGING_ATTACHMENTS_BUCKET = 'messaging-attachments';
 const MAX_MESSAGING_UPLOAD_BYTES = 12 * 1024 * 1024;
 const SIGNED_ATTACHMENT_TTL_SECONDS = 60 * 60 * 24 * 30;
-const MESSAGE_EDIT_WINDOW_MS = 5 * 60 * 1000;
 
 const MESSAGING_EMOJI_PALETTE: string[] = [
   '😀', '😃', '😄', '😁', '😅', '😂', '🤣', '😊', '😇', '🙂', '😉', '😍', '🥰', '😘', '😋', '😛', '🤪', '😝', '🤑', '🤗', '🤭', '🤔', '🤐', '😐', '😑', '😏', '😒', '🙄', '😬', '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕', '🤢', '🤮', '🤧', '🥵', '🔥', '✨', '⭐', '🎉', '🙏', '👍', '👎', '👏', '🙌', '💪', '👋', '🫡', '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '💯', '✅', '❌', '⚠️', '📎', '📷', '🎤', '💬',
@@ -460,8 +491,9 @@ export function ChatBar({
   const [searchOnlyStarred, setSearchOnlyStarred] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [starredMessageIds, setStarredMessageIds] = useState<Set<string>>(() => new Set());
-  const [disappearingMinutesByConversation, setDisappearingMinutesByConversation] = useState<Record<string, number>>({});
   const [wallpaperByConversation, setWallpaperByConversation] = useState<Record<string, string>>({});
+  const [disappearingTick, setDisappearingTick] = useState(0);
+  const [disappearingBusy, setDisappearingBusy] = useState(false);
   const messageLongPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressConsumedClickRef = useRef(false);
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
@@ -476,6 +508,19 @@ export function ChatBar({
   const [contactQuery, setContactQuery] = useState('');
   const [contactResults, setContactResults] = useState<SavedContact[]>([]);
   const [contactSearchLoading, setContactSearchLoading] = useState(false);
+  const [peopleSearchFocused, setPeopleSearchFocused] = useState(false);
+  const [deviceContactsAccess, setDeviceContactsAccess] = useState<DeviceContactsAccess>('unsupported');
+  const [deviceContacts, setDeviceContacts] = useState<DeviceContact[]>([]);
+  const [deviceContactsDismissed, setDeviceContactsDismissed] = useState(false);
+  const [registeredPhoneProfiles, setRegisteredPhoneProfiles] = useState<
+    Array<{
+      phone_digits: string;
+      profile_id: string;
+      username: string | null;
+      full_name: string | null;
+      avatar_url: string | null;
+    }>
+  >([]);
   const [selectedCallScope, setSelectedCallScope] = useState<CallScope>('direct');
   const [selectedTargetProfileId, setSelectedTargetProfileId] = useState('');
   const [callStatus, setCallStatus] = useState<CallStatus>('idle');
@@ -562,6 +607,8 @@ export function ChatBar({
   const [mutedConversationIds, setMutedConversationIds] = useState<Set<string>>(() => new Set());
   const [clearChatConfirmOpen, setClearChatConfirmOpen] = useState(false);
   const [clearChatBusy, setClearChatBusy] = useState(false);
+  const [hideChatConfirmOpen, setHideChatConfirmOpen] = useState(false);
+  const [hideChatBusy, setHideChatBusy] = useState(false);
   const [blockedProfileIds, setBlockedProfileIds] = useState<Set<string>>(() => new Set());
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
   const [reportReason, setReportReason] = useState('');
@@ -575,30 +622,12 @@ export function ChatBar({
       setFavouriteConversationIds(new Set());
       setMutedConversationIds(new Set());
       setBlockedProfileIds(new Set());
-      setDisappearingMinutesByConversation({});
       setWallpaperByConversation({});
       return;
     }
     setLastReadAtByConversation(loadLastReadMap(profile.id));
     setFavouriteConversationIds(loadFavouriteIdSet(profile.id));
     setMutedConversationIds(loadMutedIdSet(profile.id));
-    try {
-      const disappearingRaw = window.localStorage.getItem(
-        profileStorageKey(MESSAGING_DISAPPEARING_PREFIX, profile.id),
-      );
-      if (disappearingRaw) {
-        const parsed = JSON.parse(disappearingRaw) as Record<string, unknown>;
-        const next: Record<string, number> = {};
-        for (const [key, value] of Object.entries(parsed ?? {})) {
-          if (typeof value === 'number' && Number.isFinite(value) && value >= 0) next[key] = value;
-        }
-        setDisappearingMinutesByConversation(next);
-      } else {
-        setDisappearingMinutesByConversation({});
-      }
-    } catch {
-      setDisappearingMinutesByConversation({});
-    }
     try {
       const wallpaperRaw = window.localStorage.getItem(
         profileStorageKey(MESSAGING_WALLPAPER_PREFIX, profile.id),
@@ -936,30 +965,55 @@ export function ChatBar({
   );
   const threadUsername = selectedConversationRow?.peer_username?.trim() || null;
   const isThreadBlocked = Boolean(threadMemberProfileId && blockedProfileIds.has(threadMemberProfileId));
-  const activeDisappearingMinutes = selectedConversationId
-    ? disappearingMinutesByConversation[selectedConversationId] ?? 0
-    : 0;
+  const activeDisappearingMinutes = selectedConversationRow?.disappearing_minutes ?? 0;
+  const activeDisappearingStartedAt = selectedConversationRow?.disappearing_started_at ?? null;
   const activeWallpaper = selectedConversationId
     ? wallpaperByConversation[selectedConversationId] ?? 'default'
     : 'default';
 
+  const disappearingDurationLabel = (minutes: number) => {
+    if (minutes <= 0) return t('chatBar.private.profile.disappearOff');
+    if (minutes < 1440) return t('chatBar.private.profile.disappearHours', { hours: minutes / 60 });
+    return t('chatBar.private.profile.disappearDays', { days: minutes / 1440 });
+  };
+
   const setDisappearingMinutes = useCallback(
-    (minutes: number) => {
-      if (!profile?.id || !selectedConversationId) return;
-      setDisappearingMinutesByConversation((prev) => {
-        const next = { ...prev, [selectedConversationId]: minutes };
-        try {
-          window.localStorage.setItem(
-            profileStorageKey(MESSAGING_DISAPPEARING_PREFIX, profile.id),
-            JSON.stringify(next),
+    async (minutes: number) => {
+      if (!profile?.id || !selectedConversationId || !isDirectThread) return;
+      if (!isAllowedDisappearingMinutes(minutes)) return;
+      setDisappearingBusy(true);
+      try {
+        const { error } = await supabase.rpc('private_set_conversation_disappearing', {
+          p_conversation_id: selectedConversationId,
+          p_minutes: minutes,
+        });
+        if (error) {
+          const reason = error.message?.trim();
+          toast.error(
+            reason
+              ? tRef.current('chatBar.private.profile.disappearingFailedWithReason', { reason })
+              : tRef.current('chatBar.private.profile.disappearingFailed'),
           );
-        } catch {
-          /* ignore */
+          return;
         }
-        return next;
-      });
+        const startedAt = minutes > 0 ? new Date().toISOString() : null;
+        setConversations((prev) =>
+          prev.map((row) =>
+            row.conversation_id === selectedConversationId
+              ? { ...row, disappearing_minutes: minutes, disappearing_started_at: startedAt }
+              : row,
+          ),
+        );
+        toast.success(
+          minutes > 0
+            ? tRef.current('chatBar.private.profile.disappearingUpdated')
+            : tRef.current('chatBar.private.profile.disappearingOff'),
+        );
+      } finally {
+        setDisappearingBusy(false);
+      }
     },
-    [profile?.id, selectedConversationId],
+    [isDirectThread, profile?.id, selectedConversationId],
   );
 
   const setWallpaperTheme = useCallback(
@@ -1057,18 +1111,28 @@ export function ChatBar({
   }, [threadMediaLinks]);
 
   const visibleMessages = useMemo(() => {
-    let filtered = messages;
-    if (activeDisappearingMinutes > 0) {
-      const cutoff = Date.now() - activeDisappearingMinutes * 60 * 1000;
-      filtered = filtered.filter((m) => new Date(m.created_at).getTime() >= cutoff);
-    }
+    let filtered = messages.filter((m) =>
+      messageIsVisibleUnderDisappearing({
+        createdAt: m.created_at,
+        disappearingMinutes: activeDisappearingMinutes,
+        disappearingStartedAt: activeDisappearingStartedAt,
+      }),
+    );
     if (searchOnlyStarred) {
       filtered = filtered.filter((m) => starredMessageIds.has(m.id));
     }
     const q = searchQuery.trim().toLowerCase();
     if (!q) return filtered;
     return filtered.filter((m) => (m.content || '').toLowerCase().includes(q));
-  }, [activeDisappearingMinutes, messages, searchOnlyStarred, searchQuery, starredMessageIds]);
+  }, [
+    activeDisappearingMinutes,
+    activeDisappearingStartedAt,
+    disappearingTick,
+    messages,
+    searchOnlyStarred,
+    searchQuery,
+    starredMessageIds,
+  ]);
 
   const starredMessages = useMemo(
     () => messages.filter((m) => starredMessageIds.has(m.id)),
@@ -1120,6 +1184,11 @@ export function ChatBar({
       return;
     }
     const convId = selectedConversationId;
+    const kind = resolveConversationKind(convId, conversations, conversationKindByIdRef);
+    if (kind !== 'agent') {
+      setClearChatConfirmOpen(false);
+      return;
+    }
     setClearChatBusy(true);
     let refetchedRows: PrivateMsgRow[] = [];
     try {
@@ -1161,13 +1230,7 @@ export function ChatBar({
         );
       }
 
-      const remaining = refetchedRows.length;
-      const kind = resolveConversationKind(convId, conversations, conversationKindByIdRef);
-      if (remaining > 0 && kind === 'direct') {
-        toast.info(tRef.current('chatBar.inbox.menu.clearChatPartial'));
-      } else {
-        toast.success(tRef.current('chatBar.inbox.menu.clearChatDone'));
-      }
+      toast.success(tRef.current('chatBar.inbox.menu.clearChatDone'));
 
       const { data: list } = await supabase.rpc('private_list_my_conversations');
       if (list) setConversations(list as PrivateConversationRow[]);
@@ -1176,6 +1239,39 @@ export function ChatBar({
       setClearChatConfirmOpen(false);
     }
   }, [profile?.id, selectedConversationId, conversations]);
+
+  const handleHideChatConfirmed = useCallback(async () => {
+    if (!profile?.id || !selectedConversationId || !isDirectThread) {
+      setHideChatConfirmOpen(false);
+      return;
+    }
+    const convId = selectedConversationId;
+    setHideChatBusy(true);
+    try {
+      const { error } = await supabase.rpc('private_hide_my_conversation', {
+        p_conversation_id: convId,
+      });
+      if (error) {
+        const reason = error.message?.trim();
+        toast.error(
+          reason
+            ? tRef.current('chatBar.inbox.menu.hideChatFailedWithReason', { reason })
+            : tRef.current('chatBar.inbox.menu.hideChatFailed'),
+        );
+        return;
+      }
+      setConversations((prev) => prev.filter((row) => row.conversation_id !== convId));
+      toast.success(tRef.current('chatBar.inbox.menu.hideChatDone'));
+      if (variant === 'page') {
+        navigate('/messaging');
+      } else {
+        setSelectedConversationId(null);
+      }
+    } finally {
+      setHideChatBusy(false);
+      setHideChatConfirmOpen(false);
+    }
+  }, [isDirectThread, profile?.id, selectedConversationId, variant, navigate]);
 
   const isAgentThread = useMemo(() => {
     if (!routeConversationId) return false;
@@ -1284,6 +1380,110 @@ export function ChatBar({
 
     return () => window.clearTimeout(handle);
   }, [contactQuery, profile?.id]);
+
+  const contactsPromptActive =
+    peopleSearchFocused ||
+    (isMessagingInbox && inboxSearchOpen) ||
+    contactQuery.trim().length >= 2;
+
+  useEffect(() => {
+    if (!profile?.id || !contactsPromptActive) return;
+    let cancelled = false;
+    void getDeviceContactsAccess().then((access) => {
+      if (!cancelled) setDeviceContactsAccess(access);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [contactsPromptActive, profile?.id]);
+
+  const loadRegisteredFromDeviceContacts = useCallback(
+    async (contacts: DeviceContact[]) => {
+      if (!profile?.id || contacts.length === 0) {
+        setRegisteredPhoneProfiles([]);
+        return;
+      }
+      const dial = dialDigitsFromProfileCountry(profile.phone_country_code || profile.country_code);
+      const phones = [
+        ...new Set(
+          contacts.flatMap((contact) =>
+            contact.phones.flatMap((phone) => phoneLookupCandidates(phone, dial)),
+          ),
+        ),
+      ].slice(0, 300);
+      if (!phones.length) {
+        setRegisteredPhoneProfiles([]);
+        return;
+      }
+      const { data, error } = await supabase.rpc('lookup_civizen_contacts_by_phone', { p_phones: phones });
+      if (error || !data) {
+        console.warn('ChatBar: contact phone lookup skipped', error);
+        setRegisteredPhoneProfiles([]);
+        return;
+      }
+      setRegisteredPhoneProfiles(data);
+    },
+    [profile?.country_code, profile?.id, profile?.phone_country_code],
+  );
+
+  const refreshDeviceContacts = useCallback(async () => {
+    try {
+      const contacts = await readDeviceContacts();
+      setDeviceContacts(contacts);
+      await loadRegisteredFromDeviceContacts(contacts);
+    } catch (error) {
+      console.warn('ChatBar: device contacts failed', error);
+      setDeviceContactsAccess('denied');
+    }
+  }, [loadRegisteredFromDeviceContacts]);
+
+  useEffect(() => {
+    if (deviceContactsAccess !== 'granted' || deviceContacts.length > 0) return;
+    void refreshDeviceContacts();
+  }, [deviceContactsAccess, deviceContacts.length, refreshDeviceContacts]);
+
+  const defaultDialDigits = dialDigitsFromProfileCountry(
+    profile?.phone_country_code || profile?.country_code,
+  );
+  const filteredDeviceContacts = useMemo(
+    () => filterDeviceContacts(deviceContacts, contactQuery),
+    [contactQuery, deviceContacts],
+  );
+  const registeredDeviceContacts = useMemo(() => {
+    const seen = new Set<string>();
+    const rows: Array<{
+      id: string;
+      username: string | null;
+      full_name: string | null;
+      avatar_url: string | null;
+      deviceName: string;
+    }> = [];
+    for (const contact of filteredDeviceContacts) {
+      const match = registeredPhoneProfiles.find((row) =>
+        contact.phones.some((phone) => phonesLikelyMatch(phone, row.phone_digits, defaultDialDigits)),
+      );
+      if (!match || seen.has(match.profile_id)) continue;
+      seen.add(match.profile_id);
+      rows.push({
+        id: match.profile_id,
+        username: match.username,
+        full_name: match.full_name,
+        avatar_url: match.avatar_url,
+        deviceName: contact.name,
+      });
+    }
+    return rows;
+  }, [defaultDialDigits, filteredDeviceContacts, registeredPhoneProfiles]);
+  const inviteDeviceContacts = useMemo(
+    () =>
+      filteredDeviceContacts.filter(
+        (contact) =>
+          !registeredPhoneProfiles.some((row) =>
+            contact.phones.some((phone) => phonesLikelyMatch(phone, row.phone_digits, defaultDialDigits)),
+          ),
+      ),
+    [defaultDialDigits, filteredDeviceContacts, registeredPhoneProfiles],
+  );
 
   useEffect(() => {
     if (!profile?.id) {
@@ -1431,6 +1631,33 @@ export function ChatBar({
     setLoading(true);
 
     void (async () => {
+      const { error: purgeError } = await supabase.rpc('private_purge_expired_disappearing_messages', {
+        p_conversation_id: selectedConversationId,
+      });
+      if (purgeError) {
+        console.warn('ChatBar: disappearing purge skipped', purgeError);
+      }
+      const { data: conversationRow, error: conversationError } = await supabase
+        .from('private_conversations')
+        .select('disappearing_minutes, disappearing_started_at')
+        .eq('id', selectedConversationId)
+        .maybeSingle();
+      if (conversationError) {
+        console.warn('ChatBar: conversation settings skipped', conversationError);
+      } else if (!cancelled && conversationRow) {
+        setConversations((prev) =>
+          prev.map((row) =>
+            row.conversation_id === selectedConversationId
+              ? {
+                  ...row,
+                  disappearing_minutes: conversationRow.disappearing_minutes ?? 0,
+                  disappearing_started_at: conversationRow.disappearing_started_at ?? null,
+                }
+              : row,
+          ),
+        );
+      }
+
       const { data, error } = await supabase
         .from('private_messages')
         .select(PRIVATE_MESSAGES_LIST_SELECT)
@@ -1542,6 +1769,32 @@ export function ChatBar({
           setMessages((prev) => prev.filter((m) => m.id !== deletedId));
         },
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'private_conversations',
+          filter: `id=eq.${selectedConversationId}`,
+        },
+        (payload) => {
+          const next = payload.new as {
+            disappearing_minutes?: number | null;
+            disappearing_started_at?: string | null;
+          };
+          setConversations((prev) =>
+            prev.map((row) =>
+              row.conversation_id === selectedConversationId
+                ? {
+                    ...row,
+                    disappearing_minutes: next.disappearing_minutes ?? 0,
+                    disappearing_started_at: next.disappearing_started_at ?? null,
+                  }
+                : row,
+            ),
+          );
+        },
+      )
       .subscribe();
 
     return () => {
@@ -1549,6 +1802,17 @@ export function ChatBar({
       void supabase.removeChannel(channel);
     };
   }, [profile?.id, selectedConversationId]);
+
+  useEffect(() => {
+    if (!selectedConversationId || activeDisappearingMinutes <= 0) return;
+    const intervalId = window.setInterval(() => {
+      setDisappearingTick((tick) => tick + 1);
+      void supabase.rpc('private_purge_expired_disappearing_messages', {
+        p_conversation_id: selectedConversationId,
+      });
+    }, 15_000);
+    return () => window.clearInterval(intervalId);
+  }, [activeDisappearingMinutes, selectedConversationId]);
 
   useEffect(() => {
     const root = scrollAreaRef.current;
@@ -2144,8 +2408,17 @@ export function ChatBar({
       if (!profile?.id) return false;
       if (message.sender_id !== profile.id) return false;
       if (message.id.startsWith('local-') || message.id.startsWith('failed-')) return false;
-      const ageMs = Date.now() - new Date(message.created_at).getTime();
-      return ageMs >= 0 && ageMs <= MESSAGE_EDIT_WINDOW_MS;
+      return isWithinMessageActionWindow(message.created_at, MESSAGE_EDIT_WINDOW_MS);
+    },
+    [profile?.id],
+  );
+
+  const isUnsendableMessage = useCallback(
+    (message: Message) => {
+      if (!profile?.id) return false;
+      if (message.sender_id !== profile.id) return false;
+      if (message.id.startsWith('local-') || message.id.startsWith('failed-')) return false;
+      return isWithinMessageActionWindow(message.created_at, MESSAGE_UNSEND_WINDOW_MS);
     },
     [profile?.id],
   );
@@ -2168,6 +2441,19 @@ export function ChatBar({
     if (candidate.sender_id === profile.id) return null;
     return candidate;
   }, [messageSelectionMode, messages, profile?.id, selectedMessageIds]);
+
+  const selectedMessagesCanUnsend = useMemo(() => {
+    if (!messageSelectionMode || selectedMessageIds.size === 0) return false;
+    const selected = messages.filter((m) => selectedMessageIds.has(m.id));
+    if (selected.length !== selectedMessageIds.size) return false;
+    return selected.every((message) => isUnsendableMessage(message));
+  }, [isUnsendableMessage, messageSelectionMode, messages, selectedMessageIds]);
+
+  const selectedMessagesCanDeleteInAgent = useMemo(() => {
+    if (!isThreadAgent && !isAgentThread) return false;
+    if (!messageSelectionMode || selectedMessageIds.size === 0) return false;
+    return [...selectedMessageIds].every((id) => !id.startsWith('local-') && !id.startsWith('failed-'));
+  }, [isAgentThread, isThreadAgent, messageSelectionMode, selectedMessageIds]);
 
   const startEditingSelectedMessage = useCallback(() => {
     if (!selectedEditableMessage) return;
@@ -2550,8 +2836,20 @@ export function ChatBar({
     if (!profile?.id || !selectedConversationId) return;
     const ids = [...selectedMessageIds].filter((id) => !id.startsWith('local-') && !id.startsWith('failed-'));
     if (!ids.length) {
-      toast.error(tRef.current('chatBar.inbox.deleteSelectedNone'));
+      toast.error(
+        isDirectThread
+          ? tRef.current('chatBar.inbox.unsendNone')
+          : tRef.current('chatBar.inbox.deleteSelectedNone'),
+      );
       return;
+    }
+    const kind = resolveConversationKind(selectedConversationId, conversations, conversationKindByIdRef);
+    if (kind === 'direct') {
+      const selected = messages.filter((m) => ids.includes(m.id));
+      if (!selected.length || !selected.every((message) => isUnsendableMessage(message))) {
+        toast.error(tRef.current('chatBar.inbox.unsendNone'));
+        return;
+      }
     }
     const { error } = await supabase.from('private_messages').delete().in('id', ids);
     if (error) {
@@ -2560,7 +2858,9 @@ export function ChatBar({
       toast.error(
         reason
           ? tRef.current('chatBar.inbox.deleteFailedWithReason', { reason })
-          : tRef.current('chatBar.inbox.deleteFailed'),
+          : kind === 'direct'
+            ? tRef.current('chatBar.inbox.unsendFailed')
+            : tRef.current('chatBar.inbox.deleteFailed'),
       );
       return;
     }
@@ -2568,9 +2868,20 @@ export function ChatBar({
     setMessages((prev) => prev.filter((m) => !ids.includes(m.id)));
     setSelectedMessageIds(new Set());
     setMessageSelectionMode(false);
+    if (kind === 'direct') {
+      toast.success(tRef.current('chatBar.inbox.unsendDone'));
+    }
     const { data: list } = await supabase.rpc('private_list_my_conversations');
     if (list) setConversations(list as PrivateConversationRow[]);
-  }, [profile?.id, selectedConversationId, selectedMessageIds]);
+  }, [
+    conversations,
+    isDirectThread,
+    isUnsendableMessage,
+    messages,
+    profile?.id,
+    selectedConversationId,
+    selectedMessageIds,
+  ]);
 
   const onMessageRowClick = (messageId: string) => {
     if (longPressConsumedClickRef.current) {
@@ -2649,12 +2960,14 @@ export function ChatBar({
         conversation_id: convId,
         kind: 'agent',
         peer_profile_id: NELA_ASSISTANT_PROFILE_ID,
-        peer_username: 'nela',
-        peer_full_name: 'Nela',
+        peer_username: CIVI_ASSISTANT_USERNAME,
+        peer_full_name: CIVI_ASSISTANT_DISPLAY_NAME,
         peer_avatar_url: null,
         last_content: null,
         last_at: null,
         last_is_e2ee: false,
+        disappearing_minutes: 0,
+        disappearing_started_at: null,
       };
       return [row, ...prev];
     });
@@ -2906,6 +3219,93 @@ export function ChatBar({
     void openDirectConversation(contact.id);
     setSelectedTargetProfileId(contact.id);
   };
+
+  const handleAllowDeviceContacts = useCallback(async () => {
+    setDeviceContactsDismissed(false);
+    const next = await requestDeviceContactsAccess();
+    setDeviceContactsAccess(next);
+    if (next === 'granted') {
+      await refreshDeviceContacts();
+    }
+  }, [refreshDeviceContacts]);
+
+  const handlePickWebContacts = useCallback(async () => {
+    try {
+      const picked = await pickWebContacts();
+      if (!picked.length) return;
+      setDeviceContacts((prev) => {
+        const byId = new Map(prev.map((row) => [row.id, row]));
+        for (const row of picked) byId.set(row.id, row);
+        const next = [...byId.values()];
+        void loadRegisteredFromDeviceContacts(next);
+        return next;
+      });
+      setDeviceContactsAccess('granted');
+    } catch {
+      /* user cancelled picker */
+    }
+  }, [loadRegisteredFromDeviceContacts]);
+
+  const handleInviteContact = useCallback(
+    async (contact: DeviceContact | { name: string; phones?: string[] }) => {
+      try {
+        const mode = await shareCivizenInvite({
+          origin: window.location.origin,
+          name: contact.name,
+          phone: contact.phones?.[0] ?? null,
+        });
+        toast.success(
+          mode === 'clipboard'
+            ? tRef.current('chatBar.contacts.inviteCopied')
+            : tRef.current('chatBar.contacts.inviteShared'),
+        );
+      } catch (error) {
+        console.warn('ChatBar: invite failed', error);
+        toast.error(tRef.current('chatBar.contacts.inviteFailed'));
+      }
+    },
+    [],
+  );
+
+  const peopleSearchLabels = {
+    loading: t('chatBar.loading'),
+    noResults: t('chatBar.contacts.noResults'),
+    viewProfile: t('chatBar.contacts.viewProfile'),
+    add: t('chatBar.contacts.add'),
+    invite: t('chatBar.contacts.invite'),
+    inviteSomeone: t('chatBar.contacts.inviteSomeone'),
+    permissionTitle: t('chatBar.contacts.permissionTitle'),
+    permissionBody: t('chatBar.contacts.permissionBody'),
+    allow: t('chatBar.contacts.allow'),
+    notNow: t('chatBar.contacts.notNow'),
+    denied: t('chatBar.contacts.denied'),
+    retry: t('chatBar.contacts.retry'),
+    chooseFromPhone: t('chatBar.contacts.chooseFromPhone'),
+    onCivizen: t('chatBar.contacts.onCivizen'),
+    inviteToCivizen: t('chatBar.contacts.inviteToCivizen'),
+    anonymous: t('chatBar.anonymous'),
+  };
+
+  const peopleSearchPanel = (queryActive: boolean) => (
+    <MessagingPeopleSearch
+      queryActive={queryActive}
+      loading={contactSearchLoading}
+      directoryResults={contactResults}
+      registeredDeviceContacts={registeredDeviceContacts}
+      inviteContacts={inviteDeviceContacts}
+      access={deviceContactsDismissed && deviceContactsAccess === 'prompt' ? 'unsupported' : deviceContactsAccess}
+      nativeAvailable={nativeDeviceContactsAreAvailable()}
+      webPickerAvailable={deviceContactsAreAvailable() && !nativeDeviceContactsAreAvailable()}
+      onAllowContacts={() => void handleAllowDeviceContacts()}
+      onNotNow={() => setDeviceContactsDismissed(true)}
+      onRetryContacts={() => void handleAllowDeviceContacts()}
+      onPickWebContacts={() => void handlePickWebContacts()}
+      onOpenProfile={(id) => navigate(`/user/${id}`)}
+      onAddMember={addContactFromSearch}
+      onInvite={(contact) => void handleInviteContact(contact)}
+      labels={peopleSearchLabels}
+    />
+  );
 
   const isPage = variant === 'page';
   const showMessagingTabs = callStatus === 'idle' && !incomingCall;
@@ -3494,6 +3894,8 @@ export function ChatBar({
                               type="search"
                               value={contactQuery}
                               onChange={(event) => setContactQuery(event.target.value)}
+                              onFocus={() => setPeopleSearchFocused(true)}
+                              onBlur={() => setPeopleSearchFocused(false)}
                               placeholder={t('chatBar.contacts.searchPlaceholder')}
                               className="h-9 border-border bg-background pl-9"
                               autoComplete="off"
@@ -3501,63 +3903,7 @@ export function ChatBar({
                             />
                           </div>
                         ) : null}
-                        {inboxSearchOpen && contactQuery.trim().length >= 2 && (
-                          <div className="max-h-36 overflow-y-auto rounded-md border border-border bg-background">
-                            {contactSearchLoading ? (
-                              <div className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground">
-                                <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" />
-                                {t('chatBar.loading')}
-                              </div>
-                            ) : contactResults.length === 0 ? (
-                              <p className="px-3 py-2 text-xs text-muted-foreground">
-                                {t('chatBar.contacts.noResults')}
-                              </p>
-                            ) : (
-                              <ul className="divide-y divide-border">
-                                {contactResults.map((row) => (
-                                  <li key={row.id}>
-                                    <div className="flex items-center gap-2 px-2 py-2">
-                                      <Avatar className="h-9 w-9 shrink-0">
-                                        <AvatarImage src={row.avatar_url || undefined} />
-                                        <AvatarFallback className="bg-primary/10 text-xs text-primary">
-                                          {getInitials(row.full_name)}
-                                        </AvatarFallback>
-                                      </Avatar>
-                                      <div className="min-w-0 flex-1">
-                                        <p className="truncate text-sm font-medium text-foreground">
-                                          {row.full_name || row.username || t('chatBar.anonymous')}
-                                        </p>
-                                        {row.username ? (
-                                          <p className="truncate text-xs text-muted-foreground">@{row.username}</p>
-                                        ) : null}
-                                      </div>
-                                      <div className="flex shrink-0 flex-col gap-1 sm:flex-row">
-                                        <Button
-                                          type="button"
-                                          variant="outline"
-                                          size="sm"
-                                          className="h-8 px-2 text-xs"
-                                          onClick={() => navigate(`/user/${row.id}`)}
-                                        >
-                                          {t('chatBar.contacts.viewProfile')}
-                                        </Button>
-                                        <Button
-                                          type="button"
-                                          size="sm"
-                                          className="h-8 gap-1 px-2 text-xs"
-                                          onClick={() => addContactFromSearch(row)}
-                                        >
-                                          <UserPlus className="h-3.5 w-3.5" />
-                                          {t('chatBar.contacts.add')}
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  </li>
-                                ))}
-                              </ul>
-                            )}
-                          </div>
-                        )}
+                        {inboxSearchOpen ? peopleSearchPanel(contactQuery.trim().length >= 2) : null}
                         {(!inboxSearchOpen || contactQuery.trim().length < 2) && savedContacts.length > 0 && (
                           <div className="space-y-1.5">
                             <p className="text-[11px] text-muted-foreground">{t('chatBar.contacts.savedHint')}</p>
@@ -3585,23 +3931,10 @@ export function ChatBar({
                             </p>
                             <div className="max-h-[min(40vh,320px)] overflow-y-auto">
                               {showNelaPinnedInInbox ? (
-                              <button
-                                type="button"
-                                onClick={() => void openNelaConversation()}
-                                className="flex w-full items-center gap-2 border-b border-border px-2 py-2 text-left transition-colors hover:bg-muted/50"
-                              >
-                                <Avatar className="h-9 w-9 shrink-0">
-                                  <AvatarImage src={resolveMessagingAvatarUrl(NELA_ASSISTANT_PROFILE_ID, null)} />
-                                  <AvatarFallback className="bg-primary/15 text-xs font-semibold text-primary">
-                                    N
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="min-w-0 flex-1">
-                                  <p className="truncate text-sm font-medium text-foreground">
-                                    {t('chatBar.private.nelaPinnedLabel')}
-                                  </p>
-                                </div>
-                              </button>
+                              <CiviInboxRow
+                                label={t('chatBar.private.nelaPinnedLabel')}
+                                onOpen={() => void openNelaConversation()}
+                              />
                               ) : null}
                               {conversationsLoading && conversations.length === 0 ? (
                                 <div className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground">
@@ -3739,37 +4072,42 @@ export function ChatBar({
                           variant="destructive"
                           size="sm"
                           className="h-9 shrink-0 gap-1 px-2"
-                          disabled={selectedMessageIds.size === 0}
+                          disabled={
+                            isDirectThread ? !selectedMessagesCanUnsend : !selectedMessagesCanDeleteInAgent
+                          }
                           onClick={() => void deleteSelectedMessages()}
                         >
                           <Trash2 className="h-4 w-4" />
-                          <span className="hidden text-xs sm:inline">{t('chatBar.inbox.deleteSelected')}</span>
+                          <span className="hidden text-xs sm:inline">
+                            {isDirectThread ? t('chatBar.inbox.unsend') : t('chatBar.inbox.deleteSelected')}
+                          </span>
                         </Button>
                       </>
                     ) : (
                       <>
                         {selectedConversationRow ? (
-                          <button
-                            type="button"
-                            className="shrink-0 rounded-full"
-                            onClick={() => setThreadProfileOpen(true)}
-                            aria-label={t('chatBar.private.openProfile')}
-                          >
-                            <Avatar className="h-9 w-9">
-                              <AvatarImage
-                                src={resolveMessagingAvatarUrl(
-                                  selectedConversationRow.peer_profile_id,
-                                  selectedConversationRow.peer_avatar_url,
-                                )}
-                              />
-                              <AvatarFallback className="bg-primary/10 text-xs text-primary">
-                                {selectedConversationRow.kind === 'agent' &&
-                                selectedConversationRow.peer_profile_id === NELA_ASSISTANT_PROFILE_ID
-                                  ? 'N'
-                                  : getInitials(selectedConversationRow.peer_full_name)}
-                              </AvatarFallback>
-                            </Avatar>
-                          </button>
+                          isThreadAgent ? (
+                            <CiviAvatar className="h-9 w-9" />
+                          ) : (
+                            <button
+                              type="button"
+                              className="shrink-0 rounded-full"
+                              onClick={() => setThreadProfileOpen(true)}
+                              aria-label={t('chatBar.private.openProfile')}
+                            >
+                              <Avatar className="h-9 w-9">
+                                <AvatarImage
+                                  src={resolveMessagingAvatarUrl(
+                                    selectedConversationRow.peer_profile_id,
+                                    selectedConversationRow.peer_avatar_url,
+                                  )}
+                                />
+                                <AvatarFallback className="bg-primary/10 text-xs text-primary">
+                                  {getInitials(selectedConversationRow.peer_full_name)}
+                                </AvatarFallback>
+                              </Avatar>
+                            </button>
+                          )
                         ) : (
                           <div className="h-9 w-9 shrink-0 rounded-full bg-muted" />
                         )}
@@ -3870,12 +4208,20 @@ export function ChatBar({
                                 {t('chatBar.inbox.menu.exportChat')}
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                className="text-destructive focus:text-destructive"
-                                onSelect={() => setClearChatConfirmOpen(true)}
-                              >
-                                {t('chatBar.inbox.menu.clearChat')}
-                              </DropdownMenuItem>
+                              {isThreadAgent ? (
+                                <DropdownMenuItem
+                                  className="text-destructive focus:text-destructive"
+                                  onSelect={() => setClearChatConfirmOpen(true)}
+                                >
+                                  {t('chatBar.inbox.menu.clearChat')}
+                                </DropdownMenuItem>
+                              ) : isDirectThread ? (
+                                <DropdownMenuItem
+                                  onSelect={() => setHideChatConfirmOpen(true)}
+                                >
+                                  {t('chatBar.inbox.menu.hideChat')}
+                                </DropdownMenuItem>
+                              ) : null}
                             </DropdownMenuContent>
                           </DropdownMenu>
                         ) : null}
@@ -3886,6 +4232,13 @@ export function ChatBar({
                   {directDmE2eeReady ? (
                     <p className="border-b border-border/60 bg-muted/15 px-3 py-2 text-[11px] text-muted-foreground">
                       {t('chatBar.private.directE2eeOnHint')}
+                    </p>
+                  ) : null}
+                  {isDirectThread && activeDisappearingMinutes > 0 ? (
+                    <p className="border-b border-border/60 bg-muted/15 px-3 py-2 text-[11px] text-muted-foreground">
+                      {t('chatBar.private.profile.disappearingBanner', {
+                        duration: disappearingDurationLabel(activeDisappearingMinutes),
+                      })}
                     </p>
                   ) : null}
                   {searchInConversationOpen ? (
@@ -3979,69 +4332,15 @@ export function ChatBar({
                             type="search"
                             value={contactQuery}
                             onChange={(event) => setContactQuery(event.target.value)}
+                            onFocus={() => setPeopleSearchFocused(true)}
+                            onBlur={() => setPeopleSearchFocused(false)}
                             placeholder={t('chatBar.contacts.searchPlaceholder')}
                             className="h-9 border-border bg-background pl-9"
                             autoComplete="off"
                             enterKeyHint="search"
                           />
                         </div>
-                        {contactQuery.trim().length >= 2 && (
-                          <div className="max-h-36 overflow-y-auto rounded-md border border-border bg-background">
-                            {contactSearchLoading ? (
-                              <div className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground">
-                                <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" />
-                                {t('chatBar.loading')}
-                              </div>
-                            ) : contactResults.length === 0 ? (
-                              <p className="px-3 py-2 text-xs text-muted-foreground">
-                                {t('chatBar.contacts.noResults')}
-                              </p>
-                            ) : (
-                              <ul className="divide-y divide-border">
-                                {contactResults.map((row) => (
-                                  <li key={row.id}>
-                                    <div className="flex items-center gap-2 px-2 py-2">
-                                      <Avatar className="h-9 w-9 shrink-0">
-                                        <AvatarImage src={row.avatar_url || undefined} />
-                                        <AvatarFallback className="bg-primary/10 text-xs text-primary">
-                                          {getInitials(row.full_name)}
-                                        </AvatarFallback>
-                                      </Avatar>
-                                      <div className="min-w-0 flex-1">
-                                        <p className="truncate text-sm font-medium text-foreground">
-                                          {row.full_name || row.username || t('chatBar.anonymous')}
-                                        </p>
-                                        {row.username ? (
-                                          <p className="truncate text-xs text-muted-foreground">@{row.username}</p>
-                                        ) : null}
-                                      </div>
-                                      <div className="flex shrink-0 flex-col gap-1 sm:flex-row">
-                                        <Button
-                                          type="button"
-                                          variant="outline"
-                                          size="sm"
-                                          className="h-8 px-2 text-xs"
-                                          onClick={() => navigate(`/user/${row.id}`)}
-                                        >
-                                          {t('chatBar.contacts.viewProfile')}
-                                        </Button>
-                                        <Button
-                                          type="button"
-                                          size="sm"
-                                          className="h-8 gap-1 px-2 text-xs"
-                                          onClick={() => addContactFromSearch(row)}
-                                        >
-                                          <UserPlus className="h-3.5 w-3.5" />
-                                          {t('chatBar.contacts.add')}
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  </li>
-                                ))}
-                              </ul>
-                            )}
-                          </div>
-                        )}
+                        {peopleSearchPanel(contactQuery.trim().length >= 2)}
                         {contactQuery.trim().length < 2 && savedContacts.length > 0 && (
                           <div className="space-y-1.5">
                             <p className="text-[11px] text-muted-foreground">{t('chatBar.contacts.savedHint')}</p>
@@ -4068,28 +4367,14 @@ export function ChatBar({
                               {t('chatBar.private.conversationsHint')}
                             </p>
                             <div className="max-h-36 overflow-y-auto">
-                              <button
-                                type="button"
-                                onClick={() => void openNelaConversation()}
-                                className={cn(
-                                  'flex w-full items-center gap-2 border-b border-border px-2 py-2 text-left transition-colors hover:bg-muted/50',
+                              <CiviInboxRow
+                                label={t('chatBar.private.nelaPinnedLabel')}
+                                selected={
                                   selectedConversationRow?.kind === 'agent' &&
-                                    selectedConversationRow.peer_profile_id === NELA_ASSISTANT_PROFILE_ID &&
-                                    'bg-primary/15 ring-2 ring-inset ring-primary/40',
-                                )}
-                              >
-                                <Avatar className="h-9 w-9 shrink-0">
-                                  <AvatarImage src={resolveMessagingAvatarUrl(NELA_ASSISTANT_PROFILE_ID, null)} />
-                                  <AvatarFallback className="bg-primary/15 text-xs font-semibold text-primary">
-                                    N
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="min-w-0 flex-1">
-                                  <p className="truncate text-sm font-medium text-foreground">
-                                    {t('chatBar.private.nelaPinnedLabel')}
-                                  </p>
-                                </div>
-                              </button>
+                                  selectedConversationRow.peer_profile_id === NELA_ASSISTANT_PROFILE_ID
+                                }
+                                onOpen={() => void openNelaConversation()}
+                              />
                               {conversationsLoading && conversations.length === 0 ? (
                                 <div className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground">
                                   <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" />
@@ -4168,6 +4453,13 @@ export function ChatBar({
                       {t('chatBar.private.directE2eeOnHint')}
                     </p>
                   ) : null}
+                  {isDirectThread && activeDisappearingMinutes > 0 ? (
+                    <p className="border-b border-border/60 bg-muted/15 px-3 py-2 text-[11px] text-muted-foreground">
+                      {t('chatBar.private.profile.disappearingBanner', {
+                        duration: disappearingDurationLabel(activeDisappearingMinutes),
+                      })}
+                    </p>
+                  ) : null}
 
                   <ScrollArea
                     className={cn('p-3', isPage ? 'min-h-0 flex-1' : 'h-64', messageWallpaperClass)}
@@ -4224,12 +4516,16 @@ export function ChatBar({
           </SheetHeader>
           <div className="mt-4 space-y-4">
             <div className="flex items-center gap-3 rounded-2xl border border-border/70 bg-muted/15 p-3">
-              <Avatar className="h-16 w-16">
-                <AvatarImage src={threadAvatarUrl} />
-                <AvatarFallback className="bg-primary/10 text-base text-primary">
-                  {isThreadAgent ? 'N' : getInitials(selectedConversationRow?.peer_full_name)}
-                </AvatarFallback>
-              </Avatar>
+              {isThreadAgent ? (
+                <CiviAvatar className="h-16 w-16" />
+              ) : (
+                <Avatar className="h-16 w-16">
+                  <AvatarImage src={threadAvatarUrl} />
+                  <AvatarFallback className="bg-primary/10 text-base text-primary">
+                    {getInitials(selectedConversationRow?.peer_full_name)}
+                  </AvatarFallback>
+                </Avatar>
+              )}
               <div className="min-w-0 flex-1">
                 <p className="truncate text-base font-semibold text-foreground">{threadPeerTitle}</p>
                 {threadUsername ? (
@@ -4358,19 +4654,24 @@ export function ChatBar({
                   </div>
                 </div>
               ) : null}
+              {isDirectThread ? (
               <div className="mb-3 rounded-xl border border-border/70 p-2">
-                <p className="mb-2 text-sm font-medium text-foreground">
+                <p className="mb-1 text-sm font-medium text-foreground">
                   {t('chatBar.private.profile.disappearingTitle')}
                 </p>
+                <p className="mb-2 text-[11px] text-muted-foreground">
+                  {t('chatBar.private.profile.disappearingHint')}
+                </p>
                 <div className="flex flex-wrap gap-1.5">
-                  {[0, 60, 1440, 10080].map((minutes) => (
+                  {DISAPPEARING_MINUTE_OPTIONS.map((minutes) => (
                     <Button
                       key={`disappear-${minutes}`}
                       type="button"
                       variant={activeDisappearingMinutes === minutes ? 'default' : 'outline'}
                       size="sm"
                       className="h-7 px-2 text-xs"
-                      onClick={() => setDisappearingMinutes(minutes)}
+                      disabled={disappearingBusy}
+                      onClick={() => void setDisappearingMinutes(minutes)}
                     >
                       {minutes === 0
                         ? t('chatBar.private.profile.disappearOff')
@@ -4381,6 +4682,7 @@ export function ChatBar({
                   ))}
                 </div>
               </div>
+              ) : null}
               <div className="mb-3 rounded-xl border border-border/70 p-2">
                 <p className="mb-2 text-sm font-medium text-foreground">
                   {t('chatBar.private.profile.wallpaperTitle')}
@@ -4505,6 +4807,27 @@ export function ChatBar({
               }}
             >
               {t('chatBar.inbox.menu.clearChatConfirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={hideChatConfirmOpen} onOpenChange={setHideChatConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('chatBar.inbox.menu.hideChatTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('chatBar.inbox.menu.hideChatDescription')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={hideChatBusy}>{t('chatBar.inbox.menu.clearChatCancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={hideChatBusy}
+              onClick={(event) => {
+                event.preventDefault();
+                void handleHideChatConfirmed();
+              }}
+            >
+              {t('chatBar.inbox.menu.hideChatConfirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

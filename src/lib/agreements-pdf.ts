@@ -1,7 +1,9 @@
 import type { AgreementContent } from '@/lib/agreements-model';
+import { agreementHtmlToPlainText } from '@/lib/agreements-html';
 
 export type ExecutedAgreementPdfInput = {
-  referenceCode: string;
+  referenceCode?: string | null;
+  partyReference?: string | null;
   title: string;
   agreementTypeLabel: string;
   versionNumber: number;
@@ -43,17 +45,27 @@ function wrapLine(text: string, maxChars: number): string[] {
   return lines.length ? lines : [''];
 }
 
+function pdfText(value?: string | null): string {
+  return agreementHtmlToPlainText(value || '');
+}
+
+function wrapBlock(text: string, maxChars: number): string[] {
+  return pdfText(text).split('\n').flatMap((line) => wrapLine(line.trim() || ' ', maxChars));
+}
+
 function collectLines(input: ExecutedAgreementPdfInput): string[] {
   const lines: string[] = [
     'CIVIZEN AGREEMENT RECORD',
-    input.referenceCode,
     input.title,
     `${input.agreementTypeLabel} · Version ${input.versionNumber} · ${input.statusLabel}`,
+  ];
+  if (input.partyReference) lines.push(`Party reference: ${input.partyReference}`);
+  lines.push(
     `Integrity fingerprint (SHA-256): ${input.fingerprint}`,
     'This fingerprint identifies the exact executed version. It is not a PKI digital signature.',
     '',
     'Parties',
-  ];
+  );
   for (const party of input.parties) {
     lines.push(`- ${party.displayName}${party.role ? ` (${party.role})` : ''}`);
   }
@@ -63,7 +75,7 @@ function collectLines(input: ExecutedAgreementPdfInput): string[] {
   if (input.effectiveAt) lines.push(`Effective: ${input.effectiveAt}`);
   if (input.endAt) lines.push(`End: ${input.endAt}`);
   if (input.content.purpose) {
-    lines.push('', 'Purpose', input.content.purpose);
+    lines.push('', 'Purpose', pdfText(input.content.purpose));
   }
   const structured = input.content.structured;
   if (structured) {
@@ -78,15 +90,17 @@ function collectLines(input: ExecutedAgreementPdfInput): string[] {
       ['Termination', structured.termination],
     ];
     for (const [label, value] of extras) {
-      if (value?.trim()) {
-        lines.push('', label, value);
+      const text = pdfText(value);
+      if (text) {
+        lines.push('', label, text);
       }
     }
   }
   for (const section of input.content.sections) {
-    if (!section.title && !section.body) continue;
+    const body = pdfText(section.body);
+    if (!section.title && !body) continue;
     lines.push('', section.title || 'Section');
-    if (section.body) lines.push(section.body);
+    if (body) lines.push(body);
   }
   lines.push('', 'Signatures');
   if (input.signatures.length === 0) {
@@ -104,7 +118,10 @@ function collectLines(input: ExecutedAgreementPdfInput): string[] {
     '',
     'Civizen provides an electronic agreement record. This document does not certify legal enforceability in any jurisdiction.',
   );
-  return lines.flatMap((line) => wrapLine(line.replace(/\s+/g, ' ').trim() || ' ', 88));
+  if (input.referenceCode) {
+    lines.push('', input.referenceCode);
+  }
+  return lines.flatMap((line) => wrapBlock(line, 88));
 }
 
 /** Minimal single-font PDF for download/print/retention. */

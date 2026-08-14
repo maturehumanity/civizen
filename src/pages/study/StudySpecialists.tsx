@@ -485,10 +485,10 @@ export default function StudySpecialists({ embedded = false }: StudySpecialistsP
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}>
         <Card className="border-border/70 bg-card/95 p-5 shadow-sm">
           <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Nela Specialist Council (Discussion)
+            Civi Specialist Council (Discussion)
           </h3>
           <p className="mt-2 text-sm text-muted-foreground">
-            Create a discussion, add turns, and let Nela combine relevant specialists into one final recommendation.
+            Create a discussion, add turns, and let Civi combine relevant specialists into one final recommendation.
           </p>
           {backendUnavailable && (
             <p className="mt-2 text-xs text-muted-foreground">

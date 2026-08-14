@@ -28,7 +28,17 @@ const event: ContributionEvent = {
   beneficiaryEstimate: 75,
   verified: true,
   occurredAt: '2026-08-04T12:00:00.000Z',
-  rawMeta: { eligibility: 'system_verified', testsPassed: true, provenanceStoryIds: ['chat-secret-id'] },
+  rawMeta: {
+    eligibility: 'system_verified',
+    testsPassed: true,
+    provenanceStoryIds: ['chat-secret-id'],
+    humanInvolvement: {
+      substantiveInteractions: 4,
+      revisionCycles: 2,
+      spanDays: 12,
+      promptCountUsedForScore: false,
+    },
+  },
 };
 
 describe('ContributionRecordDetail', () => {
@@ -43,8 +53,12 @@ describe('ContributionRecordDetail', () => {
     );
     expect(screen.getByTestId('contribution-record')).toBeTruthy();
     expect(screen.getByText('Score V2 evidence architecture')).toBeTruthy();
-    expect(screen.getByText('profile.contributionsLedger.summary')).toBeTruthy();
-    expect(screen.getByText('profile.contributionsLedger.details')).toBeTruthy();
-    expect(screen.queryByText('chat-secret-id')).toBeNull();
+        expect(screen.getByText('profile.contributionsLedger.summary')).toBeTruthy();
+        expect(screen.getByText('profile.contributionsLedger.yourRole')).toBeTruthy();
+        expect(screen.getByText('profile.contributionsLedger.method')).toBeTruthy();
+        expect(screen.getByText('profile.contributionsLedger.humanContribution')).toBeTruthy();
+        expect(screen.getByText('profile.contributionsLedger.humanEvidence')).toBeTruthy();
+        expect(screen.queryByText('chat-secret-id')).toBeNull();
+        expect(screen.queryByText(/AI made this contribution/i)).toBeNull();
   });
 });

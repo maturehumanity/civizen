@@ -36,7 +36,37 @@ describe('assistant catalog validation', () => {
   });
 });
 
-describe('Nela knowledge regression', () => {
+describe('Civi canonical identity', () => {
+  it('answers a one-sentence identity question from the canonical definition', () => {
+    const prep = prepareNelaTurn(turn("What's Civizen in one sentence?"));
+    expect(prep.diagnostics.matchedFaqId).toBe('what_is_civizen');
+    expect(prep.groundedAnswer).toContain(
+      'open participatory system for organizing how humanity learns, contributes, collaborates, governs, shares resources, solves common challenges',
+    );
+    expect(prep.diagnostics.matchedCapabilityIds).toHaveLength(0);
+    expect(prep.groundedAnswer).not.toMatch(/mainly a (challenge|project)/i);
+  });
+
+  it('answers current capability from implemented surfaces, not the identity sentence alone', () => {
+    const prep = prepareNelaTurn(turn('What can I do in Civizen right now?'));
+    expect(prep.diagnostics.matchedFaqId).toBe('what_can_i_do_in_civizen_now');
+    expect(prep.groundedAnswer).toMatch(/Home/i);
+    expect(prep.groundedAnswer).toMatch(/Contribute/i);
+    expect(prep.groundedAnswer).not.toBe(
+      'Civizen is an open participatory system for organizing how humanity learns, contributes, collaborates, governs, shares resources, solves common challenges, and continuously improves the systems we live and work within.',
+    );
+  });
+
+  it('does not reduce Civizen to a project collaboration platform', () => {
+    const prep = prepareNelaTurn(turn('Is Civizen basically a project collaboration platform?'));
+    expect(prep.diagnostics.matchedFaqId).toBe('is_civizen_a_project_collaboration_platform');
+    expect(prep.groundedAnswer).toMatch(/^No\./);
+    expect(prep.groundedAnswer).toMatch(/one component/i);
+    expect(prep.groundedAnswer).toMatch(/broader system/i);
+  });
+});
+
+describe('Civi knowledge regression', () => {
   it('A — known FAQ for Community Challenges', () => {
     const calls: string[] = [];
     const prep = prepareNelaTurn(turn('What are Community Challenges?'), {
@@ -188,7 +218,7 @@ describe('Nela knowledge regression', () => {
   });
 });
 
-describe('Nela resource routing', () => {
+describe('Civi resource routing', () => {
   it('uses internal evidence first and does not escalate when a feature is implemented', () => {
     const calls: string[] = [];
     const prep = prepareNelaTurn(turn('Can I create an agreement in Civizen?'), {
