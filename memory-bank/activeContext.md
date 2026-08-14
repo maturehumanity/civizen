@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Live + Testing v0.1.180 (2026-08-13):** Build 182 (`20260813-v0.1.180`) published to Testing and Live. Includes the Agreements workspace, contribution lifecycle/ledger, and Nela project-aware chat.
+
 **Nela answer shape (2026-08-13):** Match the question. **Can I / Does Civizen** starts with Yes or No, then the path. **How / Where** starts with the path (`Open Market > Agreements`). Same FAQ body; the opener is chosen from the member’s wording.
 
 **Nela selectable type links (2026-08-13):** Agreement type names in Nela’s main answer (General, Partnership / Collaboration, Employment, and the rest) are tappable and open New agreement for that type. Extra notes stay unlinked so a caveat like “Sale / Purchase Agreement” is not treated as a create shortcut.
