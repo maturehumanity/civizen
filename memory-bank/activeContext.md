@@ -30,6 +30,8 @@
 
 **Civi canonical identity (2026-08-13):** `docs/assistant/civizen-identity.md` is the first-class source for what Civizen is. Identity / purpose / one-sentence questions use that definition. “What can I do right now?” uses the capability registry. Feature docs must not redefine the identity.
 
+**Live + Testing v0.1.181 (2026-08-13):** Build 183 (`20260813-v0.1.181`) published to Testing and Live. Includes Agreements refinements, Civi, messaging thread policy, and contribution provenance integrity.
+
 **Live + Testing v0.1.180 (2026-08-13):** Build 182 (`20260813-v0.1.180`) published to Testing and Live. Includes the Agreements workspace, contribution lifecycle/ledger, and Civi project-aware chat.
 
 **Civi answer shape (2026-08-13):** Match the question. **Can I / Does Civizen** starts with Yes or No, then the path. **How / Where** starts with the path (`Open Market > Agreements`). Same FAQ body; the opener is chosen from the member’s wording.
