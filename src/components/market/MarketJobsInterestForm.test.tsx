@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
 import { MarketJobsInterestForm } from '@/components/market/MarketJobsInterestForm';
@@ -60,7 +61,7 @@ describe('MarketJobsInterestForm', () => {
   });
 
   it('hides Worker/Employer tabs for logged-in users and cycles job type labels', () => {
-    render(<MarketJobsInterestForm />);
+    render(<MemoryRouter><MarketJobsInterestForm /></MemoryRouter>);
 
     expect(screen.queryByTestId('market-jobs-mode-tabs')).not.toBeInTheDocument();
     expect(screen.getByTestId('market-jobs-sentence')).toHaveTextContent(/Baker|Cashier|Cook|Driver/);
@@ -69,7 +70,7 @@ describe('MarketJobsInterestForm', () => {
   });
 
   it('reveals contact fields after a job type is chosen and autofills known profile fields', async () => {
-    render(<MarketJobsInterestForm />);
+    render(<MemoryRouter><MarketJobsInterestForm /></MemoryRouter>);
 
     expect(screen.queryByTestId('market-jobs-contact')).not.toBeInTheDocument();
 
@@ -79,10 +80,14 @@ describe('MarketJobsInterestForm', () => {
     expect(await screen.findByTestId('market-jobs-contact')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Armen Yeremyan')).toBeInTheDocument();
     expect(screen.getByDisplayValue('5550100')).toBeInTheDocument();
+    const employment = screen.getByTestId('market-jobs-employment-agreement');
+    expect(employment).toHaveAttribute('href', expect.stringContaining('type=employment'));
+    expect(employment).toHaveAttribute('href', expect.stringContaining('position=Baker'));
+    expect(employment).toHaveAttribute('href', expect.stringContaining('from=job'));
   });
 
   it('allows multi-select job types and formats them with or', async () => {
-    render(<MarketJobsInterestForm />);
+    render(<MemoryRouter><MarketJobsInterestForm /></MemoryRouter>);
 
     fireEvent.click(screen.getByLabelText('Job type'));
     fireEvent.click(await screen.findByRole('option', { name: 'Baker' }));
@@ -92,7 +97,7 @@ describe('MarketJobsInterestForm', () => {
   });
 
   it('toggles more details and submits', async () => {
-    render(<MarketJobsInterestForm />);
+    render(<MemoryRouter><MarketJobsInterestForm /></MemoryRouter>);
 
     fireEvent.click(screen.getByLabelText('Job type'));
     fireEvent.click(await screen.findByRole('option', { name: 'Cashier' }));

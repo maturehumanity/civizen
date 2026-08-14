@@ -49,6 +49,8 @@ export const EVIDENCE_WEIGHT_UNVERIFIED = 0.55;
 export const EVIDENCE_WEIGHT_RECENCY_MIN = 0.75;
 export const EVIDENCE_WEIGHT_RECENCY_MAX = 1.12;
 export const EVIDENCE_WEIGHT_EVALUATOR_MAX = 1.3;
+export const EVIDENCE_WEIGHT_RELIABILITY_MIN = 0.35;
+export const EVIDENCE_WEIGHT_RELIABILITY_MAX = 1.22;
 export const EVIDENCE_WEIGHT_DURATION_MIN = 0.2;
 export const EVIDENCE_WEIGHT_DURATION_MAX = 1.6;
 export const EVIDENCE_WEIGHT_TOTAL_MAX = 2.75;
@@ -85,6 +87,8 @@ export type CategoryObservation = {
   evaluationCount?: number;
   /** Minutes of activity when known; omitted rather than invented. */
   durationMinutes?: number | null;
+  /** Bounded evaluator reliability from evaluator-reputation-v1. Default 1. */
+  evaluatorReliability?: number | null;
 };
 
 export type CategoryReputation = {
@@ -226,23 +230,24 @@ function evaluatorWeight(evaluatorCount: number): number {
   return clampUnitInterval(1 + Math.log1p(evaluatorCount - 1) * 0.18, 1, EVIDENCE_WEIGHT_EVALUATOR_MAX);
 }
 
-/**
- * Deterministic bounded weight for one canonical evidence root.
- * Callers must collapse duplicate projections of the same root first.
- * Extra evaluator IDs may raise this activity's weight slightly; they do not mint a second activity.
- */
+/** Bounded weight for one canonical evidence root. Duplicate projections must collapse first. */
 export function observationWeight(
   observation: CategoryObservation,
   options?: { nowMs?: number },
 ): number {
   const verifiedPart = observation.verified ? EVIDENCE_WEIGHT_VERIFIED : EVIDENCE_WEIGHT_UNVERIFIED;
-  const evaluators = Math.max(observation.evaluatorIds?.length ?? 0, 0);
+  const reliability = clampUnitInterval(
+    observation.evaluatorReliability ?? 1,
+    EVIDENCE_WEIGHT_RELIABILITY_MIN,
+    EVIDENCE_WEIGHT_RELIABILITY_MAX,
+  );
   const product =
     EVIDENCE_WEIGHT_BASE *
     verifiedPart *
     recencyWeight(observation.occurredAt, options?.nowMs) *
     durationWeight(observation.durationMinutes) *
-    evaluatorWeight(evaluators);
+    evaluatorWeight(Math.max(observation.evaluatorIds?.length ?? 0, 0)) *
+    reliability;
   return clampUnitInterval(product, 0.15, EVIDENCE_WEIGHT_TOTAL_MAX);
 }
 

@@ -27,13 +27,140 @@ Before planning or editing, agents **must read**:
    **`docs/03-platform/areas-and-initiatives/public-areas-initiatives-v1.md`** (working product spec; **not** `/documents`; V1 read-only `/areas` is implemented — do not expand matching, initiative schema, or nav without a separate task)
    and **`docs/04-operations/dev/contribute-page.md`** when touching `/contribute`
    Phase 1 operating model: **`docs/04-operations/dev/phase-1-pilot-operating-model.md`**
-8. Documentation map: `docs/README.md`
+   Agreements workspace: **`docs/04-operations/dev/agreements.md`** (`/agreements` is platform-level; Market is an entry point)
+8. When work touches Nela / the built-in assistant:
+   **`docs/assistant/README.md`** and **`docs/assistant/civizen-assistant-cheatsheet.md`**. After changing product facts Nela should know, run **`npm run assistant:knowledge`**. Nela is internal-first: Civizen evidence before general AI knowledge. External resources must never override current Civizen project information.
+9. Documentation map: `docs/README.md`
 
 Cursor enforces the same list via `.cursor/rules/civizen-project.mdc` (`alwaysApply: true`).
 
 After substantive changes, update the spec and `memory-bank/activeContext.md` in the same session.
 
 Run `npm run verify:agent-context` to confirm these files and cross-links exist.
+
+## Simple by default. Advanced by need. Always.
+
+This is a core Civizen product and development principle and should apply throughout the application, including:
+
+- member-facing interfaces;
+- organization/admin interfaces;
+- forms;
+- dashboards;
+- navigation;
+- workflows;
+- settings;
+- documentation and implementation decisions.
+
+### Meaning
+
+Civizen should expose the **smallest clear interface needed for the user's immediate goal**.
+
+Do not display every available capability merely because the underlying system supports it.
+
+Advanced functionality should remain available when needed through progressive disclosure.
+
+In practice:
+
+- show essential information first;
+- emphasize the user's most likely next action;
+- hide secondary controls until relevant;
+- reveal details through expandable sections, menus, contextual actions, filters, or dedicated detail views;
+- prefer contextual intelligence and prefilled information over additional form fields;
+- avoid exposing database/domain terminology when plain language works;
+- avoid large control panels when a few actions are sufficient;
+- do not duplicate information or controls unnecessarily;
+- keep empty states especially simple;
+- allow experienced/interested users to uncover deeper capabilities without limiting what the system can ultimately do.
+
+The goal is **not fewer capabilities**.
+
+The goal is:
+
+**simple surface, advanced depth.**
+
+### Icons and compact actions
+
+Where understandable and appropriate, prefer compact recognizable icons for secondary/common actions rather than large labeled controls.
+
+Examples include:
+
+- `+` for create/add;
+- search;
+- filter;
+- more/options;
+- edit;
+- download;
+- history.
+
+However:
+
+- never make hover the only way to discover or use functionality;
+- icons should have accessible labels;
+- desktop hover may show a concise tooltip/name;
+- tap/click must work independently on touch/mobile devices;
+- unfamiliar or consequential actions should retain visible text where clarity is more important than compactness;
+- destructive actions must not rely on icon recognition alone.
+
+Civizen is mobile-first, so every interaction must work without hover.
+
+### Progressive disclosure example: Agreements
+
+On `/agreements`, a compact `+` sits immediately beside the Agreements title in every state, including the empty workspace.
+
+Desktop hover and click both open the same creation menu. Tap/click opens it on touch. Hover is never the only way to use it.
+
+The menu is:
+
+- Search types
+- General Agreement
+- Partnership / Collaboration
+- Employment Agreement
+- Service / Contribution
+- Sale / Purchase
+- Lease
+- Funding / Sponsorship
+- More agreement types…
+
+**More agreement types…** is the last item in that same dropdown — not a separate control outside it. Selecting it reveals specialized options in the same popover:
+
+- Memorandum of Understanding
+- Pilot / Collaboration Agreement
+- Program Agreement
+- Data / Research Agreement
+- Confidentiality / NDA
+
+If search matches a supported type (including aliases such as job → Employment, car → Lease), offer that type. If nothing suitable matches, show **+ Create “{name}”**. That stores an explicit custom type on the agreement (`custom` + the entered name). Do not add user-entered names to the governed type registry, and do not keep **Other** as a standing catch-all row.
+
+Selecting a **supported** type opens that type’s purpose-built Agreement document — not a vertical form asking for type, title, other party, and purpose. The page header is **Agreement #** plus an auto-number the user can edit, then **on**. The document heading names the kind (**Service(s) Provision** by default for Service / Contribution, with **Contribution(s)** on hover; **Lease** offers Residential, Commercial, Car, Vehicle, Equipment, Office, and Property rental). Heading and party-role words look like sentence text. Hover shows only the alternatives; click or tap renames the word in place (no **Rename** row). On touch, press and hold to see alternatives. The opening sentence includes who is which party (`the Client`, `the Service Provider`). The user edits the agreement by editing the agreement (inline placeholders/tokens, native inputs). Visible placeholders stay short in the sentence (**Party**, **Employer**, **position**); accessible names keep the longer search/enter instruction. Optional clauses are added from a quiet **Add terms** list. A custom/unsupported name opens the flexible custom Agreement skeleton.
+
+The primary create action is **Create agreement** (internally the record is still a Draft). Template language is a working draft, not legal advice, and not jurisdiction-specific unless it actually is.
+
+Employment Agreement is distinct from Service / Contribution. Jobs / hiring context prefills Employment. Ordinary Marketplace purchases stay as Order + Marketplace terms. A **Sale / Purchase Agreement** is only for transactions that need negotiated terms. Do not auto-require one for a normal product order. If creation starts from a listing or order that does need an agreement, prefill known buyer, seller, product, quantity, price, and currency.
+
+If creation originates from a Pilot, Partnership, Opportunity, Project, Funding activity, Job, etc., infer the likely agreement type and prefill known context into the document.
+
+Inline party tokens bind a unique Civizen directory match automatically. If two similarly named directory records match, show the suggestion list so the user picks the right one. Ask Person vs Organization only when the typed name is not in the directory and the kind cannot be inferred.
+
+Empty-state copy stays minimal (no second Create button). The `+` beside the title is the creation control.
+
+### Enforcement
+
+Apply this principle when implementing new functionality and when modifying existing screens.
+
+Before adding a visible field, button, tab, filter, card, section, or explanatory block, ask:
+
+1. Does the user need this information or action right now?
+2. Can Civizen infer it?
+3. Can it appear contextually when relevant?
+4. Can secondary detail be progressively disclosed?
+5. Is the simpler interface still understandable to a first-time user?
+6. Is the deeper capability still discoverable for someone who needs it?
+
+If the answer favors progressive disclosure, use it.
+
+Do not interpret this policy as permission to remove important capabilities, accessibility, transparency, safety information, or necessary user control. Do **not** strip necessary detail from internal/reference documentation.
+
+**Simple by default. Advanced by need. Always.**
 
 ## Production operations
 
@@ -71,7 +198,7 @@ When restricted ops configuration is available to the agent, perform production 
 ## 3. Persistent User Directives
 
 - **Project-purpose preservation rule:** Legal and institutional disclaimers must accurately describe Civizen's current status, but must never erase, renounce, or permanently confine its long-term mission to unite people as citizens of humanity and develop a legitimate pathway toward recognized planetary citizenship. Always distinguish “not currently” from “never.”
-- **Simple by default. Detailed by choice.** Public and onboarding experiences prioritize clarity; partner/contributor entry starts with what is relevant; deeper detail remains available. Users must not be required to understand full institutional architecture before participating. Do **not** strip necessary detail from internal/reference documentation. Canonical: `docs/03-platform/product-design/information-architecture-and-content-standards.md` §2 and `docs/03-platform/areas-and-initiatives/public-areas-initiatives-v1.md`.
+- **Simple by default. Advanced by need. Always.** Core product/design principle for every surface (member, organization/admin, forms, dashboards, navigation, workflows, settings, and documentation/implementation decisions). Full policy is in this file under **Simple by default. Advanced by need. Always.** Public and onboarding experiences still must not require understanding full institutional architecture before participating. Do **not** strip necessary detail from internal/reference documentation. Also: `docs/03-platform/product-design/information-architecture-and-content-standards.md` §2.
 - Do not ask the user to do work the agent can do itself (run commands, read or edit repo files, search the tree, run tests, inspect local config under the workspace). Only ask when something is genuinely impossible from here (for example passphrase entry on their TTY, secrets only they hold, or actions inside an account or UI only they control)—and then say briefly why.
 - **Install and configuration default:** When a feature needs an install or environment setup (database extensions, migration apply, `.env` keys the agent can write, or production work the agent can reach via restricted ops configuration), **perform it in-session**. Do **not** hand those steps back to the user unless blocked after a direct attempt—then state the blocker and what was already tried. When restricted ops configuration is available, perform production steps privately without publishing details.
 - Founder authority bootstrap rule: until the user explicitly says otherwise, keep `founder` as full-access across app and admin settings (including users/roles/permissions/governance/modules). Do not reduce founder access as part of decentralization refactors unless the user explicitly requests that transition in the same session. Institutional parent: `docs/institutional/founder-transition-succession-framework.md` (current conceptual stage **F0**; public availability ≠ official deployment; **functional self-sufficiency**, not official-use designation alone, governs later step-back).
@@ -124,6 +251,7 @@ When restricted ops configuration is available to the agent, perform production 
   - **Stop condition:** do not report a feature/fix complete if new or changed modules/pages lack corresponding test updates, unless the change is docs-only or an explicit user waiver in that session.
   - Run the new/updated tests (`npm test` or a focused `vitest run …`) in addition to `npm run verify:post-dev` when UI changed.
 - **Development outcome capture:** After a coherent shipped development outcome (not each prompt or commit), record it with `recordDevelopmentOutcome` / `planDevelopmentOutcomeStories` (`src/lib/civizen-development-capture.ts`) using a stable `outcomeRootId`, originating instruction, real features, commit SHA, `testsPassed`, roles, and `implementationAssisted`. Historical journal rows are reconstructed separately (`src/lib/civizen-historical-reconstruction.ts`, `docs/04-operations/dev/historical-development-reconstruction.md`); do not restore chat/git rows as independent contributions. Do not set Contributions/Performance/overall scores directly.
+- **Contributions ledger:** Canonical contribution roots that affect Score V2 must stay inspectable on `/profile/contributions` (search, filter, sort, pagination). The compact Profile preview may show recent titles only. Do not collapse roots into one type-aggregate card. Contribution evaluation is on-read (`contribution-evaluation-v2` lifecycle); stored 78/78/35 placeholders are not evaluations. Unknown realized impact stays unknown. Contributor function comes from evidenced roles, not from artifact file type. Later impact evidence, beneficiary feedback, and independent validation attach to the same canonical root (`contribution_evidence_records`) and recompute Score V2 on read. Evaluator reputation and declared Civizen context are not score bonuses. Do not retune Score V2 priors/shrinkage to restore a previous number. Overall evidence confidence stays Low until independent validators and realized-outcome evidence exist; verified volume alone does not raise it.
 
 ## 4. Application Versioning
 
@@ -191,6 +319,7 @@ When restricted ops configuration is available to the agent, perform production 
 - **2026-08 correction — bug fixes stuck on Testing:** Failure pattern: shipping a confirmed bug fix only to Testing while default Live clients (including the owner) stay on an older build and never see an update prompt. Mandatory: for bug fixes, promote the exact shipped build to Live in the same session and verify `/updates/android-release.json` (and `android.js`) match. Stop condition: do not report a bug-fix update complete while Live lags Testing.
 - **2026-08 correction — Home post composer dead click (process + interaction):** Failure pattern: on **2026-08-03**, agent work for **Testing v0.1.128** (`737086f`, “wraparound Home post composer”) replaced a **working** Home `<textarea>` with floated `contentEditable` + `shape-outside` for wraparound aesthetics. Empty-field taps on placeholder/padding/avatar stopped focusing the editor. Layout/autosize releases (`v0.1.125`–`v0.1.128`) and `verify:post-dev` (arc/dev-load only) all passed; **no click→focus→type gate existed**, so a functional regression shipped until the user reported it on 2026-08-11. Technical proximate cause: empty editor `min-h-[1.5rem]` vs 40–48px avatar and no chrome→focus path. **Process root cause:** aesthetic input-primitive swap without an interaction regression proof. Mandatory: keep `focusHomePostComposerFromChrome` + avatar-row min-height + `pointer-events-none` avatar; Vitest `home-post-composer-focus.test.ts` / `Home.composer.test.tsx`; **`npm run verify:home-post-composer`** (Playwright chrome-click → focus → type) inside `verify:post-dev`; follow **Input-control replacement gate** in §3 for any future composer/editor swap. Stop condition: do not ship Home composer or any primary-surface input-primitive change while `verify:home-post-composer` / `verify:post-dev` fails, or without an equivalent interaction gate for a new control.
 - **2026-08 correction — web login/signup lockout after profile miss:** Failure pattern: auth session succeeds, then `profiles` fetch fails/hangs; `TermsReconsentGate` stays on `wait-for-profile` **Loading…** forever; `AuthRedirect` sends `/login` and `/signup` back to `/`, so Login/Sign up appear broken. Introduced with Terms re-consent (**2026-07-30**); made common after auth stopped gating on profile (**2026-08-03**, `3c3fe10`). Mandatory: `profileLoadFailed` + timed-out recovery UI (Retry / Sign out) in `TermsReconsentGate`; never infinite wait-for-profile without an escape; cover with `terms-version` + `TermsReconsentGate` tests. Stop condition: do not ship auth/bootstrap changes that leave a signed-in user with no profile on a spinner that has no Sign out.
+- **2026-08 correction — Nela off-topic follow-ups and ungrounded Civizen facts:** Failure pattern: Nela scoped only the literal latest sentence, so “Are you sure?” / “Positive?” after a Civizen question was rejected as off-topic; an intervening off-topic refusal then hid the original question; product answers used a short system prompt plus pretrained knowledge, mixing plans with live features. Mandatory: resolve the conversational query first (walk back past verification follow-ups and scope refusals to the last substantive Civizen question); search FAQ → capability registry → project knowledge index before any general model knowledge; “Are you sure?” / “Positive?” re-verifies the previous Civizen claim internally and corrects a prior wrong denial. After changing product facts Nela should know, run `npm run assistant:knowledge` and deploy `messaging-agent-reply` (including `nela-bundle.js`). Stop condition: do not ship assistant changes that classify a Civizen follow-up as off-topic, or that let general model knowledge override the capability registry.
 
 ## 7. Post-development verification (mandatory after every fix or UI change)
 

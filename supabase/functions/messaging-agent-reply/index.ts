@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
+import { prepareNelaTurn } from './nela-bundle.js';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,24 +13,16 @@ const AGENT_PROFILE_ID = 'a0000000-0000-4000-8000-000000000001';
 const CIVIZEN_PRODUCT_SUMMARY =
   'Civizen is a human-centered platform and movement designed to help people unite, grow, and govern more wisely through education, responsibility, transparency, and AI-assisted civic collaboration.';
 
-const NELA_SYSTEM_PROMPT =
-  'You are Nela, the in-app assistant for Civizen. ' +
+const NELA_FALLBACK_SYSTEM_PROMPT =
+  'You are Nela, the native in-app assistant for this Civizen build. ' +
   CIVIZEN_PRODUCT_SUMMARY +
-  ' Emphasize civic learning, accountable participation, verifiable governance where it applies, and trustworthy use of AI as a practical aid—not hype or generic “AI will fix everything” claims. ' +
-  'Civizen is not a generic hobby or meetup social network; never describe it using clichés like “connect people with shared interests” or “facilitate group activities” unless the user is explicitly asking about a real Civizen feature that matches that wording. ' +
-  'When users correct you about what Civizen is, accept the correction, align with the summary above, and do not repeat the mistaken framing. ' +
-  'If you are unsure about product purpose, policy, or roadmap details, say you are not sure and point people to in-app Study materials or official project documentation rather than guessing. ' +
-  'Explain features, navigation, and general how-to in plain language. ' +
-  'For legitimate Civizen project requests, collaborate constructively: give concrete, practical analysis and suggest next steps. ' +
-  'Do not use meta disclaimers such as “As an AI assistant” or “I cannot think”; instead provide grounded reasoning tied to Civizen governance, safety, messaging, marketplace, and civic learning. ' +
-  'Keep replies concise and readable; avoid excessive markdown formatting unless the user explicitly asks for structured bullets. ' +
-  'If the question needs legal, medical, or financial advice, say you cannot help with that and suggest speaking to a qualified professional or official support. ' +
-  'Do not invent product features you are not sure about. ' +
-  'When users share constitutional/proposal amendment text or ask for update analysis, provide a concise structured review with sections: Intent, Governance Impact, Risks, and Rollout Checklist. ' +
-  'If someone asks what Civizen is (especially “in one sentence”), answer with the canonical summary in one concise sentence and do not use alternative framing.';
+  ' For questions about Civizen current functionality, architecture, rules, governance, terminology, capabilities, or policies, rely on the supplied current Civizen knowledge and retrieved project sources. Do not invent missing project facts from general model knowledge. ' +
+  'Simple by default. Detailed by choice. Keep replies concise and readable. ' +
+  'If you cannot verify a Civizen fact from the supplied knowledge, say you could not verify it.';
 
 type Body = {
   conversation_id?: string;
+  debug?: boolean;
 };
 
 type HistoryTurn = { role: 'user' | 'assistant'; content: string };
@@ -78,6 +71,8 @@ function isInaccurateCivizenFramingAssistant(turn: HistoryTurn): boolean {
     'group activities',
     'hobby',
     'meetup',
+    'not designed for individual legal agreements',
+    'i can only help with civizen-related topics',
   ];
   return inaccuratePhrases.some((p) => c.includes(p));
 }
@@ -137,12 +132,6 @@ function isWhatIsCivizenQuestion(content: string): boolean {
     c.includes('civizen in one sentence') ||
     c.includes('what is civizen in one sentence')
   );
-}
-
-function isGreetingOnly(content: string): boolean {
-  const c = content.trim().toLowerCase();
-  if (!c) return false;
-  return ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening'].some((g) => c === g);
 }
 
 type AbuseCategory = 'illegal' | 'violence' | 'self-harm' | 'security-abuse' | 'harassment' | 'sexual-minors';
@@ -263,61 +252,6 @@ function abuseRefusalReply(category: AbuseCategory): string {
   }
 }
 
-function isRelevantToCivizenPurpose(content: string): boolean {
-  const c = content.trim().toLowerCase();
-  if (!c) return false;
-  if (isGreetingOnly(c)) return true;
-
-  const relevantTerms = [
-    'civizen',
-    'nela',
-    'app',
-    'account',
-    'profile',
-    'settings',
-    'study',
-    'law',
-    'governance',
-    'proposal',
-    'constitution',
-    'article',
-    'amendment',
-    'ratify',
-    'ratification',
-    'policy update',
-    'vote',
-    'civic',
-    'verification',
-    'identity',
-    'messaging',
-    'message',
-    'chat',
-    'call',
-    'privacy',
-    'encryption',
-    'market',
-    'marketplace',
-    'listing',
-    'luma',
-    'wallet',
-    'report',
-    'moderation',
-    'safety',
-    'support',
-    'help',
-    'bug',
-    'feature',
-    'how to',
-    'how do i',
-    'where is',
-    'cannot',
-    "can't",
-    'error',
-  ];
-
-  return relevantTerms.some((t) => c.includes(t));
-}
-
 function isConstitutionAnalysisRequest(content: string): boolean {
   const c = content.trim().toLowerCase();
   if (!c) return false;
@@ -342,74 +276,6 @@ function isConstitutionAnalysisRequest(content: string): boolean {
     'update',
   ]);
   return hasStructureHints && hasAnalysisIntent;
-}
-
-function buildPolicyReply(content: string): { reply: string; metric: ModerationMetricCategory } | null {
-  const c = content.trim().toLowerCase();
-  if (!c) return null;
-
-  const hasAny = (terms: string[]) => terms.some((t) => c.includes(t));
-
-  if (
-    hasAny(['what is civizen', 'civizen in one sentence', 'civizen mission']) ||
-    /^what\s+is\s+civizen\b/.test(c) ||
-    /^what['’]?s\s+civizen\b/.test(c)
-  ) {
-    return { reply: CIVIZEN_PRODUCT_SUMMARY, metric: 'policy_civizen_summary' };
-  }
-
-  if (hasAny(['safety', 'safe', 'moderation', 'report', 'abuse', 'harm'])) {
-    return {
-      reply:
-        'Civizen safety centers on accountable participation: members can report abuse, moderation can intervene, and platform decisions are expected to be transparent and reviewable through documented governance processes.',
-      metric: 'policy_safety',
-    };
-  }
-
-  if (hasAny(['governance', 'vote', 'proposal', 'civic', 'policy'])) {
-    return {
-      reply:
-        'Civizen governance is designed around verifiable civic participation, where members can review proposals, vote through defined rules, and track decisions with transparent records rather than opaque admin-only control.',
-      metric: 'policy_governance',
-    };
-  }
-
-  if (
-    hasAny([
-      'constitution update',
-      'updated civizen constitution',
-      'new constitution',
-      'constitutional update',
-      'amendment update',
-      'article update',
-      'what do you think about the update',
-      'what do you think about the new updates',
-    ])
-  ) {
-    return {
-      reply:
-        'I can help analyze the update in a practical way. Share the specific changed article(s) or text, and I will map each change to likely impact on civic learning, accountability roles, voting/governance workflow, and implementation risks so you can decide next actions.',
-      metric: 'policy_governance',
-    };
-  }
-
-  if (hasAny(['market', 'marketplace', 'buy', 'sell', 'listing', 'luma'])) {
-    return {
-      reply:
-        'Civizen marketplace lets members list and exchange goods or services with clear records; Luma is used as the in-app monetary layer for those exchanges under platform policy controls.',
-      metric: 'policy_marketplace',
-    };
-  }
-
-  if (hasAny(['privacy', 'private message', 'dm', 'encryption', 'e2ee', 'secure chat', 'messaging security'])) {
-    return {
-      reply:
-        'Civizen messaging privacy uses device-based keys for person-to-person encrypted chat when both participants have keys enabled; core delivery metadata and operational controls still exist so messaging can function and be governed responsibly.',
-      metric: 'policy_privacy',
-    };
-  }
-
-  return null;
 }
 
 function abuseMetricCategory(category: AbuseCategory): ModerationMetricCategory {
@@ -470,7 +336,7 @@ async function recordModerationMetric(
   }
 }
 
-async function completeOpenAi(key: string, history: HistoryTurn[]): Promise<string | null> {
+async function completeOpenAi(key: string, history: HistoryTurn[], systemPrompt: string): Promise<string | null> {
   let turns = compactHistoryForLlm(history);
   if (!turns.length) {
     const lastUser = [...history].reverse().find((h) => h.role === 'user');
@@ -487,7 +353,7 @@ async function completeOpenAi(key: string, history: HistoryTurn[]): Promise<stri
       temperature: 0.3,
       max_tokens: 600,
       messages: [
-        { role: 'system', content: NELA_SYSTEM_PROMPT },
+        { role: 'system', content: systemPrompt || NELA_FALLBACK_SYSTEM_PROMPT },
         ...turns.map((h) => ({ role: h.role, content: h.content })),
       ],
     }),
@@ -538,13 +404,14 @@ async function completeGemini(
   model: string,
   history: HistoryTurn[],
   latestUserLine: string,
+  systemPrompt: string,
 ): Promise<string | null> {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
     model,
   )}:generateContent`;
 
   const buildBody = (turns: HistoryTurn[]) => ({
-    systemInstruction: { parts: [{ text: NELA_SYSTEM_PROMPT }] },
+    systemInstruction: { parts: [{ text: systemPrompt || NELA_FALLBACK_SYSTEM_PROMPT }] },
     contents: turns.map((h) => ({
       role: h.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: h.content }],
@@ -701,7 +568,7 @@ Deno.serve(async (request) => {
 
   const { data: callerProfile, error: profileError } = await userClient
     .from('profiles')
-    .select('id')
+    .select('id, role')
     .eq('user_id', user.id)
     .single();
 
@@ -748,54 +615,60 @@ Deno.serve(async (request) => {
       content: String(r.content ?? ''),
     })) ?? [];
 
-  const replyNoKey =
-    'Thanks for your message. Automated replies are not available here yet because this server has no AI provider key configured.';
-
-  const replyProviderDown =
-    'Thanks for your message. Nela could not generate a reply just now. Please try again in a moment.';
-
   const llm = resolveLlm();
-  let replyText = llm.kind === 'none' ? replyNoKey : replyProviderDown;
+  let replyText = '';
   let moderationMetric: ModerationMetricCategory | null = null;
+  let diagnostics: Record<string, unknown> | null = null;
 
   const latestUserLine = String(last.content ?? '');
   const abuseCategory = classifyAbuse(latestUserLine);
   if (abuseCategory) {
     replyText = abuseRefusalReply(abuseCategory);
     moderationMetric = abuseMetricCategory(abuseCategory);
-  } else if (!isRelevantToCivizenPurpose(latestUserLine)) {
-    replyText =
-      'I can only help with Civizen-related topics such as governance, messaging, safety, marketplace, profile/account settings, and how to use features in this app. Please ask a Civizen-specific question.';
-    moderationMetric = 'off_topic';
-  } else if (isGreetingOnly(latestUserLine)) {
-    replyText =
-      'Hi! I can help with Civizen features, governance, messaging, safety, marketplace, and account settings. What would you like to do?';
-    moderationMetric = 'greeting';
   } else {
-    const policyReply = buildPolicyReply(latestUserLine);
-    if (policyReply) {
-      replyText = policyReply.reply;
-      moderationMetric = policyReply.metric;
-    } else if (isWhatIsCivizenQuestion(latestUserLine)) {
-      replyText = CIVIZEN_PRODUCT_SUMMARY;
-      moderationMetric = 'policy_civizen_summary';
-    } else if (llm.kind !== 'none') {
+    const prep = prepareNelaTurn(history);
+    const debugRequested = body.debug === true;
+    const debugRole = String((callerProfile as { role?: string }).role ?? '');
+    const debugAllowed =
+      debugRequested &&
+      (debugRole === 'founder' ||
+        debugRole === 'admin' ||
+        debugRole === 'system' ||
+        (Deno.env.get('NELA_KNOWLEDGE_DEBUG') ?? '').trim() === '1');
+    if (debugAllowed) {
+      diagnostics = prep.diagnostics as unknown as Record<string, unknown>;
+    }
+
+    if (!prep.inScope) {
+      replyText = prep.groundedAnswer;
+      moderationMetric = 'off_topic';
+    } else if (prep.isGreeting) {
+      replyText = prep.groundedAnswer;
+      moderationMetric = 'greeting';
+    } else if (prep.skipLlm || llm.kind === 'none') {
+      replyText = prep.groundedAnswer;
+      if (isWhatIsCivizenQuestion(latestUserLine)) moderationMetric = 'policy_civizen_summary';
+    } else {
       try {
         let text: string | null = null;
-        const effectiveHistory =
-          isConstitutionAnalysisRequest(latestUserLine)
-            ? [...history, { role: 'user' as const, content: buildConstitutionAnalysisPrompt(latestUserLine) }]
-            : history;
+        const effectiveHistory = isConstitutionAnalysisRequest(latestUserLine)
+          ? [...history, { role: 'user' as const, content: buildConstitutionAnalysisPrompt(latestUserLine) }]
+          : history;
         if (llm.kind === 'gemini') {
-          text = await completeGemini(llm.key, llm.model, effectiveHistory, latestUserLine);
+          text = await completeGemini(llm.key, llm.model, effectiveHistory, latestUserLine, prep.systemPrompt);
         } else {
-          text = await completeOpenAi(llm.key, effectiveHistory);
+          text = await completeOpenAi(llm.key, effectiveHistory, prep.systemPrompt);
         }
-        if (text) replyText = normalizeNelaStyle(text);
+        replyText = text ? normalizeNelaStyle(text) : prep.groundedAnswer;
       } catch (err) {
         console.error('[messaging-agent-reply] LLM request failed:', err);
+        replyText = prep.groundedAnswer;
       }
     }
+  }
+
+  if (!replyText.trim()) {
+    replyText = 'I could not verify that from Civizen’s current project information.';
   }
 
   if (moderationMetric) {
@@ -815,7 +688,7 @@ Deno.serve(async (request) => {
     });
   }
 
-  return new Response(JSON.stringify({ ok: true }), {
+  return new Response(JSON.stringify(diagnostics ? { ok: true, diagnostics } : { ok: true }), {
     status: 200,
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });

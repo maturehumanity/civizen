@@ -9,40 +9,41 @@ import {
   type ScoreMetric,
 } from '@/lib/civizen-score';
 import {
-  blendActivityEvaluation,
   evidenceRootId,
   meanFinite,
   reputationFromObservations,
   type CategoryObservation,
   type EvidenceRootRef,
 } from '@/lib/civizen-score-model';
+import { evaluateContributionObservation } from '@/lib/civizen-contribution-observation';
+import { summarizeContributionEvidenceConfidence } from '@/lib/civizen-contribution-confidence';
 import type { ContributionEvent } from '@/lib/civizen-contributions';
 
 function contributionEventRoot(event: ContributionEvent): string {
   return evidenceRootId(event.sourceTable, event.sourceId);
 }
 
-function contributionObservation(event: ContributionEvent): CategoryObservation | null {
-  const value = blendActivityEvaluation({
-    quality: event.capacityEstimate,
-    impact: event.impactEstimate,
-    collaboration: event.collaborationEstimate,
-  });
-  if (value == null) return null;
+export function contributionObservationFromEvent(event: ContributionEvent): CategoryObservation | null {
+  const evaluated = evaluateContributionObservation(event);
+  if (evaluated.observation == null) return null;
   const evaluatorIds = Array.isArray(event.rawMeta.evaluatorIds)
     ? event.rawMeta.evaluatorIds.filter((id): id is string => typeof id === 'string')
     : [];
   const evaluationCount =
     typeof event.rawMeta.evaluationCount === 'number' ? event.rawMeta.evaluationCount : evaluatorIds.length;
+  const reliability = typeof event.rawMeta.evaluatorReliability === 'number'
+    ? event.rawMeta.evaluatorReliability
+    : null;
   return {
     evidenceRootId: contributionEventRoot(event),
-    value,
+    value: evaluated.observation,
     verified: event.verified,
     occurredAt: event.occurredAt,
     evaluatorIds,
     evaluationCount,
     durationMinutes:
       typeof event.rawMeta.durationMinutes === 'number' ? event.rawMeta.durationMinutes : null,
+    evaluatorReliability: reliability,
   };
 }
 
@@ -74,7 +75,7 @@ export function scoreContributionsFromEvents(
   if (events.length === 0) return null;
 
   const observations = events
-    .map(contributionObservation)
+    .map(contributionObservationFromEvent)
     .filter((item): item is CategoryObservation => item != null);
   const reputation = reputationFromObservations(observations);
   if (reputation.score == null) return null;
@@ -92,52 +93,56 @@ export function scoreContributionsFromEvents(
     const t = Date.parse(event.occurredAt);
     return Number.isFinite(t) && t >= recentCutoff;
   });
-  const impactMean = meanFinite(unique.map((event) => event.impactEstimate));
-  const collabMean = meanFinite(unique.map((event) => event.collaborationEstimate));
+  const impactMean = meanFinite(unique.map((event) => {
+    const impact = evaluateContributionObservation(event).impact;
+    return impact;
+  }));
+  const collabMean = meanFinite(unique.map((event) => evaluateContributionObservation(event).collaboration));
   const beneficiaryMean = meanFinite(unique.map((event) => event.beneficiaryEstimate));
 
+  const evidenceConfidence = summarizeContributionEvidenceConfidence(unique);
   const metrics: ScoreMetric[] = [
     {
       id: 'recent',
       label: 'Recent Contributions',
       value: recentEvents.length > 0 ? clampScore(diminishingQuantityScore(recentEvents.length, 8, 70)) : null,
       sourceCount: recentEvents.length,
-      confidence: 'low',
+      confidence: evidenceConfidence.overall,
     },
     {
       id: 'verified',
       label: 'Verified Contributions',
       value: verifiedCount > 0 ? clampScore(diminishingQuantityScore(verifiedCount, 6, 80)) : null,
       sourceCount: verifiedCount,
-      confidence: 'low',
+      confidence: evidenceConfidence.overall,
     },
     {
       id: 'impact',
       label: 'Impact',
       value: impactMean == null ? null : clampScore(impactMean),
       sourceCount: unique.length,
-      confidence: 'low',
+      confidence: evidenceConfidence.overall,
     },
     {
       id: 'collaboration',
       label: 'Collaboration',
       value: collabMean == null ? null : clampScore(collabMean),
       sourceCount: unique.length,
-      confidence: 'low',
+      confidence: evidenceConfidence.overall,
     },
     {
       id: 'beneficiaries',
       label: 'Beneficiaries',
       value: beneficiaryMean == null ? null : clampScore(beneficiaryMean),
       sourceCount: unique.length,
-      confidence: 'low',
+      confidence: evidenceConfidence.overall,
     },
     {
       id: 'ratings',
       label: 'Ratings',
       value: null,
-      sourceCount: 0,
-      confidence: 'insufficient',
+      sourceCount: evaluatorRatingCount(unique),
+      confidence: evaluatorRatingCount(unique) > 0 ? evidenceConfidence.overall : 'insufficient',
     },
   ];
 
@@ -145,7 +150,7 @@ export function scoreContributionsFromEvents(
     score: reputation.score,
     sourceCount: unique.length,
     verifiedSourceCount: verifiedCount,
-    confidence: 'low',
+    confidence: evidenceConfidence.overall,
     status: reputation.status,
     independentEvidenceCount: reputation.independentEvidenceCount,
     effectiveEvidenceVolume: reputation.effectiveEvidenceVolume,
@@ -153,6 +158,13 @@ export function scoreContributionsFromEvents(
     evidenceRootRefs: contributionEvidenceRoots(unique),
     metrics,
   };
+}
+
+function evaluatorRatingCount(events: ContributionEvent[]): number {
+  return events.reduce((sum, event) => {
+    const ids = Array.isArray(event.rawMeta.evaluatorIds) ? event.rawMeta.evaluatorIds : [];
+    return sum + ids.length;
+  }, 0);
 }
 
 export function demonstratedSkillsFromContributionEvents(events: ContributionEvent[]): Array<{

@@ -26,6 +26,7 @@ const liveStatusKeys = [
   'onboarding.statusLiveProfile',
   'onboarding.statusLiveGovernance',
   'onboarding.statusLiveMarket',
+  'onboarding.statusLiveAgreements',
   'onboarding.statusLiveMessaging',
 ] as const;
 

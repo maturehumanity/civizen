@@ -22,6 +22,7 @@ import {
   versionOf,
   type HistoricalCommit,
 } from './civizen-historical-reconstruction-signals';
+import { recoverUnlinkedSurvivingOutcomes } from './civizen-historical-reconstruction-recall';
 
 export type { HistoricalCommit };
 export { distinctiveTerms, isSatelliteCommit, shouldMergeProductCommits, isSnapshotCommit };
@@ -313,15 +314,23 @@ export function reconstructHistoricalDevelopmentOutcomes(input: {
   const live = outcomesFromCommits(input.commits.filter((commit) => !isSnapshotCommit(commit)), surviving, stories, usedStory);
   const orphaned = outcomesFromCommits(gitJournalCommits(stories, headShas), surviving, stories, usedStory);
   const outcomes = [...live.outcomes, ...orphaned.outcomes];
-  return {
+  const recovered = recoverUnlinkedSurvivingOutcomes({
+    stories,
     outcomes,
+    survivingPaths: input.survivingPaths,
+    commits: input.commits,
+  });
+  const combined = [...outcomes, ...recovered];
+  const used = new Set(combined.flatMap((item) => item.storyIds));
+  return {
+    outcomes: combined,
     unreconstructed: [
       ...live.unusedSat.concat(orphaned.unusedSat).map((commit) => ({
         kind: 'commit' as const, id: commit.sha, reason: 'satellite_without_product_parent',
       })),
       ...stories.filter((story) => {
         const id = story.id || story.sourceStoryKey || '';
-        return Boolean(id) && !usedStory.has(id);
+        return Boolean(id) && !used.has(id);
       }).map((story) => ({
         kind: 'story' as const,
         id: story.id || story.sourceStoryKey || '',

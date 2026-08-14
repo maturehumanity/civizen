@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
+import { CollaborationAgreementView } from '@/components/agreements/CollaborationAgreementView';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import type { AgreementRow } from '@/lib/agreements';
+import { getAgreementDetail, isCollaborationAgreement, type AgreementDetailBundle } from '@/lib/agreements-api';
 import { isMissingAgreementsBackend } from '@/lib/agreements-backend';
 import { formatLumaFromLumens } from '@/lib/prototype-credits';
 
@@ -31,6 +33,7 @@ export default function AgreementDetail() {
   const amountLocale = language === 'en' ? 'en-US' : language;
 
   const [row, setRow] = useState<AgreementRow | null>(null);
+  const [bundle, setBundle] = useState<AgreementDetailBundle | null>(null);
   const [buyer, setBuyer] = useState<PartyRow | undefined>();
   const [seller, setSeller] = useState<PartyRow | undefined>();
   const [bodyDraft, setBodyDraft] = useState('');
@@ -50,6 +53,27 @@ export default function AgreementDetail() {
 
     setLoading(true);
     setNotFound(false);
+
+    try {
+      const detail = await getAgreementDetail(agreementId);
+      if (detail && isCollaborationAgreement(detail)) {
+        setBundle(detail);
+        setRow(null);
+        setBackendMissing(false);
+        setLoading(false);
+        return;
+      }
+      setBundle(detail);
+    } catch (caught) {
+      const message = caught instanceof Error ? caught.message : '';
+      if (isMissingAgreementsBackend({ message })) {
+        setBackendMissing(true);
+        setBundle(null);
+        setRow(null);
+        setLoading(false);
+        return;
+      }
+    }
 
     const { data, error } = await supabase.from('agreements').select('*').eq('id', agreementId).maybeSingle();
 
@@ -176,6 +200,14 @@ export default function AgreementDetail() {
     );
   }
 
+  if (bundle && isCollaborationAgreement(bundle)) {
+    return (
+      <AppLayout>
+        <CollaborationAgreementView bundle={bundle} onReload={load} />
+      </AppLayout>
+    );
+  }
+
   if (notFound || !row) {
     return (
       <AppLayout>
@@ -189,7 +221,7 @@ export default function AgreementDetail() {
     );
   }
 
-  const priceLabel = formatLumaFromLumens(row.listing_price_lumens_snapshot, { locale: amountLocale });
+  const priceLabel = formatLumaFromLumens(row.listing_price_lumens_snapshot ?? 0, { locale: amountLocale });
   const statusKey = `agreements.status.${row.status}` as const;
   const statusText = t(statusKey) === statusKey ? row.status : t(statusKey);
 

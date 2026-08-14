@@ -9,6 +9,7 @@ import {
   type CategoryScoreInput,
   type ScoreMetric,
 } from '@/lib/civizen-score';
+import { evaluateContributionObservation } from '@/lib/civizen-contribution-observation';
 import type { ContributionEvent } from '@/lib/civizen-contributions';
 import { contributionEvidenceRoots } from '@/lib/civizen-contributions';
 import {
@@ -76,7 +77,10 @@ function asNumber(value: unknown): number | null {
  * Verification does not change the rating; it only affects evidential weight later.
  */
 export function deriveSystemRating(event: ContributionEvent): number {
-  const blend = event.impactEstimate * 0.55 + event.capacityEstimate * 0.35 + event.collaborationEstimate * 0.1;
+  const evaluated = evaluateContributionObservation(event);
+  const blend =
+    evaluated.observation ??
+    event.impactEstimate * 0.55 + event.capacityEstimate * 0.35 + event.collaborationEstimate * 0.1;
   const typeWeight = PLATFORM_DIRECT_TYPES.has(event.eventType) ? 1 : 0.85;
   return clampScore(blend * typeWeight);
 }

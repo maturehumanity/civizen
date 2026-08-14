@@ -40,6 +40,9 @@ jobs:
       - name: Audit
         run: node scripts/audit-ci.mjs
 
+      - name: Assistant knowledge freshness
+        run: npm run assistant:knowledge:check
+
       - name: Test
         run: npm test
 

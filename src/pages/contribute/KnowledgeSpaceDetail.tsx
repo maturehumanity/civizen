@@ -16,6 +16,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { getContributionProgram } from '@/lib/challenges-api';
 import type { ContributionProgram } from '@/lib/challenges';
 import { listCurrentAreas } from '@/lib/classification';
+import { RelatedAgreementsCard } from '@/components/agreements/RelatedAgreementsCard';
 import {
   KNOWLEDGE_GAP_KINDS,
   canConvertGapToChallenge,
@@ -192,6 +193,17 @@ export default function KnowledgeSpaceDetail() {
             </span>
           ) : null}
         </div>
+
+        <RelatedAgreementsCard
+          entityType="knowledge_space"
+          entityId={space.id}
+          entityTitle={space.title}
+          launch={{
+            source: 'knowledge_space',
+            agreementType: 'data_research',
+            ...(program ? { relatedTitle: `${space.title} · ${program.title}` } : {}),
+          }}
+        />
 
         <Collapsible open={showDetails} onOpenChange={setShowDetails}>
           <CollapsibleTrigger asChild>

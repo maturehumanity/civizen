@@ -2,6 +2,30 @@
 
 ## Current focus
 
+**Nela answer shape (2026-08-13):** Match the question. **Can I / Does Civizen** starts with Yes or No, then the path. **How / Where** starts with the path (`Open Market > Agreements`). Same FAQ body; the opener is chosen from the member’s wording.
+
+**Nela selectable type links (2026-08-13):** Agreement type names in Nela’s main answer (General, Partnership / Collaboration, Employment, and the rest) are tappable and open New agreement for that type. Extra notes stay unlinked so a caveat like “Sale / Purchase Agreement” is not treated as a create shortcut.
+
+**Nela extra detail tone (2026-08-13):** In Nela replies, the action stays full size. Extra notes (after a blank line, or a “Supported types…” caveat) render smaller and muted.
+
+**Nela directions (2026-08-13):** Nela tells members the visible path (`Open Market > Agreements`), not a URL alone. Those page names are tappable in chat.
+
+**Messaging message wrap (2026-08-13):** Thread body text wraps on word boundaries (`overflow-wrap: break-word`, not `word-break: break-all`) so a leftover letter never sits alone on the next line. Long URLs can still wrap.
+
+**Messaging message selection (2026-08-13):** In a thread, tap the message itself to select it. No checkboxes. Selection is the highlight + the “N selected” header actions. Long-press still enters selection on touch.
+
+**Nela project-awareness knowledge system (2026-08-13):** Built-in assistant is internal-first. Conversation context → FAQ/cheat sheet → capability registry → project knowledge index → authorized member data → AI reasoning over that evidence → external API resources only when the request is actually about the outside world. Cheat sheet: `docs/assistant/civizen-assistant-cheatsheet.md`. Refresh with `npm run assistant:knowledge`. “Are you sure?” / “Positive?” re-verifies the previous Civizen claim (walking back past an off-topic refusal) instead of failing the scope gate. Deploy `messaging-agent-reply` + `nela-bundle.js` for live Messaging.
+
+**Simple by default. Advanced by need. Always. (2026-08-13):** Standing product/design principle for all surfaces. Agreements: `+` beside the title; searchable type menu; Employment and Lease in the common list; unmatched search offers **+ Create “{name}”** as a custom type (not a global registry entry); **More agreement types…** last in the same menu; supported types open purpose-built Agreement documents with inline tokens; page header is **Agreement #** (auto-number, editable) **on**; document heading is hover-selectable (**Service(s) Provision** / **Contribution(s)**; Lease includes **Car lease** and other kinds) — hover shows only alternatives, click/tap renames in place; party roles sit in the sentence (`the Client`). LANGUAGE_PACK_VERSION 169.
+
+**Agreements platform capability (2026-08-13):** `/agreements` is the canonical workspace. Create is document-first: supported types (including Employment, distinct from Service / Contribution) open actual templates; the header is **Agreement #** with an auto-number the user can edit, then **on**; the document heading and party roles look like prose — hover shows alternatives, click/tap renames; inline party/fact placeholders are short in the sentence (**Party**, **Employer**, **position**) with longer accessible names; unique directory parties bind automatically (Person/Organization only if the name is not in Civizen, or the user must pick among similarly named matches); Jobs prefill Employment; Sale / Purchase remains for negotiated terms only. Native e-sign + external/paper execution. Built on the existing `agreements` table. Spec: `docs/04-operations/dev/agreements.md`.
+
+**Operational contribution lifecycle (2026-08-13):** Approved lifecycle/impact/evaluator/context models are now live product workflows. Later evidence attaches to an existing canonical root (`contribution_evidence_records`) and Score V2 recomputes on read. Contributor function is role-based (artifact type kept separate). Overall evidence confidence stays Low until independent validators and realized-outcome evidence exist; 87 system-verified roots are not enough. One historical recall candidate was not persisted (weak process-style evidence). LANGUAGE_PACK_VERSION 158. Concurrent Slice 2/3/4 / Phase 1 pilot work preserved. Score V2 formulas unchanged.
+
+**Contribution lifecycle + evaluator reputation + context (2026-08-13):** Score V2 layers preserved. Contribution evaluation is now a lifecycle on one canonical root (`contribution-evaluation-v2`): initial → verified → realized impact → durability. Verification does not rewrite raw quality. Realized impact uses bounded breadth×depth (`contribution-impact-v1`). Evaluator reputation (`evaluator-reputation-v1`) is a separate derived pass from immutable ratings. Civizen context (`civizen-context-v1`) is declared/demonstrated/current-focus/historical and is not a score bonus. Reconstruction recall can recover disjoint surviving outcomes without scoring prompts. LANGUAGE_PACK_VERSION 157. Concurrent Slice 2/3/4 / Phase 1 pilot work preserved.
+
+**Contributions ledger + evaluation-on-read (2026-08-13):** Profile Contributions preview no longer hides canonical roots behind a “Platform improvement · 86” aggregate. `/profile/contributions` is the inspectable ledger (search, filters, sort, pagination, per-record detail). Activity evaluation is distinct from accumulated Contributions reputation; Score V2 shrinkage/priors unchanged. Stored 78/78/35 values were type/reconstruction placeholders, not per-outcome evaluations — ignored for development scoring on read. Unknown realized impact stays unknown. Concurrent Slice 2/3/4 / Phase 1 pilot work preserved.
+
 **Live + Testing v0.1.179 (2026-08-13):** Build 181 (`20260813-v0.1.179`) published to Testing and Live. Includes Phase 1 contribution pilots, Score V2, development outcome capture, Challenge export crash fix, and Home Score V2 `demonstratedProjects` guard.
 
 **Historical reconstruction (2026-08-13):** Coherent historical development outcomes are reconstructed from git + journal provenance + surviving implementation (`src/lib/civizen-historical-reconstruction.ts`). Chat/git journal rows remain excluded as independent contributions. Reconstruction confidence is stored separately from contribution evidence confidence. No Score V2 formula change and no score-target restoration. Spec: `docs/04-operations/dev/historical-development-reconstruction.md`. LANGUAGE_PACK_VERSION 154. Concurrent Slice 2/3/4 / Phase 1 pilot work preserved.
@@ -408,7 +432,7 @@ Secondary UI focus remains **NavSecondaryCarousel / Market arc menu** — geomet
 
 ## Mandatory reads before UI work
 
-1. `docs/04-operations/dev/AGENTS.md` (especially §0 and post-dev verification)
+1. `docs/04-operations/dev/AGENTS.md` (especially **Simple by default. Advanced by need. Always.**, §3, and post-dev verification)
 2. `docs/04-operations/dev/nav-secondary-carousel.md` when touching secondary nav or Market bottom carousel
 3. `docs/04-operations/dev/contribute-page.md` when touching `/contribute` or contribution hub lanes
 4. `memory-bank/systemPatterns.md` for component map

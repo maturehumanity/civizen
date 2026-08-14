@@ -19,6 +19,7 @@ import {
   type ContributionOpportunity,
   type OpportunityParticipation,
 } from '@/lib/opportunities';
+import { RelatedAgreementsCard } from '@/components/agreements/RelatedAgreementsCard';
 
 export default function ContributeImpact() {
   const { t } = useLanguage();
@@ -75,6 +76,15 @@ export default function ContributeImpact() {
             </div>
           }
         />
+
+        {profileId ? (
+          <RelatedAgreementsCard
+            entityType="contribution"
+            entityId={profileId}
+            entityTitle={t('contribute.lanes.impact.title')}
+            launch={{ source: 'contribution', agreementType: 'service_contribution' }}
+          />
+        ) : null}
 
         {loading ? <p className="text-sm text-muted-foreground">{t('common.loading')}</p> : null}
         {error ? <p className="text-sm text-destructive">{error}</p> : null}

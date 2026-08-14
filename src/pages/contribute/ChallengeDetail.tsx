@@ -50,6 +50,7 @@ import { listManagedKnowledgeSpaces, publishSolutionRecordAsResource } from '@/l
 import { profileCanManagePublisher } from '@/lib/opportunities';
 import { listOwnedLinkedProfileIds } from '@/lib/opportunities-api';
 import { toast } from 'sonner';
+import { RelatedAgreementsCard } from '@/components/agreements/RelatedAgreementsCard';
 
 type ProjectOpportunity = { id: string; title: string; status: string; summary: string };
 
@@ -245,6 +246,25 @@ export default function ChallengeDetail() {
             </span>
           ) : null}
         </div>
+
+        <RelatedAgreementsCard
+          entityType="challenge"
+          entityId={challenge.id}
+          entityTitle={challenge.title}
+          launch={{
+            source: 'pilot',
+            agreementType: 'pilot',
+            relatedTitle: program ? `${challenge.title} · ${program.title}` : challenge.title,
+          }}
+        />
+        {project ? (
+          <RelatedAgreementsCard
+            entityType="project"
+            entityId={project.id}
+            entityTitle={project.title}
+            launch={{ source: 'project', agreementType: 'general' }}
+          />
+        ) : null}
 
         <Card className="space-y-3 border-border/70 bg-card/95 p-4">
           <p className="text-sm text-foreground">{challenge.whyItMatters}</p>

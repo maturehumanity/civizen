@@ -30,9 +30,26 @@ Before planning or editing, read (in order):
    - **`docs/03-platform/areas-and-initiatives/public-areas-initiatives-v1.md`** (working product spec; not `/documents`; do not implement `/areas` without a separate task)
    - **`docs/04-operations/dev/contribute-page.md`** when touching `/contribute`
    - **`docs/04-operations/dev/phase-1-pilot-operating-model.md`** when touching `/contribute` pilots
-8. Documentation map: `docs/README.md` (purpose-based IA: foundation · governance · policies · platform · operations · research · proposals · archive · institutional)
+   - **`docs/04-operations/dev/agreements.md`** when touching Agreements (`/agreements` is platform-level; Marketplace is an entry point)
+8. If the task touches Nela / the built-in assistant:
+   - **`docs/assistant/README.md`** and **`docs/assistant/civizen-assistant-cheatsheet.md`**. After product-fact changes, run `npm run assistant:knowledge`. Nela is internal-first; external resources must not override current Civizen project information.
+9. Documentation map: `docs/README.md` (purpose-based IA: foundation · governance · policies · platform · operations · research · proposals · archive · institutional)
 
 Do not rely on conversation memory alone for component behavior.
+
+## Simple by default. Advanced by need. Always.
+
+Core product/design principle for **all** surfaces (member, organization/admin, forms, dashboards, navigation, workflows, settings, and documentation/implementation decisions). Full policy: `docs/04-operations/dev/AGENTS.md`.
+
+Expose the smallest clear interface for the user's immediate goal. Do not display every capability merely because the system supports it. Prefer progressive disclosure, contextual intelligence, and plain language. Goal: **simple surface, advanced depth** — not fewer capabilities.
+
+Icons for secondary/common actions (`+`, search, filter, more, edit, download, history) are preferred when recognizable, with accessible labels. Desktop hover may show a name; tap/click must work without hover. Unfamiliar or consequential actions keep visible text. Destructive actions must not rely on icon recognition alone.
+
+Empty states stay minimal. If create is a compact `+` immediately beside the page title (accessible label; tap/click works without hover), do not duplicate a large Create button in the empty body. **More agreement types…** belongs inside the same `+` menu, not as a separate control.
+
+Before adding a visible field, button, tab, filter, card, section, or explanatory block, ask: does the user need this now? Can Civizen infer it? Can it appear contextually? Can secondary detail be disclosed later? Is the simpler interface still clear to a first-time user? Is the deeper capability still discoverable?
+
+Do not use this principle to remove important capabilities, accessibility, transparency, safety information, necessary user control, or necessary internal/reference documentation.
 
 ## After front-end or arc changes
 

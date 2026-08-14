@@ -126,6 +126,27 @@ if (!existsSync('docs/04-operations/dev/phase-1-pilot-operating-model.md')) {
 if (!agents.includes('phase-1-pilot-operating-model.md')) {
   fail('AGENTS.md must reference docs/04-operations/dev/phase-1-pilot-operating-model.md');
 }
+if (!existsSync('docs/04-operations/dev/agreements.md')) {
+  fail('missing docs/04-operations/dev/agreements.md');
+}
+if (!agents.includes('agreements.md')) {
+  fail('AGENTS.md must reference docs/04-operations/dev/agreements.md');
+}
+if (!existsSync('docs/assistant/civizen-assistant-cheatsheet.md')) {
+  fail('missing docs/assistant/civizen-assistant-cheatsheet.md');
+}
+if (!existsSync('src/lib/assistant/catalog.ts')) {
+  fail('missing src/lib/assistant/catalog.ts');
+}
+if (!existsSync('src/lib/assistant/generated/knowledge-pack.ts')) {
+  fail('missing generated assistant knowledge pack');
+}
+if (!existsSync('supabase/functions/messaging-agent-reply/nela-bundle.js')) {
+  fail('missing Nela knowledge bundle; run npm run assistant:knowledge');
+}
+if (!agents.includes('assistant:knowledge')) {
+  fail('AGENTS.md must reference npm run assistant:knowledge');
+}
 
 const spec = readFileSync('docs/04-operations/dev/nav-secondary-carousel.md', 'utf8');
 if (!spec.includes('Sell') || !spec.includes('Jobs') || !spec.includes('390px')) {

@@ -277,6 +277,20 @@ export const permissionMetadata: PermissionMetadata[] = [
     descriptionKey: 'admin.permissionDescriptions.finance.admin',
   },
   {
+    permission: 'agreements.create',
+    section: 'marketplace',
+    page: 'agreements',
+    titleKey: 'admin.permissionLabels.agreements.create',
+    descriptionKey: 'admin.permissionDescriptions.agreements.create',
+  },
+  {
+    permission: 'agreements.sign_org',
+    section: 'marketplace',
+    page: 'agreements',
+    titleKey: 'admin.permissionLabels.agreements.sign_org',
+    descriptionKey: 'admin.permissionDescriptions.agreements.sign_org',
+  },
+  {
     permission: 'like.create',
     section: 'home',
     page: 'home',

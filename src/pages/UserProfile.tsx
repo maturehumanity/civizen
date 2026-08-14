@@ -350,6 +350,9 @@ export default function UserProfile() {
                     if (category.id === 'performance') {
                       setPerformancePanelOpen(true);
                     }
+                    if (category.id === 'contributions' && profile?.id) {
+                      navigate(`/user/${profile.id}/contributions`);
+                    }
                   }}
                 >
                   <span className="text-muted-foreground">{category.shortLabel}</span>

@@ -35,10 +35,12 @@ describe('civizen performance', () => {
   it('derives higher system ratings for verified platform work than posts', () => {
     const story = makeEvent({
       eventType: 'development_story',
+      title: 'Score V2 evidence architecture',
       capacityEstimate: 78,
       impactEstimate: 78,
       collaborationEstimate: 35,
       verified: true,
+      rawMeta: { testsPassed: true },
     });
     const post = makeEvent({
       eventType: 'post',
@@ -48,7 +50,27 @@ describe('civizen performance', () => {
       verified: false,
     });
     expect(deriveSystemRating(story)).toBeGreaterThan(deriveSystemRating(post));
-    expect(deriveSystemRating(story)).toBeGreaterThan(70);
+  });
+
+  it('does not copy stored 78/78/35 onto heterogeneous development work', () => {
+    const architecture = makeEvent({
+      eventType: 'development_story',
+      title: 'Score V2 evidence architecture',
+      capacityEstimate: 78,
+      impactEstimate: 78,
+      collaborationEstimate: 35,
+      verified: true,
+      rawMeta: { testsPassed: true },
+    });
+    const copy = makeEvent({
+      eventType: 'development_story',
+      title: 'Hide Endorse from the Profile menu',
+      capacityEstimate: 78,
+      impactEstimate: 78,
+      collaborationEstimate: 35,
+      verified: true,
+    });
+    expect(deriveSystemRating(architecture)).not.toBe(deriveSystemRating(copy));
   });
 
   it('forbids self-rating', () => {

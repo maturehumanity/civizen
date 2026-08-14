@@ -394,7 +394,7 @@ export default function Market() {
           ) : null}
 
           {isJobs ? (
-            <div className="px-1 pt-1">
+            <div className="space-y-3 px-1 pt-1">
               <MarketJobsInterestForm />
             </div>
           ) : null}

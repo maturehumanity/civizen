@@ -58,6 +58,9 @@ export function planDevelopmentOutcomeStories(input: DevelopmentOutcomeCaptureIn
     affectedPaths: input.affectedPaths,
     testsPassed: input.testsPassed,
     contributionFunction: input.contributionFunction,
+    title: input.title,
+    roles: input.roles,
+    implementationAssisted: input.implementationAssisted,
   });
   const metadata: Record<string, unknown> = {
     outcomeRootId,
@@ -126,8 +129,6 @@ export function contributionEventsFromDevelopmentStories(
       summary: item.summary,
       textLen: item.instruction.length,
       verified: item.verified,
-      impactOverride: item.verified ? 78 : 62,
-      capacityOverride: item.verified ? 78 : 68,
       occurredAt: item.occurredAt,
       rawMeta: {
         eligibility: item.eligibility,
@@ -138,7 +139,11 @@ export function contributionEventsFromDevelopmentStories(
         outcomeValidated: item.outcomeValidated,
         realFeatures: item.realFeatures,
         domain: item.classifiedDomain,
+        testsPassed: item.testsPassed || stories.some((story) => story.testsPassed === true),
         contributionFunction: item.contributionFunction,
+        affectedPaths: item.affectedPaths,
+        reconstructionResult: item.reconstructionResult,
+        survivingImplementation: item.survivingImplementation,
       },
     }),
   );

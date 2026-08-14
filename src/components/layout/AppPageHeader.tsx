@@ -25,7 +25,9 @@ type AppPageHeaderProps = {
   onBack?: () => void;
   /** Optional icon or mark between back and title. */
   leading?: ReactNode;
-  /** Trailing controls on the title row (kept left of chrome pad). */
+  /** Compact control immediately beside the title (for example a create `+`). */
+  titleAccessory?: ReactNode;
+  /** Trailing controls. Wrap below the title on small screens so they cannot crush it. */
   actions?: ReactNode;
   /**
    * Reserve space for floating AppTopChrome Search/Profile.
@@ -37,8 +39,9 @@ type AppPageHeaderProps = {
 };
 
 /**
- * Compact page header: optional Back chevron on the same line as the title.
- * Prefer this over a separate chrome back row that consumes vertical space.
+ * Compact page header: optional Back chevron on the same wrap as the title.
+ * Actions wrap to the next row on small screens so labeled buttons cannot
+ * collapse the title into a narrow column.
  */
 export function AppPageHeader({
   title,
@@ -47,6 +50,7 @@ export function AppPageHeader({
   fallbackPath,
   onBack,
   leading,
+  titleAccessory,
   actions,
   padForChrome = true,
   className,
@@ -72,7 +76,8 @@ export function AppPageHeader({
   return (
     <div
       className={cn(
-        'flex items-center gap-1',
+        'flex flex-wrap gap-x-2 gap-y-3',
+        subtitle ? 'items-start' : 'items-center',
         padForChrome && APP_PAGE_HEADER_CHROME_PAD,
         className,
       )}
@@ -92,34 +97,40 @@ export function AppPageHeader({
         </Button>
       ) : null}
       {leading ? <div className="shrink-0">{leading}</div> : null}
-      <div className="min-w-0 flex-1">
-        {typeof title === 'string' || typeof title === 'number' ? (
-          <h1
-            className={cn(
-              'text-2xl font-display font-bold leading-snug break-words text-foreground',
-              titleClassName,
-            )}
-            data-testid="app-page-header-title"
-          >
-            {title}
-          </h1>
-        ) : (
-          <div
-            role="heading"
-            aria-level={1}
-            className={cn(
-              'flex items-center gap-2 text-2xl font-display font-bold leading-snug break-words text-foreground',
-              titleClassName,
-            )}
-            data-testid="app-page-header-title"
-          >
-            {title}
-          </div>
-        )}
-        {subtitle ? <div className="mt-1 text-sm text-muted-foreground">{subtitle}</div> : null}
+      <div className="min-w-40 flex-1">
+        <div className="flex items-center gap-1">
+          {typeof title === 'string' || typeof title === 'number' ? (
+            <h1
+              className={cn(
+                'min-w-0 text-2xl font-display font-bold leading-snug text-foreground',
+                titleClassName,
+              )}
+              data-testid="app-page-header-title"
+            >
+              {title}
+            </h1>
+          ) : (
+            <div
+              role="heading"
+              aria-level={1}
+              className={cn(
+                'flex min-w-0 items-center gap-2 text-2xl font-display font-bold leading-snug text-foreground',
+                titleClassName,
+              )}
+              data-testid="app-page-header-title"
+            >
+              {title}
+            </div>
+          )}
+          {titleAccessory ? <div className="shrink-0">{titleAccessory}</div> : null}
+        </div>
+        {subtitle ? <div className="mt-1 text-sm leading-relaxed text-muted-foreground">{subtitle}</div> : null}
       </div>
       {actions ? (
-        <div className="flex shrink-0 items-center gap-2" data-testid="app-page-header-actions">
+        <div
+          className="flex w-full shrink-0 items-center gap-2 sm:ml-auto sm:w-auto"
+          data-testid="app-page-header-actions"
+        >
           {actions}
         </div>
       ) : null}

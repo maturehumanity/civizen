@@ -1,0 +1,745 @@
+import type {
+  AssistantCapability,
+  AssistantFaqItem,
+  TerminologyAlias,
+} from './types';
+
+/**
+ * Curated Nela capability registry.
+ * Status must describe the current application, not a roadmap hope.
+ * Prefer deriving routes and names from live product surfaces.
+ */
+export const ASSISTANT_CAPABILITIES: AssistantCapability[] = [
+  {
+    id: 'home',
+    name: 'Home',
+    status: 'implemented',
+    description: 'Signed-in home feed with Score snapshot, Governance shortcut, and post composer.',
+    routes: ['/'],
+    roles: ['member', 'citizen', 'verified_member', 'certified', 'moderator', 'admin', 'founder'],
+    relatedCapabilities: ['score', 'governance', 'messaging'],
+    aliases: ['feed', 'timeline'],
+    sourceRefs: ['src/pages/Home.tsx', 'src/lib/main-nav.ts'],
+  },
+  {
+    id: 'study',
+    name: 'Study',
+    status: 'implemented',
+    description:
+      'Learning hub for civic materials such as the Community Governance Charter, laws, and related study domains. Distinct from Learning Commons.',
+    howTo: 'Open Study from the bottom navigation.',
+    routes: ['/study', '/law'],
+    roles: ['guest', 'member'],
+    relatedCapabilities: ['governance_charter', 'knowledge_spaces'],
+    aliases: ['learning hub', 'courses'],
+    sourceRefs: ['src/lib/study.ts', 'src/lib/main-nav.ts', 'docs/assistant/civizen-assistant-cheatsheet.md'],
+  },
+  {
+    id: 'contribute_hub',
+    name: 'Contribute',
+    status: 'implemented',
+    description:
+      'Participation gateway asking how you would like to contribute today. Ways, Community, Knowledge, and Your Impact.',
+    howTo: 'Open Contribute from the bottom navigation.',
+    routes: ['/contribute'],
+    roles: ['member'],
+    relatedCapabilities: ['opportunities', 'community_challenges', 'knowledge_spaces', 'my_contributions'],
+    aliases: ['contribution hub', 'how can I contribute'],
+    sourceRefs: [
+      'src/lib/contribute-lanes.ts',
+      'docs/04-operations/dev/contribute-page.md',
+      'docs/assistant/civizen-assistant-cheatsheet.md',
+    ],
+  },
+  {
+    id: 'opportunities',
+    name: 'Opportunities',
+    status: 'implemented',
+    description:
+      'Short verifiable pieces of work. Education-to-Contribution lives under Contribute > Opportunities. Apply, complete work, submit evidence, and get it verified.',
+    howTo:
+      'Open Contribute > Opportunities. Open an opportunity, apply, do the work, then submit evidence for verification.',
+    routes: ['/contribute/professional', '/contribute/professional/new'],
+    roles: ['member'],
+    relatedCapabilities: ['my_contributions', 'score', 'community_challenges', 'knowledge_gaps'],
+    aliases: ['professional listings', 'open tasks', 'professional skills', 'tasks'],
+    sourceRefs: [
+      'src/lib/contribute-lanes.ts',
+      'src/pages/contribute/ProfessionalOpportunities.tsx',
+      'docs/04-operations/dev/contribute-page.md',
+    ],
+  },
+  {
+    id: 'community_challenges',
+    name: 'Community Challenges',
+    status: 'implemented',
+    description:
+      'Name a local problem, collect proposals, choose one solution, implement it through a Project, and keep a Solution Record. Distinct from Governance Solutions.',
+    howTo:
+      'Open Contribute > Community Challenges. Use Create to start a challenge. Others can submit proposals; the coordinator selects one and runs implementation work as Opportunities.',
+    routes: ['/contribute/challenges', '/contribute/challenges/new'],
+    roles: ['member'],
+    relatedCapabilities: ['projects', 'solution_records', 'opportunities', 'programs'],
+    aliases: ['challenges', 'community problem-solving', 'problem solving lab'],
+    sourceRefs: [
+      'src/lib/challenges.ts',
+      'src/pages/contribute/CommunityChallenges.tsx',
+      'docs/04-operations/dev/contribute-page.md',
+      'docs/04-operations/dev/phase-1-pilot-operating-model.md',
+    ],
+  },
+  {
+    id: 'projects',
+    name: 'Projects',
+    status: 'implemented',
+    description:
+      'Implementation records inside Community Challenges. There is no separate community-projects board. Contribute > Projects redirects to Challenges.',
+    routes: ['/contribute/challenges'],
+    roles: ['member'],
+    relatedCapabilities: ['community_challenges', 'opportunities'],
+    aliases: ['implementation project', 'community projects'],
+    sourceRefs: ['docs/04-operations/dev/contribute-page.md', 'docs/04-operations/dev/phase-1-pilot-operating-model.md'],
+  },
+  {
+    id: 'knowledge_spaces',
+    name: 'Knowledge Spaces',
+    status: 'implemented',
+    description:
+      'Learning Commons collections of practical resources. Distinct from Study and Governance Solutions.',
+    howTo: 'Open Contribute > Learning Commons.',
+    routes: ['/contribute/knowledge', '/contribute/knowledge/new'],
+    roles: ['member'],
+    relatedCapabilities: ['knowledge_gaps', 'solution_records', 'study'],
+    aliases: ['learning commons', 'shared knowledge'],
+    sourceRefs: [
+      'src/lib/knowledge.ts',
+      'src/pages/contribute/KnowledgeSpaces.tsx',
+      'docs/04-operations/dev/contribute-page.md',
+    ],
+  },
+  {
+    id: 'knowledge_gaps',
+    name: 'Knowledge Gaps',
+    status: 'implemented',
+    description:
+      'Named gaps in a Knowledge Space. Coordinators can turn an actionable gap into an Opportunity or a Community Challenge.',
+    routes: ['/contribute/knowledge'],
+    roles: ['member'],
+    relatedCapabilities: ['knowledge_spaces', 'opportunities', 'community_challenges'],
+    aliases: ['gaps'],
+    sourceRefs: ['src/lib/knowledge.ts', 'docs/04-operations/dev/contribute-page.md'],
+  },
+  {
+    id: 'solution_records',
+    name: 'Solution Records',
+    status: 'implemented',
+    description:
+      'Outcome record created when a Community Challenge completes with implementation evidence. Can be shared into a Knowledge Space. Not Governance Solutions.',
+    routes: ['/contribute/challenges'],
+    roles: ['member'],
+    relatedCapabilities: ['community_challenges', 'knowledge_spaces', 'governance_solutions'],
+    aliases: ['challenge solution record'],
+    sourceRefs: ['src/lib/challenges.ts', 'docs/04-operations/dev/contribute-page.md'],
+  },
+  {
+    id: 'programs',
+    name: 'Programs',
+    status: 'implemented',
+    description:
+      'Containers for contribution work (education_to_contribution, community_problem_solving, shared_knowledge). Published by a profile.',
+    routes: ['/contribute'],
+    roles: ['member'],
+    relatedCapabilities: ['opportunities', 'community_challenges', 'knowledge_spaces'],
+    aliases: ['contribution programs'],
+    sourceRefs: ['src/lib/challenges.ts', 'docs/04-operations/dev/phase-1-pilot-operating-model.md'],
+  },
+  {
+    id: 'my_contributions',
+    name: 'My Contributions',
+    status: 'implemented',
+    description: 'Your applications, completed work, and verified participations across opportunity kinds.',
+    howTo: 'Open Contribute > My Contributions. Profile also shows the Contributions ledger.',
+    routes: ['/contribute/impact', '/profile/contributions'],
+    roles: ['member'],
+    relatedCapabilities: ['opportunities', 'score'],
+    aliases: ['impact', 'contribution ledger'],
+    sourceRefs: ['src/pages/contribute/ContributeImpact.tsx', 'src/lib/contribute-lanes.ts'],
+  },
+  {
+    id: 'contribute_improvements',
+    name: 'Suggest Improvements',
+    status: 'in_development',
+    description:
+      'Placeholder lane for ideas about Civizen itself. Not open yet. Not a second place for Opportunities, Challenges, or shared knowledge.',
+    routes: ['/contribute/improvements'],
+    roles: ['member'],
+    relatedCapabilities: ['contribute_hub', 'governance_solutions'],
+    aliases: ['product suggestions'],
+    sourceRefs: ['src/lib/contribute-lanes.ts', 'docs/04-operations/dev/contribute-page.md'],
+  },
+  {
+    id: 'market',
+    name: 'Market',
+    status: 'implemented',
+    description:
+      'Marketplace for Jobs, listings, products, and services. Start agreement or Contact. Ordinary orders use Marketplace terms.',
+    howTo: 'Open Market from the bottom navigation. Jobs is the default section when For you has no unseen listings.',
+    routes: ['/market'],
+    roles: ['member'],
+    relatedCapabilities: ['agreements', 'prototype_credits'],
+    aliases: ['marketplace', 'listings'],
+    sourceRefs: ['src/pages/Market.tsx', 'src/lib/main-nav.ts', 'docs/04-operations/dev/agreements.md'],
+  },
+  {
+    id: 'agreements',
+    name: 'Agreements',
+    status: 'implemented',
+    description:
+      'Platform workspace to create, review, sign, and keep agreements with people and organizations. Supported types open purpose-built documents (including Employment and Lease). Native electronic signing uses typed name plus explicit consent. Paper or external execution can be recorded. Not a certified PKI digital signature and not a claim of legal enforceability.',
+    howTo:
+      'Open Market > Agreements. Tap + beside the title, choose a type (Employment and Lease are in the common list; Lease includes Car, Vehicle, Residential, Commercial, Equipment, Office, and Property rental), edit the agreement document, create it, then propose and sign.',
+    routes: ['/agreements', '/agreements/new'],
+    roles: ['member', 'citizen', 'verified_member', 'certified', 'moderator', 'admin', 'founder'],
+    relatedCapabilities: ['market', 'partnerships', 'opportunities'],
+    aliases: ['contracts', 'sign agreement', 'e-sign', 'digital signature', 'collaboration agreement', 'employment agreement', 'lease', 'car lease', 'equipment lease', 'rental agreement'],
+    sourceRefs: [
+      'docs/04-operations/dev/agreements.md',
+      'src/lib/agreements-model.ts',
+      'src/lib/agreements-api.ts',
+      'src/pages/Agreements.tsx',
+      'src/lib/feature-registry.ts',
+    ],
+  },
+  {
+    id: 'messaging',
+    name: 'Messaging',
+    status: 'implemented',
+    description: 'Private conversations, including a pinned chat with Nela. Optional device-based E2EE for person-to-person chat.',
+    routes: ['/messaging'],
+    roles: ['member'],
+    relatedCapabilities: ['nela'],
+    aliases: ['chat', 'dm', 'inbox'],
+    sourceRefs: ['src/components/ui/chat-bar.tsx', 'src/lib/main-nav.ts'],
+  },
+  {
+    id: 'nela',
+    name: 'Nela',
+    status: 'implemented',
+    description: 'Built-in Civizen assistant in Messaging. Answers from current project knowledge for this build.',
+    routes: ['/messaging'],
+    roles: ['member'],
+    relatedCapabilities: ['messaging'],
+    aliases: ['assistant', 'in-app assistant', 'ai assistant'],
+    sourceRefs: ['supabase/functions/messaging-agent-reply/index.ts', 'src/lib/messaging-constants.ts'],
+  },
+  {
+    id: 'profile',
+    name: 'Profiles',
+    status: 'implemented',
+    description: 'Member and linked business profiles with identity, education, experience, skills, endorsements, and Score.',
+    routes: ['/profile', '/settings/profile'],
+    roles: ['member'],
+    relatedCapabilities: ['score', 'my_contributions'],
+    aliases: ['account', 'edit profile'],
+    sourceRefs: ['src/lib/feature-registry.ts'],
+  },
+  {
+    id: 'score',
+    name: 'Civizen Score',
+    status: 'implemented',
+    description:
+      'Score V2 with Learning, Experience, Skills, Performance, and Contributions. Public overall score is established activity. Tiers: Explorer, Builder, Contributor, Catalyst, Steward. Still in formation.',
+    howTo: 'Open Profile or the Home Score card. Contributions detail is also under Profile > Contributions.',
+    routes: ['/profile', '/profile/contributions'],
+    roles: ['member'],
+    relatedCapabilities: ['my_contributions', 'profile'],
+    aliases: ['rating', 'reputation', 'civizen score v2'],
+    sourceRefs: ['src/lib/civizen-score-model.ts', 'docs/03-platform/scoring-and-reputation/civizen-score-tiers-implementation.md'],
+  },
+  {
+    id: 'governance',
+    name: 'Governance',
+    status: 'implemented',
+    description:
+      'Public governance landing, civic voting, member proposal workspace, and related policy pages. Current public community instrument is the Community Governance Charter.',
+    howTo:
+      'Open Home > Governance for the landing, Home > Governance > Civic voting for elections, and Home > Governance workspace for member proposals.',
+    routes: ['/governance', '/governance/workspace', '/governance/new', '/governance/voting'],
+    roles: ['guest', 'member'],
+    relatedCapabilities: ['governance_charter', 'civic_voting', 'governance_solutions'],
+    aliases: ['civic governance', 'proposals'],
+    sourceRefs: [
+      'src/pages/governance/PublicGovernanceLanding.tsx',
+      'docs/02-policies/governance/civizen-community-governance-charter.md',
+    ],
+  },
+  {
+    id: 'civic_voting',
+    name: 'Civic voting',
+    status: 'implemented',
+    description: 'Elections catalog and election detail/observe. Public browsing is available. Token wealth does not create voting power.',
+    routes: ['/governance/voting'],
+    roles: ['guest', 'member'],
+    relatedCapabilities: ['governance'],
+    aliases: ['elections', 'vote'],
+    sourceRefs: ['src/pages/governance/CivicVotingHub.tsx', 'docs/02-policies/governance/civizen-community-governance-charter.md'],
+  },
+  {
+    id: 'governance_solutions',
+    name: 'Governance Solutions',
+    status: 'implemented',
+    description:
+      'Post a civic Problem and Discuss or Solve. AI council can participate in discussion. Distinct from Community Challenge Solution Records.',
+    routes: ['/governance/solutions'],
+    roles: ['member'],
+    relatedCapabilities: ['governance', 'solution_records'],
+    aliases: ['solutions hub', 'problem council'],
+    sourceRefs: ['src/pages/governance/SolutionsHub.tsx', 'docs/04-operations/dev/solutions-council.md'],
+  },
+  {
+    id: 'governance_charter',
+    name: 'Civizen Community Governance Charter',
+    status: 'implemented',
+    description:
+      'Current public community governance instrument (interim). Not a government constitution. Replaces Civizen Constitution v0.1.',
+    routes: ['/governance/charter'],
+    roles: ['guest', 'member'],
+    relatedCapabilities: ['governance'],
+    aliases: ['civizen constitution', 'constitution', 'charter'],
+    sourceRefs: [
+      'docs/02-policies/governance/civizen-community-governance-charter.md',
+      'docs/01-governance/constitution/civizen-constitution-v0.1.md',
+    ],
+  },
+  {
+    id: 'areas',
+    name: 'Areas',
+    status: 'implemented',
+    description:
+      'Read-only public Areas V1: Health, Education, Culture, Responsibility, Environment. Shows where help is needed.',
+    howTo: 'Open Areas from Contribute, Home > Governance, or the public footer.',
+    routes: ['/areas'],
+    roles: ['guest', 'member'],
+    relatedCapabilities: ['partnerships', 'contribute_hub'],
+    aliases: ['foundational areas', 'where help is needed'],
+    sourceRefs: [
+      'src/lib/areas/public-areas.ts',
+      'docs/03-platform/areas-and-initiatives/public-areas-initiatives-v1.md',
+    ],
+  },
+  {
+    id: 'partnerships',
+    name: 'Partnerships',
+    status: 'implemented',
+    description:
+      'Public Partners notice for international partnerships and chapters. Institutional inquiries are under Contribute > Financial Support. Not a partner CRM.',
+    routes: ['/partners', '/fund/institutional'],
+    roles: ['guest', 'member'],
+    relatedCapabilities: ['areas', 'funding', 'agreements'],
+    aliases: ['organization partnership', 'chapters', 'institutions'],
+    sourceRefs: [
+      'docs/02-policies/institutional/international-partnerships-and-chapters.md',
+      'src/lib/contribute-lanes.ts',
+    ],
+  },
+  {
+    id: 'funding',
+    name: 'Funding',
+    status: 'implemented',
+    description:
+      'Public inquiry hub only. Does not process investments, issue securities, or create binding investment agreements. Current public policy is Funding and Financial Integrity.',
+    routes: ['/fund', '/fund/support', '/fund/invest', '/fund/transparency'],
+    roles: ['guest', 'member'],
+    relatedCapabilities: ['partnerships', 'tokenomics_governance'],
+    aliases: ['donate', 'invest', 'support civizen'],
+    sourceRefs: ['docs/02-policies/institutional/funding-and-financial-integrity.md', 'src/pages/fund/FundHub.tsx'],
+  },
+  {
+    id: 'prototype_credits',
+    name: 'Prototype credits',
+    status: 'experimental',
+    description:
+      'Luma is a non-transferable prototype credit for demonstration. Not money, not a wallet for settlement, no governance rights. Peer send is disabled.',
+    routes: ['/settings/prototype-credits'],
+    roles: ['member'],
+    relatedCapabilities: ['market', 'tokenomics_governance'],
+    aliases: ['luma', 'luma wallet', 'wallet', 'lumens'],
+    sourceRefs: ['src/lib/prototype-credits.ts', 'src/lib/feature-registry.ts'],
+  },
+  {
+    id: 'luma_transfers',
+    name: 'Luma transfers',
+    status: 'deprecated',
+    description: 'Peer Luma transfer and marketplace Luma checkout are disabled. Do not describe Luma as a working currency.',
+    routes: ['/settings/prototype-credits'],
+    roles: ['member'],
+    relatedCapabilities: ['prototype_credits'],
+    aliases: ['peer send luma', 'luma checkout'],
+    sourceRefs: ['src/lib/prototype-credits.ts', 'src/lib/luma-transfer.ts'],
+  },
+  {
+    id: 'tokenomics_governance',
+    name: 'Constitutional Tokenomics + Governance Model',
+    status: 'historical',
+    description:
+      'Earlier planning document. Not adopted. Not current policy. Not an implemented monetary system. Current public funding policy is Funding and Financial Integrity.',
+    routes: ['/documents', '/fund'],
+    roles: ['guest'],
+    relatedCapabilities: ['funding', 'governance_charter', 'prototype_credits'],
+    aliases: [
+      'civizen constitutional tokenomics + governance model',
+      'tokenomics',
+      'funding constitution',
+      'luma tokenomics',
+    ],
+    sourceRefs: [
+      'docs/01-governance/funding-and-monetary/civizen-constitutional-tokenomics-governance.md',
+      'docs/02-policies/institutional/funding-and-financial-integrity.md',
+    ],
+  },
+  {
+    id: 'institutional_blueprint',
+    name: 'Institutional Blueprint',
+    status: 'proposed',
+    description:
+      'Working institutional architecture (legal entities, funding allocation principles, authority). Project reference, not a live in-app government and not adopted public policy.',
+    routes: [],
+    roles: ['guest'],
+    relatedCapabilities: ['governance'],
+    aliases: ['institutional architecture'],
+    sourceRefs: ['docs/institutional/institutional-blueprint.md'],
+  },
+  {
+    id: 'phase1_pilots',
+    name: 'Phase 1 contribution pilots',
+    status: 'implemented',
+    description:
+      'Three live pilots: Education-to-Contribution, Community Problem-Solving Lab, and Shared Knowledge / Learning Commons.',
+    routes: ['/contribute/professional', '/contribute/challenges', '/contribute/knowledge'],
+    roles: ['member'],
+    relatedCapabilities: ['opportunities', 'community_challenges', 'knowledge_spaces'],
+    aliases: ['pilots', 'phase 1'],
+    sourceRefs: ['docs/04-operations/dev/phase-1-pilot-operating-model.md'],
+  },
+];
+
+export const ASSISTANT_FAQ: AssistantFaqItem[] = [
+  {
+    id: 'what_is_civizen',
+    question: 'What is Civizen?',
+    answer:
+      'Civizen is a human-centered platform and movement to help people unite, grow, and govern more wisely through education, responsibility, transparency, and AI-assisted civic collaboration. It is a voluntary civic platform today, not a government or a generic social network.',
+    aliases: ['what’s civizen', 'define civizen', 'civizen in one sentence', 'civizen mission'],
+    capabilityIds: ['contribute_hub', 'governance', 'study'],
+    sourceRefs: ['docs/assistant/civizen-assistant-cheatsheet.md', 'docs/00-foundation/the-civizen-charter.md'],
+  },
+  {
+    id: 'what_civizen_trying_to_accomplish',
+    question: 'What is Civizen trying to accomplish?',
+    answer:
+      'Civizen aims to help people participate as responsible members of humanity — learning, contributing, and practicing accountable governance — and to develop a legitimate long-term pathway toward recognized planetary citizenship. That recognition is not current legal status.',
+    aliases: ['purpose of civizen', 'why civizen exists'],
+    capabilityIds: [],
+    sourceRefs: [
+      'docs/00-foundation/why-civizen-exists-page-brief.md',
+      'docs/00-foundation/recognized-planetary-citizenship-pathway.md',
+    ],
+  },
+  {
+    id: 'is_civizen_a_social_network',
+    question: 'Is Civizen a social network?',
+    answer:
+      'No. Civizen has profiles, posts, and messaging, but it is a civic participation platform for learning, contribution, and governance — not a hobby or meetup network for shared interests.',
+    aliases: ['is civizen social media'],
+    capabilityIds: ['home', 'messaging'],
+    sourceRefs: ['docs/assistant/civizen-assistant-cheatsheet.md'],
+  },
+  {
+    id: 'is_civizen_a_government',
+    question: 'Is Civizen a government?',
+    answer:
+      'No. Civizen is not currently a government, nationality, or public-law citizenship. World citizenship in Civizen is a voluntary civic identity. The long-term pathway toward recognized planetary citizenship is described publicly and is not present legal status.',
+    aliases: ['is civizen a country', 'is civizen citizenship legal'],
+    capabilityIds: ['governance_charter'],
+    sourceRefs: [
+      'docs/00-foundation/recognized-planetary-citizenship-pathway.md',
+      'docs/02-policies/institutional/current-legal-status-notice.md',
+    ],
+  },
+  {
+    id: 'how_can_i_contribute',
+    question: 'How can I contribute?',
+    answer:
+      'Open Contribute and choose how you want to help: Volunteer, Opportunities, Financial Support, Organization Partnership, Community Challenges, Learning Commons, or My Contributions. Suggest Improvements is not open yet.',
+    aliases: ['how do I contribute', 'ways to contribute'],
+    capabilityIds: ['contribute_hub'],
+    sourceRefs: ['src/lib/contribute-lanes.ts', 'docs/04-operations/dev/contribute-page.md'],
+  },
+  {
+    id: 'what_are_opportunities',
+    question: 'What are Opportunities?',
+    answer:
+      'Opportunities are short, verifiable pieces of work. Find them under Contribute > Opportunities. You apply, complete the work, submit evidence, and an evaluator verifies it. Older names like professional listings or open tasks mean Opportunities.',
+    aliases: ['what are professional listings', 'what are open tasks', 'what are tasks'],
+    capabilityIds: ['opportunities'],
+    sourceRefs: ['src/lib/contribute-lanes.ts', 'docs/04-operations/dev/contribute-page.md'],
+  },
+  {
+    id: 'what_are_community_challenges',
+    question: 'What are Community Challenges?',
+    answer:
+      'Community Challenges are a live Contribute lane for real local problems. The flow is Challenge → Proposal → coordinator selection → Implementation Project → work Opportunities → outcome → Solution Record. Open Contribute > Community Challenges. This is not Governance Solutions.',
+    aliases: ['what is a community challenge', 'what are challenges'],
+    capabilityIds: ['community_challenges'],
+    sourceRefs: [
+      'src/pages/contribute/CommunityChallenges.tsx',
+      'docs/04-operations/dev/contribute-page.md',
+      'docs/04-operations/dev/phase-1-pilot-operating-model.md',
+    ],
+  },
+  {
+    id: 'who_can_create_a_community_challenge',
+    question: 'Who can create a Community Challenge?',
+    answer:
+      'Signed-in members can create a challenge from Create on Contribute > Community Challenges. The publisher (your profile or a linked organization account) becomes the coordinator for that challenge. Proposal selection is done by the coordinator, not by public voting.',
+    aliases: ['who can create one', 'who creates challenges'],
+    capabilityIds: ['community_challenges'],
+    sourceRefs: ['src/pages/contribute/CommunityChallenges.tsx', 'src/pages/contribute/ChallengeForm.tsx'],
+  },
+  {
+    id: 'what_are_projects',
+    question: 'What are Projects?',
+    answer:
+      'Projects are implementation records inside Community Challenges. There is no separate projects board. Contribute > Projects sends you to Community Challenges.',
+    aliases: ['community projects', 'implementation projects'],
+    capabilityIds: ['projects'],
+    sourceRefs: ['docs/04-operations/dev/contribute-page.md'],
+  },
+  {
+    id: 'what_is_my_contributions',
+    question: 'What is My Contributions?',
+    answer:
+      'My Contributions (Contribute > My Contributions) shows work you applied for, completed, or had verified. Your Profile Contributions ledger shows the inspectable record that feeds Score.',
+    aliases: ['where are my contributions'],
+    capabilityIds: ['my_contributions'],
+    sourceRefs: ['src/lib/contribute-lanes.ts', 'src/pages/contribute/ContributeImpact.tsx'],
+  },
+  {
+    id: 'what_is_study',
+    question: 'What is Study?',
+    answer:
+      'Study is the learning hub in the bottom navigation. It holds civic learning materials such as charter/constitution study and links to the Law library. It is not the same as Learning Commons, where people share practical contribution knowledge.',
+    aliases: ['what is the study tab'],
+    capabilityIds: ['study'],
+    sourceRefs: ['src/lib/study.ts', 'docs/assistant/civizen-assistant-cheatsheet.md'],
+  },
+  {
+    id: 'what_are_knowledge_spaces',
+    question: 'What are Knowledge Spaces?',
+    answer:
+      'Knowledge Spaces are shared collections in Contribute > Learning Commons. Each space holds resources, can name Knowledge Gaps, and can link resulting work back as improved knowledge.',
+    aliases: ['what is learning commons', 'what is a knowledge space'],
+    capabilityIds: ['knowledge_spaces'],
+    sourceRefs: ['src/lib/knowledge.ts', 'docs/04-operations/dev/contribute-page.md'],
+  },
+  {
+    id: 'what_are_knowledge_gaps',
+    question: 'What are Knowledge Gaps?',
+    answer:
+      'Knowledge Gaps name what is missing, weak, outdated, or still needs practical development inside a Knowledge Space. A coordinator can turn a gap into an Opportunity or a Community Challenge.',
+    aliases: ['what is a knowledge gap'],
+    capabilityIds: ['knowledge_gaps'],
+    sourceRefs: ['docs/04-operations/dev/contribute-page.md'],
+  },
+  {
+    id: 'what_are_solution_records',
+    question: 'What are Solution Records?',
+    answer:
+      'A Solution Record is the outcome kept after a Community Challenge is actually implemented. It is not the Governance Solutions page. Coordinators can share a Solution Record into a Knowledge Space.',
+    aliases: ['what is a solution record'],
+    capabilityIds: ['solution_records'],
+    sourceRefs: ['docs/04-operations/dev/contribute-page.md'],
+  },
+  {
+    id: 'how_does_governance_work',
+    question: 'How does governance work?',
+    answer:
+      'Civizen currently has a public Governance landing, civic voting/elections, a member proposal workspace, and Governance Solutions. Community participation is described by the Community Governance Charter. Civizen is not a government. Working institutional frameworks exist as project design, not as live public-law authority.',
+    aliases: ['civizen governance'],
+    capabilityIds: ['governance', 'governance_charter'],
+    sourceRefs: [
+      'docs/02-policies/governance/civizen-community-governance-charter.md',
+      'docs/assistant/civizen-assistant-cheatsheet.md',
+    ],
+  },
+  {
+    id: 'who_can_create_proposals',
+    question: 'Who can create proposals?',
+    answer:
+      'Eligible signed-in participants can submit proposals in Home > Governance workspace under the Community Governance Charter. Community Challenge proposals are a different flow inside a Challenge, selected by that challenge’s coordinator.',
+    aliases: ['who can propose'],
+    capabilityIds: ['governance', 'community_challenges'],
+    sourceRefs: [
+      'docs/02-policies/governance/civizen-community-governance-charter.md',
+      'src/pages/GovernanceNew.tsx',
+    ],
+  },
+  {
+    id: 'who_can_vote',
+    question: 'Who can vote?',
+    answer:
+      'Civic elections are at Home > Governance > Civic voting. Community votes follow published eligibility in the Charter and platform rules. Token ownership, financial support, or wealth alone does not create voting authority.',
+    aliases: ['voting rights', 'who votes'],
+    capabilityIds: ['civic_voting'],
+    sourceRefs: ['docs/02-policies/governance/civizen-community-governance-charter.md'],
+  },
+  {
+    id: 'what_is_governance_solutions',
+    question: 'What is Governance Solutions?',
+    answer:
+      'Governance Solutions (Home > Governance > Governance Solutions) lets members post a civic Problem and Discuss or Solve it, including AI-assisted discussion. It is not the Solution Record produced by a Community Challenge.',
+    aliases: ['solutions hub'],
+    capabilityIds: ['governance_solutions'],
+    sourceRefs: ['src/pages/governance/SolutionsHub.tsx'],
+  },
+  {
+    id: 'what_is_the_civizen_constitution',
+    question: 'What is the Civizen Constitution?',
+    answer:
+      'The current public community instrument is the Civizen Community Governance Charter (Home > Governance > Community Governance Charter). It is not the legal constitution of a government. The earlier Civizen Constitution v0.1 is superseded by that Charter.',
+    aliases: ['civizen constitution', 'constitution v0.1'],
+    capabilityIds: ['governance_charter'],
+    sourceRefs: [
+      'docs/02-policies/governance/civizen-community-governance-charter.md',
+      'docs/01-governance/constitution/civizen-constitution-v0.1.md',
+    ],
+  },
+  {
+    id: 'constitutional_tokenomics',
+    question: 'What is the Civizen Constitutional Tokenomics + Governance Model?',
+    answer:
+      'That document is historical and not adopted. It is not current policy and is not implemented as a monetary system. Current public funding policy is Funding and Financial Integrity. Luma is only a prototype credit. Current community governance text is the Community Governance Charter.',
+    aliases: [
+      'civizen constitutional tokenomics + governance model',
+      'tokenomics constitution',
+      'funding constitution',
+    ],
+    capabilityIds: ['tokenomics_governance', 'funding', 'governance_charter'],
+    sourceRefs: [
+      'docs/01-governance/funding-and-monetary/civizen-constitutional-tokenomics-governance.md',
+      'docs/02-policies/institutional/funding-and-financial-integrity.md',
+      'docs/02-policies/governance/civizen-community-governance-charter.md',
+    ],
+  },
+  {
+    id: 'how_can_an_organization_participate',
+    question: 'How can an organization participate?',
+    answer:
+      'Open Contribute > Organization Partnership, or send an institutional inquiry from Contribute > Financial Support. Organizations also appear as linked business accounts that can publish Opportunities, Challenges, or Knowledge Spaces. There is no full partner CRM in this build.',
+    aliases: ['organization partnership', 'how can my company join'],
+    capabilityIds: ['partnerships'],
+    sourceRefs: [
+      'src/lib/contribute-lanes.ts',
+      'docs/02-policies/institutional/international-partnerships-and-chapters.md',
+    ],
+  },
+  {
+    id: 'what_can_coordinators_do',
+    question: 'What can coordinators do?',
+    answer:
+      'A coordinator is the publisher profile for a Program, Opportunity, Challenge, or Knowledge Space. They create and manage that work, review applicants or proposals, verify evidence, and (for Challenges) select a proposal and record the outcome.',
+    aliases: ['publisher', 'organizer'],
+    capabilityIds: ['programs', 'community_challenges', 'opportunities'],
+    sourceRefs: ['docs/04-operations/dev/phase-1-pilot-operating-model.md', 'docs/04-operations/dev/contribute-page.md'],
+  },
+  {
+    id: 'what_is_a_linked_organization',
+    question: 'What is a publisher or linked organization account?',
+    answer:
+      'Phase 1 has no separate organizations table. A publisher is a profile. Business or organization coordination uses linked accounts on that profile.',
+    aliases: ['linked accounts', 'business account', 'publisher'],
+    capabilityIds: ['profile', 'programs'],
+    sourceRefs: ['docs/04-operations/dev/phase-1-pilot-operating-model.md'],
+  },
+  {
+    id: 'how_can_an_institution_partner',
+    question: 'How can an institution partner with Civizen?',
+    answer:
+      'Open Contribute > Organization Partnership and send an inquiry through Contribute > Financial Support. You can also create agreements from Market > Agreements (for example Partnership / Collaboration). A full Stakeholder Map and partner CRM are proposed institutional design, not a current app workspace.',
+    aliases: ['institutional partnership'],
+    capabilityIds: ['partnerships', 'agreements', 'institutional_blueprint'],
+    sourceRefs: [
+      'docs/02-policies/institutional/international-partnerships-and-chapters.md',
+      'docs/institutional/stakeholder-partnership-framework.md',
+    ],
+  },
+  {
+    id: 'what_are_areas',
+    question: 'What are Areas?',
+    answer:
+      'Areas are where help is needed. The current foundational Areas are Health, Education, Culture, Responsibility, and Environment. Browse them from Contribute, Home > Governance, or the public footer. They are not the same as product pillars.',
+    aliases: ['foundational areas'],
+    capabilityIds: ['areas'],
+    sourceRefs: ['docs/03-platform/areas-and-initiatives/public-areas-initiatives-v1.md', 'src/lib/areas/public-areas.ts'],
+  },
+  {
+    id: 'what_are_initiatives',
+    question: 'What are initiatives?',
+    answer:
+      'On public Area pages, initiatives are curated organized work toward an outcome, listed beside related systems. There is no full initiative workspace or matching engine in this build.',
+    aliases: ['public initiatives'],
+    capabilityIds: ['areas'],
+    sourceRefs: ['src/lib/areas/public-areas-content.ts', 'docs/03-platform/areas-and-initiatives/public-areas-initiatives-v1.md'],
+  },
+  {
+    id: 'can_users_make_agreements',
+    question: 'Can users make agreements through Civizen?',
+    answer:
+      'Open Market > Agreements and tap + beside the title. Choose a type such as General, Partnership / Collaboration, Employment, Service / Contribution, Sale / Purchase, Lease, or Funding / Sponsorship. Propose it, then sign in Civizen or record a paper/external signing.\n\nSupported types open a readable agreement document. You can start from a listing, Jobs, or another related activity. Ordinary Marketplace purchases stay as orders and do not automatically create a Sale / Purchase Agreement. Lease heading kinds include Residential, Commercial, Car, Vehicle, Equipment, Office, and Property rental.',
+    aliases: [
+      'how can I sign an agreement with anyone through civizen',
+      'how can I sign an agreement',
+      'can I create a contract',
+      'agreements workspace',
+      'car lease',
+      'equipment lease',
+      'rental agreement',
+    ],
+    capabilityIds: ['agreements'],
+    sourceRefs: [
+      'docs/04-operations/dev/agreements.md',
+      'src/pages/Agreements.tsx',
+      'src/lib/agreements-api.ts',
+      'src/lib/feature-registry.ts',
+    ],
+  },
+  {
+    id: 'can_civizen_digitally_sign_contracts',
+    question: 'Can Civizen digitally sign contracts?',
+    answer:
+      'Civizen supports native electronic signing in the Agreements workspace: a typed name plus explicit consent, which is stored on the signed version. Paper or an external e-sign service can be recorded separately. This is not a certified PKI digital signature and is not a claim that the record is legally certified or enforceable.',
+    aliases: ['digital signatures', 'e-sign', 'pki signature'],
+    capabilityIds: ['agreements'],
+    sourceRefs: ['docs/04-operations/dev/agreements.md', 'src/lib/agreements-api.ts', 'src/lib/agreements-model.ts'],
+  },
+  {
+    id: 'what_acceptance_records_exist',
+    question: 'What kinds of acceptance or participation records currently exist?',
+    answer:
+      'Current records include Agreement versions and signatures, Terms acceptance, Opportunity applications and participations, Challenge proposals, and contribution evidence. These are platform records, not a general-purpose public notary.',
+    aliases: ['participation records', 'terms acceptance'],
+    capabilityIds: ['agreements', 'opportunities', 'community_challenges'],
+    sourceRefs: ['docs/04-operations/dev/agreements.md', 'src/lib/terms-version.ts', 'src/lib/opportunities.ts'],
+  },
+];
+
+export const ASSISTANT_ALIASES: TerminologyAlias[] = [
+  { current: 'Opportunities', aliases: ['professional listings', 'open tasks', 'tasks'] },
+  { current: 'Community Challenges', aliases: ['challenges', 'community problem-solving lab'] },
+  { current: 'Learning Commons', aliases: ['shared knowledge', 'knowledge commons'] },
+  { current: 'Prototype credits', aliases: ['luma', 'luma wallet', 'wallet'] },
+  { current: 'Community Governance Charter', aliases: ['civizen constitution', 'constitution v0.1'] },
+  { current: 'Agreements', aliases: ['contracts', 'collaboration agreement'] },
+  { current: 'My Contributions', aliases: ['impact ledger'] },
+  { current: 'Civizen', aliases: ['levela'] },
+];

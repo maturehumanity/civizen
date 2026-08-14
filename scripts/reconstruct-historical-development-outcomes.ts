@@ -20,6 +20,7 @@ import {
   reconstructHistoricalDevelopmentOutcomes,
   type HistoricalCommit,
 } from '../src/lib/civizen-historical-reconstruction.ts';
+import { classifyReconstructionRecall } from '../src/lib/civizen-historical-reconstruction-recall.ts';
 
 function loadEnv() {
   try {
@@ -148,6 +149,8 @@ WHERE profile_id = ${sqlLiteral(profileId)}::uuid
   AND source_id NOT IN (${eligible || sqlLiteral('__none__')});`);
 
   for (const item of grouped) {
+    // capacity/impact/collaboration columns are NOT NULL placeholders only.
+    // contribution-evaluation-v2 ignores them and evaluates from verified evidence on read.
     statements.push(`
 INSERT INTO public.profile_contribution_events (
   profile_id, source_table, source_id, event_type, title, summary,
@@ -166,6 +169,16 @@ INSERT INTO public.profile_contribution_events (
     eligibility: item.eligibility,
     provenanceCount: item.provenanceStoryIds.length,
     reconstruction: true,
+    testsPassed: item.testsPassed,
+    contributionFunction: item.contributionFunction,
+    affectedPaths: item.affectedPaths.slice(0, 20),
+    reconstructionResult: item.reconstructionResult,
+    survivingImplementation: item.survivingImplementation,
+    contributionRoles: item.roles,
+    implementationAssisted: item.implementationAssisted,
+    independentValidation: item.independentValidation,
+    outcomeValidated: item.outcomeValidated,
+    commitShas: item.commitShas.slice(0, 8),
   }))}::jsonb,
   now()
 )
@@ -217,17 +230,50 @@ async function main() {
     low: reconstructed.outcomes.filter((item) => item.contributionEvidenceConfidence === 'low').length,
   });
   summarize('sample_titles', qualifying.slice(0, 15).map((item) => item.title));
+  const recall = classifyReconstructionRecall({
+    stories: journal,
+    outcomes: reconstructed.outcomes,
+    survivingPaths,
+  });
+  summarize('recall_buckets', {
+    attached_to_outcome: recall.filter((item) => item.bucket === 'attached_to_outcome').length,
+    provenance_only: recall.filter((item) => item.bucket === 'provenance_only').length,
+    unreconstructed_with_surviving_implementation: recall.filter((item) => item.bucket === 'unreconstructed_with_surviving_implementation').length,
+    process_or_non_contributory: recall.filter((item) => item.bucket === 'process_or_non_contributory').length,
+    recovered_now: reconstructed.outcomes.filter((item) => item.outcomeRootId.startsWith('historical:recall:')).length,
+  });
+  summarize('recall_recoveries', reconstructed.outcomes.filter((item) => item.outcomeRootId.startsWith('historical:recall:')).map((item) => ({
+    title: item.title,
+    result: item.result,
+    reconstructionConfidence: item.reconstructionConfidence,
+    testsPassed: item.testsPassed,
+    pathCount: item.affectedPaths.length,
+    storyIds: item.storyIds,
+  })));
 
   if (!persist) {
-    console.log('DRY RUN. Pass --persist to write reconstructed outcomes.');
+    console.log('DRY RUN. Pass --persist to write reconstructed outcomes, or --persist --recall-only for recall recoveries only.');
     return;
   }
-  if (!grouped.length) throw new Error('No qualifying historical outcomes to persist');
+  const recallOnly = process.argv.includes('--recall-only');
+  const recallOutcomes = qualifying.filter((item) => item.outcomeRootId.startsWith('historical:recall:'));
+  const persistOutcomes = recallOnly ? recallOutcomes : qualifying;
+  const persistStories = historicalStoriesForEvaluation(persistOutcomes, journal);
+  const persistGrouped = groupDevelopmentStoriesToContributions(persistStories);
+  if (!persistGrouped.length) throw new Error('No qualifying historical outcomes to persist');
   const profileId = process.env.STORY_AUTHOR_ID || process.env.RECONSTRUCT_PROFILE_ID ||
     String(journalRows[0]?.author_id ?? '');
   if (!profileId) throw new Error('Could not resolve profile/author id for persist');
-  remotePsql(persistSql(profileId, qualifying, grouped, journalRows));
-  summarize('persisted_roots', grouped.length);
+  if (recallOnly) {
+    remotePsql(persistSql(profileId, persistOutcomes, persistGrouped, journalRows).replace(
+      /DELETE FROM public\.profile_contribution_events[\s\S]*?;/,
+      '-- recall-only: do not prune existing contribution roots',
+    ));
+    summarize('persisted_recall_roots', persistGrouped.length);
+  } else {
+    remotePsql(persistSql(profileId, persistOutcomes, persistGrouped, journalRows));
+    summarize('persisted_roots', persistGrouped.length);
+  }
   summarize('profile_id_set', true);
 }
 

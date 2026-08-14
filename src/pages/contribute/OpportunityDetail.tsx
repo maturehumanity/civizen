@@ -43,6 +43,7 @@ import { OpportunityOrganizerPanel } from '@/pages/contribute/OpportunityOrganiz
 import { OpportunityAssessmentView } from '@/pages/contribute/OpportunityWorkAssessmentCard';
 import { toast } from 'sonner';
 import { getChallengeIdForProject } from '@/lib/challenges-api';
+import { RelatedAgreementsCard } from '@/components/agreements/RelatedAgreementsCard';
 export default function OpportunityDetail() {
   const { opportunityId = '' } = useParams<{ opportunityId: string }>();
   const { t } = useLanguage();
@@ -256,6 +257,21 @@ export default function OpportunityDetail() {
           >
             {t('contribute.opportunities.originChallenge')}
           </Link>
+        ) : null}
+
+        <RelatedAgreementsCard
+          entityType="opportunity"
+          entityId={opportunity.id}
+          entityTitle={opportunity.title}
+          launch={{ source: 'opportunity', agreementType: 'service_contribution' }}
+        />
+        {opportunity.implementationProjectId ? (
+          <RelatedAgreementsCard
+            entityType="project"
+            entityId={opportunity.implementationProjectId}
+            entityTitle={opportunity.title}
+            launch={{ source: 'project', agreementType: 'general' }}
+          />
         ) : null}
 
         {mine ? (

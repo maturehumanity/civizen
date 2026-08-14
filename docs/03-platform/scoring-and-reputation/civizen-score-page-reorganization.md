@@ -41,6 +41,10 @@ Declared skills stay user-entered. Demonstrated skill evidence merges onto the s
 
 Historical snapshots keep their stored values. Missing `calculationVersion` is treated as `legacy/unversioned`. New calculations persist `civizen-score-v2.0`. There is still no persisted user score-snapshot table; displayed scores are recomputed.
 
+Contribution-level evaluation (`contribution-evaluation-v2`) is distinct from Contributions category reputation. A contribution observation answers how significant a specific verified outcome was; `reputationFromObservations` still produces the category score (prior 50 / strength 6). Individual observations must not be shown as “+N Civizen Score.” Realized impact and structural significance are separate; missing impact stays unknown. Canonical roots are inspectable on `/profile/contributions`. Do not retune Score V2 formulas to hit a target number.
+
+Contribution assessments follow a lifecycle on one canonical root: initial evaluation → verified evaluation → realized impact → durability. Verification changes evidence weight and confidence, not the raw quality rating. Impact uses bounded breadth × depth rather than a geographic lookup table. Evaluator reputation (`evaluator-reputation-v1`) is derived in a separate pass from immutable rating events so rater and subject scores cannot recurse. Civizen context (`civizen-context-v1`) is declared / demonstrated / current-focus / historical and must not become a reputation bonus.
+
 ---
 
 ## 2. Final Five Score Categories
@@ -348,7 +352,7 @@ As of 2026-08-02, Contributions is estimated from existing in-app activity (not 
 1. Collect domain rows (law contributions, funding `contribution_records`, solutions, governance proposals/votes, posts/comments, moderated `content_items`).
 2. Persist idempotent events in `profile_contribution_events` with heuristic **capacity**, **impact**, **collaboration**, and **beneficiaries** factors.
 3. Score with diminishing quantity + mean capacity/impact + type diversity + small collaboration boost (anti-gaming: many low-impact posts cannot outrank fewer verified high-impact actions).
-4. Score page dial/card opens an **activity ledger** (`ContributionsDetailsPanel`) listing estimated events and factors.
+4. Score page dial/card opens a compact Contributions preview (`ContributionsDetailsPanel`). Full canonical roots are inspectable on `/profile/contributions`.
 
 Historical rows are backfilled by migration; client `syncContributionEvents` refreshes the ledger on Score/Home load.
 

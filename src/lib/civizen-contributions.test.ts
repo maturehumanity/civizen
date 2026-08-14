@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
+import { queryContributionLedger } from '@/lib/civizen-contribution-ledger';
 import {
   applyVerifiedImpactBoost,
-  buildContributionLedgerItems,
   CONTRIBUTION_SYNC_TTL_MS,
   contentSizeFactor,
   estimateContributionEvent,
@@ -207,12 +207,10 @@ describe('civizen contributions estimator', () => {
       Array.from({ length: 100 }, (_, i) =>
         makeEvent({
           eventType: 'development_story',
-          capacityEstimate: 72,
-          impactEstimate: 68,
-          collaborationEstimate: 35,
-          beneficiaryEstimate: 75,
+          title: 'Score V2 evidence architecture',
           verified: true,
           sourceId: `story-${i}`,
+          rawMeta: { testsPassed: true, eligibility: 'system_verified' },
         }),
       ),
     );
@@ -220,11 +218,10 @@ describe('civizen contributions estimator', () => {
     expect(fewChatMirrors!.score!).toBeLessThan(55);
     expect(manyStories!.score!).toBeGreaterThan(60);
     expect(manyStories!.score!).toBeGreaterThan(fewChatMirrors!.score! + 8);
-    // Sustained good work approaches demonstrated quality; it is not inflated past it.
-    expect(manyStories!.score!).toBeLessThan(72);
+    expect(manyStories!.score!).toBeLessThan(90);
   });
 
-  it('groups high-volume ledger types', () => {
+  it('does not hide high-volume canonical roots behind a type aggregate', () => {
     const events = Array.from({ length: 20 }, (_, i) =>
       makeEvent({
         eventType: 'development_story',
@@ -233,8 +230,9 @@ describe('civizen contributions estimator', () => {
         impactEstimate: 65,
       }),
     );
-    const items = buildContributionLedgerItems(events, { groupThreshold: 8, recentLimit: 10 });
-    expect(items.some((i) => i.kind === 'group' && i.count === 20)).toBe(true);
+    const page = queryContributionLedger(events, { pageSize: 20 });
+    expect(page.total).toBe(20);
+    expect(page.records).toHaveLength(20);
   });
 
   it('rewards type diversity over single-type spam', () => {

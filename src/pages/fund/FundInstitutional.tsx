@@ -1,6 +1,9 @@
 import { FundPageShell } from '@/components/funding/FundPageShell';
 import { FundingInterestForm } from '@/components/funding/FundingInterestForm';
+import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { agreementsCreatePath } from '@/lib/agreements-model';
+import { Link } from 'react-router-dom';
 
 export default function FundInstitutional() {
   const { t } = useLanguage();
@@ -17,6 +20,12 @@ export default function FundInstitutional() {
         <li>{t('fund.institutional.point2')}</li>
         <li>{t('fund.institutional.point3')}</li>
       </ul>
+
+      <Button type="button" variant="outline" asChild>
+        <Link to={agreementsCreatePath({ source: 'funding', relatedTitle: t('fund.institutional.title'), agreementType: 'funding' })}>
+          {t('agreements.createAction')}
+        </Link>
+      </Button>
 
       <section className="space-y-3">
         <h2 className="text-lg font-semibold text-foreground">{t('fund.institutional.formTitle')}</h2>

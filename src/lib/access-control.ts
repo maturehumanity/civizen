@@ -50,6 +50,8 @@ export const APP_PERMISSIONS = [
   'finance.approve',
   'finance.publish',
   'finance.admin',
+  'agreements.create',
+  'agreements.sign_org',
   'like.create',
   'like.delete_self',
 ] as const;
@@ -112,6 +114,7 @@ export const rolePermissionMap: Record<AppRole, AppPermission[]> = {
     'report.create',
     'like.create',
     'like.delete_self',
+    'agreements.create',
   ],
   citizen: [
     'content.read',
@@ -132,6 +135,7 @@ export const rolePermissionMap: Record<AppRole, AppPermission[]> = {
     'report.create',
     'like.create',
     'like.delete_self',
+    'agreements.create',
   ],
   verified_member: [
     'content.read',
@@ -152,6 +156,7 @@ export const rolePermissionMap: Record<AppRole, AppPermission[]> = {
     'report.create',
     'like.create',
     'like.delete_self',
+    'agreements.create',
   ],
   certified: [
     'content.read',
@@ -174,6 +179,7 @@ export const rolePermissionMap: Record<AppRole, AppPermission[]> = {
     'report.create',
     'like.create',
     'like.delete_self',
+    'agreements.create',
   ],
   moderator: [
     'content.read',
@@ -204,6 +210,7 @@ export const rolePermissionMap: Record<AppRole, AppPermission[]> = {
     'report.review',
     'like.create',
     'like.delete_self',
+    'agreements.create',
   ],
   market_manager: [
     'content.read',
@@ -225,6 +232,7 @@ export const rolePermissionMap: Record<AppRole, AppPermission[]> = {
     'market.manage',
     'like.create',
     'like.delete_self',
+    'agreements.create',
   ],
   // Founder retains full access during the bootstrap decentralization stage.
   founder: [...APP_PERMISSIONS],

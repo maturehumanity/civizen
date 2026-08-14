@@ -29,7 +29,8 @@ Civizen is early access, but already usable:
 - **World Citizen profile** — voluntary Civizen profile, trust signals, endorsements (not a government identity)  
 - **Study** — Constitution and civic learning paths  
 - **Governance** — proposals, audits, and community process within Civizen scope  
-- **Market & agreements** — listings and digital agreements; Luma appears only as non-transferable prototype credits for demonstration (does not settle transactions; not money or a financial product)  
+- **Market** — listings remain an important entry point to Agreements; Luma appears only as non-transferable prototype credits for demonstration (does not settle transactions; not money or a financial product)  
+- **Agreements** — create, review, sign, and manage agreements with people and organizations from Market or another Civizen activity, or start one directly  
 - **Messaging** — in-network communication  
 
 Coming next includes broader federation, insurance modules, and iPhone distribution.

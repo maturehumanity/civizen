@@ -45,6 +45,7 @@ describe('AppPageHeader', () => {
     const back = screen.getByTestId('app-page-header-back');
     const title = screen.getByTestId('app-page-header-title');
     expect(header.className).toContain('items-center');
+    expect(header.className).toContain('flex-wrap');
     expect(back).toBeInTheDocument();
     expect(title).toHaveTextContent('Settings');
     expect(back.parentElement).toContainElement(title);
@@ -85,5 +86,43 @@ describe('AppPageHeader', () => {
     fireEvent.click(screen.getByTestId('app-page-header-back'));
     expect(onBack).toHaveBeenCalledTimes(1);
     expect(screen.getByTestId('location-path')).toHaveTextContent('/endorse/abc');
+  });
+
+  it('places a title accessory immediately beside the title', () => {
+    render(
+      <MemoryRouter initialEntries={['/agreements']}>
+        <AppPageHeader
+          title="Agreements"
+          titleAccessory={<button type="button" aria-label="Create agreement">+</button>}
+        />
+      </MemoryRouter>,
+    );
+
+    const title = screen.getByTestId('app-page-header-title');
+    const create = screen.getByRole('button', { name: 'Create agreement' });
+    expect(title.parentElement).toContainElement(create);
+    expect(title).toHaveTextContent('Agreements');
+  });
+
+  it('keeps title readable when actions and a subtitle share a narrow header', () => {
+    render(
+      <MemoryRouter initialEntries={['/agreements']}>
+        <AppPageHeader
+          title="Agreements"
+          subtitle="Create, review, sign, and manage agreements with people and organizations."
+          leading={<span data-testid="header-leading">icon</span>}
+          actions={<button type="button">Create agreement</button>}
+        />
+      </MemoryRouter>,
+    );
+
+    const header = screen.getByTestId('app-page-header');
+    const title = screen.getByTestId('app-page-header-title');
+    const actions = screen.getByTestId('app-page-header-actions');
+    expect(header.className).toContain('flex-wrap');
+    expect(header.className).toContain('items-start');
+    expect(title.className).not.toContain('break-words');
+    expect(actions.className).toContain('w-full');
+    expect(title).toHaveTextContent('Agreements');
   });
 });

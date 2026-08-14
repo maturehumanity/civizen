@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -13,6 +14,7 @@ import { cn } from '@/lib/utils';
 
 type InstitutionalDocumentPageProps = {
   doc: InstitutionalDoc;
+  actions?: ReactNode;
 };
 
 function reviewStatusBadgeClass(status: string): string {
@@ -23,7 +25,7 @@ function reviewStatusBadgeClass(status: string): string {
   return 'border-border bg-muted/40 text-foreground';
 }
 
-export function InstitutionalDocumentPage({ doc }: InstitutionalDocumentPageProps) {
+export function InstitutionalDocumentPage({ doc, actions }: InstitutionalDocumentPageProps) {
   const { t } = useLanguage();
   usePageMeta({
     title: `Civizen — ${doc.title}`,
@@ -133,6 +135,8 @@ export function InstitutionalDocumentPage({ doc }: InstitutionalDocumentPageProp
             showHeader={false}
           />
         </Card>
+
+        {actions}
 
         <PublicPageFooter />
       </div>

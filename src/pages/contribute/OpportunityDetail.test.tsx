@@ -32,6 +32,10 @@ vi.mock('@/contexts/AuthContext', () => ({
   }),
 }));
 
+vi.mock('@/lib/agreements-api', () => ({
+  listAgreementsForEntity: async () => [],
+}));
+
 vi.mock('@/lib/opportunities-api', () => ({
   getOpportunity: (...args: unknown[]) => getOpportunity(...args),
   getMyParticipation: (...args: unknown[]) => getMyParticipation(...args),

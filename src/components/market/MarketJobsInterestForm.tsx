@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import { Check, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -30,6 +31,7 @@ import {
   type MarketJobMode,
 } from '@/lib/market-job-types';
 import { submitMarketJobInterest } from '@/lib/submit-market-job-interest';
+import { agreementsCreatePath } from '@/lib/agreements-model';
 import { isBusinessUsername } from '@/lib/users-admin';
 import { cn } from '@/lib/utils';
 
@@ -757,7 +759,7 @@ export function MarketJobsInterestForm() {
             </div>
           ) : null}
 
-          <div className="flex justify-center pt-2">
+          <div className="flex flex-col items-center gap-3 pt-2">
             <Button
               type="button"
               className="min-w-[12rem] rounded-full"
@@ -774,6 +776,26 @@ export function MarketJobsInterestForm() {
                 t('market.jobsForm.submit')
               )}
             </Button>
+            {profile?.id ? (
+              <Button type="button" variant="outline" size="sm" asChild>
+                <Link
+                  data-testid="market-jobs-employment-agreement"
+                  to={agreementsCreatePath({
+                    source: 'job',
+                    agreementType: 'employment',
+                    relatedTitle: formatEnglishOrList(jobTypes),
+                    position: formatEnglishOrList(jobTypes),
+                    workLocation: locationText || undefined,
+                    compensation: mode === 'employer' ? payAmount.trim() || undefined : undefined,
+                    payFrequency: mode === 'employer' && payAmount.trim() ? payPeriod : undefined,
+                    employmentStatus: terms[0],
+                    employmentSelfRole: mode === 'employer' ? 'employer' : 'employee',
+                  })}
+                >
+                  {t('agreements.types.employment')}
+                </Link>
+              </Button>
+            ) : null}
           </div>
         </div>
       ) : null}

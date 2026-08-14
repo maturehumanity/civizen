@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePageMeta } from '@/hooks/usePageMeta';
+import { agreementsCreatePath } from '@/lib/agreements-model';
 import {
   getPublicAreaPage,
   initiativePartnerHref,
@@ -71,6 +72,17 @@ function InitiativeCard({
         </Button>
         <Button type="button" size="sm" variant="ghost" asChild>
           <Link to={initiativePartnerHref(areaSlug, item.id)}>{t('areas.partner')}</Link>
+        </Button>
+        <Button type="button" size="sm" variant="outline" asChild>
+          <Link
+            to={agreementsCreatePath({
+              source: 'initiative',
+              relatedTitle: item.title,
+              agreementType: 'program',
+            })}
+          >
+            {t('agreements.createAction')}
+          </Link>
         </Button>
       </div>
     </Card>

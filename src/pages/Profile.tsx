@@ -1220,6 +1220,7 @@ export default function Profile() {
               events={contributionEvents}
               categoryInput={contributionInput}
               syncing={contributionsSyncing}
+              ledgerHref="/profile/contributions"
             />
           </motion.div>
         ) : null}

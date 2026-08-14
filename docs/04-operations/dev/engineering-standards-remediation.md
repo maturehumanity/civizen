@@ -31,9 +31,13 @@ These files exceeded the soft limit before or during institutional remediation. 
 
 - `GovernanceActivationFeedAdaptersPanel.tsx` — deleted from production tree (off route graph; demographic ingest UI removed).
 
-## 2026-08-13 Phase 1 pilot freeze
+## 2026-08-13 contribution lifecycle freeze
 
-Frozen caps updated after Slices 1–4 (Opportunities, Challenges, Learning Commons) and Score V2 integration. New contribute pages and score modules are allowlisted at current size. Pre-existing over-limit files that were missing from the 2026-07-30 freeze are now included so `npm run lint` can pass. Prefer splitting Challenge/Knowledge/Opportunity detail pages and Score modules on the next dedicated refactor.
+Frozen `i18n.base.ts` after live contribution evidence / declared-context copy (LANGUAGE_PACK_VERSION 158). New modules stay under 400 lines.
+
+Frozen caps updated for `App.tsx` (ledger routes), `i18n.base.ts` (ledger copy), `Profile.tsx` / `UserProfile.tsx` (ledger links), and `page-smoke.test.tsx`. Prefer splitting i18n packs and App routes on the next dedicated refactor. New ledger modules stay under the 400-line soft limit.
+
+## 2026-08-13 Phase 1 pilot freeze
 
 ## 2026-08-01 purpose-alignment pass
 

@@ -14,6 +14,7 @@ import {
   groupDevelopmentStoriesToContributions,
   storyFromDevelopmentRow,
 } from '@/lib/civizen-development-evidence';
+import { enrichContributionEventsWithLiveEvidence } from '@/lib/civizen-contribution-evidence-store';
 
 export type ContributionEventType =
   | 'law_contribution'
@@ -448,21 +449,22 @@ export async function collectContributionSources(
           summary: item.summary,
           textLen: item.instruction.length,
           verified: item.verified,
-          impactOverride: item.verified ? 78 : 62,
-          capacityOverride: item.verified ? 78 : 68,
           occurredAt: item.occurredAt,
           rawMeta: {
             eligibility: item.eligibility,
             provenanceCount: item.provenanceStoryIds.length,
-            provenanceStoryIds: item.provenanceStoryIds,
-            commitShas: item.commitShas,
+            commitShas: item.commitShas.slice(0, 8),
             contributionRoles: item.roles,
             implementationAssisted: item.implementationAssisted,
             independentValidation: item.independentValidation,
             outcomeValidated: item.outcomeValidated,
-            realFeatures: item.realFeatures,
+            realFeatures: item.realFeatures.slice(0, 12),
             contributionFunction: item.contributionFunction,
             domain: item.classifiedDomain,
+            testsPassed: item.testsPassed,
+            affectedPaths: item.affectedPaths,
+            reconstructionResult: item.reconstructionResult,
+            survivingImplementation: item.survivingImplementation,
           },
         }),
       );
@@ -565,6 +567,7 @@ export async function collectContributionSources(
           rawMeta: {
             kind: asText(opportunity?.opportunity_kind) || 'education_to_contribution',
             opportunityId: String(row.opportunity_id),
+            opportunityTitle: asText(opportunity?.title) || null,
             evaluationCount: evaluations.length,
             evaluatorIds: [...new Set(evaluatorIds)],
             demonstratedSkills: skillsByParticipation.get(String(row.id)) ?? [],
@@ -727,7 +730,10 @@ export async function syncContributionEvents(
         .select('*')
         .eq('profile_id', profileId)
         .order('occurred_at', { ascending: false });
-      return (data ?? []).map((row: Record<string, unknown>) => mapContributionEventRow(row));
+      return enrichContributionEventsWithLiveEvidence(
+        (data ?? []).map((row: Record<string, unknown>) => mapContributionEventRow(row)),
+        client,
+      );
     }
 
     const rows = events.map(eventToRow);
@@ -757,7 +763,10 @@ export async function syncContributionEvents(
       .eq('profile_id', profileId)
       .order('occurred_at', { ascending: false });
 
-    return (data ?? []).map((row: Record<string, unknown>) => mapContributionEventRow(row));
+    return enrichContributionEventsWithLiveEvidence(
+      (data ?? []).map((row: Record<string, unknown>) => mapContributionEventRow(row)),
+      client,
+    );
   })();
 
   contributionSyncState.set(profileId, { at: now, promise });
@@ -789,65 +798,12 @@ export async function loadContributionEventsThenSync(
   return events;
 }
 
-/** Ledger display: group high-volume types; keep recent individuals. */
-export type ContributionLedgerItem =
-  | { kind: 'event'; event: ContributionEvent }
-  | {
-      kind: 'group';
-      eventType: ContributionEventType;
-      count: number;
-      verifiedCount: number;
-      capacityEstimate: number;
-      impactEstimate: number;
-      collaborationEstimate: number;
-      latestAt: string;
-    };
-
-export function buildContributionLedgerItems(
-  events: ContributionEvent[],
-  options?: { recentLimit?: number; groupThreshold?: number },
-): ContributionLedgerItem[] {
-  const recentLimit = options?.recentLimit ?? 12;
-  const groupThreshold = options?.groupThreshold ?? 8;
-  const byType = new Map<ContributionEventType, ContributionEvent[]>();
-  for (const event of events) {
-    const list = byType.get(event.eventType) ?? [];
-    list.push(event);
-    byType.set(event.eventType, list);
-  }
-
-  const groups: ContributionLedgerItem[] = [];
-  const samples: ContributionLedgerItem[] = [];
-  const small: ContributionLedgerItem[] = [];
-  const sortedTypes = [...byType.entries()].sort((a, b) => b[1].length - a[1].length);
-
-  for (const [eventType, list] of sortedTypes) {
-    const ordered = [...list].sort(
-      (a, b) => Date.parse(b.occurredAt) - Date.parse(a.occurredAt),
-    );
-    if (ordered.length >= groupThreshold) {
-      groups.push({
-        kind: 'group',
-        eventType,
-        count: ordered.length,
-        verifiedCount: ordered.filter((e) => e.verified).length,
-        capacityEstimate: mean(ordered.map((e) => e.capacityEstimate)),
-        impactEstimate: mean(ordered.map((e) => e.impactEstimate)),
-        collaborationEstimate: mean(ordered.map((e) => e.collaborationEstimate)),
-        latestAt: ordered[0]?.occurredAt ?? new Date().toISOString(),
-      });
-      for (const event of ordered.slice(0, 3)) {
-        samples.push({ kind: 'event', event });
-      }
-    } else {
-      for (const event of ordered) {
-        small.push({ kind: 'event', event });
-      }
-    }
-  }
-
-  return [...groups, ...samples, ...small].slice(0, groups.length + recentLimit);
-}
+export {
+  queryContributionLedger,
+  previewContributionRecords,
+  canonicalContributionRecords,
+  summarizeContributionTypes,
+} from '@/lib/civizen-contribution-ledger';
 
 export async function loadContributionEvents(
   profileId: string,
@@ -864,6 +820,9 @@ export async function loadContributionEvents(
     return [];
   }
 
-  return (data ?? []).map((row: Record<string, unknown>) => mapContributionEventRow(row));
+  return enrichContributionEventsWithLiveEvidence(
+    (data ?? []).map((row: Record<string, unknown>) => mapContributionEventRow(row)),
+    client,
+  );
 }
 

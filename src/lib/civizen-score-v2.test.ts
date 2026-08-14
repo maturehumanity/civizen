@@ -49,7 +49,7 @@ describe('Civizen Score V2 architecture', () => {
     expect(event.capacityEstimate).toBe(80);
     expect(event.impactEstimate).toBe(70);
     expect(deriveSystemRating(event)).toBe(
-      Math.round((70 * 0.55 + 80 * 0.35 + 40 * 0.1) * 10) / 10,
+      Math.round((blendActivityEvaluation({ quality: 80, impact: 70, collaboration: 40 }) ?? 0) * 10) / 10,
     );
 
     const contributions = scoreContributionsFromEvents([event]);

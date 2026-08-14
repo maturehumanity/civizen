@@ -34,6 +34,8 @@ export type EligibleDevelopmentContribution = {
   commitShas: string[]; realFeatures: string[]; roles: DevelopmentContributionRole[];
   implementationAssisted: boolean; instruction: string; independentValidation: boolean;
   outcomeValidated: boolean; classifiedDomain: string | null; contributionFunction: string | null;
+  testsPassed: boolean; affectedPaths: string[]; reconstructionResult: string | null;
+  survivingImplementation: boolean | null;
 };
 
 const PLACEHOLDER_FEATURE =
@@ -377,11 +379,13 @@ export function groupDevelopmentStoriesToContributions(
       instruction: normalizeInstruction(primary.originalInstruction || primary.rephrasedDescription),
       independentValidation,
       outcomeValidated,
-      classifiedDomain:
-        members.map((item) => classifiedDomainForDevelopmentStory(item)).find((item) => item != null) ?? null,
-      contributionFunction: typeof primary.metadata?.contributionFunction === 'string'
-        ? primary.metadata.contributionFunction
-        : null,
+      classifiedDomain: members.map((item) => classifiedDomainForDevelopmentStory(item)).find((item) => item != null) ?? null,
+      contributionFunction: typeof primary.metadata?.contributionFunction === 'string' ? primary.metadata.contributionFunction : null,
+      testsPassed: members.some((item) => item.testsPassed === true),
+      affectedPaths: [...new Set(members.flatMap((item) => Array.isArray(item.metadata?.affectedPaths)
+        ? item.metadata.affectedPaths.filter((path): path is string => typeof path === 'string') : []))].slice(0, 40),
+      reconstructionResult: typeof primary.metadata?.reconstructionResult === 'string' ? primary.metadata.reconstructionResult : null,
+      survivingImplementation: typeof primary.metadata?.survivingImplementation === 'boolean' ? primary.metadata.survivingImplementation : null,
     });
   }
   return contributions;

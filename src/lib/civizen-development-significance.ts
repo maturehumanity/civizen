@@ -1,5 +1,7 @@
 /** Deterministic development-outcome significance. Unknown when signals are insufficient. */
 
+import { resolveContributorFunction } from '@/lib/civizen-contributor-function';
+
 export type DevelopmentStructuralSignificance = 'high' | 'moderate' | 'localized' | 'unknown';
 export type DevelopmentScope = 'platform' | 'subsystem' | 'local' | 'unknown';
 export type DevelopmentContributionFunction =
@@ -13,6 +15,7 @@ export type DevelopmentContributionFunction =
 
 export type DevelopmentSignificance = {
   contributionFunction: DevelopmentContributionFunction;
+  artifactFunction: DevelopmentContributionFunction;
   structuralSignificance: DevelopmentStructuralSignificance;
   scope: DevelopmentScope;
   subsystems: string[];
@@ -36,19 +39,32 @@ export function subsystemsForPaths(paths: string[]): string[] {
   return [...new Set(SUBSYSTEMS.filter((item) => paths.some((path) => item.pattern.test(path))).map((item) => item.id))];
 }
 
+const TITLE_HINTS: Array<{ pattern: RegExp; structural: DevelopmentStructuralSignificance; fn: DevelopmentContributionFunction; id: string }> = [
+  { id: 'score', pattern: /\b(score|dial|reputation|maturity|tier)\b/i, structural: 'high', fn: 'system_architecture' },
+  { id: 'governance', pattern: /\b(governance|institutional|charter)\b/i, structural: 'high', fn: 'governance_design' },
+  { id: 'classification', pattern: /\b(areas?|classification|initiative)\b/i, structural: 'high', fn: 'model_evolution' },
+  { id: 'nav', pattern: /\b(carousel|bottom nav|nav chrome)\b/i, structural: 'moderate', fn: 'product_architecture' },
+  { id: 'schema', pattern: /\b(migration|schema|registry)\b/i, structural: 'high', fn: 'model_evolution' },
+];
+
 export function evaluateDevelopmentSignificance(args: {
   affectedPaths?: string[] | null;
   testsPassed?: boolean | null;
   contributionFunction?: string | null;
+  title?: string | null;
+  roles?: unknown;
+  implementationAssisted?: boolean | null;
 }): DevelopmentSignificance {
   const paths = (args.affectedPaths ?? []).filter((path) => path.trim().length > 0);
+  const title = args.title ?? '';
   const matched = SUBSYSTEMS.filter((item) => paths.some((path) => item.pattern.test(path)));
-  const subsystems = subsystemsForPaths(paths);
-  const structural = matched.some((item) => item.structural === 'high')
+  const titleHit = TITLE_HINTS.filter((item) => item.pattern.test(title));
+  const subsystems = [...new Set([...subsystemsForPaths(paths), ...titleHit.map((item) => item.id)])];
+  const structural = matched.some((item) => item.structural === 'high') || titleHit.some((item) => item.structural === 'high')
     ? 'high'
-    : matched.some((item) => item.structural === 'moderate')
+    : matched.some((item) => item.structural === 'moderate') || titleHit.some((item) => item.structural === 'moderate')
       ? 'moderate'
-      : paths.length > 0
+      : paths.length > 0 || title.trim().length > 0
         ? 'localized'
         : 'unknown';
   const scope: DevelopmentScope =
@@ -59,15 +75,17 @@ export function evaluateDevelopmentSignificance(args: {
         : paths.length > 0
           ? 'local'
           : 'unknown';
-  const explicit = args.contributionFunction;
-  const contributionFunction: DevelopmentContributionFunction =
-    explicit === 'system_architecture' || explicit === 'product_architecture' ||
-    explicit === 'governance_design' || explicit === 'model_evolution' ||
-    explicit === 'implementation' || explicit === 'documentation'
-      ? explicit
-      : matched[0]?.fn ?? (paths.length > 0 ? 'implementation' : 'unknown');
+  const artifactFunction: DevelopmentContributionFunction =
+    matched[0]?.fn ?? titleHit[0]?.fn ?? (paths.length > 0 || title.trim() ? 'implementation' : 'unknown');
+  const contributionFunction = resolveContributorFunction({
+    roles: args.roles,
+    implementationAssisted: args.implementationAssisted,
+    explicitFunction: args.contributionFunction,
+    artifactFunction,
+  });
   return {
     contributionFunction,
+    artifactFunction,
     structuralSignificance: structural,
     scope,
     subsystems,

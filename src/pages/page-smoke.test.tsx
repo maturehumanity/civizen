@@ -276,11 +276,13 @@ const allPages: PageEntry[] = [
   { name: 'Market', path: '/market', load: () => import('@/pages/Market') },
   { name: 'MarketTaxonomy', path: '/market/taxonomy', load: () => import('@/pages/MarketTaxonomy') },
   { name: 'Agreements', path: '/agreements', load: () => import('@/pages/Agreements') },
+  { name: 'AgreementCreate', path: '/agreements/new', load: () => import('@/pages/AgreementCreate') },
   { name: 'AgreementDetail', path: '/agreements/demo', routePath: '/agreements/:id', load: () => import('@/pages/AgreementDetail') },
   { name: 'Earnings', path: '/earnings', load: () => import('@/pages/Earnings') },
   { name: 'TermsOfUse', path: '/terms', load: () => import('@/pages/TermsOfUse') },
   { name: 'Search', path: '/search', load: () => import('@/pages/Search') },
   { name: 'Profile', path: '/profile', load: () => import('@/pages/Profile') },
+  { name: 'ContributionsLedger', path: '/profile/contributions', load: () => import('@/pages/profile/ContributionsLedger') },
   { name: 'UserProfile', path: '/u/founder', routePath: '/u/:username', load: () => import('@/pages/UserProfile') },
   { name: 'EndorseSelect', path: '/endorse', load: () => import('@/pages/EndorseSelect') },
   { name: 'EndorseFlow', path: '/endorse/demo', routePath: '/endorse/:userId', load: () => import('@/pages/EndorseFlow') },
@@ -335,6 +337,8 @@ const allPages: PageEntry[] = [
  * Full render catches ReferenceErrors that import-only cannot.
  */
 const renderCritical = new Set([
+  'Agreements',
+  'AgreementCreate',
   'UsersAdmin',
   'RolesAdmin',
   'PermissionsAdmin',
@@ -345,6 +349,7 @@ const renderCritical = new Set([
   'Home',
   'Market',
   'Profile',
+  'ContributionsLedger',
   'Earnings',
   'PrivacySettings',
   'SocialAccountsSettings',

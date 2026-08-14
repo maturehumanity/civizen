@@ -73,11 +73,13 @@ const Law = lazyWithChunkReload(() => import('@/pages/Law'));
 const Market = lazyWithChunkReload(() => import('@/pages/Market'));
 const MarketTaxonomy = lazyWithChunkReload(() => import('@/pages/MarketTaxonomy'));
 const Agreements = lazyWithChunkReload(() => import('@/pages/Agreements'));
+const AgreementCreate = lazyWithChunkReload(() => import('@/pages/AgreementCreate'));
 const AgreementDetail = lazyWithChunkReload(() => import('@/pages/AgreementDetail'));
 const Earnings = lazyWithChunkReload(() => import('@/pages/Earnings'));
 const TermsOfUse = lazyWithChunkReload(() => import('@/pages/TermsOfUse'));
 const Search = lazyWithChunkReload(() => import('@/pages/Search'));
 const Profile = lazyWithChunkReload(() => import('@/pages/Profile'));
+const ContributionsLedger = lazyWithChunkReload(() => import('@/pages/profile/ContributionsLedger'));
 const UserProfile = lazyWithChunkReload(() => import('@/pages/UserProfile'));
 const EndorseFlow = lazyWithChunkReload(() => import('@/pages/EndorseFlow'));
 const Settings = lazyWithChunkReload(() => import('@/pages/Settings'));
@@ -392,6 +394,7 @@ const App = () => (
                   />
                   <Route path="/market" element={<ProtectedRoute><Market /></ProtectedRoute>} />
                   <Route path="/market/taxonomy" element={<ProtectedRoute><MarketTaxonomy /></ProtectedRoute>} />
+                  <Route path="/agreements/new" element={<ProtectedRoute><AgreementCreate /></ProtectedRoute>} />
                   <Route path="/agreements/:agreementId" element={<ProtectedRoute><AgreementDetail /></ProtectedRoute>} />
                   <Route path="/agreements" element={<ProtectedRoute><Agreements /></ProtectedRoute>} />
                   <Route path="/earnings" element={<ProtectedRoute><Earnings /></ProtectedRoute>} />
@@ -404,10 +407,26 @@ const App = () => (
                     }
                   />
                   <Route
+                    path="/profile/contributions"
+                    element={
+                      <ProtectedRoute requiredPermissions={['profile.read']}>
+                        <ContributionsLedger />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
                     path="/user/:userId"
                     element={
                       <ProtectedRoute requiredPermissions={['profile.read']}>
                         <UserProfile />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/user/:userId/contributions"
+                    element={
+                      <ProtectedRoute requiredPermissions={['profile.read']}>
+                        <ContributionsLedger />
                       </ProtectedRoute>
                     }
                   />

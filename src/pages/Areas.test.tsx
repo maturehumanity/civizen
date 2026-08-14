@@ -94,6 +94,10 @@ describe('public Areas pages', () => {
       'href',
       '/governance/solutions',
     );
+    expect(screen.getByRole('link', { name: 'Create agreement' })).toHaveAttribute(
+      'href',
+      expect.stringContaining('/agreements/new?'),
+    );
     expect(screen.getByRole('heading', { name: 'Civic Voting' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Current Civizen systems' })).toBeInTheDocument();
     expect(screen.queryByText('Seeking Funding')).not.toBeInTheDocument();

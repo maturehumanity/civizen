@@ -60,3 +60,15 @@ Historical system verification may use surviving implementation + real features 
 Current HEAD history may start at a snapshot while older git journal SHAs are no longer in the clone. Those orphaned journal commits are still reconstructed from message + time clustering, then verified against **surviving HEAD paths** that match distinctive terminology. The snapshot commit itself is not scored as one giant contribution.
 
 `--persist` writes one `historical_reconstruction` implementation story per qualifying outcome (`source_story_key = outcome:historical:…:implementation`), stamps linked journal metadata with `outcomeRootId`, upserts `profile_contribution_events` for those roots, and prunes stale development-story ledger rows. Score V2 recomputes on read. Journal chat/git rows themselves are not scored.
+
+Stored `capacity_estimate` / `impact_estimate` / `collaboration_estimate` columns may still hold unused placeholders (historically 78 / 78 / 35). They are **not** contribution evaluations. `contribution-evaluation-v2` evaluates each canonical root on read from verified evidence. Unknown realized impact stays unknown. Recall recovery may attach an additional reconstructed-with-uncertainty outcome when a substantive instruction still maps to disjoint surviving implementation; prompt count is never a score factor.
+
+**Recall audit (2026-08-13, operational pass):** Against the live historical corpus (513 journal rows, 145 commits), classification was: 186 already attached to an outcome, 1 provenance-only, 53 overlapping surviving-implementation rows (not disjoint from existing roots), 273 process/non-contributory. One candidate recall recovery was identified (`reconstructed_with_uncertainty`, no tests, process-style agent-rule instruction). It was **not persisted** because the evidence was not strong/reproducible. Full `--persist` was not re-run, because it would rewrite the existing qualifying set rather than add only strong recoveries.
+
+## Live later evidence
+
+Impact evidence, beneficiary/affected-person feedback, and independent validation attach to an existing canonical root (`contribution_evidence_records`). They do not mint another contribution. Score V2, evaluator reputation (`evaluator-reputation-v1`), and contribution history recompute on read from those immutable records. Claimed/potential reach is distinct from realized reach. Declared context is stored on `profile_declared_context` and is not a score input.
+
+## Inspectable ledger
+
+Every score-affecting canonical root must remain inspectable. The compact Profile Contributions preview may show a handful of recent titles; **View contribution details** opens `/profile/contributions` (or `/user/:id/contributions`) with search, filters, sort, and pagination over all roots. Do not collapse roots into a single “Platform improvement · N” card. Event type (`development_story` vs `post`) is a coarse source class; contribution function (system architecture, implementation, communication, …) is the useful classification. Private journal identifiers and chat transcripts are provenance-only and must not appear on the ledger.

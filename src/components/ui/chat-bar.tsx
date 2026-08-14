@@ -39,6 +39,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ChatMessageRow } from '@/components/ui/chat-message-row';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -2999,105 +3000,45 @@ export function ChatBar({
           <p>{t('chatBar.private.searchNoResults')}</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div
+          className="space-y-3"
+          role={messageSelectionMode ? 'listbox' : undefined}
+          aria-multiselectable={messageSelectionMode ? true : undefined}
+          aria-label={
+            messageSelectionMode
+              ? t('chatBar.inbox.selectionCount', { count: selectedMessageIds.size })
+              : undefined
+          }
+        >
           {visibleMessages.map((message) => (
-            <div
+            <ChatMessageRow
               key={message.id}
-              ref={(node) => {
-                messageRowRefs.current[message.id] = node;
+              message={message}
+              selectionMode={messageSelectionMode}
+              selected={selectedMessageIds.has(message.id)}
+              highlighted={highlightedMessageId === message.id}
+              starred={starredMessageIds.has(message.id)}
+              senderInitials={getInitials(message.sender?.full_name)}
+              formattedTime={formatTime(message.created_at)}
+              labels={{
+                openProfile: t('chatBar.private.openProfile'),
+                anonymous: t('chatBar.anonymous'),
+                edited: t('chatBar.private.edited'),
+                retry: t('chatBar.retry'),
               }}
-              className={cn(
-                'flex gap-2 rounded-md p-1 -m-1 transition-colors',
-                !message.id.startsWith('local-') &&
-                  !message.id.startsWith('failed-') &&
-                  'cursor-pointer hover:bg-muted/40',
-                messageSelectionMode && 'cursor-pointer',
-                messageSelectionMode &&
-                  selectedMessageIds.has(message.id) &&
-                  'bg-primary/10 ring-1 ring-primary/25',
-                highlightedMessageId === message.id && 'bg-primary/20 ring-1 ring-primary/50',
-                message.id.startsWith('failed-')
-                  ? 'opacity-60'
-                  : message.id.startsWith('local-')
-                    ? 'opacity-80'
-                    : '',
-              )}
-              onClick={() => onMessageRowClick(message.id)}
-              onPointerDown={(e) => onMessagePointerDown(e, message.id)}
+              onSelect={onMessageRowClick}
+              onPointerDown={onMessagePointerDown}
               onPointerUp={clearMessageLongPressTimer}
               onPointerCancel={clearMessageLongPressTimer}
-              onPointerLeave={(e) => {
-                if (e.pointerType === 'touch') clearMessageLongPressTimer();
+              onPointerLeave={(event) => {
+                if (event.pointerType === 'touch') clearMessageLongPressTimer();
               }}
-            >
-              {messageSelectionMode ? (
-                <div className="flex h-8 w-6 shrink-0 items-center justify-center" aria-hidden>
-                  <span
-                    className={cn(
-                      'h-4 w-4 rounded border border-muted-foreground/60',
-                      selectedMessageIds.has(message.id) && 'border-primary bg-primary',
-                    )}
-                  />
-                </div>
-              ) : null}
-              <button
-                type="button"
-                className="h-8 w-8 flex-shrink-0 rounded-full"
-                disabled={messageSelectionMode}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  if (!message.sender_id || message.sender_id === NELA_ASSISTANT_PROFILE_ID) return;
-                  navigate(`/user/${message.sender_id}`);
-                }}
-                aria-label={t('chatBar.private.openProfile')}
-              >
-                <Avatar className="h-8 w-8">
-                  <AvatarImage
-                    src={resolveMessagingAvatarUrl(message.sender_id, message.sender?.avatar_url ?? null)}
-                  />
-                  <AvatarFallback className="bg-primary/10 text-xs text-primary">
-                    {message.sender_id === NELA_ASSISTANT_PROFILE_ID
-                      ? 'N'
-                      : getInitials(message.sender?.full_name)}
-                  </AvatarFallback>
-                </Avatar>
-              </button>
-
-              <div className="min-w-0 flex-1">
-                <div className="mb-1 flex items-baseline gap-2">
-                  <span className="text-sm font-medium text-foreground">
-                    {message.sender?.full_name || t('chatBar.anonymous')}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {formatTime(message.created_at)}
-                  </span>
-                  {starredMessageIds.has(message.id) ? (
-                    <Star className="h-3 w-3 fill-primary text-primary" />
-                  ) : null}
-                  {message.is_edited ? (
-                    <span className="text-[10px] uppercase tracking-wide text-muted-foreground/80">
-                      {t('chatBar.private.edited')}
-                    </span>
-                  ) : null}
-                </div>
-
-                <p className="break-words break-all text-sm text-foreground">
-                  {message.content}
-                  {message.id.startsWith('failed-') && (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        void retryMessage(message.id);
-                      }}
-                      className="ml-2 text-xs text-destructive underline hover:text-destructive/80"
-                    >
-                      {t('chatBar.retry')}
-                    </button>
-                  )}
-                </p>
-              </div>
-            </div>
+              onOpenProfile={(senderId) => navigate(`/user/${senderId}`)}
+              onRetry={(messageId) => void retryMessage(messageId)}
+              registerRef={(messageId, node) => {
+                messageRowRefs.current[messageId] = node;
+              }}
+            />
           ))}
         </div>
       )}

@@ -1,5 +1,6 @@
 import {
   BookOpen,
+  FileSignature,
   Globe2,
   Heart,
   Landmark,
@@ -47,6 +48,14 @@ const productModules = [
     titleKey: 'onboarding.productMarketTitle',
     descriptionKey: 'onboarding.productMarketDescription',
     tone: 'bg-pillar-economy text-white',
+    href: '/market',
+  },
+  {
+    icon: FileSignature,
+    titleKey: 'onboarding.productAgreementsTitle',
+    descriptionKey: 'onboarding.productAgreementsDescription',
+    tone: 'bg-primary/12 text-primary',
+    href: '/agreements',
   },
   {
     icon: MessageCircle,
