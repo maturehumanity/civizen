@@ -1,7 +1,7 @@
 import type { AppPermission } from '@/lib/access-control';
 import { getAccessiblePageLinks } from '@/lib/app-pages';
 import { CONTRIBUTE_LANES } from '@/lib/contribute-lanes';
-import { featureRegistry, pageRegistry, type PageId } from '@/lib/feature-registry';
+import { featureRegistry, pageRegistry, type FeatureId, type PageId } from '@/lib/feature-registry';
 import { INSTITUTIONAL_DOCS } from '@/lib/institutional-docs';
 import { lawCatalog } from '@/lib/law-catalog';
 import { STUDY_DOCUMENTS } from '@/lib/study';
@@ -34,6 +34,7 @@ const PAGE_PATHS: Partial<Record<PageId, string>> = {
   market: '/market',
   agreements: '/agreements',
   earnings: '/earnings',
+  happiness: '/happiness',
   profile: '/profile',
   editProfile: '/settings/profile',
   settings: '/settings',
@@ -48,6 +49,12 @@ const PAGE_PATHS: Partial<Record<PageId, string>> = {
   adminPermissions: '/settings/admin/permissions',
   adminGovernance: '/settings/admin/governance',
   adminModules: '/settings/admin/modules',
+};
+
+const FEATURE_PATHS: Partial<Record<FeatureId, string>> = {
+  workFulfillment: '/happiness/work',
+  fulfillmentPlans: '/happiness/improve',
+  wellbeingAggregatePrivacy: '/happiness/privacy',
 };
 
 type Translate = (key: string, vars?: Record<string, string | number>) => string;
@@ -113,10 +120,35 @@ export function buildSearchContentsCatalog(
     });
   }
 
+  push({
+    id: 'page:wellbeing-insights',
+    kind: 'page',
+    title: 'Wellbeing Insights',
+    summary: 'Privacy-protected group insights for authorized organization and community viewers.',
+    path: '/wellbeing-insights',
+    keywords: ['wellbeing insights', 'community wellbeing', 'organization wellbeing'],
+  });
+  push({
+    id: 'page:human-outcome-review',
+    kind: 'page',
+    title: 'Human Outcome Review',
+    summary: 'Privacy-safe baseline and follow-up comparison after a linked Challenge, Project, or Governance action. Causality is not established.',
+    path: '/wellbeing-insights/outcome',
+    keywords: ['human outcome review', 'outcome review', 'human outcomes'],
+  });
+  push({
+    id: 'page:solution-records',
+    kind: 'page',
+    title: 'Solution Records',
+    summary: 'Reusable lessons from completed Community Challenges. Distinct from Human Outcome Reviews.',
+    path: '/contribute/challenges',
+    keywords: ['solution records', 'learn from this'],
+  });
+
   for (const feature of featureRegistry) {
     const title = t(feature.titleKey);
     const summary = t(feature.summaryKey);
-    const path = PAGE_PATHS[feature.page] ?? '/features';
+    const path = FEATURE_PATHS[feature.id] ?? PAGE_PATHS[feature.page] ?? '/features';
     push({
       id: `feature:${feature.id}`,
       kind: 'feature',

@@ -135,7 +135,7 @@ export const ASSISTANT_CAPABILITIES: AssistantCapability[] = [
     name: 'Solution Records',
     status: 'implemented',
     description:
-      'Outcome record created when a Community Challenge completes with implementation evidence. Can be shared into a Knowledge Space. Not Governance Solutions.',
+      'Outcome record created when a Community Challenge completes. May link a Human Outcome Review and a public-safe lesson. Negative or unclear human outcomes are preserved. Not a Happiness ranking and not Governance Solutions.',
     routes: ['/contribute/challenges'],
     roles: ['member'],
     relatedCapabilities: ['community_challenges', 'knowledge_spaces', 'governance_solutions'],
@@ -250,13 +250,60 @@ export const ASSISTANT_CAPABILITIES: AssistantCapability[] = [
     name: 'Civizen Score',
     status: 'implemented',
     description:
-      'Score V2 with Learning, Experience, Skills, Performance, and Contributions. Public overall score is established activity. Tiers: Explorer, Builder, Contributor, Catalyst, Steward. Still in formation.',
+      'Score V2 with Learning, Experience, Skills, Performance, and Contributions. Public overall score is established activity. Tiers: Explorer, Builder, Contributor, Catalyst, Steward. Still in formation. Happiness data is not part of Score.',
     howTo: 'Open Profile or the Home Score card. Contributions detail is also under Profile > Contributions.',
     routes: ['/profile', '/profile/contributions'],
     roles: ['member'],
     relatedCapabilities: ['my_contributions', 'profile'],
     aliases: ['rating', 'reputation', 'civizen score v2'],
     sourceRefs: ['src/lib/civizen-score-model.ts', 'docs/03-platform/scoring-and-reputation/civizen-score-tiers-implementation.md'],
+  },
+  {
+    id: 'happiness',
+    name: 'Happiness & Fulfillment',
+    status: 'implemented',
+    description:
+      'Private Happiness & Human Fulfillment. Five levels (Struggling, Unsettled, Balanced, Flourishing, Thriving) — not a numeric Happiness Score. Check-ins, weekly pulse, monthly review, Fulfillment Plans under Improve, causes, and small actions with follow-up. Private by default. Not used for Score, reputation, hiring, or governance power. Work issues open Work Fulfillment. Actual employment uses Marketplace Jobs. Optional privacy-protected group insights are off by default and never show individual Happiness to employers. Civi may receive a grounded Plan brief; it must not invent history or diagnose. Follow-up timing can be stored; notifications are not sent yet.',
+    howTo: 'Open Happiness & Fulfillment from the Profile menu. Check in, review wellbeing, or Improve to start a Fulfillment Plan.',
+    routes: ['/happiness', '/happiness/check-in', '/happiness/review', '/happiness/improve', '/happiness/privacy'],
+    roles: ['member'],
+    relatedCapabilities: ['work_fulfillment', 'study', 'opportunities', 'contribute_hub', 'market', 'wellbeing_aggregate'],
+    aliases: ['wellbeing', 'happiness score', 'how am I doing', 'fulfillment'],
+    sourceRefs: [
+      'docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md',
+      'src/pages/happiness/Happiness.tsx',
+      'src/lib/happiness/model.ts',
+    ],
+  },
+  {
+    id: 'work_fulfillment',
+    name: 'Work Fulfillment',
+    status: 'implemented',
+    description:
+      'Distinct Work Fulfillment & Occupational Fit subunit inside Happiness. Current work, Work Joy Monitor, Fit profile, improve-current-work first. Contribute is for trying work (Contribution Fit). Marketplace Jobs is for actual employment (Job Fit). Study for learning/reskill. Low work fulfillment does not automatically recommend a new career. No public Work Fulfillment or Job Fit score. Approved shareable preferences may prefill Jobs; private Joy, diagnoses, and notes never transfer.',
+    howTo: 'Open Happiness & Fulfillment, then Work Fulfillment. For a job, open Market > Jobs.',
+    routes: ['/happiness/work', '/market'],
+    roles: ['member'],
+    relatedCapabilities: ['happiness', 'study', 'opportunities', 'contribute_hub', 'market'],
+    aliases: ['occupational fit', 'work joy', 'career fit'],
+    sourceRefs: [
+      'docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md',
+      'src/lib/work-fulfillment/types.ts',
+      'src/pages/happiness/HappinessWork.tsx',
+    ],
+  },
+  {
+    id: 'wellbeing_aggregate',
+    name: 'Wellbeing Insights',
+    status: 'implemented',
+    description:
+      'Authorized viewers can open Wellbeing Insights and Human Outcome Reviews for privacy-protected group patterns. Individual Happiness stays private. Published lessons are Civizen-member readable after an intentional publish step, not anonymous internet access. There is no Happiness impact score, ranking, or causal claim from before-and-after observation.',
+    howTo: 'Open Happiness & Fulfillment > Privacy, or Wellbeing Insights. After a linked Challenge, Project, or Governance action, use Human Outcome Review. Participation is off by default.',
+    routes: ['/happiness/privacy', '/wellbeing-insights', '/wellbeing-insights/outcome'],
+    roles: ['member'],
+    relatedCapabilities: ['happiness'],
+    aliases: ['anonymous happiness', 'employer wellbeing dashboard', 'organization happiness score', 'human outcome review'],
+    sourceRefs: ['docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md', 'src/pages/wellbeing/WellbeingInsights.tsx'],
   },
   {
     id: 'governance',
@@ -495,7 +542,7 @@ export const ASSISTANT_FAQ: AssistantFaqItem[] = [
     id: 'what_can_i_do_in_civizen_now',
     question: 'What can I do in Civizen right now?',
     answer:
-      'In this build you can use Home, Study, Contribute (Opportunities, Community Challenges, Learning Commons, My Contributions), Market, Agreements, Messaging, Profile and Score, Areas, and Governance tools such as Civic voting and Governance Solutions. Suggest Improvements is still a placeholder. This is what is implemented today, not a full description of what Civizen is.',
+      'In this build you can use Home, Study, Contribute (Opportunities, Community Challenges, Learning Commons, My Contributions), Market, Agreements, Messaging, Profile and Score, Happiness & Fulfillment, Areas, and Governance tools such as Civic voting and Governance Solutions. Suggest Improvements is still a placeholder. This is what is implemented today, not a full description of what Civizen is.',
     aliases: [
       'what can I currently do in civizen',
       'what can I do in civizen',
@@ -770,6 +817,50 @@ export const ASSISTANT_FAQ: AssistantFaqItem[] = [
     capabilityIds: ['agreements', 'opportunities', 'community_challenges'],
     sourceRefs: ['docs/04-operations/dev/agreements.md', 'src/lib/terms-version.ts', 'src/lib/opportunities.ts'],
   },
+  {
+    id: 'does_civizen_have_happiness',
+    question: 'Does Civizen have a Happiness Score?',
+    answer:
+      'No. Civizen does not show a numeric Happiness Score. Open Happiness & Fulfillment from the Profile menu. You see five levels — Struggling, Unsettled, Balanced, Flourishing, and Thriving — as states, not identities. Check-ins and reviews are private and are not used for Civizen Score, reputation, hiring, or voting power.',
+    aliases: ['happiness score', 'wellbeing score', 'mental health score', 'how am I doing'],
+    capabilityIds: ['happiness', 'score'],
+    sourceRefs: [
+      'docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md',
+      'src/lib/happiness/levels.ts',
+      'src/pages/happiness/Happiness.tsx',
+    ],
+  },
+  {
+    id: 'where_is_happiness',
+    question: 'Where is Happiness & Fulfillment?',
+    answer:
+      'Open Happiness & Fulfillment from the Profile menu. Check in, review wellbeing, open Improve for Fulfillment Plans, or open Work Fulfillment. Privacy is under Happiness & Fulfillment > Privacy. Authorized viewers use Wellbeing Insights and Human Outcome Review.',
+    aliases: ['happiness page', 'wellbeing', 'fulfillment', 'fulfillment plan'],
+    capabilityIds: ['happiness', 'work_fulfillment'],
+    sourceRefs: ['src/lib/app-pages.ts', 'src/pages/happiness/Happiness.tsx'],
+  },
+  {
+    id: 'where_are_jobs',
+    question: 'Where do I look for a job?',
+    answer:
+      'Open Market > Jobs. That is Civizen’s employment and job-seeking surface. Work Fulfillment helps you understand fit and improve current work. Contribute Opportunities are for trying activities, not job matching. Happiness and Work Joy stay private and are not sent to employers.',
+    aliases: ['job search', 'employment', 'hiring', 'job fit'],
+    capabilityIds: ['market', 'work_fulfillment', 'happiness'],
+    sourceRefs: ['src/pages/Market.tsx', 'src/components/market/MarketJobsInterestForm.tsx', 'src/lib/happiness/fulfillment/jobs-bridge.ts'],
+  },
+  {
+    id: 'can_employer_see_happiness',
+    question: 'Can my employer see my Happiness?',
+    answer:
+      'No. Individual Happiness & Fulfillment stays private. If you turn on privacy-protected group insights in Happiness Privacy, qualifying information may contribute to group insights only when enough people are included. Authorized viewers may open Wellbeing Insights. That is not employer access to your Happiness, and it is separate from Job Fit sharing.',
+    aliases: ['employer wellbeing', 'organization happiness', 'anonymous happiness', 'group insights'],
+    capabilityIds: ['happiness', 'wellbeing_aggregate'],
+    sourceRefs: [
+      'docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md',
+      'src/pages/happiness/HappinessPrivacy.tsx',
+      'src/pages/wellbeing/WellbeingInsights.tsx',
+    ],
+  },
 ];
 
 export const ASSISTANT_ALIASES: TerminologyAlias[] = [
@@ -779,6 +870,9 @@ export const ASSISTANT_ALIASES: TerminologyAlias[] = [
   { current: 'Prototype credits', aliases: ['luma', 'luma wallet', 'wallet'] },
   { current: 'Community Governance Charter', aliases: ['civizen constitution', 'constitution v0.1'] },
   { current: 'Agreements', aliases: ['contracts', 'collaboration agreement'] },
+  { current: 'Happiness & Fulfillment', aliases: ['happiness score', 'wellbeing', 'mental health score'] },
+  { current: 'Work Fulfillment', aliases: ['occupational fit', 'work joy'] },
+  { current: 'Wellbeing Insights', aliases: ['group insights', 'organization happiness'] }, { current: 'Human Outcome Review', aliases: ['outcome review', 'happiness impact'] },
   { current: 'My Contributions', aliases: ['impact ledger'] },
   { current: 'Civizen', aliases: ['levela'] },
 ];

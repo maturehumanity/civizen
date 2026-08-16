@@ -3,7 +3,7 @@ title: Civizen Assistant Cheat Sheet
 status: current
 canonical: true
 version: 1
-last_reviewed: 2026-08-13
+last_reviewed: 2026-08-15
 audience: civi
 ---
 
@@ -55,6 +55,11 @@ Public discovery includes `/areas`, `/partners`, `/fund`, `/documents`, `/govern
 | Agreements | Market > Agreements | implemented |
 | Messaging | Messaging | implemented |
 | Profile / Score | Profile | implemented |
+| Happiness & Fulfillment | Profile menu, or the Happiness icon on the Home Score card | implemented (private; five levels, not a numeric score; Fulfillment Plans under Improve; optional group insights off by default) |
+| Work Fulfillment | Happiness & Fulfillment > Work Fulfillment | implemented (current work, Work Joy, Fit, improve-current-work first; Contribute to try; Market > Jobs for employment) |
+| Wellbeing Insights | Happiness Privacy (quiet link) or `/wellbeing-insights` | implemented (authorized viewers only; Overview · Patterns · Action; no organization Happiness Score) |
+| Human Outcome Review | Wellbeing Insights, Challenge, Project, or Governance Solution | implemented (privacy-safe baseline vs follow-up; not causal; public-safe lessons are member-readable after publish) |
+| Marketplace Jobs | Market > Jobs | implemented (actual employment; distinct from Contribute Opportunities) |
 | Areas | Areas (Contribute, Home > Governance, or public footer) | implemented (read-only V1) |
 | Governance landing | Home > Governance | implemented |
 | Civic voting | Home > Governance > Civic voting | implemented |
@@ -234,7 +239,7 @@ No adopted tokenomics constitution. Crypto/token mechanisms are conditional/futu
 
 ## Terminology
 
-Use current UI names: Opportunities, Community Challenges, Learning Commons, Knowledge Spaces, Knowledge Gaps, Solution Records, My Contributions, Agreements, Prototype credits, Community Governance Charter, Areas.
+Use current UI names: Opportunities, Community Challenges, Learning Commons, Knowledge Spaces, Knowledge Gaps, Solution Records, My Contributions, Agreements, Prototype credits, Community Governance Charter, Areas, Happiness & Fulfillment, Work Fulfillment, Wellbeing Insights, Human Outcome Review.
 
 ## Commonly confused concepts
 
@@ -252,7 +257,12 @@ Use current UI names: Opportunities, Community Challenges, Learning Commons, Kno
 | Sale/Purchase Agreement vs Market order | Negotiated agreement vs ordinary listing order |
 | Employment vs Service / Contribution | Employment is a job relationship; Service / Contribution is independent/consulting/volunteer work |
 | Areas vs product pillars | Separate taxonomies |
+| Happiness Score | Civizen does not show a numeric Happiness Score; five private levels only |
 | `/partners` vs partnership CRM | Public notice only |
+
+## Happiness & Fulfillment
+
+Private member wellbeing. Open from the Profile menu. Five levels: **Struggling · Unsettled · Balanced · Flourishing · Thriving**. These are states, not identities (“Your current happiness level is Balanced,” never “You are Struggling”). No numeric Happiness Score. Not used for Civizen Score, reputation, hiring, or governance power. Improve holds private **Fulfillment Plans** (one life area over time: try, follow up, adapt). Starting from a Life area does not re-ask the known domain. Factor certainty stays distinct: what the member said, what Civizen observed, and possibilities to explore — not facts. Work Fulfillment is a distinct subunit at Happiness & Fulfillment > Work Fulfillment: current work (several contexts, one primary), Work Joy, Fit, and improve-current-work first. Work Joy patterns appear only after enough entries, as suggestions. **Contribution Fit** (Contribute / Opportunities) is for trying work. **Job Fit** (Market > Jobs) is for actual employment. Opportunity/Jobs matching uses approved shareable preferences only — not Work Joy, diagnoses, Happiness Level, or private notes. A new career is not the automatic next step. Civi may receive a grounded Plan brief (what the member said / what Civizen observed / suggestions); it must not invent history, invent causes, or diagnose. Follow-up timing can be stored; notifications are not sent yet. Optional **privacy-protected group insights** are off by default under Happiness Privacy; they never give an employer individual Happiness. Authorized organization/community viewers may open **Wellbeing Insights** (`/wellbeing-insights`) for qualifying group patterns (Overview · Patterns · Action). After a linked Challenge, Project, or Governance action, they may open an **Outcome Review** (`/wellbeing-insights/outcome`) to compare later privacy-safe evidence with a baseline. Operational delivery and human-outcome evidence stay separate. Civizen does not establish causation from before-and-after observation. Negative and null results are preserved. There is no organization or community Happiness Score, no Happiness impact score, no participant list, and no automatic Challenge or Governance publication. Civi may summarize a privacy-safe aggregate or Outcome Review; it must not reconstruct a suppressed result from private records or say a Project made people happier.
 
 ## FAQ
 

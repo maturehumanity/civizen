@@ -11,6 +11,7 @@ Software architecture, decentralization mechanisms, civic-participation integrat
 | [`areas-and-initiatives/`](./areas-and-initiatives/) | Public Areas & Initiatives V1 product spec (working; not `/documents`; minimal `/areas` V1 is read-only) |
 | [`decentralization/`](./decentralization/) | Decentralized transition architecture |
 | [`civic-participation/`](./civic-participation/) | Governance integration guide |
+| [`happiness-and-fulfillment/`](./happiness-and-fulfillment/) | Happiness & Human Fulfillment product spec (implemented through Human Outcome Reviews; no Phase 6) |
 | [`scoring-and-reputation/`](./scoring-and-reputation/) | Score page reorganization + tier implementation |
 | [`product-design/`](./product-design/) | Information architecture and content standards; Funding workspace IA; admin usability audit |
 

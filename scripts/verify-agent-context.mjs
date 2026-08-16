@@ -11,6 +11,7 @@ const REQUIRED = [
   'memory-bank/projectbrief.md',
   'docs/04-operations/dev/nav-secondary-carousel.md',
   '.cursor/rules/civizen-project.mdc',
+  '.cursor/rules/form-fields.mdc',
 ];
 
 const AGENTS = 'docs/04-operations/dev/AGENTS.md';
@@ -111,6 +112,12 @@ if (!existsSync('scripts/verify-home-post-composer.mjs')) {
 if (!agents.includes('verify:home-post-composer')) {
   fail('AGENTS.md must reference verify:home-post-composer in post-dev / interaction gates');
 }
+if (!existsSync('scripts/verify-home-happiness-shortcut.mjs')) {
+  fail('missing scripts/verify-home-happiness-shortcut.mjs');
+}
+if (!agents.includes('verify:home-happiness-shortcut')) {
+  fail('AGENTS.md must reference verify:home-happiness-shortcut in post-dev / Home Happiness shortcut gates');
+}
 if (!existsSync('scripts/verify-profile-score-dial.mjs')) {
   fail('missing scripts/verify-profile-score-dial.mjs');
 }
@@ -125,8 +132,28 @@ if (!cursorRule.includes('verify:ci')) {
 if (!cursorRule.includes('verify:home-post-composer')) {
   fail('.cursor/rules/civizen-project.mdc must require verify:home-post-composer after UI work');
 }
+if (!cursorRule.includes('verify:home-happiness-shortcut')) {
+  fail('.cursor/rules/civizen-project.mdc must require verify:home-happiness-shortcut after UI work');
+}
 if (!cursorRule.includes('verify:profile-score-dial')) {
   fail('.cursor/rules/civizen-project.mdc must require verify:profile-score-dial after UI work');
+}
+if (!cursorRule.includes('OutlinedField')) {
+  fail('.cursor/rules/civizen-project.mdc must require outlined form fields');
+}
+if (!agents.includes('OutlinedField')) {
+  fail('AGENTS.md must reference OutlinedField as the standard form field');
+}
+if (!agents.includes('form-fields.mdc')) {
+  fail('AGENTS.md must reference .cursor/rules/form-fields.mdc');
+}
+
+const formFieldsRule = readFileSync('.cursor/rules/form-fields.mdc', 'utf8');
+if (!formFieldsRule.includes('upper-left border')) {
+  fail('.cursor/rules/form-fields.mdc must require the label on the upper-left border');
+}
+if (!/do not show that field again/i.test(formFieldsRule)) {
+  fail('.cursor/rules/form-fields.mdc must hide complete known identity fields');
 }
 
 if (!existsSync('docs/04-operations/dev/phase-1-pilot-operating-model.md')) {

@@ -6,12 +6,14 @@ import { ASSISTANT_CAPABILITY_STATUSES, type KnowledgePack } from './types';
 
 export type KnowledgeValidationIssue = { code: string; message: string };
 
-const ROUTES_FILE = 'src/App.tsx';
+const ROUTE_FILES = ['src/App.tsx', 'src/pages/happiness/happiness-app-routes.tsx'];
 
 function appRoutes(): string[] {
-  if (!existsSync(ROUTES_FILE)) return [];
-  const src = readFileSync(ROUTES_FILE, 'utf8');
-  return [...src.matchAll(/path="(\/[^"]*)"/g)].map((m) => m[1]);
+  return ROUTE_FILES.flatMap((file) => {
+    if (!existsSync(file)) return [];
+    const src = readFileSync(file, 'utf8');
+    return [...src.matchAll(/path="(\/[^"]*)"/g)].map((m) => m[1]);
+  });
 }
 
 function routeExists(route: string, declared: string[]): boolean {

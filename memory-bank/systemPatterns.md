@@ -1,5 +1,22 @@
 # System patterns
 
+## Form fields
+
+- **Component:** `OutlinedField` (`src/components/ui/outlined-field.tsx`)
+- **Look:** rounded outline, label on the **upper-left border** (fieldset legend)
+- **Known identity:** signed-in profile values are used silently; fields appear only when missing
+- **Rules:** `.cursor/rules/form-fields.mdc`, `docs/04-operations/dev/AGENTS.md` §3
+
+## Happiness & Fulfillment
+
+- **Routes:** `/happiness` (My Happiness), `/happiness/check-in`, `/happiness/review`, `/happiness/improve`, `/happiness/work`, `/happiness/privacy`, `/wellbeing-insights` (authorized aggregate viewers only)
+- **Entry:** Profile menu (not bottom nav)
+- **Spec:** `docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md`
+- **Model:** `src/lib/happiness/` (`happiness-level-v1`) — five public levels; Fulfillment Plans under Improve (`src/lib/happiness/fulfillment/`)
+- **Subunit:** `src/lib/work-fulfillment/` — Work Fulfillment workspace; employment seeking uses Marketplace Jobs
+- **Privacy:** owner-only RLS for individual records; optional aggregate participation is a separate table; privileged generation is `service_role` collect → trusted TS engine → persist without rewrite; Wellbeing Insights call `get_wellbeing_aggregate` / stored snapshots only; Human Outcome Reviews compare those snapshots only (no private Happiness joins); never feeds Civizen Score; Jobs prefill uses approved shareable prefs only
+- **Home shortcut:** latest `happiness_state_snapshots.overall_level` only — not the full Happiness workspace
+
 ## Secondary navigation (arc)
 
 - **Component:** `NavSecondaryCarousel` (+ geometry module)

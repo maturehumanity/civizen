@@ -220,6 +220,7 @@ function sourceParts(): string[] {
     parts.push(`${source.path}\n${readFileSync(abs, 'utf8')}`);
   }
   parts.push(readFileSync(resolve(root, 'src/App.tsx'), 'utf8'));
+  parts.push(readFileSync(resolve(root, 'src/pages/happiness/happiness-app-routes.tsx'), 'utf8'));
   parts.push(readFileSync(resolve(root, 'src/lib/contribute-lanes.ts'), 'utf8'));
   parts.push(readFileSync(resolve(root, 'src/lib/agreements-model.ts'), 'utf8'));
   parts.push(readFileSync(resolve(root, 'src/lib/prototype-credits.ts'), 'utf8'));

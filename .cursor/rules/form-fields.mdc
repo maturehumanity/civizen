@@ -1,0 +1,20 @@
+---
+description: Standard outlined form fields and do not re-ask known identity
+alwaysApply: true
+---
+
+# Form fields (standing)
+
+## Outlined fields
+
+Civizen text inputs and textareas use **outlined** fields: a visible rounded border, with the **label on the upper-left border** (`OutlinedField` / fieldset `legend`), not a stacked label above a dashed underline.
+
+- Component: `src/components/ui/outlined-field.tsx`
+- Do not invent a different field chrome unless the user gives **explicit layout instructions** for that surface
+- Exempt: sentence tokens, search bars, compact popover scraps, checkboxes/toggles, and other non-field controls
+
+## Known values stay hidden
+
+When a signed-in member already has a value (name, phone, age, email, country, and similar profile fields), **use it silently**. Do not show that field again. Show it only when the value is missing. Submit still sends the known values. Shown fields stay editable.
+
+Do not force the user to re-read or re-confirm identity they already provided.

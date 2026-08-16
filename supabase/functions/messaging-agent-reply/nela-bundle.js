@@ -649,12 +649,12 @@ var KNOWLEDGE_PACK = {
     "appVersion": "0.1.181",
     "appReleaseId": "20260813-v0.1.181",
     "androidVersionCode": 183,
-    "gitSha": "6111f9ac0c11470216e18f17170b90e187ad1fe5",
-    "generatedAt": "2026-08-14T06:23:43.247Z",
-    "sourceFingerprint": "f423889c3e39b0ce3b52e486119442734735a151d9f8fb99312fb4986657e974",
+    "gitSha": "22f5e8d165fd72074f323e4e062e9f538123d445",
+    "generatedAt": "2026-08-16T03:43:13.548Z",
+    "sourceFingerprint": "4526043db19068f4b5a5469f64901a1072481bc85b302cc0826db53af677764a",
     "knowledgeFormat": 1,
-    "sourceCount": 25,
-    "chunkCount": 310
+    "sourceCount": 26,
+    "chunkCount": 331
   },
   "capabilities": [
     {
@@ -886,7 +886,7 @@ var KNOWLEDGE_PACK = {
       "id": "solution_records",
       "name": "Solution Records",
       "status": "implemented",
-      "description": "Outcome record created when a Community Challenge completes with implementation evidence. Can be shared into a Knowledge Space. Not Governance Solutions.",
+      "description": "Outcome record created when a Community Challenge completes. May link a Human Outcome Review and a public-safe lesson. Negative or unclear human outcomes are preserved. Not a Happiness ranking and not Governance Solutions.",
       "routes": [
         "/contribute/challenges"
       ],
@@ -1127,7 +1127,7 @@ var KNOWLEDGE_PACK = {
       "id": "score",
       "name": "Civizen Score",
       "status": "implemented",
-      "description": "Score V2 with Learning, Experience, Skills, Performance, and Contributions. Public overall score is established activity. Tiers: Explorer, Builder, Contributor, Catalyst, Steward. Still in formation.",
+      "description": "Score V2 with Learning, Experience, Skills, Performance, and Contributions. Public overall score is established activity. Tiers: Explorer, Builder, Contributor, Catalyst, Steward. Still in formation. Happiness data is not part of Score.",
       "howTo": "Open Profile or the Home Score card. Contributions detail is also under Profile > Contributions.",
       "routes": [
         "/profile",
@@ -1148,6 +1148,101 @@ var KNOWLEDGE_PACK = {
       "sourceRefs": [
         "src/lib/civizen-score-model.ts",
         "docs/03-platform/scoring-and-reputation/civizen-score-tiers-implementation.md"
+      ]
+    },
+    {
+      "id": "happiness",
+      "name": "Happiness & Fulfillment",
+      "status": "implemented",
+      "description": "Private Happiness & Human Fulfillment. Five levels (Struggling, Unsettled, Balanced, Flourishing, Thriving) \u2014 not a numeric Happiness Score. Check-ins, weekly pulse, monthly review, Fulfillment Plans under Improve, causes, and small actions with follow-up. Private by default. Not used for Score, reputation, hiring, or governance power. Work issues open Work Fulfillment. Actual employment uses Marketplace Jobs. Optional privacy-protected group insights are off by default and never show individual Happiness to employers. Civi may receive a grounded Plan brief; it must not invent history or diagnose. Follow-up timing can be stored; notifications are not sent yet.",
+      "howTo": "Open Happiness & Fulfillment from the Profile menu. Check in, review wellbeing, or Improve to start a Fulfillment Plan.",
+      "routes": [
+        "/happiness",
+        "/happiness/check-in",
+        "/happiness/review",
+        "/happiness/improve",
+        "/happiness/privacy"
+      ],
+      "roles": [
+        "member"
+      ],
+      "relatedCapabilities": [
+        "work_fulfillment",
+        "study",
+        "opportunities",
+        "contribute_hub",
+        "market",
+        "wellbeing_aggregate"
+      ],
+      "aliases": [
+        "wellbeing",
+        "happiness score",
+        "how am I doing",
+        "fulfillment"
+      ],
+      "sourceRefs": [
+        "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md",
+        "src/pages/happiness/Happiness.tsx",
+        "src/lib/happiness/model.ts"
+      ]
+    },
+    {
+      "id": "work_fulfillment",
+      "name": "Work Fulfillment",
+      "status": "implemented",
+      "description": "Distinct Work Fulfillment & Occupational Fit subunit inside Happiness. Current work, Work Joy Monitor, Fit profile, improve-current-work first. Contribute is for trying work (Contribution Fit). Marketplace Jobs is for actual employment (Job Fit). Study for learning/reskill. Low work fulfillment does not automatically recommend a new career. No public Work Fulfillment or Job Fit score. Approved shareable preferences may prefill Jobs; private Joy, diagnoses, and notes never transfer.",
+      "howTo": "Open Happiness & Fulfillment, then Work Fulfillment. For a job, open Market > Jobs.",
+      "routes": [
+        "/happiness/work",
+        "/market"
+      ],
+      "roles": [
+        "member"
+      ],
+      "relatedCapabilities": [
+        "happiness",
+        "study",
+        "opportunities",
+        "contribute_hub",
+        "market"
+      ],
+      "aliases": [
+        "occupational fit",
+        "work joy",
+        "career fit"
+      ],
+      "sourceRefs": [
+        "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md",
+        "src/lib/work-fulfillment/types.ts",
+        "src/pages/happiness/HappinessWork.tsx"
+      ]
+    },
+    {
+      "id": "wellbeing_aggregate",
+      "name": "Wellbeing Insights",
+      "status": "implemented",
+      "description": "Authorized viewers can open Wellbeing Insights and Human Outcome Reviews for privacy-protected group patterns. Individual Happiness stays private. Published lessons are Civizen-member readable after an intentional publish step, not anonymous internet access. There is no Happiness impact score, ranking, or causal claim from before-and-after observation.",
+      "howTo": "Open Happiness & Fulfillment > Privacy, or Wellbeing Insights. After a linked Challenge, Project, or Governance action, use Human Outcome Review. Participation is off by default.",
+      "routes": [
+        "/happiness/privacy",
+        "/wellbeing-insights",
+        "/wellbeing-insights/outcome"
+      ],
+      "roles": [
+        "member"
+      ],
+      "relatedCapabilities": [
+        "happiness"
+      ],
+      "aliases": [
+        "anonymous happiness",
+        "employer wellbeing dashboard",
+        "organization happiness score",
+        "human outcome review"
+      ],
+      "sourceRefs": [
+        "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md",
+        "src/pages/wellbeing/WellbeingInsights.tsx"
       ]
     },
     {
@@ -1540,7 +1635,7 @@ var KNOWLEDGE_PACK = {
     {
       "id": "what_can_i_do_in_civizen_now",
       "question": "What can I do in Civizen right now?",
-      "answer": "In this build you can use Home, Study, Contribute (Opportunities, Community Challenges, Learning Commons, My Contributions), Market, Agreements, Messaging, Profile and Score, Areas, and Governance tools such as Civic voting and Governance Solutions. Suggest Improvements is still a placeholder. This is what is implemented today, not a full description of what Civizen is.",
+      "answer": "In this build you can use Home, Study, Contribute (Opportunities, Community Challenges, Learning Commons, My Contributions), Market, Agreements, Messaging, Profile and Score, Happiness & Fulfillment, Areas, and Governance tools such as Civic voting and Governance Solutions. Suggest Improvements is still a placeholder. This is what is implemented today, not a full description of what Civizen is.",
       "aliases": [
         "what can I currently do in civizen",
         "what can I do in civizen",
@@ -1968,6 +2063,86 @@ var KNOWLEDGE_PACK = {
         "src/lib/terms-version.ts",
         "src/lib/opportunities.ts"
       ]
+    },
+    {
+      "id": "does_civizen_have_happiness",
+      "question": "Does Civizen have a Happiness Score?",
+      "answer": "No. Civizen does not show a numeric Happiness Score. Open Happiness & Fulfillment from the Profile menu. You see five levels \u2014 Struggling, Unsettled, Balanced, Flourishing, and Thriving \u2014 as states, not identities. Check-ins and reviews are private and are not used for Civizen Score, reputation, hiring, or voting power.",
+      "aliases": [
+        "happiness score",
+        "wellbeing score",
+        "mental health score",
+        "how am I doing"
+      ],
+      "capabilityIds": [
+        "happiness",
+        "score"
+      ],
+      "sourceRefs": [
+        "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md",
+        "src/lib/happiness/levels.ts",
+        "src/pages/happiness/Happiness.tsx"
+      ]
+    },
+    {
+      "id": "where_is_happiness",
+      "question": "Where is Happiness & Fulfillment?",
+      "answer": "Open Happiness & Fulfillment from the Profile menu. Check in, review wellbeing, open Improve for Fulfillment Plans, or open Work Fulfillment. Privacy is under Happiness & Fulfillment > Privacy. Authorized viewers use Wellbeing Insights and Human Outcome Review.",
+      "aliases": [
+        "happiness page",
+        "wellbeing",
+        "fulfillment",
+        "fulfillment plan"
+      ],
+      "capabilityIds": [
+        "happiness",
+        "work_fulfillment"
+      ],
+      "sourceRefs": [
+        "src/lib/app-pages.ts",
+        "src/pages/happiness/Happiness.tsx"
+      ]
+    },
+    {
+      "id": "where_are_jobs",
+      "question": "Where do I look for a job?",
+      "answer": "Open Market > Jobs. That is Civizen\u2019s employment and job-seeking surface. Work Fulfillment helps you understand fit and improve current work. Contribute Opportunities are for trying activities, not job matching. Happiness and Work Joy stay private and are not sent to employers.",
+      "aliases": [
+        "job search",
+        "employment",
+        "hiring",
+        "job fit"
+      ],
+      "capabilityIds": [
+        "market",
+        "work_fulfillment",
+        "happiness"
+      ],
+      "sourceRefs": [
+        "src/pages/Market.tsx",
+        "src/components/market/MarketJobsInterestForm.tsx",
+        "src/lib/happiness/fulfillment/jobs-bridge.ts"
+      ]
+    },
+    {
+      "id": "can_employer_see_happiness",
+      "question": "Can my employer see my Happiness?",
+      "answer": "No. Individual Happiness & Fulfillment stays private. If you turn on privacy-protected group insights in Happiness Privacy, qualifying information may contribute to group insights only when enough people are included. Authorized viewers may open Wellbeing Insights. That is not employer access to your Happiness, and it is separate from Job Fit sharing.",
+      "aliases": [
+        "employer wellbeing",
+        "organization happiness",
+        "anonymous happiness",
+        "group insights"
+      ],
+      "capabilityIds": [
+        "happiness",
+        "wellbeing_aggregate"
+      ],
+      "sourceRefs": [
+        "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md",
+        "src/pages/happiness/HappinessPrivacy.tsx",
+        "src/pages/wellbeing/WellbeingInsights.tsx"
+      ]
     }
   ],
   "aliases": [
@@ -2013,6 +2188,35 @@ var KNOWLEDGE_PACK = {
       "aliases": [
         "contracts",
         "collaboration agreement"
+      ]
+    },
+    {
+      "current": "Happiness & Fulfillment",
+      "aliases": [
+        "happiness score",
+        "wellbeing",
+        "mental health score"
+      ]
+    },
+    {
+      "current": "Work Fulfillment",
+      "aliases": [
+        "occupational fit",
+        "work joy"
+      ]
+    },
+    {
+      "current": "Wellbeing Insights",
+      "aliases": [
+        "group insights",
+        "organization happiness"
+      ]
+    },
+    {
+      "current": "Human Outcome Review",
+      "aliases": [
+        "outcome review",
+        "happiness impact"
       ]
     },
     {
@@ -2105,7 +2309,7 @@ var KNOWLEDGE_PACK = {
       "id": "capability:solution_records",
       "title": "Solution Records",
       "path": "src/lib/assistant/catalog.ts",
-      "text": "Solution Records status=implemented. Outcome record created when a Community Challenge completes with implementation evidence. Can be shared into a Knowledge Space. Not Governance Solutions.  Routes: /contribute/challenges.",
+      "text": "Solution Records status=implemented. Outcome record created when a Community Challenge completes. May link a Human Outcome Review and a public-safe lesson. Negative or unclear human outcomes are preserved. Not a Happiness ranking and not Governance Solutions.  Routes: /contribute/challenges.",
       "status": "implemented",
       "priority": 3,
       "kind": "capability"
@@ -2186,7 +2390,34 @@ var KNOWLEDGE_PACK = {
       "id": "capability:score",
       "title": "Civizen Score",
       "path": "src/lib/assistant/catalog.ts",
-      "text": "Civizen Score status=implemented. Score V2 with Learning, Experience, Skills, Performance, and Contributions. Public overall score is established activity. Tiers: Explorer, Builder, Contributor, Catalyst, Steward. Still in formation. Open Profile or the Home Score card. Contributions detail is also under Profile > Contributions. Routes: /profile, /profile/contributions.",
+      "text": "Civizen Score status=implemented. Score V2 with Learning, Experience, Skills, Performance, and Contributions. Public overall score is established activity. Tiers: Explorer, Builder, Contributor, Catalyst, Steward. Still in formation. Happiness data is not part of Score. Open Profile or the Home Score card. Contributions detail is also under Profile > Contributions. Routes: /profile, /profile/contributions.",
+      "status": "implemented",
+      "priority": 3,
+      "kind": "capability"
+    },
+    {
+      "id": "capability:happiness",
+      "title": "Happiness & Fulfillment",
+      "path": "src/lib/assistant/catalog.ts",
+      "text": "Happiness & Fulfillment status=implemented. Private Happiness & Human Fulfillment. Five levels (Struggling, Unsettled, Balanced, Flourishing, Thriving) \u2014 not a numeric Happiness Score. Check-ins, weekly pulse, monthly review, Fulfillment Plans under Improve, causes, and small actions with follow-up. Private by default. Not used for Score, reputation, hiring, or governance power. Work issues open Work Fulfillment. Actual employment uses Marketplace Jobs. Optional privacy-protected group insights are off by default and never show individual Happiness to employers. Civi may receive a grounded Plan brief; it must not invent history or diagnose. Follow-up timing can be stored; notifications are not sent yet. Open Happiness & Fulfillment from the Profile menu. Check in, review wellbeing, or Improve to start a Fulfillment Plan. Routes: /happiness, /happiness/check-in, /happiness/review, /happiness/improve, /happiness/privacy.",
+      "status": "implemented",
+      "priority": 3,
+      "kind": "capability"
+    },
+    {
+      "id": "capability:work_fulfillment",
+      "title": "Work Fulfillment",
+      "path": "src/lib/assistant/catalog.ts",
+      "text": "Work Fulfillment status=implemented. Distinct Work Fulfillment & Occupational Fit subunit inside Happiness. Current work, Work Joy Monitor, Fit profile, improve-current-work first. Contribute is for trying work (Contribution Fit). Marketplace Jobs is for actual employment (Job Fit). Study for learning/reskill. Low work fulfillment does not automatically recommend a new career. No public Work Fulfillment or Job Fit score. Approved shareable preferences may prefill Jobs; private Joy, diagnoses, and notes never transfer. Open Happiness & Fulfillment, then Work Fulfillment. For a job, open Market > Jobs. Routes: /happiness/work, /market.",
+      "status": "implemented",
+      "priority": 3,
+      "kind": "capability"
+    },
+    {
+      "id": "capability:wellbeing_aggregate",
+      "title": "Wellbeing Insights",
+      "path": "src/lib/assistant/catalog.ts",
+      "text": "Wellbeing Insights status=implemented. Authorized viewers can open Wellbeing Insights and Human Outcome Reviews for privacy-protected group patterns. Individual Happiness stays private. Published lessons are Civizen-member readable after an intentional publish step, not anonymous internet access. There is no Happiness impact score, ranking, or causal claim from before-and-after observation. Open Happiness & Fulfillment > Privacy, or Wellbeing Insights. After a linked Challenge, Project, or Governance action, use Human Outcome Review. Participation is off by default. Routes: /happiness/privacy, /wellbeing-insights, /wellbeing-insights/outcome.",
       "status": "implemented",
       "priority": 3,
       "kind": "capability"
@@ -2348,7 +2579,7 @@ var KNOWLEDGE_PACK = {
       "id": "faq:what_can_i_do_in_civizen_now",
       "title": "What can I do in Civizen right now?",
       "path": "src/lib/assistant/catalog.ts",
-      "text": "Q: What can I do in Civizen right now? A: In this build you can use Home, Study, Contribute (Opportunities, Community Challenges, Learning Commons, My Contributions), Market, Agreements, Messaging, Profile and Score, Areas, and Governance tools such as Civic voting and Governance Solutions. Suggest Improvements is still a placeholder. This is what is implemented today, not a full description of what Civizen is.",
+      "text": "Q: What can I do in Civizen right now? A: In this build you can use Home, Study, Contribute (Opportunities, Community Challenges, Learning Commons, My Contributions), Market, Agreements, Messaging, Profile and Score, Happiness & Fulfillment, Areas, and Governance tools such as Civic voting and Governance Solutions. Suggest Improvements is still a placeholder. This is what is implemented today, not a full description of what Civizen is.",
       "status": "implemented",
       "priority": 5,
       "kind": "faq"
@@ -2579,6 +2810,42 @@ var KNOWLEDGE_PACK = {
       "kind": "faq"
     },
     {
+      "id": "faq:does_civizen_have_happiness",
+      "title": "Does Civizen have a Happiness Score?",
+      "path": "src/lib/assistant/catalog.ts",
+      "text": "Q: Does Civizen have a Happiness Score? A: No. Civizen does not show a numeric Happiness Score. Open Happiness & Fulfillment from the Profile menu. You see five levels \u2014 Struggling, Unsettled, Balanced, Flourishing, and Thriving \u2014 as states, not identities. Check-ins and reviews are private and are not used for Civizen Score, reputation, hiring, or voting power.",
+      "status": "implemented",
+      "priority": 5,
+      "kind": "faq"
+    },
+    {
+      "id": "faq:where_is_happiness",
+      "title": "Where is Happiness & Fulfillment?",
+      "path": "src/lib/assistant/catalog.ts",
+      "text": "Q: Where is Happiness & Fulfillment? A: Open Happiness & Fulfillment from the Profile menu. Check in, review wellbeing, open Improve for Fulfillment Plans, or open Work Fulfillment. Privacy is under Happiness & Fulfillment > Privacy. Authorized viewers use Wellbeing Insights and Human Outcome Review.",
+      "status": "implemented",
+      "priority": 5,
+      "kind": "faq"
+    },
+    {
+      "id": "faq:where_are_jobs",
+      "title": "Where do I look for a job?",
+      "path": "src/lib/assistant/catalog.ts",
+      "text": "Q: Where do I look for a job? A: Open Market > Jobs. That is Civizen\u2019s employment and job-seeking surface. Work Fulfillment helps you understand fit and improve current work. Contribute Opportunities are for trying activities, not job matching. Happiness and Work Joy stay private and are not sent to employers.",
+      "status": "implemented",
+      "priority": 5,
+      "kind": "faq"
+    },
+    {
+      "id": "faq:can_employer_see_happiness",
+      "title": "Can my employer see my Happiness?",
+      "path": "src/lib/assistant/catalog.ts",
+      "text": "Q: Can my employer see my Happiness? A: No. Individual Happiness & Fulfillment stays private. If you turn on privacy-protected group insights in Happiness Privacy, qualifying information may contribute to group insights only when enough people are included. Authorized viewers may open Wellbeing Insights. That is not employer access to your Happiness, and it is separate from Job Fit sharing.",
+      "status": "implemented",
+      "priority": 5,
+      "kind": "faq"
+    },
+    {
       "id": "registry:nav",
       "title": "Primary navigation",
       "path": "src/lib/main-nav.ts",
@@ -2735,7 +3002,7 @@ var KNOWLEDGE_PACK = {
       "id": "docs/assistant/civizen-assistant-cheatsheet.md#5",
       "title": "Current navigation / systems",
       "path": "docs/assistant/civizen-assistant-cheatsheet.md",
-      "text": "| Surface | Open | Status | | --- | --- | --- | | Home | Home | implemented | | Study | Study | implemented | | Contribute hub | Contribute | implemented | | Opportunities | Contribute > Opportunities | implemented | | Community Challenges | Contribute > Community Challenges | implemented | | Learning Commons | Contribute > Learning Commons | implemented | | My Contributions | Contribute > My Contributions | implemented | | Suggest Improvements | Contribute > Suggest Improvements | in_development (placeholder) | | Market | Market | implemented | | Agreements | Market > Agreements | implemented | | Messaging | Messaging | implemented | | Profile / Score | Profile | implemented | | Areas | Areas (Contribute, Home > Governance, or public footer) | implemented (read-only V1) | | Governance landing | Home > Governance | implemented | | Civic voting | Home > Governance > Civic voting | implemented | | Governance workspace | Home > Governance workspace | implemented | | Governance Solutions | Home > Governance > Governance Solutions | implemented | | Community Governance Charter | Home > Governance > Community Governance Charter | implemented (interim public policy) | | Partners | Contrib",
+      "text": "| Surface | Open | Status | | --- | --- | --- | | Home | Home | implemented | | Study | Study | implemented | | Contribute hub | Contribute | implemented | | Opportunities | Contribute > Opportunities | implemented | | Community Challenges | Contribute > Community Challenges | implemented | | Learning Commons | Contribute > Learning Commons | implemented | | My Contributions | Contribute > My Contributions | implemented | | Suggest Improvements | Contribute > Suggest Improvements | in_development (placeholder) | | Market | Market | implemented | | Agreements | Market > Agreements | implemented | | Messaging | Messaging | implemented | | Profile / Score | Profile | implemented | | Happiness & Fulfillment | Profile menu, or the Happiness icon on the Home Score card | implemented (private; five levels, not a numeric score; Fulfillment Plans under Improve; optional group insights off by default) | | Work Fulfillment | Happiness & Fulfillment > Work Fulfillment | implemented (current work, Work Joy, Fit, improve-current-work first; Contribute to try; Market > Jobs for employment) | | Wellbeing Insights | Happiness Privacy (quiet link) or `/wellbeing-insights` | implemented (authorized v",
       "status": "implemented",
       "priority": 5,
       "kind": "cheatsheet"
@@ -2978,7 +3245,7 @@ var KNOWLEDGE_PACK = {
       "id": "docs/04-operations/dev/contribute-page.md#5",
       "title": "Phase 1 layout",
       "path": "docs/04-operations/dev/contribute-page.md",
-      "text": "### Community | Lane | Destination | |------|-------------| | Community Challenges | `/contribute/challenges` | Implementation **Projects** live inside Challenges. There is no separate community-projects or tasks board. `/contribute/projects` redirects here. `/contribute/tasks` redirects to Opportunities. ### Knowledge | Lane | Destination | |------|-------------| | Learning Commons | `/contribute/knowledge` | | Suggest Improvements | `/contribute/improvements` (later path; not Challenges or Knowledge) | ### Your Impact | Lane | Destination | |------|-------------| | My Contributions | `/contribute/impact` (participations across opportunity kinds) + Profile/Score | Financial copy remains inquiry-only (no checkout, tax-deductibility, or fixed returns).",
+      "text": "### Community | Lane | Destination | |------|-------------| | Community Challenges | `/contribute/challenges` | Implementation **Projects** live inside Challenges. There is no separate community-projects or tasks board. `/contribute/projects` redirects here. `/contribute/tasks` redirects to Opportunities. When a Challenge is linked from a wellbeing pattern, coordinators may open a **Human Outcome Review** after implementation. Operational delivery and later privacy-safe human-outcome evidence stay separate; causality is not inferred. ### Knowledge | Lane | Destination | |------|-------------| | Learning Commons | `/contribute/knowledge` | | Suggest Improvements | `/contribute/improvements` (later path; not Challenges or Knowledge) | ### Your Impact",
       "status": "implemented",
       "priority": 6,
       "kind": "doc"
@@ -3104,7 +3371,7 @@ var KNOWLEDGE_PACK = {
       "id": "docs/04-operations/dev/phase-1-pilot-operating-model.md#5",
       "title": "Community Challenges",
       "path": "docs/04-operations/dev/phase-1-pilot-operating-model.md",
-      "text": "## Community Challenges Flow: Challenge \u2192 Proposal \u2192 coordinator selection \u2192 Project \u2192 Opportunities \u2192 Contributions \u2192 Outcome \u2192 Completion \u2192 Solution Record. Selecting a proposal is not completion. Completing requires a selected proposal, a Project, and a recorded outcome. Distinct from Governance Solutions (`solution_problems`).",
+      "text": "## Community Challenges Flow: Challenge \u2192 Proposal \u2192 coordinator selection \u2192 Project \u2192 Opportunities \u2192 Contributions \u2192 Outcome \u2192 Completion \u2192 Solution Record. When the Challenge came from a wellbeing pattern, a Human Outcome Review may later compare privacy-safe baseline and follow-up evidence. That review is not a Happiness impact score and does not change contributor reputation. Selecting a proposal is not completion. Completing requires a selected proposal, a Project, and a recorded outcome. Distinct from Governance Solutions (`solution_problems`).",
       "status": "implemented",
       "priority": 6,
       "kind": "doc"
@@ -3276,6 +3543,132 @@ var KNOWLEDGE_PACK = {
       "title": "Contribute routing",
       "path": "docs/03-platform/areas-and-initiatives/public-areas-initiatives-v1.md",
       "text": "## Contribute routing **Contribute** \u2192 `/contribute` (existing hub; sign-in gated). No new contribution engine. No placeholder-lane deep links in V1.",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md#0",
+      "title": "Product Architecture and Implementation Specification",
+      "path": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md",
+      "text": "## Product Architecture and Implementation Specification **Status:** Implemented (Happiness Foundation through Human Outcome & System Learning Loop). **Scope:** Happiness & Human Fulfillment, including Work Fulfillment & Occupational Fit, privacy-safe aggregates, Wellbeing Insights, and Human Outcome Reviews. **Parent capability:** Happiness & Human Fulfillment **Distinct subunit:** Work Fulfillment & Occupational Fit **Out of scope here:** public city/country rankings, organization league tables, employee ranking, sensitive-demographic dashboards, automatic Challenges/Governance, causal effectiveness claims, Happiness impact scores. ---",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md#1",
+      "title": "1. Purpose",
+      "path": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md",
+      "text": "## 1. Purpose Civizen should not treat happiness as a decorative metric or a public score. The purpose of the Happiness & Human Fulfillment capability is to help people understand how well their lives are going, identify the conditions that are increasing or reducing their wellbeing, and connect them with practical ways to improve those conditions. The system should answer four questions: 1. **How am I doing?** 2. **What is affecting how I am doing?** 3. **What can improve it?** 4. **Did the change actually help?** The system should be private by default, simple by default, and actionable rather than merely descriptive. ---",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md#2",
+      "title": "2. Architectural Decision",
+      "path": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md",
+      "text": "## 2. Architectural Decision Create: ### Happiness & Human Fulfillment The parent unit responsible for: - personal happiness and wellbeing monitoring; - life-domain assessment; - trend detection; - root-cause identification; - personalized improvement support; - follow-up and outcome measurement; - privacy-protected population insights. Within it, create a distinct subunit: ### Work Fulfillment & Occupational Fit Responsible for: - current-work satisfaction; - task-level enjoyment and frustration; - occupational fit; - workplace/environment fit; - role redesign; - career exploration; - trial opportunities; - learning/reskilling pathways; - work-transition support; - post-transition follow-up. Work Fulfillment contributes to the broader Happiness Profile, but it must retain its own data model, assessments, recommendations, intervention workflows, and longitudinal outcomes. ---",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md#3",
+      "title": "Implementation Status",
+      "path": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md",
+      "text": "## Implementation Status This document is the architecture of the **current implemented system**. Later numbered sections that mention Phase 1\u20135 are build history \u2014 how the capability was assembled \u2014 not a member-facing product roadmap. There is no Phase 6 and no next feature phase planned from this document. Future change should come from pilot evidence, privacy/security findings, research requirements, or integration needs. ### Implemented - Happiness Foundation \u2014 Implemented - Work Fulfillment & Occupational Fit \u2014 Implemented - Active Human Fulfillment Support \u2014 Implemented - Privacy-Safe Wellbeing Intelligence \u2014 Implemented - Institutional & Community Wellbeing Insights \u2014 Implemented - Human Outcome & System Learning Loop \u2014 Implemented ### Intentionally deferred",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md#4",
+      "title": "Implementation Status",
+      "path": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md",
+      "text": "- formal scientific evaluation / experimental research design - live notification delivery (follow-up timing can be stored) - broad Fulfillment Plan sharing - provider marketplace - sensitive-demographic research breakdowns - population-informed personal recommendations - city/country or organization league tables - public Happiness profiles - causal effectiveness claims and Happiness impact scores Live aggregate thresholds are the versioned policy `wellbeing-aggregate-privacy-v1`. Compatibility tables and operator notes are in **\xA725**. ### Public-safe vs internet-public",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md#5",
+      "title": "Implementation Status",
+      "path": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md",
+      "text": "**Public-safe** means a lesson was reviewed and intentionally published without restricted aggregate payloads or member identities. `human_outcome_public_lessons` are readable by signed-in Civizen members (`authenticated` SELECT). They are not anonymous internet-public, and Search must not expose restricted snapshots or private Happiness rows. ---",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md#6",
+      "title": "3. Do Not Use a Public Numeric Happiness Score",
+      "path": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md",
+      "text": "## 3. Do Not Use a Public Numeric Happiness Score Civizen should **not show people a 0\u2013100 happiness score**. Instead, expose a five-level model. ### Recommended five public levels 1. **Struggling** - Wellbeing appears substantially under pressure. - The interface should be supportive and practical, not alarming or judgmental. 2. **Unsettled** - Important parts of life are not working well or feel unstable. - The system should help identify the main sources. 3. **Balanced** - Overall life experience is mixed but reasonably stable. - Some areas are going well, while others may need attention. 4. **Flourishing** - Most important areas of life are going well. - The person reports generally positive wellbeing, meaning, and stability.",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md#7",
+      "title": "3. Do Not Use a Public Numeric Happiness Score",
+      "path": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md",
+      "text": "5. **Thriving** - Wellbeing is consistently strong across major areas of life. - The person reports high life satisfaction, positive functioning, and strong fulfillment. ### Important rule These are **states, not identities**. Never write: - \u201CYou are Struggling.\u201D - \u201CYou are a Thriving person.\u201D Prefer: - \u201CYour current happiness level is Struggling.\u201D - \u201CYour recent wellbeing appears to be Flourishing.\u201D - \u201CYour level has moved from Balanced to Flourishing.\u201D ### Internal measurement The system may retain higher-resolution internal values for: - aggregation; - trend detection; - confidence estimates; - change detection; - research; - threshold mapping. These internal values must not be presented as a person's public or reputational \u201Chappiness score.\u201D ---",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md#8",
+      "title": "4. Happiness Profile",
+      "path": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md",
+      "text": "## 4. Happiness Profile The Happiness Profile should remain multidimensional even though the primary public result uses five levels. ### Core domains 1. **Life Satisfaction** 2. **Emotional Wellbeing** 3. **Meaning & Purpose** 4. **Relationships & Belonging** 5. **Health & Vitality** 6. **Autonomy & Freedom** 7. **Security & Stability** 8. **Time & Life Balance** 9. **Environment & Community** 10. **Work / Occupation Fulfillment** Each domain should also use human-readable levels rather than public numeric scoring where practical. Example: - Life Satisfaction \u2014 Flourishing - Relationships \u2014 Thriving - Health & Vitality \u2014 Balanced - Time & Life Balance \u2014 Unsettled - Work Fulfillment \u2014 Struggling This is more useful than a single composite number because Civizen can identify what is actually driving the person's experience. ---",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md#9",
+      "title": "5. Happiness Level Derivation",
+      "path": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md",
+      "text": "## 5. Happiness Level Derivation Do not hard-code a simplistic arithmetic average and present it as scientific truth. Use a versioned calculation framework. The current working model is **`happiness-level-v1`**. It can be replaced by a later version. Historic snapshots store `model_version` so a later formula does not silently rewrite those records. Do not describe this model as scientifically final. ### Working derivation The system may internally normalize answers into a fine-grained scale and derive: - each domain state; - overall state; - recent direction; - confidence / data sufficiency. ### Overall level should consider",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md#10",
+      "title": "5. Happiness Level Derivation",
+      "path": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md",
+      "text": "- life evaluation; - recent emotional experience; - meaning / purpose; - important life-domain satisfaction; - severity of strongly negative domains; - consistency across recent observations; - recency of observations. ### Important behavior One highly distressed domain should not always disappear inside a positive average. Example: - most domains Flourishing; - Work Fulfillment Struggling; - Time Balance Struggling. The system might still classify the overall person as Balanced or Flourishing depending on the evidence, but it must prominently identify the two high-priority areas. ### Versioning Store a `model_version` or equivalent so calculation changes do not silently reinterpret historic records. ---",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md#11",
+      "title": "6. Trends Without Numeric Scores",
+      "path": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md",
+      "text": "## 6. Trends Without Numeric Scores Trend should be shown through: - **Improving** - **Stable** - **Declining** Optionally: - \u201CImproving for 3 weeks\u201D - \u201CRecently moved from Balanced to Flourishing\u201D - \u201CWork Fulfillment has declined recently\u201D Do not expose unnecessary decimal precision. ---",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md#12",
+      "title": "7. Measurement System",
+      "path": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md",
+      "text": "## 7. Measurement System Use multiple levels of participation so the system does not create survey fatigue. ### 7.1 Quick Check-in Purpose: - very low-friction monitoring; - detect short-term changes; - identify possible causes. Example: **How are you feeling today?** - Very difficult - Difficult - Okay - Good - Very good Optional: **What is affecting you most today?** - Work - Health - Relationships - Money / security - Family - Time - Environment - Purpose - Something else Optional free text: - \u201CWant to add anything?\u201D Target completion time: roughly 5\u201315 seconds. --- ### 7.2 Weekly Wellbeing Pulse Purpose: - detect meaningful changes across core dimensions; - remain lightweight. Use a small rotating set of questions rather than forcing all domains every week.",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md#13",
+      "title": "7. Measurement System",
+      "path": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md",
+      "text": "The system should ensure that all important domains receive enough coverage over time. --- ### 7.3 Monthly Happiness Review Purpose: - provide a broader longitudinal view; - refresh domain-level understanding; - surface actionable areas. It should: - assess all major domains; - show the current five-level state; - show domain levels; - show trend; - identify strongest areas; - identify areas needing attention; - ask whether the person wants help improving anything. --- ### 7.4 Deeper Assessments Architecture should support validated external instruments without coupling Civizen to one instrument. Create a generic Assessment Instrument model supporting: - instrument name; - version; - publisher/source; - license; - language; - questions; - response types; - scoring logic; - allowed use; - interpretation rules; - references.",
       "status": "implemented",
       "priority": 6,
       "kind": "doc"

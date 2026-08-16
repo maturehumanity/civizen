@@ -55,4 +55,16 @@ describe('filterSearchContents', () => {
   it('returns nothing for short queries', () => {
     expect(filterSearchContents(catalog, 'R')).toEqual([]);
   });
+
+  it('routes Work Fulfillment and Fulfillment Plans to their workspaces', () => {
+    const work = filterSearchContents(catalog, 'workFulfillment');
+    expect(work.some((hit) => hit.path === '/happiness/work')).toBe(true);
+    const plans = filterSearchContents(catalog, 'fulfillmentPlans');
+    expect(plans.some((hit) => hit.path === '/happiness/improve')).toBe(true);
+  });
+
+  it('routes outcome review to Human Outcome Review', () => {
+    const hits = filterSearchContents(catalog, 'outcome review');
+    expect(hits.some((hit) => hit.path === '/wellbeing-insights/outcome')).toBe(true);
+  });
 });

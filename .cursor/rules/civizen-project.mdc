@@ -43,6 +43,8 @@ Core product/design principle for **all** surfaces (member, organization/admin, 
 
 Expose the smallest clear interface for the user's immediate goal. Do not display every capability merely because the system supports it. Prefer progressive disclosure, contextual intelligence, and plain language. Goal: **simple surface, advanced depth** — not fewer capabilities.
 
+**Form fields:** Use outlined inputs with the label on the **upper-left border** (`OutlinedField`). When a signed-in member already has a value (name, phone, age, email, country), use it silently — do not show that field again unless it is missing. Standing rule: `.cursor/rules/form-fields.mdc` and AGENTS.md §3.
+
 Icons for secondary/common actions (`+`, search, filter, more, edit, download, history) are preferred when recognizable, with accessible labels. Desktop hover may show a name; tap/click must work without hover. Unfamiliar or consequential actions keep visible text. Destructive actions must not rely on icon recognition alone.
 
 Empty states stay minimal. If create is a compact `+` immediately beside the page title (accessible label; tap/click works without hover), do not duplicate a large Create button in the empty body. **More agreement types…** belongs inside the same `+` menu, not as a separate control.
@@ -59,7 +61,7 @@ Run:
 npm run verify:post-dev
 ```
 
-That sequence includes **`verify:home-post-composer`** (Home empty field click → focus → type) and **`verify:profile-score-dial`** (`/profile` Score dial after login). Do not tell the user a UI fix is done until `verify:post-dev` passes **and** the change matches the relevant spec (not just scripts).
+That sequence includes **`verify:home-post-composer`** (Home empty field click → focus → type), **`verify:home-happiness-shortcut`** (Home Score-card Happiness icon → `/happiness` @390px), **`verify:profile-score-dial`** (`/profile` Score dial after login), **`verify:happiness-foundation`** (`/happiness` @390px five-level check-in walk), **`verify:work-fulfillment`** (`/happiness/work` @390px Work Fulfillment walk), **`verify:fulfillment-plans`** (Improve Fulfillment Plan walk @390px), **`verify:wellbeing-aggregate-privacy`** (Happiness Privacy aggregate participation walk @390px), **`verify:wellbeing-insights`** (authorized Wellbeing Insights walk @390px), and **`verify:human-outcome-loop`** (Human Outcome Review walk @390px). Do not tell the user a UI fix is done until `verify:post-dev` passes **and** the change matches the relevant spec (not just scripts).
 
 ## Input-control replacements
 

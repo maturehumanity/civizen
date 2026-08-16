@@ -27,6 +27,7 @@ export const INDEXED_SOURCES: IndexedSource[] = [
   { path: 'docs/04-operations/dev/contribute-page.md', priority: SOURCE_PRIORITY.canonicalDocs, status: 'implemented' },
   { path: 'docs/04-operations/dev/phase-1-pilot-operating-model.md', priority: SOURCE_PRIORITY.canonicalDocs, status: 'implemented' },
   { path: 'docs/03-platform/areas-and-initiatives/public-areas-initiatives-v1.md', priority: SOURCE_PRIORITY.canonicalDocs, status: 'implemented' },
+  { path: 'docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md', priority: SOURCE_PRIORITY.canonicalDocs, status: 'implemented' },
   { path: 'docs/03-platform/scoring-and-reputation/civizen-score-tiers-implementation.md', priority: SOURCE_PRIORITY.canonicalDocs, status: 'implemented' },
   { path: 'docs/02-policies/governance/civizen-community-governance-charter.md', priority: SOURCE_PRIORITY.canonicalDocs, status: 'implemented' },
   { path: 'docs/02-policies/institutional/funding-and-financial-integrity.md', priority: SOURCE_PRIORITY.canonicalDocs, status: 'implemented' },
