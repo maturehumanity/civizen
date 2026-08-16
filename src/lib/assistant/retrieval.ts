@@ -73,9 +73,12 @@ function capabilityHaystack(item: AssistantCapability): string {
 }
 
 function distinctiveOverlap(query: string, text: string): number {
-  const generic = new Set(['civizen', 'nela', 'app', 'feature', 'platform', 'member', 'members']);
-  const qTerms = tokenize(query).filter((t) => !generic.has(t));
-  if (!qTerms.length) return 1;
+  const generic = new Set(['civizen', 'nela', 'app', 'feature', 'platform', 'member', 'members', 'help', 'need', 'please']);
+  const allTerms = tokenize(query);
+  const qTerms = allTerms.filter((t) => !generic.has(t));
+  if (!qTerms.length) {
+    return allTerms.some((t) => t === 'help' || t === 'need' || t === 'please') ? 0 : 1;
+  }
   const hay = new Set(tokenize(text));
   return qTerms.filter((t) => hay.has(t)).length / qTerms.length;
 }

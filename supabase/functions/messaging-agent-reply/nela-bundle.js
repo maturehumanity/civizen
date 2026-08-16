@@ -19,6 +19,18 @@ function shapeAnswerToQuestion(query, answer) {
   return trimmed;
 }
 
+// src/lib/assistant/hardship.ts
+var HARDSHIP_RE = /\b(homeless|houseless|unhoused|no( |-)?where to (sleep|stay|live)|no place to (sleep|stay|live)|need (a )?(shelter|place to stay)|looking for shelter|sleeping (outside|rough|on the street|in (my|a) car)|i('m| am) (hungry|starving)|need food|food (insecure|insecurity)|evicted|facing eviction|i need housing|house me)\b/i;
+var OFFERING_HELP_RE = /\b(how (can|do) i (contribute|help|volunteer)|want to help (others|people|the community)|ways to contribute)\b/i;
+var PERSONAL_HARDSHIP_FAQ_ID = "if_i_need_housing_or_emergency_help";
+var PERSONAL_HARDSHIP_REPLY = "I'm sorry you're going through this. Civizen is not a shelter, housing office, or emergency service, and I cannot arrange a place to stay or send money.\n\nIf you need a safe place tonight, contact local emergency services or a local homelessness helpline. In many regions, 211 can connect you to nearby help.\n\nIf you want work, Jobs is open without an account. Open Market > Jobs. Community Challenges is for local problems over time \u2014 not emergency housing.";
+function isPersonalHardshipAsk(content) {
+  const text = content.trim();
+  if (!text) return false;
+  if (OFFERING_HELP_RE.test(text)) return false;
+  return HARDSHIP_RE.test(text);
+}
+
 // src/lib/assistant/identity.ts
 var IDENTITY_SOURCE_PATH = "docs/assistant/civizen-identity.md";
 var IDENTITY_FAQ_IDS = /* @__PURE__ */ new Set([
@@ -42,6 +54,16 @@ function isIdentitySourcePath(path) {
 }
 function isFoundationIdentityPath(path) {
   return path.startsWith("docs/00-foundation/") || path === "docs/02-policies/governance/civizen-community-governance-charter.md";
+}
+
+// src/lib/assistant/peace.ts
+var PEACE_RE = /\b(stop(ping)? (the )?wars?|end(ing)? (the )?wars?|prevent(ing)? wars?|world peace|(achieve|create|build|make|keep|protect) (world |lasting |global )?peace|live in peace|peaceful coexistence|unite humanity|end (the )?fighting|stop (the )?fighting|how (can|do|should) (we|humanity|people) .{0,48}(peace|war|wars|unite))\b/i;
+var PEACE_COOPERATION_FAQ_ID = "how_can_we_stop_wars";
+var PEACE_COOPERATION_REPLY = "Civizen cannot stop a war tonight, and it is not a government. Peace is built when people practice cooperation before disaster forces it.\n\nIndividually: create an account from Sign up. Open Study to learn shared civic principles. Then take one real step in Contribute \u2014 Community Challenges for a local problem, or Opportunities for verifiable work.\n\nCollectively: name shared problems and carry solutions through to outcomes with evidence. Practice transparent Governance. Grow voluntary world citizenship as a complementary civic identity \u2014 nations and cultures stay; a shared human responsibility is added.\n\nStart with Sign up, then take one of those steps this week.";
+function isPeaceCooperationAsk(content) {
+  const text = content.trim();
+  if (!text) return false;
+  return PEACE_RE.test(text);
 }
 
 // src/lib/assistant/retrieval.ts
@@ -126,9 +148,12 @@ function capabilityHaystack(item) {
   return `${item.name} ${item.aliases.join(" ")} ${item.description} ${item.howTo ?? ""} ${item.routes.join(" ")}`;
 }
 function distinctiveOverlap(query, text) {
-  const generic = /* @__PURE__ */ new Set(["civizen", "nela", "app", "feature", "platform", "member", "members"]);
-  const qTerms = tokenize(query).filter((t) => !generic.has(t));
-  if (!qTerms.length) return 1;
+  const generic = /* @__PURE__ */ new Set(["civizen", "nela", "app", "feature", "platform", "member", "members", "help", "need", "please"]);
+  const allTerms = tokenize(query);
+  const qTerms = allTerms.filter((t) => !generic.has(t));
+  if (!qTerms.length) {
+    return allTerms.some((t) => t === "help" || t === "need" || t === "please") ? 0 : 1;
+  }
   const hay = new Set(tokenize(text));
   return qTerms.filter((t) => hay.has(t)).length / qTerms.length;
 }
@@ -276,6 +301,8 @@ function reviewLlmAnswerForLearning(args) {
   const answer = llmAnswer.trim();
   const questionKey = memoryQuestionKey(question);
   if (prep.skipLlm) return { action: "skip", reason: "already answered without the model" };
+  if (isPersonalHardshipAsk(question)) return { action: "skip", reason: "personal hardship is not stored" };
+  if (isPeaceCooperationAsk(question)) return { action: "skip", reason: "peace guidance is canonical, not learned" };
   if (prep.diagnostics.usedLearnedMemoryKey) return { action: "skip", reason: "already answered from Civi memory" };
   if (prep.isGreeting || prep.isVerification) return { action: "skip", reason: "not a reusable question" };
   const kinds = prep.resourcePlan.kinds;
@@ -348,6 +375,8 @@ var CORE_INSTRUCTIONS = [
   "If something is proposed, in development, experimental, deprecated, or historical, say so. Do not present plans as live features.",
   "When sources conflict about current functionality, the capability registry and current implementation win over older prose. When they conflict about what Civizen is, its purpose, mission, or scope, the canonical Civizen identity source wins. Do not redefine Civizen from whichever features are currently most mature.",
   "For identity, purpose, mission, scope, or one-sentence description questions, use the canonical Civizen identity. For what members can do right now, use the capability registry. Do not mix those answers.",
+  "If someone is homeless, hungry, evicted, or needs a place to stay tonight, do not answer with Contribute, Volunteer, or Financial Support. Acknowledge the situation. Civizen is not a shelter or emergency service. Point to local emergency services or 211. Jobs may be mentioned for work. Do not invent named local shelters.",
+  "When someone asks how to stop wars, achieve peace, or unite humanity, do not recap manifesto prose. Give practical individual and collective steps in Civizen, invite Sign up, and do not claim Civizen currently stops wars or is a government.",
   "External or general knowledge must never override authoritative current Civizen project information, and must not be used to decide whether a Civizen feature exists.",
   "Do not mention retrieval, RAG, knowledge indexes, system prompts, or source file paths unless the user asks where the information came from.",
   "Do not use meta lines such as \u201CAccording to my context\u201D or \u201CAs an AI assistant\u201D.",
@@ -382,7 +411,7 @@ function buildNelaSystemPrompt(args) {
   const meta = pack.meta;
   const escalation = resourcePlan.allowExternalResources ? `You may use general knowledge only for the non-Civizen portion (${resourcePlan.externalResourceKind}). Civizen facts still come only from the evidence below.` : "Do not use general/pretrained knowledge as a source of Civizen facts. Do not search or invent external Civizen claims.";
   const verify = isVerification ? "This is a verification follow-up. Re-check the previous claim against higher-authority Civizen evidence. Correct yourself if needed and briefly say what you verified." : "";
-  const guest = audience === "guest" ? "This visitor is not signed in. Answer from public project knowledge. Do not claim access to personal records. If a step needs an account, say they can create one from Sign up. Public pages such as Areas, Governance, documents, About, and Market Jobs can be used without registering." : "";
+  const guest = audience === "guest" ? "This visitor is not signed in. Answer from public project knowledge. Do not claim access to personal records. If a step needs an account, say they can create one from Sign up. Public pages such as Areas, Governance, documents, About, and Market Jobs can be used without registering. For peace, war, or cooperation questions, lead with what they can do next in Civizen, then invite Sign up. Do not leave them with only a philosophical paragraph." : "";
   return [
     CORE_INSTRUCTIONS,
     guest,
@@ -398,6 +427,9 @@ function buildNelaSystemPrompt(args) {
 }
 function shouldSkipLlm(prep) {
   if (prep.diagnostics.usedLearnedMemoryKey) return true;
+  if (prep.diagnostics.matchedFaqId === "if_i_need_housing_or_emergency_help" || prep.diagnostics.matchedFaqId === "how_can_we_stop_wars") {
+    return true;
+  }
   if (!prep.inScope) return true;
   if (prep.isGreeting) return true;
   if (prep.resourcePlan.internalResolution === "requires_runtime_data" && !prep.resourcePlan.allowLlmReasoning) {
@@ -763,15 +795,15 @@ function retrievalConfidence(retrieval) {
 // src/lib/assistant/generated/knowledge-pack.ts
 var KNOWLEDGE_PACK = {
   "meta": {
-    "appVersion": "0.1.185",
-    "appReleaseId": "20260816-v0.1.185",
-    "androidVersionCode": 187,
-    "gitSha": "5f803e3e4e22cf4a72b806171957a39d785fe66a",
-    "generatedAt": "2026-08-16T21:28:33.499Z",
-    "sourceFingerprint": "fdf9bacf88312e177942270c7a880e33ede4b5ce98d43b8fb641be62b4bcf8ae",
+    "appVersion": "0.1.186",
+    "appReleaseId": "20260816-v0.1.186",
+    "androidVersionCode": 188,
+    "gitSha": "4b830fb3f3983c7dcb79baafe8374cbd7597e4c7",
+    "generatedAt": "2026-08-16T23:34:24.179Z",
+    "sourceFingerprint": "bef18b39d7dca8b074add55fd45502b676a95ff32bbe59e68f758b4334a2cdde",
     "knowledgeFormat": 1,
     "sourceCount": 26,
-    "chunkCount": 334
+    "chunkCount": 336
   },
   "capabilities": [
     {
@@ -1807,7 +1839,8 @@ var KNOWLEDGE_PACK = {
       "answer": "Open Contribute and choose how you want to help: Volunteer, Opportunities, Financial Support, Organization Partnership, Community Challenges, Learning Commons, or My Contributions. Suggest Improvements is not open yet.",
       "aliases": [
         "how do I contribute",
-        "ways to contribute"
+        "ways to contribute",
+        "how can I volunteer"
       ],
       "capabilityIds": [
         "contribute_hub"
@@ -1815,6 +1848,49 @@ var KNOWLEDGE_PACK = {
       "sourceRefs": [
         "src/lib/contribute-lanes.ts",
         "docs/04-operations/dev/contribute-page.md"
+      ]
+    },
+    {
+      "id": "if_i_need_housing_or_emergency_help",
+      "question": "I am homeless. Can Civizen help me?",
+      "answer": "I'm sorry you're going through this. Civizen is not a shelter, housing office, or emergency service, and I cannot arrange a place to stay or send money.\n\nIf you need a safe place tonight, contact local emergency services or a local homelessness helpline. In many regions, 211 can connect you to nearby help.\n\nIf you want work, Jobs is open without an account. Open Market > Jobs. Community Challenges is for local problems over time \u2014 not emergency housing.",
+      "aliases": [
+        "I'm homeless, can you help me?",
+        "I need shelter",
+        "I have nowhere to stay",
+        "can Civizen house me"
+      ],
+      "capabilityIds": [
+        "market",
+        "community_challenges"
+      ],
+      "sourceRefs": [
+        "src/lib/assistant/hardship.ts",
+        "docs/assistant/civizen-assistant-cheatsheet.md"
+      ]
+    },
+    {
+      "id": "how_can_we_stop_wars",
+      "question": "How can we stop wars?",
+      "answer": "Civizen cannot stop a war tonight, and it is not a government. Peace is built when people practice cooperation before disaster forces it.\n\nIndividually: create an account from Sign up. Open Study to learn shared civic principles. Then take one real step in Contribute \u2014 Community Challenges for a local problem, or Opportunities for verifiable work.\n\nCollectively: name shared problems and carry solutions through to outcomes with evidence. Practice transparent Governance. Grow voluntary world citizenship as a complementary civic identity \u2014 nations and cultures stay; a shared human responsibility is added.\n\nStart with Sign up, then take one of those steps this week.",
+      "aliases": [
+        "how do we achieve peace",
+        "how can humanity live in peace",
+        "how can we unite humanity",
+        "how do we end war"
+      ],
+      "capabilityIds": [
+        "study",
+        "contribute_hub",
+        "community_challenges",
+        "opportunities",
+        "governance"
+      ],
+      "sourceRefs": [
+        "src/lib/assistant/peace.ts",
+        "docs/assistant/civizen-assistant-cheatsheet.md",
+        "docs/00-foundation/why-civizen-exists-page-brief.md",
+        "docs/00-foundation/recognized-planetary-citizenship-pathway.md"
       ]
     },
     {
@@ -2771,6 +2847,24 @@ var KNOWLEDGE_PACK = {
       "kind": "faq"
     },
     {
+      "id": "faq:if_i_need_housing_or_emergency_help",
+      "title": "I am homeless. Can Civizen help me?",
+      "path": "src/lib/assistant/catalog.ts",
+      "text": "Q: I am homeless. Can Civizen help me? A: I'm sorry you're going through this. Civizen is not a shelter, housing office, or emergency service, and I cannot arrange a place to stay or send money.\n\nIf you need a safe place tonight, contact local emergency services or a local homelessness helpline. In many regions, 211 can connect you to nearby help.\n\nIf you want work, Jobs is open without an account. Open Market > Jobs. Community Challenges is for local problems over time \u2014 not emergency housing.",
+      "status": "implemented",
+      "priority": 5,
+      "kind": "faq"
+    },
+    {
+      "id": "faq:how_can_we_stop_wars",
+      "title": "How can we stop wars?",
+      "path": "src/lib/assistant/catalog.ts",
+      "text": "Q: How can we stop wars? A: Civizen cannot stop a war tonight, and it is not a government. Peace is built when people practice cooperation before disaster forces it.\n\nIndividually: create an account from Sign up. Open Study to learn shared civic principles. Then take one real step in Contribute \u2014 Community Challenges for a local problem, or Opportunities for verifiable work.\n\nCollectively: name shared problems and carry solutions through to outcomes with evidence. Practice transparent Governance. Grow voluntary world citizenship as a complementary civic identity \u2014 nations and cultures stay; a shared human responsibility is added.\n\nStart with Sign up, then take one of those steps this week.",
+      "status": "implemented",
+      "priority": 5,
+      "kind": "faq"
+    },
+    {
       "id": "faq:what_are_opportunities",
       "title": "What are Opportunities?",
       "path": "src/lib/assistant/catalog.ts",
@@ -3168,6 +3262,24 @@ var KNOWLEDGE_PACK = {
     },
     {
       "id": "docs/assistant/civizen-assistant-cheatsheet.md#3",
+      "title": "Immediate need (housing, food, safety)",
+      "path": "docs/assistant/civizen-assistant-cheatsheet.md",
+      "text": "## Immediate need (housing, food, safety) If someone says they are homeless, unhoused, hungry, evicted, or need a place to stay tonight, do **not** answer with Contribute, Volunteer, Financial Support, or \u201Chow you want to help.\u201D Acknowledge the situation. Be honest: Civizen is not a shelter, housing office, or emergency service, and Civi cannot arrange housing or send money. Point them to local emergency services or a local homelessness helpline; in many regions, **211** can connect them to nearby help. Do not invent named local shelters. If they want work, Jobs is open without an account (`Open Market > Jobs`). Community Challenges is for local problems over time \u2014 not emergency housing. Answer from this fact; do not send the question to the model.",
+      "status": "implemented",
+      "priority": 5,
+      "kind": "cheatsheet"
+    },
+    {
+      "id": "docs/assistant/civizen-assistant-cheatsheet.md#4",
+      "title": "Peace, war, and cooperation",
+      "path": "docs/assistant/civizen-assistant-cheatsheet.md",
+      "text": "## Peace, war, and cooperation If someone asks how to stop wars, achieve peace, or unite humanity, do **not** recap manifesto prose (\u201CHumanity often unites only when disaster\u2026\u201D). Civizen cannot stop a war tonight and is not a government. Give practical steps: - Individually: **Sign up**, then **Study**, then one real step in **Contribute** (Community Challenges or Opportunities). - Collectively: name shared problems, carry solutions through to outcomes, practice **Governance**, and grow voluntary world citizenship as a complementary civic identity. Invite them to join and take one step this week. Do not dump Volunteer / Financial Support lanes.",
+      "status": "implemented",
+      "priority": 5,
+      "kind": "cheatsheet"
+    },
+    {
+      "id": "docs/assistant/civizen-assistant-cheatsheet.md#5",
       "title": "Core purpose",
       "path": "docs/assistant/civizen-assistant-cheatsheet.md",
       "text": "## Core purpose Civizen is not merely a project-management platform, social network, governance app, marketplace, or learning platform. Those may be components. The purpose is the participatory system named above.",
@@ -3176,7 +3288,7 @@ var KNOWLEDGE_PACK = {
       "kind": "cheatsheet"
     },
     {
-      "id": "docs/assistant/civizen-assistant-cheatsheet.md#4",
+      "id": "docs/assistant/civizen-assistant-cheatsheet.md#6",
       "title": "Current product structure",
       "path": "docs/assistant/civizen-assistant-cheatsheet.md",
       "text": "## Current product structure Primary bottom navigation (signed-in): **Home \xB7 Study \xB7 Contribute \xB7 Market \xB7 Messaging**. Settings, Profile, Search, Agreements, Governance, Score, Downloads, and admin tools live outside the bottom nav (Profile menu, page chrome, or public routes). Public discovery includes `/areas`, `/partners`, `/fund`, `/documents`, `/governance`, `/about/*`, and `/contribute/policy`.",
@@ -3185,7 +3297,7 @@ var KNOWLEDGE_PACK = {
       "kind": "cheatsheet"
     },
     {
-      "id": "docs/assistant/civizen-assistant-cheatsheet.md#5",
+      "id": "docs/assistant/civizen-assistant-cheatsheet.md#7",
       "title": "Current navigation / systems",
       "path": "docs/assistant/civizen-assistant-cheatsheet.md",
       "text": "| Surface | Open | Status | | --- | --- | --- | | Home | Home | implemented | | Study | Study | implemented | | Contribute hub | Contribute | implemented | | Opportunities | Contribute > Opportunities | implemented | | Community Challenges | Contribute > Community Challenges | implemented | | Learning Commons | Contribute > Learning Commons | implemented | | My Contributions | Contribute > My Contributions | implemented | | Suggest Improvements | Contribute > Suggest Improvements | in_development (placeholder) | | Market | Market | implemented | | Agreements | Market > Agreements | implemented | | Messaging | Messaging | implemented | | Profile / Score | Profile | implemented | | Happiness & Fulfillment | Profile menu, or the Happiness icon on the Home Score card | implemented (private; five levels, not a numeric score; Fulfillment Plans under Improve; optional group insights off by default) | | Work Fulfillment | Happiness & Fulfillment > Work Fulfillment | implemented (current work, Work Joy, Fit, improve-current-work first; Contribute to try; Market > Jobs for employment) | | Wellbeing Insights | Happiness Privacy (quiet link) or `/wellbeing-insights` | implemented (authorized v",
@@ -3194,7 +3306,7 @@ var KNOWLEDGE_PACK = {
       "kind": "cheatsheet"
     },
     {
-      "id": "docs/assistant/civizen-assistant-cheatsheet.md#6",
+      "id": "docs/assistant/civizen-assistant-cheatsheet.md#8",
       "title": "Current navigation / systems",
       "path": "docs/assistant/civizen-assistant-cheatsheet.md",
       "text": "`/contribute/tasks` redirects to Opportunities. `/contribute/projects` redirects to Community Challenges.",
@@ -3203,7 +3315,7 @@ var KNOWLEDGE_PACK = {
       "kind": "cheatsheet"
     },
     {
-      "id": "docs/assistant/civizen-assistant-cheatsheet.md#7",
+      "id": "docs/assistant/civizen-assistant-cheatsheet.md#9",
       "title": "Areas",
       "path": "docs/assistant/civizen-assistant-cheatsheet.md",
       "text": "## Areas Current foundational Areas (evolvable): **Health \xB7 Education \xB7 Culture \xB7 Responsibility \xB7 Environment**. Public `/areas` and `/areas/:slug` are read-only. Areas answer *where help is needed*. Contribute answers *how I want to help*. Partners answers *how an organization can work with Civizen*. Product pillars (`PILLARS`) are a separate live product taxonomy. Do not treat them as the Area model.",
@@ -3212,7 +3324,7 @@ var KNOWLEDGE_PACK = {
       "kind": "cheatsheet"
     },
     {
-      "id": "docs/assistant/civizen-assistant-cheatsheet.md#8",
+      "id": "docs/assistant/civizen-assistant-cheatsheet.md#10",
       "title": "Initiatives",
       "path": "docs/assistant/civizen-assistant-cheatsheet.md",
       "text": "## Initiatives Public Area pages list curated related **systems** (existing product surfaces) and genuine **initiatives** (organized work toward an outcome). There is no full initiative schema or matching engine in this build. A future Areas & Pilots Catalog is recorded in institutional docs and is **not built**.",
@@ -3221,7 +3333,7 @@ var KNOWLEDGE_PACK = {
       "kind": "cheatsheet"
     },
     {
-      "id": "docs/assistant/civizen-assistant-cheatsheet.md#9",
+      "id": "docs/assistant/civizen-assistant-cheatsheet.md#11",
       "title": "Contribution model",
       "path": "docs/assistant/civizen-assistant-cheatsheet.md",
       "text": "## Contribution model `/contribute` asks: **How would you like to contribute today?** Ways: Volunteer (`/fund/contribute`) \xB7 Opportunities \xB7 Financial Support (`/fund`) \xB7 Organization Partnership (`/partners`). Community: Community Challenges. Knowledge: Learning Commons \xB7 Suggest Improvements (not open yet). Your Impact: My Contributions. A **Program** (`contribution_programs`) is the container. Publisher is a profile (personal or linked business account). There is no separate organizations table in this phase. An **Opportunity** is the work primitive. A **Contribution** is a participation (`opportunity_participations`). Score events are derived. Phase 1 pilots (live): Education-to-Contribution, Community Problem-Solving Lab, Shared Knowledge / Learning Commons.",
@@ -3230,7 +3342,7 @@ var KNOWLEDGE_PACK = {
       "kind": "cheatsheet"
     },
     {
-      "id": "docs/assistant/civizen-assistant-cheatsheet.md#10",
+      "id": "docs/assistant/civizen-assistant-cheatsheet.md#12",
       "title": "Opportunities",
       "path": "docs/assistant/civizen-assistant-cheatsheet.md",
       "text": "## Opportunities Live under **Contribute > Opportunities**. Education-to-Contribution Program. Flow: discover \u2192 apply \u2192 organizer accept/decline \u2192 do the work \u2192 submit evidence \u2192 evaluator verifies \u2192 optional evaluation \u2192 completed contribution. Opportunity kinds: `education_to_contribution` (professional lane), `community_implementation` (inside a Challenge Project), `knowledge_gap` (from a Knowledge Gap). Older names such as \u201Cprofessional listings\u201D or \u201Copen tasks\u201D mean Opportunities.",
@@ -3239,28 +3351,10 @@ var KNOWLEDGE_PACK = {
       "kind": "cheatsheet"
     },
     {
-      "id": "docs/assistant/civizen-assistant-cheatsheet.md#11",
+      "id": "docs/assistant/civizen-assistant-cheatsheet.md#13",
       "title": "Community Challenges",
       "path": "docs/assistant/civizen-assistant-cheatsheet.md",
       "text": "## Community Challenges Live under **Contribute > Community Challenges**. Distinct from Governance Solutions. Flow: Challenge \u2192 Proposal \u2192 coordinator selection (not public voting) \u2192 Implementation Project \u2192 Contribution Opportunities \u2192 outcome \u2192 Solution Record. Signed-in members can create a challenge from **Create** on Contribute > Community Challenges. Coordinators manage the challenge they publish. Completing requires implementation outcome, not merely a selected proposal.",
-      "status": "implemented",
-      "priority": 5,
-      "kind": "cheatsheet"
-    },
-    {
-      "id": "docs/assistant/civizen-assistant-cheatsheet.md#12",
-      "title": "Projects",
-      "path": "docs/assistant/civizen-assistant-cheatsheet.md",
-      "text": "## Projects Implementation **Projects** live **inside** Challenges. There is no separate community-projects or tasks board.",
-      "status": "implemented",
-      "priority": 5,
-      "kind": "cheatsheet"
-    },
-    {
-      "id": "docs/assistant/civizen-assistant-cheatsheet.md#13",
-      "title": "Knowledge Spaces",
-      "path": "docs/assistant/civizen-assistant-cheatsheet.md",
-      "text": "## Knowledge Spaces Live at `/contribute/knowledge` as **Learning Commons**. Distinct from Study, content library items, and Governance Solutions. A Knowledge Space is a shared collection (title, purpose, optional Area, coordinator, Program, status). Resources live inside a space.",
       "status": "implemented",
       "priority": 5,
       "kind": "cheatsheet"
@@ -3305,7 +3399,7 @@ var KNOWLEDGE_PACK = {
       "id": "docs/assistant/README.md#4",
       "title": "Internal-first routing",
       "path": "docs/assistant/README.md",
-      "text": "Civizen product facts stay internal even after escalation. Missing internal evidence does not authorize a generic web/model guess about Civizen. Gemini (or another model) may fill a gap for a general or mixed question; Civi then **checks** that reply before storing it. Invented Civizen capabilities, personal records, and one-off drafts are not remembered.",
+      "text": "Someone asking for housing, food, or a safe place tonight is not a Contribute question. Civi acknowledges the situation, says Civizen is not emergency housing, points to local emergency services / 211, and may mention Jobs \u2014 not Volunteer lanes. Peace, war, and \u201Chow do we unite humanity\u201D questions get practical individual and collective steps (Sign up, Study, Contribute, Governance), not manifesto recap. Civi does not claim Civizen currently stops wars. Civizen product facts stay internal even after escalation. Missing internal evidence does not authorize a generic web/model guess about Civizen. Gemini (or another model) may fill a gap for a general or mixed question; Civi then **checks** that reply before storing it. Invented Civizen capabilities, personal records, and one-off drafts are not remembered.",
       "status": "implemented",
       "priority": 5,
       "kind": "doc"
@@ -5456,10 +5550,16 @@ function distinctiveEnough(query, text) {
     "answer",
     "follow-up",
     "follow",
-    "sure"
+    "sure",
+    "help",
+    "need",
+    "please"
   ]);
-  const qTerms = tokenize(query).filter((t) => !generic.has(t));
-  if (!qTerms.length) return true;
+  const allTerms = tokenize(query);
+  const qTerms = allTerms.filter((t) => !generic.has(t));
+  if (!qTerms.length) {
+    return !allTerms.some((t) => t === "help" || t === "need" || t === "please");
+  }
   const hay = new Set(tokenize(text));
   const hits = qTerms.filter((t) => hay.has(t)).length;
   if (hits >= 2) return true;
@@ -5529,7 +5629,10 @@ function prepareNelaTurn(messages, options = {}) {
   const resolvedQuery = rewritten.resolvedQuery;
   const searchQuery = rewritten.isVerification && rewritten.previousUserQuestion ? rewritten.previousUserQuestion : resolvedQuery;
   const greeting = isGreetingOnly(latestText);
-  const inScope = greeting || isRelevantToCivizen(resolvedQuery, messages);
+  const hardship = isPersonalHardshipAsk(latestText);
+  const peace = !hardship && isPeaceCooperationAsk(latestText);
+  const canned = hardship || peace;
+  const inScope = greeting || canned || isRelevantToCivizen(resolvedQuery, messages);
   const topic = classifyAssistantTopic(searchQuery);
   const rawRetrieval = inScope ? retrieveKnowledge(searchQuery, pack, { broaden: rewritten.isVerification, topic }) : { faq: [], capabilities: [], documents: [] };
   const retrieval = {
@@ -5557,18 +5660,22 @@ function prepareNelaTurn(messages, options = {}) {
     }
   }
   let usedLearnedMemoryKey = null;
-  const learnedHit = !greeting && !rewritten.isVerification ? pickLearnedMemory(searchQuery, options.learnedMemories, {
+  const learnedHit = !greeting && !canned && !rewritten.isVerification ? pickLearnedMemory(searchQuery, options.learnedMemories, {
     catalogFaqScore: retrieval.faq[0]?.score,
     topic
   }) : null;
   const externalResourcesInvoked = [];
   const invokeKind = shouldInvokeExternalSearch(resourcePlan, latestText);
-  if (invokeKind && !learnedHit && options.externalAdapter?.search) {
+  if (invokeKind && !canned && !learnedHit && options.externalAdapter?.search) {
     void options.externalAdapter.search(resolvedQuery);
     externalResourcesInvoked.push(invokeKind);
   }
   let groundedAnswer;
-  if (!inScope) {
+  if (hardship) {
+    groundedAnswer = PERSONAL_HARDSHIP_REPLY;
+  } else if (peace) {
+    groundedAnswer = PEACE_COOPERATION_REPLY;
+  } else if (!inScope) {
     groundedAnswer = SCOPE_REFUSAL;
   } else if (greeting) {
     groundedAnswer = options.audience === "guest" ? GREETING_GUEST : GREETING;
@@ -5587,14 +5694,14 @@ function prepareNelaTurn(messages, options = {}) {
     groundedAnswer = learnedHit.answer;
     usedLearnedMemoryKey = learnedHit.questionKey;
   }
-  if (inScope && !greeting) {
+  if (inScope && !greeting && !canned) {
     const shapeQuery = rewritten.isVerification ? rewritten.previousUserQuestion ?? latestText : latestText;
     groundedAnswer = shapeAnswerToQuestion(shapeQuery, groundedAnswer);
   }
-  if (rewritten.isVerification && inScope && !greeting) {
+  if (rewritten.isVerification && inScope && !greeting && !canned) {
     groundedAnswer = composeVerification(rewritten.previousAssistantClaim, groundedAnswer);
   }
-  if (options.runtimeData?.summary && resourcePlan.internalResolution !== "insufficient") {
+  if (options.runtimeData?.summary && !canned && resourcePlan.internalResolution !== "insufficient") {
     groundedAnswer = `${groundedAnswer}
 
 For your account: ${options.runtimeData.summary}`.trim();
@@ -5623,7 +5730,7 @@ For your account: ${options.runtimeData.summary}`.trim();
       resolvedQuery,
       isVerification: rewritten.isVerification,
       previousUserQuestion: rewritten.previousUserQuestion,
-      matchedFaqId: usedLearnedMemoryKey ? `learned:${usedLearnedMemoryKey}` : retrieval.faq[0]?.item.id ?? null,
+      matchedFaqId: hardship ? PERSONAL_HARDSHIP_FAQ_ID : peace ? PEACE_COOPERATION_FAQ_ID : usedLearnedMemoryKey ? `learned:${usedLearnedMemoryKey}` : retrieval.faq[0]?.item.id ?? null,
       matchedCapabilityIds: retrieval.capabilities.map((h) => h.item.id),
       retrievedPaths: retrieval.documents.map((h) => h.chunk.path),
       capabilityStatuses: retrieval.capabilities.map((h) => ({ id: h.item.id, status: h.item.status })),
@@ -5645,7 +5752,7 @@ For your account: ${options.runtimeData.summary}`.trim();
       }
     }
   };
-  prep.skipLlm = shouldSkipLlm(prep);
+  prep.skipLlm = canned || shouldSkipLlm(prep);
   return prep;
 }
 

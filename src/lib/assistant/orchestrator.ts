@@ -1,5 +1,7 @@
 import { shapeAnswerToQuestion } from './answer-shape';
+import { isPersonalHardshipAsk, PERSONAL_HARDSHIP_FAQ_ID, PERSONAL_HARDSHIP_REPLY } from './hardship';
 import { IDENTITY_FAQ_IDS, classifyAssistantTopic } from './identity';
+import { isPeaceCooperationAsk, PEACE_COOPERATION_FAQ_ID, PEACE_COOPERATION_REPLY } from './peace';
 import { pickLearnedMemory } from './learned-memory';
 import { buildNelaSystemPrompt, formatRetrievedContext, shouldSkipLlm } from './prompt';
 import { resolveConversationalQuery } from './query-rewrite';
@@ -69,9 +71,16 @@ function distinctiveEnough(query: string, text: string): boolean {
     'follow-up',
     'follow',
     'sure',
+    'help',
+    'need',
+    'please',
   ]);
-  const qTerms = tokenize(query).filter((t) => !generic.has(t));
-  if (!qTerms.length) return true;
+  const allTerms = tokenize(query);
+  const qTerms = allTerms.filter((t) => !generic.has(t));
+  if (!qTerms.length) {
+    // Weak-only asks such as "can you help me" must not match every FAQ.
+    return !allTerms.some((t) => t === 'help' || t === 'need' || t === 'please');
+  }
   const hay = new Set(tokenize(text));
   const hits = qTerms.filter((t) => hay.has(t)).length;
   if (hits >= 2) return true;
@@ -159,7 +168,10 @@ export function prepareNelaTurn(messages: HistoryTurn[], options: PrepareNelaTur
       ? rewritten.previousUserQuestion
       : resolvedQuery;
   const greeting = isGreetingOnly(latestText);
-  const inScope = greeting || isRelevantToCivizen(resolvedQuery, messages);
+  const hardship = isPersonalHardshipAsk(latestText);
+  const peace = !hardship && isPeaceCooperationAsk(latestText);
+  const canned = hardship || peace;
+  const inScope = greeting || canned || isRelevantToCivizen(resolvedQuery, messages);
   const topic = classifyAssistantTopic(searchQuery);
 
   const rawRetrieval = inScope
@@ -197,7 +209,7 @@ export function prepareNelaTurn(messages: HistoryTurn[], options: PrepareNelaTur
 
   let usedLearnedMemoryKey: string | null = null;
   const learnedHit =
-    !greeting && !rewritten.isVerification
+    !greeting && !canned && !rewritten.isVerification
       ? pickLearnedMemory(searchQuery, options.learnedMemories, {
           catalogFaqScore: retrieval.faq[0]?.score,
           topic,
@@ -206,13 +218,17 @@ export function prepareNelaTurn(messages: HistoryTurn[], options: PrepareNelaTur
 
   const externalResourcesInvoked: ExternalResourceKind[] = [];
   const invokeKind = shouldInvokeExternalSearch(resourcePlan, latestText);
-  if (invokeKind && !learnedHit && options.externalAdapter?.search) {
+  if (invokeKind && !canned && !learnedHit && options.externalAdapter?.search) {
     void options.externalAdapter.search(resolvedQuery);
     externalResourcesInvoked.push(invokeKind);
   }
 
   let groundedAnswer: string;
-  if (!inScope) {
+  if (hardship) {
+    groundedAnswer = PERSONAL_HARDSHIP_REPLY;
+  } else if (peace) {
+    groundedAnswer = PEACE_COOPERATION_REPLY;
+  } else if (!inScope) {
     groundedAnswer = SCOPE_REFUSAL;
   } else if (greeting) {
     groundedAnswer = options.audience === 'guest' ? GREETING_GUEST : GREETING;
@@ -241,18 +257,18 @@ export function prepareNelaTurn(messages: HistoryTurn[], options: PrepareNelaTur
     usedLearnedMemoryKey = learnedHit.questionKey;
   }
 
-  if (inScope && !greeting) {
+  if (inScope && !greeting && !canned) {
     const shapeQuery = rewritten.isVerification
       ? (rewritten.previousUserQuestion ?? latestText)
       : latestText;
     groundedAnswer = shapeAnswerToQuestion(shapeQuery, groundedAnswer);
   }
 
-  if (rewritten.isVerification && inScope && !greeting) {
+  if (rewritten.isVerification && inScope && !greeting && !canned) {
     groundedAnswer = composeVerification(rewritten.previousAssistantClaim, groundedAnswer);
   }
 
-  if (options.runtimeData?.summary && resourcePlan.internalResolution !== 'insufficient') {
+  if (options.runtimeData?.summary && !canned && resourcePlan.internalResolution !== 'insufficient') {
     groundedAnswer = `${groundedAnswer}\n\nFor your account: ${options.runtimeData.summary}`.trim();
   }
 
@@ -281,7 +297,13 @@ export function prepareNelaTurn(messages: HistoryTurn[], options: PrepareNelaTur
       resolvedQuery,
       isVerification: rewritten.isVerification,
       previousUserQuestion: rewritten.previousUserQuestion,
-      matchedFaqId: usedLearnedMemoryKey ? `learned:${usedLearnedMemoryKey}` : retrieval.faq[0]?.item.id ?? null,
+      matchedFaqId: hardship
+        ? PERSONAL_HARDSHIP_FAQ_ID
+        : peace
+          ? PEACE_COOPERATION_FAQ_ID
+          : usedLearnedMemoryKey
+            ? `learned:${usedLearnedMemoryKey}`
+            : retrieval.faq[0]?.item.id ?? null,
       matchedCapabilityIds: retrieval.capabilities.map((h) => h.item.id),
       retrievedPaths: retrieval.documents.map((h) => h.chunk.path),
       capabilityStatuses: retrieval.capabilities.map((h) => ({ id: h.item.id, status: h.item.status })),
@@ -303,7 +325,7 @@ export function prepareNelaTurn(messages: HistoryTurn[], options: PrepareNelaTur
       },
     },
   };
-  prep.skipLlm = shouldSkipLlm(prep);
+  prep.skipLlm = canned || shouldSkipLlm(prep);
   return prep;
 }
 

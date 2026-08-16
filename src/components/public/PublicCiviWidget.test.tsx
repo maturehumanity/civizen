@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { PublicCiviWidget } from '@/components/public/PublicCiviWidget';
+import { panelSizeAfterNwDrag, PublicCiviWidget } from '@/components/public/PublicCiviWidget';
 import { CIVI_AVATAR_STORAGE_KEY, setCiviAvatarId } from '@/lib/civi-avatar';
 import { baseTranslations, translateMessage } from '@/lib/i18n';
 
@@ -25,6 +25,7 @@ describe('PublicCiviWidget', () => {
   beforeEach(() => {
     window.sessionStorage.clear();
     window.localStorage.removeItem(CIVI_AVATAR_STORAGE_KEY);
+    window.localStorage.removeItem('civizen.public-civi-size');
     setCiviAvatarId('c');
   });
 
@@ -47,5 +48,29 @@ describe('PublicCiviWidget', () => {
     fireEvent.click(screen.getByLabelText('Send'));
 
     expect(await screen.findByText('Civizen is an open participatory system.')).toBeInTheDocument();
+  });
+
+  it('enlarges the panel when the upper-left corner is dragged left and up', () => {
+    const next = panelSizeAfterNwDrag({ width: 352, height: 448 }, 400, 400, 280, 280);
+    expect(next.width).toBeGreaterThan(352);
+    expect(next.height).toBeGreaterThan(448);
+  });
+
+  it('lets visitors resize from the upper-left corner and hides the message scrollbar', () => {
+    render(
+      <MemoryRouter>
+        <PublicCiviWidget />
+      </MemoryRouter>,
+    );
+    fireEvent.click(screen.getByTestId('public-civi-open'));
+
+    const handle = screen.getByTestId('public-civi-resize');
+    expect(handle.className).toMatch(/left-0/);
+    expect(handle.className).toMatch(/top-0/);
+
+    const thread = screen.getByTestId('public-civi-thread');
+    expect(thread.className).toContain('civi-thread-scroll');
+    expect(thread.className).toContain('touch-pan-y');
+    expect(thread.style.scrollbarWidth).toBe('none');
   });
 });

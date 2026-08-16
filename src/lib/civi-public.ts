@@ -52,6 +52,19 @@ export async function askCiviPublic(message: string, history: HistoryTurn[] = []
   if (!trimmed) return '';
 
   const safeHistory = sanitizeCiviPublicHistory(history);
+  const memories = await listCiviLearnedMemories();
+  const { prepareNelaTurn } = await import('@/lib/assistant/orchestrator');
+  const prep = prepareNelaTurn([...safeHistory, { role: 'user', content: trimmed }], {
+    audience: 'guest',
+    learnedMemories: memories,
+  });
+
+  // Peace, hardship, greetings, and other grounded replies must not wait on the live model.
+  if (prep.skipLlm || import.meta.env.DEV) {
+    await recordPublicFallbackInteraction(trimmed, prep);
+    return prep.groundedAnswer;
+  }
+
   const { data, error } = await supabase.functions.invoke('messaging-agent-reply', {
     body: {
       public: true,
@@ -63,12 +76,6 @@ export async function askCiviPublic(message: string, history: HistoryTurn[] = []
   const reply = typeof data?.reply === 'string' ? data.reply.trim() : '';
   if (!error && reply) return reply;
 
-  const memories = await listCiviLearnedMemories();
-  const { prepareNelaTurn } = await import('@/lib/assistant/orchestrator');
-  const prep = prepareNelaTurn([...safeHistory, { role: 'user', content: trimmed }], {
-    audience: 'guest',
-    learnedMemories: memories,
-  });
   await recordPublicFallbackInteraction(trimmed, prep);
   return prep.groundedAnswer;
 }

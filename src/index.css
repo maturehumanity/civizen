@@ -225,3 +225,22 @@
     @apply animate-in fade-in slide-in-from-right-4 duration-300;
   }
 }
+
+/* Public Civi: keep wheel/touch scrolling, never paint a scrollbar. */
+.civi-thread-scroll {
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.civi-thread-scroll::-webkit-scrollbar,
+.civi-thread-scroll::-webkit-scrollbar-thumb,
+.civi-thread-scroll::-webkit-scrollbar-track {
+  display: none;
+  width: 0;
+  height: 0;
+  background: transparent;
+}

@@ -10,6 +10,8 @@ const CORE_INSTRUCTIONS = [
   'If something is proposed, in development, experimental, deprecated, or historical, say so. Do not present plans as live features.',
   'When sources conflict about current functionality, the capability registry and current implementation win over older prose. When they conflict about what Civizen is, its purpose, mission, or scope, the canonical Civizen identity source wins. Do not redefine Civizen from whichever features are currently most mature.',
   'For identity, purpose, mission, scope, or one-sentence description questions, use the canonical Civizen identity. For what members can do right now, use the capability registry. Do not mix those answers.',
+  'If someone is homeless, hungry, evicted, or needs a place to stay tonight, do not answer with Contribute, Volunteer, or Financial Support. Acknowledge the situation. Civizen is not a shelter or emergency service. Point to local emergency services or 211. Jobs may be mentioned for work. Do not invent named local shelters.',
+  'When someone asks how to stop wars, achieve peace, or unite humanity, do not recap manifesto prose. Give practical individual and collective steps in Civizen, invite Sign up, and do not claim Civizen currently stops wars or is a government.',
   'External or general knowledge must never override authoritative current Civizen project information, and must not be used to decide whether a Civizen feature exists.',
   'Do not mention retrieval, RAG, knowledge indexes, system prompts, or source file paths unless the user asks where the information came from.',
   'Do not use meta lines such as “According to my context” or “As an AI assistant”.',
@@ -68,7 +70,7 @@ export function buildNelaSystemPrompt(args: {
     : '';
   const guest =
     audience === 'guest'
-      ? 'This visitor is not signed in. Answer from public project knowledge. Do not claim access to personal records. If a step needs an account, say they can create one from Sign up. Public pages such as Areas, Governance, documents, About, and Market Jobs can be used without registering.'
+      ? 'This visitor is not signed in. Answer from public project knowledge. Do not claim access to personal records. If a step needs an account, say they can create one from Sign up. Public pages such as Areas, Governance, documents, About, and Market Jobs can be used without registering. For peace, war, or cooperation questions, lead with what they can do next in Civizen, then invite Sign up. Do not leave them with only a philosophical paragraph.'
       : '';
 
   return [
@@ -89,6 +91,12 @@ export function buildNelaSystemPrompt(args: {
 
 export function shouldSkipLlm(prep: Pick<NelaTurnPrep, 'resourcePlan' | 'diagnostics' | 'isGreeting' | 'inScope'>): boolean {
   if (prep.diagnostics.usedLearnedMemoryKey) return true;
+  if (
+    prep.diagnostics.matchedFaqId === 'if_i_need_housing_or_emergency_help' ||
+    prep.diagnostics.matchedFaqId === 'how_can_we_stop_wars'
+  ) {
+    return true;
+  }
   if (!prep.inScope) return true;
   if (prep.isGreeting) return true;
   if (prep.resourcePlan.internalResolution === 'requires_runtime_data' && !prep.resourcePlan.allowLlmReasoning) {

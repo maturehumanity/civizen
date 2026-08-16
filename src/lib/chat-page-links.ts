@@ -16,6 +16,8 @@ const EXTRA_PUBLIC_PATHS = [
   '/fund',
   '/governance',
   '/partners',
+  '/signup',
+  '/why-this-exists',
 ] as const;
 
 const PATH_IN_TEXT =

@@ -1,3 +1,5 @@
+import { isPersonalHardshipAsk } from './hardship';
+import { isPeaceCooperationAsk } from './peace';
 import { classifyAssistantTopic } from './identity';
 import { searchFaq, tokenize } from './retrieval';
 import type { AssistantFaqItem, CiviLearnedMemory, CiviLearnedMemoryKind, NelaTurnPrep, RequestKind } from './types';
@@ -89,6 +91,8 @@ export function reviewLlmAnswerForLearning(args: {
   const questionKey = memoryQuestionKey(question);
 
   if (prep.skipLlm) return { action: 'skip', reason: 'already answered without the model' };
+  if (isPersonalHardshipAsk(question)) return { action: 'skip', reason: 'personal hardship is not stored' };
+  if (isPeaceCooperationAsk(question)) return { action: 'skip', reason: 'peace guidance is canonical, not learned' };
   if (prep.diagnostics.usedLearnedMemoryKey) return { action: 'skip', reason: 'already answered from Civi memory' };
   if (prep.isGreeting || prep.isVerification) return { action: 'skip', reason: 'not a reusable question' };
   const kinds: RequestKind[] = prep.resourcePlan.kinds;

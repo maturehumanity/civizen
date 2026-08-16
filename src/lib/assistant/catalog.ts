@@ -1,4 +1,6 @@
+import { PERSONAL_HARDSHIP_FAQ_ID, PERSONAL_HARDSHIP_REPLY } from './hardship';
 import { CANONICAL_CIVIZEN_IDENTITY } from './identity';
+import { PEACE_COOPERATION_FAQ_ID, PEACE_COOPERATION_REPLY } from './peace';
 import type {
   AssistantCapability,
   AssistantFaqItem,
@@ -583,9 +585,40 @@ export const ASSISTANT_FAQ: AssistantFaqItem[] = [
     question: 'How can I contribute?',
     answer:
       'Open Contribute and choose how you want to help: Volunteer, Opportunities, Financial Support, Organization Partnership, Community Challenges, Learning Commons, or My Contributions. Suggest Improvements is not open yet.',
-    aliases: ['how do I contribute', 'ways to contribute'],
+    aliases: ['how do I contribute', 'ways to contribute', 'how can I volunteer'],
     capabilityIds: ['contribute_hub'],
     sourceRefs: ['src/lib/contribute-lanes.ts', 'docs/04-operations/dev/contribute-page.md'],
+  },
+  {
+    id: PERSONAL_HARDSHIP_FAQ_ID,
+    question: 'I am homeless. Can Civizen help me?',
+    answer: PERSONAL_HARDSHIP_REPLY,
+    aliases: [
+      "I'm homeless, can you help me?",
+      'I need shelter',
+      'I have nowhere to stay',
+      'can Civizen house me',
+    ],
+    capabilityIds: ['market', 'community_challenges'],
+    sourceRefs: ['src/lib/assistant/hardship.ts', 'docs/assistant/civizen-assistant-cheatsheet.md'],
+  },
+  {
+    id: PEACE_COOPERATION_FAQ_ID,
+    question: 'How can we stop wars?',
+    answer: PEACE_COOPERATION_REPLY,
+    aliases: [
+      'how do we achieve peace',
+      'how can humanity live in peace',
+      'how can we unite humanity',
+      'how do we end war',
+    ],
+    capabilityIds: ['study', 'contribute_hub', 'community_challenges', 'opportunities', 'governance'],
+    sourceRefs: [
+      'src/lib/assistant/peace.ts',
+      'docs/assistant/civizen-assistant-cheatsheet.md',
+      'docs/00-foundation/why-civizen-exists-page-brief.md',
+      'docs/00-foundation/recognized-planetary-citizenship-pathway.md',
+    ],
   },
   {
     id: 'what_are_opportunities',

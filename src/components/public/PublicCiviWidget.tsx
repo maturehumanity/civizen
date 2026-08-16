@@ -11,8 +11,61 @@ import { splitAssistantMessageBlocks } from '@/lib/split-assistant-message';
 import { cn } from '@/lib/utils';
 
 const STORAGE_KEY = 'civizen.public-civi';
+const SIZE_KEY = 'civizen.public-civi-size';
+const DEFAULT_WIDTH = 352;
+const DEFAULT_HEIGHT = 448;
+const MIN_WIDTH = 280;
+const MIN_HEIGHT = 320;
+const VIEW_MARGIN = 24;
 
 type ChatItem = HistoryTurn & { id: string };
+type PanelSize = { width: number; height: number };
+
+function clampSize(width: number, height: number): PanelSize {
+  const maxW = typeof window === 'undefined' ? DEFAULT_WIDTH : Math.max(MIN_WIDTH, window.innerWidth - VIEW_MARGIN);
+  const maxH = typeof window === 'undefined' ? DEFAULT_HEIGHT : Math.max(MIN_HEIGHT, window.innerHeight - VIEW_MARGIN);
+  const nextW = Number.isFinite(width) ? width : DEFAULT_WIDTH;
+  const nextH = Number.isFinite(height) ? height : DEFAULT_HEIGHT;
+  return {
+    width: Math.min(maxW, Math.max(MIN_WIDTH, Math.round(nextW))),
+    height: Math.min(maxH, Math.max(MIN_HEIGHT, Math.round(nextH))),
+  };
+}
+
+/** Upper-left drag: moving the pointer left/up enlarges the panel. */
+export function panelSizeAfterNwDrag(
+  start: PanelSize,
+  startX: number,
+  startY: number,
+  clientX: number,
+  clientY: number,
+): PanelSize {
+  return clampSize(start.width + (startX - clientX), start.height + (startY - clientY));
+}
+
+function loadSize(): PanelSize {
+  if (typeof window === 'undefined') return { width: DEFAULT_WIDTH, height: DEFAULT_HEIGHT };
+  try {
+    const raw = window.localStorage.getItem(SIZE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as Partial<PanelSize>;
+      if (typeof parsed.width === 'number' && typeof parsed.height === 'number') {
+        return clampSize(parsed.width, parsed.height);
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+  return clampSize(Math.min(window.innerWidth - VIEW_MARGIN, DEFAULT_WIDTH), Math.min(window.innerHeight * 0.7, DEFAULT_HEIGHT));
+}
+
+function persistSize(size: PanelSize) {
+  try {
+    window.localStorage.setItem(SIZE_KEY, JSON.stringify(size));
+  } catch {
+    /* ignore */
+  }
+}
 
 function CiviLinkedText({ text, includeChoices = true }: { text: string; includeChoices?: boolean }) {
   return splitChatPageLinks(text, { includeChoices }).map((part, index) =>
@@ -55,8 +108,43 @@ export function PublicCiviWidget() {
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
   const [messages, setMessages] = useState<ChatItem[]>(loadStored);
+  const [size, setSize] = useState<PanelSize>(loadSize);
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const dragRef = useRef<{ startX: number; startY: number; startW: number; startH: number } | null>(null);
+  const sizeRef = useRef(size);
+  sizeRef.current = size;
+
+  useEffect(() => {
+    const onResize = () => setSize((current) => clampSize(current.width, current.height));
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  useEffect(() => {
+    const onMove = (event: PointerEvent) => {
+      const drag = dragRef.current;
+      if (!drag) return;
+      event.preventDefault();
+      setSize(panelSizeAfterNwDrag({ width: drag.startW, height: drag.startH }, drag.startX, drag.startY, event.clientX, event.clientY));
+    };
+    const onUp = (event: PointerEvent) => {
+      const drag = dragRef.current;
+      if (!drag) return;
+      const next = panelSizeAfterNwDrag({ width: drag.startW, height: drag.startH }, drag.startX, drag.startY, event.clientX, event.clientY);
+      dragRef.current = null;
+      setSize(next);
+      persistSize(next);
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+    };
+  }, []);
 
   useEffect(() => {
     try {
@@ -102,6 +190,18 @@ export function PublicCiviWidget() {
     }
   };
 
+  const onResizePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    dragRef.current = {
+      startX: event.clientX,
+      startY: event.clientY,
+      startW: sizeRef.current.width,
+      startH: sizeRef.current.height,
+    };
+  };
+
   if (!open) {
     return (
       <div className="pointer-events-none fixed bottom-4 right-4 z-50">
@@ -119,12 +219,21 @@ export function PublicCiviWidget() {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 w-[min(100vw-1.5rem,22rem)]">
+    <div className="fixed bottom-4 right-4 z-50" style={{ width: size.width, height: size.height }}>
       <section
         data-testid="public-civi-panel"
-        className="flex h-[min(70vh,28rem)] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-lg"
+        className="relative flex h-full w-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-lg"
       >
-        <header className="flex items-center gap-2 border-b border-border px-3 py-2">
+        <button
+          type="button"
+          data-testid="public-civi-resize"
+          aria-label={t('chatBar.private.civiPublic.resize')}
+          className="absolute left-0 top-0 z-20 flex h-9 w-9 cursor-nwse-resize touch-none items-start justify-start rounded-br-md p-1.5 text-primary"
+          onPointerDown={onResizePointerDown}
+        >
+          <span className="mt-0.5 ml-0.5 inline-block h-3.5 w-3.5 border-l-2 border-t-2 border-current" aria-hidden />
+        </button>
+        <header className="flex items-center gap-2 border-b border-border px-3 py-2 pl-8">
           <CiviAvatar className="h-9 w-9" />
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-foreground">
@@ -152,7 +261,12 @@ export function PublicCiviWidget() {
           </button>
         </header>
 
-        <div ref={listRef} className="min-h-0 flex-1 space-y-3 overflow-y-auto px-3 py-3">
+        <div
+          ref={listRef}
+          data-testid="public-civi-thread"
+          className="civi-thread-scroll min-h-0 flex-1 space-y-3 px-3 py-3 touch-pan-y"
+          style={{ scrollbarWidth: 'none' }}
+        >
           {messages.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t('chatBar.private.civiPublic.emptyHint')}</p>
           ) : (

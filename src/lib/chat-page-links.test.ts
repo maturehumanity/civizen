@@ -16,6 +16,17 @@ describe('chat page links', () => {
     expect(resolveChatPageHref('/javascript:alert(1)')).toBeNull();
   });
 
+  it('links Sign up in a Civi peace answer', () => {
+    const parts = splitChatPageLinks('Start with Sign up, then open Study.');
+    expect(parts).toEqual([
+      { type: 'text', value: 'Start with ' },
+      { type: 'page', value: 'Sign up', href: '/signup' },
+      { type: 'text', value: ', then open ' },
+      { type: 'page', value: 'Study', href: '/study' },
+      { type: 'text', value: '.' },
+    ]);
+  });
+
   it('turns visible trails into tappable page names', () => {
     const parts = splitChatPageLinks('Open Market > Agreements and tap +.');
     expect(parts).toEqual([

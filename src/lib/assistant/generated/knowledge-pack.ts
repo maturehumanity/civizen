@@ -3,15 +3,15 @@ import type { KnowledgePack } from '../types';
 
 export const KNOWLEDGE_PACK: KnowledgePack = {
   "meta": {
-    "appVersion": "0.1.185",
-    "appReleaseId": "20260816-v0.1.185",
-    "androidVersionCode": 187,
-    "gitSha": "5f803e3e4e22cf4a72b806171957a39d785fe66a",
-    "generatedAt": "2026-08-16T21:28:33.499Z",
-    "sourceFingerprint": "fdf9bacf88312e177942270c7a880e33ede4b5ce98d43b8fb641be62b4bcf8ae",
+    "appVersion": "0.1.186",
+    "appReleaseId": "20260816-v0.1.186",
+    "androidVersionCode": 188,
+    "gitSha": "4b830fb3f3983c7dcb79baafe8374cbd7597e4c7",
+    "generatedAt": "2026-08-16T23:34:24.179Z",
+    "sourceFingerprint": "bef18b39d7dca8b074add55fd45502b676a95ff32bbe59e68f758b4334a2cdde",
     "knowledgeFormat": 1,
     "sourceCount": 26,
-    "chunkCount": 334
+    "chunkCount": 336
   },
   "capabilities": [
     {
@@ -1047,7 +1047,8 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "answer": "Open Contribute and choose how you want to help: Volunteer, Opportunities, Financial Support, Organization Partnership, Community Challenges, Learning Commons, or My Contributions. Suggest Improvements is not open yet.",
       "aliases": [
         "how do I contribute",
-        "ways to contribute"
+        "ways to contribute",
+        "how can I volunteer"
       ],
       "capabilityIds": [
         "contribute_hub"
@@ -1055,6 +1056,49 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "sourceRefs": [
         "src/lib/contribute-lanes.ts",
         "docs/04-operations/dev/contribute-page.md"
+      ]
+    },
+    {
+      "id": "if_i_need_housing_or_emergency_help",
+      "question": "I am homeless. Can Civizen help me?",
+      "answer": "I'm sorry you're going through this. Civizen is not a shelter, housing office, or emergency service, and I cannot arrange a place to stay or send money.\n\nIf you need a safe place tonight, contact local emergency services or a local homelessness helpline. In many regions, 211 can connect you to nearby help.\n\nIf you want work, Jobs is open without an account. Open Market > Jobs. Community Challenges is for local problems over time — not emergency housing.",
+      "aliases": [
+        "I'm homeless, can you help me?",
+        "I need shelter",
+        "I have nowhere to stay",
+        "can Civizen house me"
+      ],
+      "capabilityIds": [
+        "market",
+        "community_challenges"
+      ],
+      "sourceRefs": [
+        "src/lib/assistant/hardship.ts",
+        "docs/assistant/civizen-assistant-cheatsheet.md"
+      ]
+    },
+    {
+      "id": "how_can_we_stop_wars",
+      "question": "How can we stop wars?",
+      "answer": "Civizen cannot stop a war tonight, and it is not a government. Peace is built when people practice cooperation before disaster forces it.\n\nIndividually: create an account from Sign up. Open Study to learn shared civic principles. Then take one real step in Contribute — Community Challenges for a local problem, or Opportunities for verifiable work.\n\nCollectively: name shared problems and carry solutions through to outcomes with evidence. Practice transparent Governance. Grow voluntary world citizenship as a complementary civic identity — nations and cultures stay; a shared human responsibility is added.\n\nStart with Sign up, then take one of those steps this week.",
+      "aliases": [
+        "how do we achieve peace",
+        "how can humanity live in peace",
+        "how can we unite humanity",
+        "how do we end war"
+      ],
+      "capabilityIds": [
+        "study",
+        "contribute_hub",
+        "community_challenges",
+        "opportunities",
+        "governance"
+      ],
+      "sourceRefs": [
+        "src/lib/assistant/peace.ts",
+        "docs/assistant/civizen-assistant-cheatsheet.md",
+        "docs/00-foundation/why-civizen-exists-page-brief.md",
+        "docs/00-foundation/recognized-planetary-citizenship-pathway.md"
       ]
     },
     {
@@ -2011,6 +2055,24 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "kind": "faq"
     },
     {
+      "id": "faq:if_i_need_housing_or_emergency_help",
+      "title": "I am homeless. Can Civizen help me?",
+      "path": "src/lib/assistant/catalog.ts",
+      "text": "Q: I am homeless. Can Civizen help me? A: I'm sorry you're going through this. Civizen is not a shelter, housing office, or emergency service, and I cannot arrange a place to stay or send money.\n\nIf you need a safe place tonight, contact local emergency services or a local homelessness helpline. In many regions, 211 can connect you to nearby help.\n\nIf you want work, Jobs is open without an account. Open Market > Jobs. Community Challenges is for local problems over time — not emergency housing.",
+      "status": "implemented",
+      "priority": 5,
+      "kind": "faq"
+    },
+    {
+      "id": "faq:how_can_we_stop_wars",
+      "title": "How can we stop wars?",
+      "path": "src/lib/assistant/catalog.ts",
+      "text": "Q: How can we stop wars? A: Civizen cannot stop a war tonight, and it is not a government. Peace is built when people practice cooperation before disaster forces it.\n\nIndividually: create an account from Sign up. Open Study to learn shared civic principles. Then take one real step in Contribute — Community Challenges for a local problem, or Opportunities for verifiable work.\n\nCollectively: name shared problems and carry solutions through to outcomes with evidence. Practice transparent Governance. Grow voluntary world citizenship as a complementary civic identity — nations and cultures stay; a shared human responsibility is added.\n\nStart with Sign up, then take one of those steps this week.",
+      "status": "implemented",
+      "priority": 5,
+      "kind": "faq"
+    },
+    {
       "id": "faq:what_are_opportunities",
       "title": "What are Opportunities?",
       "path": "src/lib/assistant/catalog.ts",
@@ -2408,6 +2470,24 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
     },
     {
       "id": "docs/assistant/civizen-assistant-cheatsheet.md#3",
+      "title": "Immediate need (housing, food, safety)",
+      "path": "docs/assistant/civizen-assistant-cheatsheet.md",
+      "text": "## Immediate need (housing, food, safety) If someone says they are homeless, unhoused, hungry, evicted, or need a place to stay tonight, do **not** answer with Contribute, Volunteer, Financial Support, or “how you want to help.” Acknowledge the situation. Be honest: Civizen is not a shelter, housing office, or emergency service, and Civi cannot arrange housing or send money. Point them to local emergency services or a local homelessness helpline; in many regions, **211** can connect them to nearby help. Do not invent named local shelters. If they want work, Jobs is open without an account (`Open Market > Jobs`). Community Challenges is for local problems over time — not emergency housing. Answer from this fact; do not send the question to the model.",
+      "status": "implemented",
+      "priority": 5,
+      "kind": "cheatsheet"
+    },
+    {
+      "id": "docs/assistant/civizen-assistant-cheatsheet.md#4",
+      "title": "Peace, war, and cooperation",
+      "path": "docs/assistant/civizen-assistant-cheatsheet.md",
+      "text": "## Peace, war, and cooperation If someone asks how to stop wars, achieve peace, or unite humanity, do **not** recap manifesto prose (“Humanity often unites only when disaster…”). Civizen cannot stop a war tonight and is not a government. Give practical steps: - Individually: **Sign up**, then **Study**, then one real step in **Contribute** (Community Challenges or Opportunities). - Collectively: name shared problems, carry solutions through to outcomes, practice **Governance**, and grow voluntary world citizenship as a complementary civic identity. Invite them to join and take one step this week. Do not dump Volunteer / Financial Support lanes.",
+      "status": "implemented",
+      "priority": 5,
+      "kind": "cheatsheet"
+    },
+    {
+      "id": "docs/assistant/civizen-assistant-cheatsheet.md#5",
       "title": "Core purpose",
       "path": "docs/assistant/civizen-assistant-cheatsheet.md",
       "text": "## Core purpose Civizen is not merely a project-management platform, social network, governance app, marketplace, or learning platform. Those may be components. The purpose is the participatory system named above.",
@@ -2416,7 +2496,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "kind": "cheatsheet"
     },
     {
-      "id": "docs/assistant/civizen-assistant-cheatsheet.md#4",
+      "id": "docs/assistant/civizen-assistant-cheatsheet.md#6",
       "title": "Current product structure",
       "path": "docs/assistant/civizen-assistant-cheatsheet.md",
       "text": "## Current product structure Primary bottom navigation (signed-in): **Home · Study · Contribute · Market · Messaging**. Settings, Profile, Search, Agreements, Governance, Score, Downloads, and admin tools live outside the bottom nav (Profile menu, page chrome, or public routes). Public discovery includes `/areas`, `/partners`, `/fund`, `/documents`, `/governance`, `/about/*`, and `/contribute/policy`.",
@@ -2425,7 +2505,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "kind": "cheatsheet"
     },
     {
-      "id": "docs/assistant/civizen-assistant-cheatsheet.md#5",
+      "id": "docs/assistant/civizen-assistant-cheatsheet.md#7",
       "title": "Current navigation / systems",
       "path": "docs/assistant/civizen-assistant-cheatsheet.md",
       "text": "| Surface | Open | Status | | --- | --- | --- | | Home | Home | implemented | | Study | Study | implemented | | Contribute hub | Contribute | implemented | | Opportunities | Contribute > Opportunities | implemented | | Community Challenges | Contribute > Community Challenges | implemented | | Learning Commons | Contribute > Learning Commons | implemented | | My Contributions | Contribute > My Contributions | implemented | | Suggest Improvements | Contribute > Suggest Improvements | in_development (placeholder) | | Market | Market | implemented | | Agreements | Market > Agreements | implemented | | Messaging | Messaging | implemented | | Profile / Score | Profile | implemented | | Happiness & Fulfillment | Profile menu, or the Happiness icon on the Home Score card | implemented (private; five levels, not a numeric score; Fulfillment Plans under Improve; optional group insights off by default) | | Work Fulfillment | Happiness & Fulfillment > Work Fulfillment | implemented (current work, Work Joy, Fit, improve-current-work first; Contribute to try; Market > Jobs for employment) | | Wellbeing Insights | Happiness Privacy (quiet link) or `/wellbeing-insights` | implemented (authorized v",
@@ -2434,7 +2514,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "kind": "cheatsheet"
     },
     {
-      "id": "docs/assistant/civizen-assistant-cheatsheet.md#6",
+      "id": "docs/assistant/civizen-assistant-cheatsheet.md#8",
       "title": "Current navigation / systems",
       "path": "docs/assistant/civizen-assistant-cheatsheet.md",
       "text": "`/contribute/tasks` redirects to Opportunities. `/contribute/projects` redirects to Community Challenges.",
@@ -2443,7 +2523,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "kind": "cheatsheet"
     },
     {
-      "id": "docs/assistant/civizen-assistant-cheatsheet.md#7",
+      "id": "docs/assistant/civizen-assistant-cheatsheet.md#9",
       "title": "Areas",
       "path": "docs/assistant/civizen-assistant-cheatsheet.md",
       "text": "## Areas Current foundational Areas (evolvable): **Health · Education · Culture · Responsibility · Environment**. Public `/areas` and `/areas/:slug` are read-only. Areas answer *where help is needed*. Contribute answers *how I want to help*. Partners answers *how an organization can work with Civizen*. Product pillars (`PILLARS`) are a separate live product taxonomy. Do not treat them as the Area model.",
@@ -2452,7 +2532,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "kind": "cheatsheet"
     },
     {
-      "id": "docs/assistant/civizen-assistant-cheatsheet.md#8",
+      "id": "docs/assistant/civizen-assistant-cheatsheet.md#10",
       "title": "Initiatives",
       "path": "docs/assistant/civizen-assistant-cheatsheet.md",
       "text": "## Initiatives Public Area pages list curated related **systems** (existing product surfaces) and genuine **initiatives** (organized work toward an outcome). There is no full initiative schema or matching engine in this build. A future Areas & Pilots Catalog is recorded in institutional docs and is **not built**.",
@@ -2461,7 +2541,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "kind": "cheatsheet"
     },
     {
-      "id": "docs/assistant/civizen-assistant-cheatsheet.md#9",
+      "id": "docs/assistant/civizen-assistant-cheatsheet.md#11",
       "title": "Contribution model",
       "path": "docs/assistant/civizen-assistant-cheatsheet.md",
       "text": "## Contribution model `/contribute` asks: **How would you like to contribute today?** Ways: Volunteer (`/fund/contribute`) · Opportunities · Financial Support (`/fund`) · Organization Partnership (`/partners`). Community: Community Challenges. Knowledge: Learning Commons · Suggest Improvements (not open yet). Your Impact: My Contributions. A **Program** (`contribution_programs`) is the container. Publisher is a profile (personal or linked business account). There is no separate organizations table in this phase. An **Opportunity** is the work primitive. A **Contribution** is a participation (`opportunity_participations`). Score events are derived. Phase 1 pilots (live): Education-to-Contribution, Community Problem-Solving Lab, Shared Knowledge / Learning Commons.",
@@ -2470,7 +2550,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "kind": "cheatsheet"
     },
     {
-      "id": "docs/assistant/civizen-assistant-cheatsheet.md#10",
+      "id": "docs/assistant/civizen-assistant-cheatsheet.md#12",
       "title": "Opportunities",
       "path": "docs/assistant/civizen-assistant-cheatsheet.md",
       "text": "## Opportunities Live under **Contribute > Opportunities**. Education-to-Contribution Program. Flow: discover → apply → organizer accept/decline → do the work → submit evidence → evaluator verifies → optional evaluation → completed contribution. Opportunity kinds: `education_to_contribution` (professional lane), `community_implementation` (inside a Challenge Project), `knowledge_gap` (from a Knowledge Gap). Older names such as “professional listings” or “open tasks” mean Opportunities.",
@@ -2479,28 +2559,10 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "kind": "cheatsheet"
     },
     {
-      "id": "docs/assistant/civizen-assistant-cheatsheet.md#11",
+      "id": "docs/assistant/civizen-assistant-cheatsheet.md#13",
       "title": "Community Challenges",
       "path": "docs/assistant/civizen-assistant-cheatsheet.md",
       "text": "## Community Challenges Live under **Contribute > Community Challenges**. Distinct from Governance Solutions. Flow: Challenge → Proposal → coordinator selection (not public voting) → Implementation Project → Contribution Opportunities → outcome → Solution Record. Signed-in members can create a challenge from **Create** on Contribute > Community Challenges. Coordinators manage the challenge they publish. Completing requires implementation outcome, not merely a selected proposal.",
-      "status": "implemented",
-      "priority": 5,
-      "kind": "cheatsheet"
-    },
-    {
-      "id": "docs/assistant/civizen-assistant-cheatsheet.md#12",
-      "title": "Projects",
-      "path": "docs/assistant/civizen-assistant-cheatsheet.md",
-      "text": "## Projects Implementation **Projects** live **inside** Challenges. There is no separate community-projects or tasks board.",
-      "status": "implemented",
-      "priority": 5,
-      "kind": "cheatsheet"
-    },
-    {
-      "id": "docs/assistant/civizen-assistant-cheatsheet.md#13",
-      "title": "Knowledge Spaces",
-      "path": "docs/assistant/civizen-assistant-cheatsheet.md",
-      "text": "## Knowledge Spaces Live at `/contribute/knowledge` as **Learning Commons**. Distinct from Study, content library items, and Governance Solutions. A Knowledge Space is a shared collection (title, purpose, optional Area, coordinator, Program, status). Resources live inside a space.",
       "status": "implemented",
       "priority": 5,
       "kind": "cheatsheet"
@@ -2545,7 +2607,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "id": "docs/assistant/README.md#4",
       "title": "Internal-first routing",
       "path": "docs/assistant/README.md",
-      "text": "Civizen product facts stay internal even after escalation. Missing internal evidence does not authorize a generic web/model guess about Civizen. Gemini (or another model) may fill a gap for a general or mixed question; Civi then **checks** that reply before storing it. Invented Civizen capabilities, personal records, and one-off drafts are not remembered.",
+      "text": "Someone asking for housing, food, or a safe place tonight is not a Contribute question. Civi acknowledges the situation, says Civizen is not emergency housing, points to local emergency services / 211, and may mention Jobs — not Volunteer lanes. Peace, war, and “how do we unite humanity” questions get practical individual and collective steps (Sign up, Study, Contribute, Governance), not manifesto recap. Civi does not claim Civizen currently stops wars. Civizen product facts stay internal even after escalation. Missing internal evidence does not authorize a generic web/model guess about Civizen. Gemini (or another model) may fill a gap for a general or mixed question; Civi then **checks** that reply before storing it. Invented Civizen capabilities, personal records, and one-off drafts are not remembered.",
       "status": "implemented",
       "priority": 5,
       "kind": "doc"

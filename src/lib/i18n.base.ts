@@ -5624,6 +5624,7 @@ export const baseTranslations = {
         "minimize": "Minimize",
         "placeholder": "Ask about Civizen",
         "send": "Send",
+        "resize": "Resize chat",
         "emptyHint": "Ask about what Civizen is, how it works, or how to get started.",
         "failed": "Civi could not reply right now. Try again in a moment."
       },
