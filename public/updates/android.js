@@ -1,12 +1,12 @@
 window.__CIVIZEN_ANDROID_UPDATE__ = {
   "platform": "android",
-  "version": "0.1.184",
-  "versionTag": "v0.1.184",
-  "buildNumber": 186,
-  "releaseId": "20260816-v0.1.184",
-  "downloadPath": "/downloads/civizen-debug-release-20260816-v0.1.184.apk",
-  "downloadUrl": "https://civizen.world/downloads/civizen-debug-release-20260816-v0.1.184.apk?v=20260816-v0.1.184",
-  "publishedAt": "2026-08-16T19:13:46Z",
+  "version": "0.1.185",
+  "versionTag": "v0.1.185",
+  "buildNumber": 187,
+  "releaseId": "20260816-v0.1.185",
+  "downloadPath": "/downloads/civizen-debug-release-20260816-v0.1.185.apk",
+  "downloadUrl": "https://civizen.world/downloads/civizen-debug-release-20260816-v0.1.185.apk?v=20260816-v0.1.185",
+  "publishedAt": "2026-08-16T21:39:22Z",
   "notes": [
     "Latest Civizen Android release built from the current application.",
     "Open Settings to confirm the installed version and build number."
