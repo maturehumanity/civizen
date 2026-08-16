@@ -22,6 +22,7 @@ export const NELA_PAGE_LINKS: readonly { label: string; href: string }[] = [
   { label: 'Partners', href: '/partners' },
   { label: 'Settings', href: '/settings' },
   { label: 'Profile', href: '/profile' },
+  { label: 'Jobs', href: '/jobs' },
   { label: 'Market', href: '/market' },
   { label: 'Study', href: '/study' },
   { label: 'Areas', href: '/areas' },

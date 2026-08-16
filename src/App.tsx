@@ -253,6 +253,7 @@ const App = () => (
                   <Route path="/login" element={<AuthRedirect><Login /></AuthRedirect>} />
                   <Route path="/signup" element={<AuthRedirect><SignUp /></AuthRedirect>} />
                   <Route path="/download" element={<DownloadPage />} />
+                  <Route path="/jobs" element={<Navigate to="/market?section=jobs" replace />} />
                   <Route path="/why-this-exists" element={<WhyThisExists />} />
                   <Route path="/areas" element={<Areas />} />
                   <Route path="/areas/:slug" element={<AreaDetail />} />

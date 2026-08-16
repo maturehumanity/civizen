@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 
 import { useLanguage } from '@/contexts/LanguageContext';
+import { PUBLIC_JOBS_PATH } from '@/lib/public-jobs-path';
 
 const CONTACT_URL = 'https://civizen.world';
 
@@ -22,7 +23,7 @@ export function PublicPageFooter() {
         <span aria-hidden className="text-border">
           ·
         </span>
-        <Link to="/market?section=jobs" className="transition-colors hover:text-foreground">
+        <Link to={PUBLIC_JOBS_PATH} className="transition-colors hover:text-foreground">
           {t('onboarding.footerJobs')}
         </Link>
         <span aria-hidden className="text-border">

@@ -7,7 +7,9 @@ last_reviewed: 2026-08-16
 
 # Public Market Jobs
 
-First public participation surface: **Market > Jobs** (`/market?section=jobs`) is open without an account.
+First public participation surface: **Jobs** (`/jobs` → Market > Jobs, `/market?section=jobs`) is open without an account.
+
+The public website (civizen.world) sends visitors to onboarding, not Jobs. Jobs is linked from the public header, the onboarding hero, Choose your path, the Market product card, and the footer.
 
 ## What is public
 

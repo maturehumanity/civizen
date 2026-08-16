@@ -184,8 +184,8 @@ export const ASSISTANT_CAPABILITIES: AssistantCapability[] = [
     status: 'implemented',
     description:
       'Public Jobs board plus marketplace listings, products, and services. Anyone can look for work or post a job without an account. Contact details stay locked until sign-in. Start agreement or Contact for member listings. Ordinary orders use Marketplace terms.',
-    howTo: 'Open Market > Jobs. Guests can browse and post there. Jobs is the default section when For you has no unseen listings.',
-    routes: ['/market'],
+    howTo: 'Open Jobs from the public website, or Market > Jobs. Guests can browse and post there. Jobs is the default Market section when For you has no unseen listings.',
+    routes: ['/jobs', '/market'],
     roles: ['guest', 'member'],
     relatedCapabilities: ['agreements', 'prototype_credits'],
     aliases: ['marketplace', 'listings'],
@@ -867,7 +867,7 @@ export const ASSISTANT_FAQ: AssistantFaqItem[] = [
     id: 'where_are_jobs',
     question: 'Where do I look for a job?',
     answer:
-      'Open Market > Jobs. Anyone can look for work or post a job without signing up. Contact details stay locked until you sign in. Work Fulfillment helps you understand fit and improve current work. Contribute Opportunities are for trying activities, not job matching. Happiness and Work Joy stay private and are not sent to employers.',
+      'Open Jobs from the public website, or Market > Jobs. Anyone can look for work or post a job without signing up. Contact details stay locked until you sign in. Work Fulfillment helps you understand fit and improve current work. Contribute Opportunities are for trying activities, not job matching. Happiness and Work Joy stay private and are not sent to employers.',
     aliases: ['job search', 'employment', 'hiring', 'job fit', 'post a job', 'look for work without account'],
     capabilityIds: ['market', 'work_fulfillment', 'happiness'],
     sourceRefs: ['src/pages/Market.tsx', 'src/components/market/MarketJobsInterestForm.tsx', 'docs/04-operations/dev/market-jobs-public.md', 'src/lib/happiness/fulfillment/jobs-bridge.ts'],
@@ -876,7 +876,7 @@ export const ASSISTANT_FAQ: AssistantFaqItem[] = [
     id: 'can_post_job_without_account',
     question: 'Can I look for a job without signing up?',
     answer:
-      'Yes. Open Market > Jobs. Anyone can browse Available work, look for workers, or post an opening without an account. Contact details stay locked until you sign in. There is no paid unlock.',
+      'Yes. Open Jobs from the public website, or Market > Jobs. Anyone can browse Available work, look for workers, or post an opening without an account. Contact details stay locked until you sign in. There is no paid unlock.',
     aliases: ['public jobs', 'post job without account', 'guest job board'],
     capabilityIds: ['market'],
     sourceRefs: ['docs/04-operations/dev/market-jobs-public.md', 'src/pages/Market.tsx', 'src/components/market/MarketJobsBoard.tsx'],

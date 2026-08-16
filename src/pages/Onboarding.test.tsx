@@ -64,6 +64,9 @@ describe('Onboarding public page', () => {
     expect(screen.getByText('How the system fits together')).toBeInTheDocument();
     expect(screen.getByText('Open, auditable, and documented')).toBeInTheDocument();
     expect(screen.getByText('Choose your path')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Look for work or post a job' })).toHaveAttribute('href', '/jobs');
+    expect(screen.getByText('Look for work')).toBeInTheDocument();
+    expect(screen.getAllByRole('link', { name: 'Jobs' }).length).toBeGreaterThan(0);
     expect(screen.getByText('Common questions')).toBeInTheDocument();
     expect(screen.getByText('What is Civizen?')).toBeInTheDocument();
     expect(screen.getByText('Could Civizen World Citizenship become officially recognized?')).toBeInTheDocument();

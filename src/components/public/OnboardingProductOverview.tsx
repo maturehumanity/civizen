@@ -21,6 +21,7 @@ import {
   onboardingSectionLeadClass,
   onboardingSectionTitleClass,
 } from '@/components/public/onboarding-styles';
+import { PUBLIC_JOBS_PATH } from '@/lib/public-jobs-path';
 import { cn } from '@/lib/utils';
 
 const productModules = [
@@ -48,7 +49,7 @@ const productModules = [
     titleKey: 'onboarding.productMarketTitle',
     descriptionKey: 'onboarding.productMarketDescription',
     tone: 'bg-pillar-economy text-white',
-    href: '/market',
+    href: PUBLIC_JOBS_PATH,
   },
   {
     icon: FileSignature,

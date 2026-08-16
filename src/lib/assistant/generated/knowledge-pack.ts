@@ -6,9 +6,9 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
     "appVersion": "0.1.184",
     "appReleaseId": "20260816-v0.1.184",
     "androidVersionCode": 186,
-    "gitSha": "a49c740b36992e3e7174396ff1b9dbbfab1b32cc",
-    "generatedAt": "2026-08-16T19:40:07.908Z",
-    "sourceFingerprint": "99253bb24d5fd41cbeec151485bd32e44a7190918b63a6bc3f1dda7fe354a822",
+    "gitSha": "fbff08b526aa958dc05c73e36d1186665345b65d",
+    "generatedAt": "2026-08-16T19:56:20.431Z",
+    "sourceFingerprint": "bbb28c344d3f81fbbf3d6a208ac6b60a90ce39ef7a5ffa35a44e27989e41b376",
     "knowledgeFormat": 1,
     "sourceCount": 26,
     "chunkCount": 333
@@ -341,8 +341,9 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "name": "Market",
       "status": "implemented",
       "description": "Public Jobs board plus marketplace listings, products, and services. Anyone can look for work or post a job without an account. Contact details stay locked until sign-in. Start agreement or Contact for member listings. Ordinary orders use Marketplace terms.",
-      "howTo": "Open Market > Jobs. Guests can browse and post there. Jobs is the default section when For you has no unseen listings.",
+      "howTo": "Open Jobs from the public website, or Market > Jobs. Guests can browse and post there. Jobs is the default Market section when For you has no unseen listings.",
       "routes": [
+        "/jobs",
         "/market"
       ],
       "roles": [
@@ -1489,7 +1490,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
     {
       "id": "where_are_jobs",
       "question": "Where do I look for a job?",
-      "answer": "Open Market > Jobs. Anyone can look for work or post a job without signing up. Contact details stay locked until you sign in. Work Fulfillment helps you understand fit and improve current work. Contribute Opportunities are for trying activities, not job matching. Happiness and Work Joy stay private and are not sent to employers.",
+      "answer": "Open Jobs from the public website, or Market > Jobs. Anyone can look for work or post a job without signing up. Contact details stay locked until you sign in. Work Fulfillment helps you understand fit and improve current work. Contribute Opportunities are for trying activities, not job matching. Happiness and Work Joy stay private and are not sent to employers.",
       "aliases": [
         "job search",
         "employment",
@@ -1513,7 +1514,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
     {
       "id": "can_post_job_without_account",
       "question": "Can I look for a job without signing up?",
-      "answer": "Yes. Open Market > Jobs. Anyone can browse Available work, look for workers, or post an opening without an account. Contact details stay locked until you sign in. There is no paid unlock.",
+      "answer": "Yes. Open Jobs from the public website, or Market > Jobs. Anyone can browse Available work, look for workers, or post an opening without an account. Contact details stay locked until you sign in. There is no paid unlock.",
       "aliases": [
         "public jobs",
         "post job without account",
@@ -1749,7 +1750,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "id": "capability:market",
       "title": "Market",
       "path": "src/lib/assistant/catalog.ts",
-      "text": "Market status=implemented. Public Jobs board plus marketplace listings, products, and services. Anyone can look for work or post a job without an account. Contact details stay locked until sign-in. Start agreement or Contact for member listings. Ordinary orders use Marketplace terms. Open Market > Jobs. Guests can browse and post there. Jobs is the default section when For you has no unseen listings. Routes: /market.",
+      "text": "Market status=implemented. Public Jobs board plus marketplace listings, products, and services. Anyone can look for work or post a job without an account. Contact details stay locked until sign-in. Start agreement or Contact for member listings. Ordinary orders use Marketplace terms. Open Jobs from the public website, or Market > Jobs. Guests can browse and post there. Jobs is the default Market section when For you has no unseen listings. Routes: /jobs, /market.",
       "status": "implemented",
       "priority": 3,
       "kind": "capability"
@@ -2244,7 +2245,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "id": "faq:where_are_jobs",
       "title": "Where do I look for a job?",
       "path": "src/lib/assistant/catalog.ts",
-      "text": "Q: Where do I look for a job? A: Open Market > Jobs. Anyone can look for work or post a job without signing up. Contact details stay locked until you sign in. Work Fulfillment helps you understand fit and improve current work. Contribute Opportunities are for trying activities, not job matching. Happiness and Work Joy stay private and are not sent to employers.",
+      "text": "Q: Where do I look for a job? A: Open Jobs from the public website, or Market > Jobs. Anyone can look for work or post a job without signing up. Contact details stay locked until you sign in. Work Fulfillment helps you understand fit and improve current work. Contribute Opportunities are for trying activities, not job matching. Happiness and Work Joy stay private and are not sent to employers.",
       "status": "implemented",
       "priority": 5,
       "kind": "faq"
@@ -2253,7 +2254,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "id": "faq:can_post_job_without_account",
       "title": "Can I look for a job without signing up?",
       "path": "src/lib/assistant/catalog.ts",
-      "text": "Q: Can I look for a job without signing up? A: Yes. Open Market > Jobs. Anyone can browse Available work, look for workers, or post an opening without an account. Contact details stay locked until you sign in. There is no paid unlock.",
+      "text": "Q: Can I look for a job without signing up? A: Yes. Open Jobs from the public website, or Market > Jobs. Anyone can browse Available work, look for workers, or post an opening without an account. Contact details stay locked until you sign in. There is no paid unlock.",
       "status": "implemented",
       "priority": 5,
       "kind": "faq"

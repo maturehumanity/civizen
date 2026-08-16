@@ -6,6 +6,7 @@ import { PublicLanguageSelect } from '@/components/public/PublicLanguageSelect';
 import { PublicThemeToggle } from '@/components/public/PublicThemeToggle';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { PUBLIC_JOBS_PATH } from '@/lib/public-jobs-path';
 import { cn } from '@/lib/utils';
 
 const UserPageMenu = lazy(() =>
@@ -24,6 +25,15 @@ export function PublicPageToolbar({ className }: PublicPageToolbarProps) {
 
   return (
     <div className={cn('flex items-center gap-2', className)}>
+      {showDownload ? (
+        <Link
+          to={PUBLIC_JOBS_PATH}
+          className="inline-flex h-9 items-center rounded-full px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent/70"
+          data-testid="public-jobs-link"
+        >
+          {t('onboarding.footerJobs')}
+        </Link>
+      ) : null}
       {showDownload ? (
         <Link
           to="/download"

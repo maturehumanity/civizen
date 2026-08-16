@@ -1,9 +1,10 @@
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { PUBLIC_JOBS_PATH } from '@/lib/public-jobs-path';
 
 type OnboardingHeroProps = {
   reducedMotion: boolean | null;
@@ -54,6 +55,13 @@ export function OnboardingHero({ reducedMotion }: OnboardingHeroProps) {
             {t('onboarding.signIn')}
           </Button>
         </div>
+        <Link
+          to={PUBLIC_JOBS_PATH}
+          className="mt-5 inline-block text-sm font-medium text-primary hover:underline"
+          data-testid="onboarding-hero-jobs"
+        >
+          {t('onboarding.heroJobs')}
+        </Link>
       </motion.div>
     </section>
   );

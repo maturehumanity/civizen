@@ -3,6 +3,7 @@ import {
   ArrowRight,
   Award,
   BookOpen,
+  Briefcase,
   Compass,
   Download,
   UserPlus,
@@ -11,10 +12,12 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { APP_VERSION } from '@/lib/app-release';
+import { PUBLIC_JOBS_PATH } from '@/lib/public-jobs-path';
 import { OnboardingCardHeader } from '@/components/public/OnboardingCardHeader';
 import { onboardingSectionTitleClass } from '@/components/public/onboarding-styles';
 
 const visitorPaths = [
+  { icon: Briefcase, titleKey: 'onboarding.pathJobsTitle', descriptionKey: 'onboarding.pathJobsDescription', action: 'jobs' as const },
   { icon: UserPlus, titleKey: 'onboarding.pathJoinTitle', descriptionKey: 'onboarding.pathJoinDescription', action: 'signup' as const },
   { icon: Compass, titleKey: 'onboarding.pathExploreTitle', descriptionKey: 'onboarding.pathExploreDescription', action: 'explore' as const },
   { icon: Download, titleKey: 'onboarding.pathTryAppTitle', descriptionKey: 'onboarding.pathTryAppDescription', action: 'download' as const },
@@ -49,6 +52,10 @@ export function OnboardingGetStartedHub({
   const { t } = useLanguage();
 
   const handlePathAction = (action: (typeof visitorPaths)[number]['action']) => {
+    if (action === 'jobs') {
+      navigate(PUBLIC_JOBS_PATH);
+      return;
+    }
     if (action === 'signup' || action === 'study') {
       navigate('/signup');
       return;
@@ -64,7 +71,7 @@ export function OnboardingGetStartedHub({
     <section className="overflow-hidden rounded-[1.75rem] border border-border/50 bg-card/60 shadow-soft">
       <div className="border-b border-border/50 bg-primary/5 px-5 py-5 sm:px-6">
         <h2 className={onboardingSectionTitleClass}>{t('onboarding.pathsTitle')}</h2>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {visitorPaths.map((path) => (
             <button
               key={path.titleKey}
