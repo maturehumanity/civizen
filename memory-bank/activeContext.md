@@ -2,9 +2,11 @@
 
 ## Current focus
 
-**Public Civi resize, hidden scrollbar, peace answers (2026-08-16):** Public Civi answers peace/hardship from this build before calling the live model, so “How can we stop wars?” is not manifesto recap. Visitors drag the upper-left corner to resize. The thread scrolls without a visible scrollbar. LANGUAGE_PACK_VERSION 207. Shipping as **v0.1.186** (build 188, `20260816-v0.1.186`).
+**Public Civi resize, hidden scrollbar, peace answers (2026-08-16):** Public Civi answers peace/hardship from this build before calling the live model, so “How can we stop wars?” is not manifesto recap. Visitors drag the upper-left corner to resize. The thread scrolls without a visible scrollbar. LANGUAGE_PACK_VERSION 207.
 
 **Civi personal hardship (2026-08-16):** “I'm homeless, can you help me?” must not be answered as Contribute / Volunteer routing. Civi acknowledges the situation, is honest that Civizen is not a shelter or emergency service, points to local emergency services / 211, and may mention Jobs (`Open Market > Jobs`). Community Challenges is not emergency housing. Canonical reply: `src/lib/assistant/hardship.ts`.
+
+**Live + Testing v0.1.186 (2026-08-16):** Build 188 (`20260816-v0.1.186`) published to Testing and Live. Includes public Civi hardship-safe and peace answers, upper-left resize, and a hidden thread scrollbar.
 
 **Civi checked memory + Settings > AI Agent (2026-08-16):** When Civi does not already have a good answer and uses Gemini, it checks that reply and may store it as Civi memory. Similar questions later are answered from memory instead of calling the model again. Identity, the capability registry, and the cheat sheet still win. Unverified Civizen product claims, personal records, and one-off drafts are not stored. Founders can review questions and replies at Settings > AI Agent during development (`/settings/ai-agent`; founder / admin / system only). LANGUAGE_PACK_VERSION 206.
 
