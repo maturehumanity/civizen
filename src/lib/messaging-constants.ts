@@ -1,4 +1,4 @@
-/** Stable profile id for Civi, the in-app assistant (matches DB migration). */
+/** Stable profile id for Civi, Civizen’s AI assistant (matches DB migration). */
 import { getCiviAvatarUrl } from '@/lib/civi-avatar';
 
 export const NELA_ASSISTANT_PROFILE_ID = 'a0000000-0000-4000-8000-000000000001';

@@ -215,3 +215,16 @@ export function CiviInboxRow({ label, selected = false, onOpen }: CiviInboxRowPr
     </div>
   );
 }
+
+export function CiviAssistantHeading({ className }: { className?: string }) {
+  const { t } = useLanguage();
+  return (
+    <span className={cn('inline-flex max-w-full flex-wrap items-center gap-x-1', className)}>
+      <span className="truncate">{t('chatBar.private.civiPublic.titleBefore')}</span>
+      <span className="inline-flex h-5 items-center rounded-md bg-primary px-1.5 text-[10px] font-semibold uppercase tracking-wide text-primary-foreground">
+        {t('chatBar.private.civiPublic.aiBadge')}
+      </span>
+      <span className="truncate">{t('chatBar.private.civiPublic.titleAfter')}</span>
+    </span>
+  );
+}

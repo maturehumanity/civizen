@@ -47,6 +47,12 @@ describe('Civi canonical identity', () => {
     expect(prep.groundedAnswer).not.toMatch(/mainly a (challenge|project)/i);
   });
 
+  it('explains that Civi is available without an account', () => {
+    const prep = prepareNelaTurn(turn('Who is Civi?'));
+    expect(prep.diagnostics.matchedFaqId).toBe('who_is_civi');
+    expect(prep.groundedAnswer).toMatch(/without creating an account/i);
+  });
+
   it('answers current capability from implemented surfaces, not the identity sentence alone', () => {
     const prep = prepareNelaTurn(turn('What can I do in Civizen right now?'));
     expect(prep.diagnostics.matchedFaqId).toBe('what_can_i_do_in_civizen_now');
@@ -251,6 +257,18 @@ describe('Civi resource routing', () => {
     });
     expect(withData.diagnostics.usedRuntimeData).toBe(true);
     expect(withData.groundedAnswer).toMatch(/2 open applications/);
+  });
+
+  it('greets public visitors as Civi without requiring an account', () => {
+    const prep = prepareNelaTurn(turn('hello'), { audience: 'guest' });
+    expect(prep.isGreeting).toBe(true);
+    expect(prep.groundedAnswer).toMatch(/Civi, your AI assistant/i);
+  });
+
+  it('tells guests that personal records need an account', () => {
+    const prep = prepareNelaTurn(turn('What Opportunities have I applied to?'), { audience: 'guest' });
+    expect(prep.resourcePlan.internalResolution).toBe('requires_runtime_data');
+    expect(prep.groundedAnswer).toMatch(/Sign up|account/i);
   });
 
   it('retrieves Civizen context before allowing AI reasoning on a generative request', () => {

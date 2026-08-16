@@ -22,6 +22,8 @@ const SCOPE_REFUSAL =
   'I can only help with Civizen-related topics such as Contribute, Agreements, governance, Study, Market, messaging, and how to use this app. Please ask a Civizen-specific question.';
 const GREETING =
   'Hi! I can help with Civizen features, Contribute, Agreements, governance, Study, Market, and account settings. What would you like to do?';
+const GREETING_GUEST =
+  'Hi. I am Civi, your AI assistant. I can answer questions about Civizen — what it is, how it works, and how to get started.';
 
 function statusPrefix(status: AssistantCapabilityStatus): string {
   switch (status) {
@@ -203,10 +205,13 @@ export function prepareNelaTurn(messages: HistoryTurn[], options: PrepareNelaTur
   if (!inScope) {
     groundedAnswer = SCOPE_REFUSAL;
   } else if (greeting) {
-    groundedAnswer = GREETING;
+    groundedAnswer = options.audience === 'guest' ? GREETING_GUEST : GREETING;
   } else if (resourcePlan.internalResolution === 'requires_runtime_data' && !options.runtimeData) {
     const need = resourcePlan.runtimeDataNeed;
-    groundedAnswer = `I don't have your personal Civizen records in project knowledge. ${need?.hint ?? 'Open the relevant page while signed in.'}`;
+    groundedAnswer =
+      options.audience === 'guest'
+        ? 'That needs a Civizen account. You can create one from Sign up, then open the relevant page.'
+        : `I don't have your personal Civizen records in project knowledge. ${need?.hint ?? 'Open the relevant page while signed in.'}`;
   } else if (resourcePlan.internalResolution === 'insufficient' && kinds.includes('civizen_product') && !kinds.includes('external_world')) {
     groundedAnswer = retrieval.faq.length || retrieval.capabilities.length || retrieval.documents.length
       ? composeFromRetrieval(retrieval, searchQuery, topic)
@@ -241,6 +246,7 @@ export function prepareNelaTurn(messages: HistoryTurn[], options: PrepareNelaTur
     groundedAnswer,
     resourcePlan,
     isVerification: rewritten.isVerification,
+    audience: options.audience,
   });
 
   const prep: NelaTurnPrep = {
@@ -282,4 +288,4 @@ export function prepareNelaTurn(messages: HistoryTurn[], options: PrepareNelaTur
   return prep;
 }
 
-export { UNVERIFIED, SCOPE_REFUSAL, GREETING };
+export { UNVERIFIED, SCOPE_REFUSAL, GREETING, GREETING_GUEST };

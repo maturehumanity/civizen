@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Civi. Your AI Assistant (2026-08-16):** The name is **Civi. Your AI Assistant** (no longer “Civi (In-app assistant)”). Visitors can ask Civi about the project without registering — a Civi button sits at the lower right on public pages. Signed-in members still use Civi in Messaging. Public answers use project knowledge only (no personal records). LANGUAGE_PACK_VERSION 204.
+
 **Public Market Jobs (2026-08-16):** `/market` is public. Jobs is the first open participation surface: anyone can look for work or post a job without an account. Available work / Available workers lists show sanitized rows; unlocking contact details requires sign-in (not payment). Sell, Saved, Agreements, and prototype credits stay member-only. Spec: `docs/04-operations/dev/market-jobs-public.md`. LANGUAGE_PACK_VERSION 203.
 
 **Live + Testing v0.1.183 (2026-08-16):** Build 185 (`20260816-v0.1.183`) published to Testing and Live. Includes adaptive Happiness check-in (feeling + areas on one page), Privacy from the Overview lock, and Improve only from the Improve tab.

@@ -227,12 +227,18 @@ export const ASSISTANT_CAPABILITIES: AssistantCapability[] = [
     id: 'nela',
     name: 'Civi',
     status: 'implemented',
-    description: 'Built-in Civizen assistant in Messaging. Answers from current project knowledge for this build.',
-    routes: ['/messaging'],
-    roles: ['member'],
+    description:
+      'Civi is Civizen’s AI assistant. Visitors can ask project questions without creating an account. Members also find Civi pinned in Messaging. Answers from current project knowledge for this build.',
+    howTo: 'Open the Civi button at the lower right, or Messaging after you sign in.',
+    routes: ['/onboarding', '/messaging'],
+    roles: ['guest', 'member'],
     relatedCapabilities: ['messaging'],
-    aliases: ['nela', 'civi', 'assistant', 'in-app assistant', 'ai assistant'],
-    sourceRefs: ['supabase/functions/messaging-agent-reply/index.ts', 'src/lib/messaging-constants.ts'],
+    aliases: ['nela', 'civi', 'assistant', 'in-app assistant', 'ai assistant', 'your ai assistant'],
+    sourceRefs: [
+      'supabase/functions/messaging-agent-reply/index.ts',
+      'src/lib/messaging-constants.ts',
+      'src/components/public/PublicCiviWidget.tsx',
+    ],
   },
   {
     id: 'profile',
@@ -537,6 +543,24 @@ export const ASSISTANT_FAQ: AssistantFaqItem[] = [
     ],
     capabilityIds: [],
     sourceRefs: ['docs/assistant/civizen-identity.md'],
+  },
+  {
+    id: 'who_is_civi',
+    question: 'Who is Civi?',
+    answer:
+      'Civi is Civizen’s AI assistant. Visitors can ask Civi about the project without creating an account — open the Civi button at the lower right. Members can also chat with Civi in Messaging.',
+    aliases: [
+      'what is civi',
+      'civi assistant',
+      'talk to civi',
+      'ask civi without registering',
+      'civi without an account',
+    ],
+    capabilityIds: ['nela'],
+    sourceRefs: [
+      'docs/assistant/civizen-assistant-cheatsheet.md',
+      'src/components/public/PublicCiviWidget.tsx',
+    ],
   },
   {
     id: 'what_can_i_do_in_civizen_now',

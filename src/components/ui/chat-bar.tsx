@@ -38,7 +38,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { CiviAvatar, CiviInboxRow } from '@/components/ui/civi-avatar';
+import { CiviAssistantHeading, CiviAvatar, CiviInboxRow } from '@/components/ui/civi-avatar';
 import { ChatMessageRow } from '@/components/ui/chat-message-row';
 import { MessagingPeopleSearch } from '@/components/ui/messaging-people-search';
 import { Button } from '@/components/ui/button';
@@ -4117,7 +4117,7 @@ export function ChatBar({
                             className="max-w-full truncate text-left text-sm font-semibold text-foreground hover:underline"
                             onClick={() => setThreadProfileOpen(true)}
                           >
-                            {threadPeerTitle}
+                            {isThreadAgent ? <CiviAssistantHeading /> : threadPeerTitle}
                           </button>
                         </div>
                         {routeConversationId ? (
@@ -4527,7 +4527,9 @@ export function ChatBar({
                 </Avatar>
               )}
               <div className="min-w-0 flex-1">
-                <p className="truncate text-base font-semibold text-foreground">{threadPeerTitle}</p>
+                <p className="truncate text-base font-semibold text-foreground">
+                  {isThreadAgent ? <CiviAssistantHeading /> : threadPeerTitle}
+                </p>
                 {threadUsername ? (
                   <p className="truncate text-sm text-muted-foreground">@{threadUsername}</p>
                 ) : null}

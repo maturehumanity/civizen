@@ -181,4 +181,5 @@ export type PrepareNelaTurnOptions = {
   runtimeData?: RuntimeUserContext | null;
   externalAdapter?: ExternalResourceAdapter | null;
   debug?: boolean;
+  audience?: 'member' | 'guest';
 };

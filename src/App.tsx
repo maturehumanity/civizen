@@ -9,6 +9,7 @@ import { PageSecondaryNavProvider } from "@/contexts/PageSecondaryNavContext";
 import { ThemeStorageSync } from "@/components/app/ThemeStorageSync";
 import { AppCrashBoundary } from "@/components/app/AppCrashBoundary";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { PublicCiviHost } from "@/components/public/PublicCiviHost";
 import { permissionListHas } from "@/lib/access-control";
 import { resolveAuthReturnPath } from "@/lib/auth-return-path";
 import { lazyWithChunkReload } from "@/lib/lazy-with-chunk-reload";
@@ -593,6 +594,7 @@ const App = () => (
                   <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>
+                <PublicCiviHost />
                 <BuildOverlayLoader />
                 </PageSecondaryNavProvider>
               </BrowserRouter>

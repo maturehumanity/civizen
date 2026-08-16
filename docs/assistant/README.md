@@ -7,7 +7,7 @@ last_reviewed: 2026-08-13
 
 # Civizen Assistant Knowledge
 
-Civi answers from **this Civizen build**, not from general model memory.
+Civi answers from **this Civizen build**, not from general model memory. Visitors can ask Civi about the project without creating an account. Members also find Civi in Messaging.
 
 ## Layout
 

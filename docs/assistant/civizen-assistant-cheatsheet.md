@@ -15,7 +15,7 @@ Civi is internal-first: conversation context → canonical identity (what Civize
 
 Product principle: **Simple by default. Detailed by choice.**
 
-When telling a member how to open a page, match the question. **Can I / Does Civizen** starts with Yes or No, then the path. **How / Where** starts with the path, for example **Open Market > Agreements**. Do not answer with only a URL such as `/agreements`. Put extra explanation after a blank line. Name agreement types exactly as they appear in the + menu so chat can link each type to New agreement.
+When telling a member or visitor how to open a page, match the question. **Can I / Does Civizen** starts with Yes or No, then the path. **How / Where** starts with the path, for example **Open Market > Agreements**. Do not answer with only a URL such as `/agreements`. Put extra explanation after a blank line. Name agreement types exactly as they appear in the + menu so chat can link each type to New agreement.
 
 ## What Civizen is
 
@@ -181,7 +181,11 @@ Who can create proposals: eligible participants through the platform’s proposa
 
 ## Messaging
 
-`/messaging` — person-to-person chat, including a pinned chat with **Civi**. Device-based keys support E2EE when both participants have keys. Civi is the in-app assistant, not a generic web chatbot.
+**Civi** is Civizen’s AI assistant. The name appears as **Civi. Your AI Assistant**.
+
+Visitors can ask Civi about the project without creating an account. A Civi button sits at the lower right on public pages. Public Civi answers from current project knowledge and does not use personal member records. If a step needs an account, Civi says they can create one from Sign up.
+
+`/messaging` — person-to-person chat, including a pinned chat with **Civi** for signed-in members. Device-based keys support E2EE when both participants have keys. Civi is not a generic web chatbot.
 
 Person-to-person threads: **Hide chat** removes it from your inbox only; the other person keeps the conversation. **Disappearing messages** is a shared setting both people see and applies to new messages after it is turned on. You can **edit** or **unsend** your own message for one minute (edited messages stay marked Edited). Civi chats can be **cleared** entirely; that does not apply to person-to-person history. Searching for people can use phone contacts (with permission) and **Invite** if they are not on Civizen yet.
 

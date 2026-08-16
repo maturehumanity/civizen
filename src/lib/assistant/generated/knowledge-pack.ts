@@ -7,11 +7,11 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
     "appReleaseId": "20260816-v0.1.183",
     "androidVersionCode": 185,
     "gitSha": "e41ac2739127c3991fb3db62c71a32fd77519c0e",
-    "generatedAt": "2026-08-16T18:53:49.727Z",
-    "sourceFingerprint": "7c0b31e881c097320861a7060ff502a5bf9945fcf3fac85aba54814123403bf0",
+    "generatedAt": "2026-08-16T18:48:59.788Z",
+    "sourceFingerprint": "a48a57b0a666e157b6a2254b6fdb0cfa2501117ff1e1ff58a571f41cf2d6a811",
     "knowledgeFormat": 1,
     "sourceCount": 26,
-    "chunkCount": 332
+    "chunkCount": 333
   },
   "capabilities": [
     {
@@ -436,11 +436,14 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "id": "nela",
       "name": "Civi",
       "status": "implemented",
-      "description": "Built-in Civizen assistant in Messaging. Answers from current project knowledge for this build.",
+      "description": "Civi is Civizen’s AI assistant. Visitors can ask project questions without creating an account. Members also find Civi pinned in Messaging. Answers from current project knowledge for this build.",
+      "howTo": "Open the Civi button at the lower right, or Messaging after you sign in.",
       "routes": [
+        "/onboarding",
         "/messaging"
       ],
       "roles": [
+        "guest",
         "member"
       ],
       "relatedCapabilities": [
@@ -451,11 +454,13 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
         "civi",
         "assistant",
         "in-app assistant",
-        "ai assistant"
+        "ai assistant",
+        "your ai assistant"
       ],
       "sourceRefs": [
         "supabase/functions/messaging-agent-reply/index.ts",
-        "src/lib/messaging-constants.ts"
+        "src/lib/messaging-constants.ts",
+        "src/components/public/PublicCiviWidget.tsx"
       ]
     },
     {
@@ -989,6 +994,25 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "capabilityIds": [],
       "sourceRefs": [
         "docs/assistant/civizen-identity.md"
+      ]
+    },
+    {
+      "id": "who_is_civi",
+      "question": "Who is Civi?",
+      "answer": "Civi is Civizen’s AI assistant. Visitors can ask Civi about the project without creating an account — open the Civi button at the lower right. Members can also chat with Civi in Messaging.",
+      "aliases": [
+        "what is civi",
+        "civi assistant",
+        "talk to civi",
+        "ask civi without registering",
+        "civi without an account"
+      ],
+      "capabilityIds": [
+        "nela"
+      ],
+      "sourceRefs": [
+        "docs/assistant/civizen-assistant-cheatsheet.md",
+        "src/components/public/PublicCiviWidget.tsx"
       ]
     },
     {
@@ -1752,7 +1776,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "id": "capability:nela",
       "title": "Civi",
       "path": "src/lib/assistant/catalog.ts",
-      "text": "Civi status=implemented. Built-in Civizen assistant in Messaging. Answers from current project knowledge for this build.  Routes: /messaging.",
+      "text": "Civi status=implemented. Civi is Civizen’s AI assistant. Visitors can ask project questions without creating an account. Members also find Civi pinned in Messaging. Answers from current project knowledge for this build. Open the Civi button at the lower right, or Messaging after you sign in. Routes: /onboarding, /messaging.",
       "status": "implemented",
       "priority": 3,
       "kind": "capability"
@@ -1953,6 +1977,15 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "text": "Q: Is Civizen basically a project collaboration platform? A: No. Project collaboration is one component. Civizen is an open participatory system for organizing how humanity learns, contributes, collaborates, governs, shares resources, solves common challenges, and continuously improves the systems we live and work within. Challenges, Projects, Market, Study, and similar surfaces are parts of that broader system, not the definition of it.",
       "status": "implemented",
       "priority": 1,
+      "kind": "faq"
+    },
+    {
+      "id": "faq:who_is_civi",
+      "title": "Who is Civi?",
+      "path": "src/lib/assistant/catalog.ts",
+      "text": "Q: Who is Civi? A: Civi is Civizen’s AI assistant. Visitors can ask Civi about the project without creating an account — open the Civi button at the lower right. Members can also chat with Civi in Messaging.",
+      "status": "implemented",
+      "priority": 5,
       "kind": "faq"
     },
     {
@@ -2355,7 +2388,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "id": "docs/assistant/civizen-assistant-cheatsheet.md#1",
       "title": "Civizen Assistant Cheat Sheet",
       "path": "docs/assistant/civizen-assistant-cheatsheet.md",
-      "text": "When telling a member how to open a page, match the question. **Can I / Does Civizen** starts with Yes or No, then the path. **How / Where** starts with the path, for example **Open Market > Agreements**. Do not answer with only a URL such as `/agreements`. Put extra explanation after a blank line. Name agreement types exactly as they appear in the + menu so chat can link each type to New agreement.",
+      "text": "When telling a member or visitor how to open a page, match the question. **Can I / Does Civizen** starts with Yes or No, then the path. **How / Where** starts with the path, for example **Open Market > Agreements**. Do not answer with only a URL such as `/agreements`. Put extra explanation after a blank line. Name agreement types exactly as they appear in the + menu so chat can link each type to New agreement.",
       "status": "implemented",
       "priority": 5,
       "kind": "cheatsheet"
@@ -2472,7 +2505,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "id": "docs/assistant/README.md#0",
       "title": "Civizen Assistant Knowledge",
       "path": "docs/assistant/README.md",
-      "text": "# Civizen Assistant Knowledge Civi answers from **this Civizen build**, not from general model memory.",
+      "text": "# Civizen Assistant Knowledge Civi answers from **this Civizen build**, not from general model memory. Visitors can ask Civi about the project without creating an account. Members also find Civi in Messaging.",
       "status": "implemented",
       "priority": 5,
       "kind": "doc"

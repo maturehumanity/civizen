@@ -46,7 +46,7 @@ function isFoundationIdentityPath(path) {
 
 // src/lib/assistant/prompt.ts
 var CORE_INSTRUCTIONS = [
-  "You are Civi, the native in-app assistant for this Civizen build.",
+  "You are Civi, Civizen\u2019s AI assistant for this Civizen build.",
   "Simple by default. Detailed by choice. Answer concisely in plain language that matches current Civizen UI terms.",
   "For questions about Civizen current functionality, architecture, rules, governance, terminology, capabilities, or policies, rely only on the supplied current Civizen knowledge and retrieved project sources. Do not invent missing project facts from general model knowledge.",
   "Never confidently state an unverified Civizen fact.",
@@ -85,12 +85,14 @@ function formatRetrievedContext(retrieval, runtimeSummary) {
   return parts.join("\n\n");
 }
 function buildNelaSystemPrompt(args) {
-  const { pack, resolvedQuery, retrievedContext, groundedAnswer, resourcePlan, isVerification } = args;
+  const { pack, resolvedQuery, retrievedContext, groundedAnswer, resourcePlan, isVerification, audience } = args;
   const meta = pack.meta;
   const escalation = resourcePlan.allowExternalResources ? `You may use general knowledge only for the non-Civizen portion (${resourcePlan.externalResourceKind}). Civizen facts still come only from the evidence below.` : "Do not use general/pretrained knowledge as a source of Civizen facts. Do not search or invent external Civizen claims.";
   const verify = isVerification ? "This is a verification follow-up. Re-check the previous claim against higher-authority Civizen evidence. Correct yourself if needed and briefly say what you verified." : "";
+  const guest = audience === "guest" ? "This visitor is not signed in. Answer from public project knowledge. Do not claim access to personal records. If a step needs an account, say they can create one from Sign up. Public pages such as Areas, Governance, documents, About, and Market Jobs can be used without registering." : "";
   return [
     CORE_INSTRUCTIONS,
+    guest,
     `Knowledge build: app ${meta.appVersion} (${meta.appReleaseId}).`,
     `Resolved question: ${resolvedQuery}`,
     `Internal resolution: ${resourcePlan.internalResolution}. ${escalation}`,
@@ -405,6 +407,7 @@ var GREETINGS = ["hi", "hello", "hey", "good morning", "good afternoon", "good e
 var CIVIZEN_TERMS = [
   "civizen",
   "nela",
+  "civi",
   "agreement",
   "agreements",
   "contract",
@@ -650,11 +653,11 @@ var KNOWLEDGE_PACK = {
     "appReleaseId": "20260816-v0.1.183",
     "androidVersionCode": 185,
     "gitSha": "e41ac2739127c3991fb3db62c71a32fd77519c0e",
-    "generatedAt": "2026-08-16T18:53:49.727Z",
-    "sourceFingerprint": "7c0b31e881c097320861a7060ff502a5bf9945fcf3fac85aba54814123403bf0",
+    "generatedAt": "2026-08-16T18:48:59.788Z",
+    "sourceFingerprint": "a48a57b0a666e157b6a2254b6fdb0cfa2501117ff1e1ff58a571f41cf2d6a811",
     "knowledgeFormat": 1,
     "sourceCount": 26,
-    "chunkCount": 332
+    "chunkCount": 333
   },
   "capabilities": [
     {
@@ -1079,11 +1082,14 @@ var KNOWLEDGE_PACK = {
       "id": "nela",
       "name": "Civi",
       "status": "implemented",
-      "description": "Built-in Civizen assistant in Messaging. Answers from current project knowledge for this build.",
+      "description": "Civi is Civizen\u2019s AI assistant. Visitors can ask project questions without creating an account. Members also find Civi pinned in Messaging. Answers from current project knowledge for this build.",
+      "howTo": "Open the Civi button at the lower right, or Messaging after you sign in.",
       "routes": [
+        "/onboarding",
         "/messaging"
       ],
       "roles": [
+        "guest",
         "member"
       ],
       "relatedCapabilities": [
@@ -1094,11 +1100,13 @@ var KNOWLEDGE_PACK = {
         "civi",
         "assistant",
         "in-app assistant",
-        "ai assistant"
+        "ai assistant",
+        "your ai assistant"
       ],
       "sourceRefs": [
         "supabase/functions/messaging-agent-reply/index.ts",
-        "src/lib/messaging-constants.ts"
+        "src/lib/messaging-constants.ts",
+        "src/components/public/PublicCiviWidget.tsx"
       ]
     },
     {
@@ -1632,6 +1640,25 @@ var KNOWLEDGE_PACK = {
       "capabilityIds": [],
       "sourceRefs": [
         "docs/assistant/civizen-identity.md"
+      ]
+    },
+    {
+      "id": "who_is_civi",
+      "question": "Who is Civi?",
+      "answer": "Civi is Civizen\u2019s AI assistant. Visitors can ask Civi about the project without creating an account \u2014 open the Civi button at the lower right. Members can also chat with Civi in Messaging.",
+      "aliases": [
+        "what is civi",
+        "civi assistant",
+        "talk to civi",
+        "ask civi without registering",
+        "civi without an account"
+      ],
+      "capabilityIds": [
+        "nela"
+      ],
+      "sourceRefs": [
+        "docs/assistant/civizen-assistant-cheatsheet.md",
+        "src/components/public/PublicCiviWidget.tsx"
       ]
     },
     {
@@ -2395,7 +2422,7 @@ var KNOWLEDGE_PACK = {
       "id": "capability:nela",
       "title": "Civi",
       "path": "src/lib/assistant/catalog.ts",
-      "text": "Civi status=implemented. Built-in Civizen assistant in Messaging. Answers from current project knowledge for this build.  Routes: /messaging.",
+      "text": "Civi status=implemented. Civi is Civizen\u2019s AI assistant. Visitors can ask project questions without creating an account. Members also find Civi pinned in Messaging. Answers from current project knowledge for this build. Open the Civi button at the lower right, or Messaging after you sign in. Routes: /onboarding, /messaging.",
       "status": "implemented",
       "priority": 3,
       "kind": "capability"
@@ -2596,6 +2623,15 @@ var KNOWLEDGE_PACK = {
       "text": "Q: Is Civizen basically a project collaboration platform? A: No. Project collaboration is one component. Civizen is an open participatory system for organizing how humanity learns, contributes, collaborates, governs, shares resources, solves common challenges, and continuously improves the systems we live and work within. Challenges, Projects, Market, Study, and similar surfaces are parts of that broader system, not the definition of it.",
       "status": "implemented",
       "priority": 1,
+      "kind": "faq"
+    },
+    {
+      "id": "faq:who_is_civi",
+      "title": "Who is Civi?",
+      "path": "src/lib/assistant/catalog.ts",
+      "text": "Q: Who is Civi? A: Civi is Civizen\u2019s AI assistant. Visitors can ask Civi about the project without creating an account \u2014 open the Civi button at the lower right. Members can also chat with Civi in Messaging.",
+      "status": "implemented",
+      "priority": 5,
       "kind": "faq"
     },
     {
@@ -2998,7 +3034,7 @@ var KNOWLEDGE_PACK = {
       "id": "docs/assistant/civizen-assistant-cheatsheet.md#1",
       "title": "Civizen Assistant Cheat Sheet",
       "path": "docs/assistant/civizen-assistant-cheatsheet.md",
-      "text": "When telling a member how to open a page, match the question. **Can I / Does Civizen** starts with Yes or No, then the path. **How / Where** starts with the path, for example **Open Market > Agreements**. Do not answer with only a URL such as `/agreements`. Put extra explanation after a blank line. Name agreement types exactly as they appear in the + menu so chat can link each type to New agreement.",
+      "text": "When telling a member or visitor how to open a page, match the question. **Can I / Does Civizen** starts with Yes or No, then the path. **How / Where** starts with the path, for example **Open Market > Agreements**. Do not answer with only a URL such as `/agreements`. Put extra explanation after a blank line. Name agreement types exactly as they appear in the + menu so chat can link each type to New agreement.",
       "status": "implemented",
       "priority": 5,
       "kind": "cheatsheet"
@@ -3115,7 +3151,7 @@ var KNOWLEDGE_PACK = {
       "id": "docs/assistant/README.md#0",
       "title": "Civizen Assistant Knowledge",
       "path": "docs/assistant/README.md",
-      "text": "# Civizen Assistant Knowledge Civi answers from **this Civizen build**, not from general model memory.",
+      "text": "# Civizen Assistant Knowledge Civi answers from **this Civizen build**, not from general model memory. Visitors can ask Civi about the project without creating an account. Members also find Civi in Messaging.",
       "status": "implemented",
       "priority": 5,
       "kind": "doc"
@@ -5251,6 +5287,7 @@ var KNOWLEDGE_PACK = {
 var UNVERIFIED = "I couldn't verify that from Civizen's current project information.";
 var SCOPE_REFUSAL = "I can only help with Civizen-related topics such as Contribute, Agreements, governance, Study, Market, messaging, and how to use this app. Please ask a Civizen-specific question.";
 var GREETING = "Hi! I can help with Civizen features, Contribute, Agreements, governance, Study, Market, and account settings. What would you like to do?";
+var GREETING_GUEST = "Hi. I am Civi, your AI assistant. I can answer questions about Civizen \u2014 what it is, how it works, and how to get started.";
 function statusPrefix(status) {
   switch (status) {
     case "implemented":
@@ -5402,10 +5439,10 @@ function prepareNelaTurn(messages, options = {}) {
   if (!inScope) {
     groundedAnswer = SCOPE_REFUSAL;
   } else if (greeting) {
-    groundedAnswer = GREETING;
+    groundedAnswer = options.audience === "guest" ? GREETING_GUEST : GREETING;
   } else if (resourcePlan.internalResolution === "requires_runtime_data" && !options.runtimeData) {
     const need = resourcePlan.runtimeDataNeed;
-    groundedAnswer = `I don't have your personal Civizen records in project knowledge. ${need?.hint ?? "Open the relevant page while signed in."}`;
+    groundedAnswer = options.audience === "guest" ? "That needs a Civizen account. You can create one from Sign up, then open the relevant page." : `I don't have your personal Civizen records in project knowledge. ${need?.hint ?? "Open the relevant page while signed in."}`;
   } else if (resourcePlan.internalResolution === "insufficient" && kinds.includes("civizen_product") && !kinds.includes("external_world")) {
     groundedAnswer = retrieval.faq.length || retrieval.capabilities.length || retrieval.documents.length ? composeFromRetrieval(retrieval, searchQuery, topic) : `${UNVERIFIED} I can help with related current features if you name one.`;
   } else {
@@ -5433,7 +5470,8 @@ For your account: ${options.runtimeData.summary}`.trim();
     retrievedContext,
     groundedAnswer,
     resourcePlan,
-    isVerification: rewritten.isVerification
+    isVerification: rewritten.isVerification,
+    audience: options.audience
   });
   const prep = {
     resolvedQuery,

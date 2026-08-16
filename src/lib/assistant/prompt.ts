@@ -1,7 +1,7 @@
 import type { KnowledgePack, NelaTurnPrep, ResourcePlan, RetrievalResult } from './types';
 
 const CORE_INSTRUCTIONS = [
-  'You are Civi, the native in-app assistant for this Civizen build.',
+  'You are Civi, Civizen’s AI assistant for this Civizen build.',
   'Simple by default. Detailed by choice. Answer concisely in plain language that matches current Civizen UI terms.',
   'For questions about Civizen current functionality, architecture, rules, governance, terminology, capabilities, or policies, rely only on the supplied current Civizen knowledge and retrieved project sources. Do not invent missing project facts from general model knowledge.',
   'Never confidently state an unverified Civizen fact.',
@@ -56,8 +56,9 @@ export function buildNelaSystemPrompt(args: {
   groundedAnswer: string;
   resourcePlan: ResourcePlan;
   isVerification: boolean;
+  audience?: 'member' | 'guest';
 }): string {
-  const { pack, resolvedQuery, retrievedContext, groundedAnswer, resourcePlan, isVerification } = args;
+  const { pack, resolvedQuery, retrievedContext, groundedAnswer, resourcePlan, isVerification, audience } = args;
   const meta = pack.meta;
   const escalation = resourcePlan.allowExternalResources
     ? `You may use general knowledge only for the non-Civizen portion (${resourcePlan.externalResourceKind}). Civizen facts still come only from the evidence below.`
@@ -65,9 +66,14 @@ export function buildNelaSystemPrompt(args: {
   const verify = isVerification
     ? 'This is a verification follow-up. Re-check the previous claim against higher-authority Civizen evidence. Correct yourself if needed and briefly say what you verified.'
     : '';
+  const guest =
+    audience === 'guest'
+      ? 'This visitor is not signed in. Answer from public project knowledge. Do not claim access to personal records. If a step needs an account, say they can create one from Sign up. Public pages such as Areas, Governance, documents, About, and Market Jobs can be used without registering.'
+      : '';
 
   return [
     CORE_INSTRUCTIONS,
+    guest,
     `Knowledge build: app ${meta.appVersion} (${meta.appReleaseId}).`,
     `Resolved question: ${resolvedQuery}`,
     `Internal resolution: ${resourcePlan.internalResolution}. ${escalation}`,

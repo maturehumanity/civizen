@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-/** Civi — in-app assistant (system profile). */
+/** Civi — Civizen’s AI assistant (system profile). */
 const AGENT_PROFILE_ID = 'a0000000-0000-4000-8000-000000000001';
 
 /** Canonical product framing — keep in sync with in-app Study / governance positioning. */
@@ -14,7 +14,7 @@ const CIVIZEN_PRODUCT_SUMMARY =
   'Civizen is a human-centered platform and movement designed to help people unite, grow, and govern more wisely through education, responsibility, transparency, and AI-assisted civic collaboration.';
 
 const NELA_FALLBACK_SYSTEM_PROMPT =
-  'You are Civi, the native in-app assistant for this Civizen build. ' +
+  'You are Civi, Civizen’s AI assistant for this Civizen build. ' +
   CIVIZEN_PRODUCT_SUMMARY +
   ' For questions about Civizen current functionality, architecture, rules, governance, terminology, capabilities, or policies, rely on the supplied current Civizen knowledge and retrieved project sources. Do not invent missing project facts from general model knowledge. ' +
   'Simple by default. Detailed by choice. Keep replies concise and readable. ' +
@@ -22,6 +22,9 @@ const NELA_FALLBACK_SYSTEM_PROMPT =
 
 type Body = {
   conversation_id?: string;
+  message?: string;
+  history?: HistoryTurn[];
+  public?: boolean;
   debug?: boolean;
 };
 
@@ -479,16 +482,86 @@ async function completeGemini(
   return text;
 }
 
+const PUBLIC_MESSAGE_MAX = 2000;
+const PUBLIC_HISTORY_LIMIT = 12;
+const publicHits = new Map<string, number[]>();
+
+function jsonResponse(status: number, payload: Record<string, unknown>) {
+  return new Response(JSON.stringify(payload), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
+
+function clientIp(request: Request): string {
+  const forwarded = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
+  return forwarded || request.headers.get('cf-connecting-ip')?.trim() || 'unknown';
+}
+
+function allowPublicIp(ip: string): boolean {
+  const now = Date.now();
+  const windowMs = 10 * 60 * 1000;
+  const max = 30;
+  const hits = (publicHits.get(ip) ?? []).filter((time) => now - time < windowMs);
+  if (hits.length >= max) {
+    publicHits.set(ip, hits);
+    return false;
+  }
+  hits.push(now);
+  publicHits.set(ip, hits);
+  return true;
+}
+
+function sanitizePublicHistory(raw: unknown): HistoryTurn[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((turn): turn is HistoryTurn => {
+      if (!turn || typeof turn !== 'object') return false;
+      const role = (turn as HistoryTurn).role;
+      const content = (turn as HistoryTurn).content;
+      return (role === 'user' || role === 'assistant') && typeof content === 'string';
+    })
+    .map((turn) => ({
+      role: turn.role,
+      content: turn.content.trim().slice(0, PUBLIC_MESSAGE_MAX),
+    }))
+    .filter((turn) => turn.content.length > 0)
+    .slice(-PUBLIC_HISTORY_LIMIT);
+}
+
+async function replyFromHistory(history: HistoryTurn[], latestUserLine: string, audience: 'member' | 'guest') {
+  const llm = resolveLlm();
+  const abuseCategory = classifyAbuse(latestUserLine);
+  if (abuseCategory) {
+    return { replyText: abuseRefusalReply(abuseCategory) };
+  }
+
+  const prep = prepareNelaTurn(history, { audience });
+  if (!prep.inScope || prep.isGreeting || prep.skipLlm || llm.kind === 'none') {
+    return { replyText: prep.groundedAnswer };
+  }
+
+  try {
+    let text: string | null = null;
+    if (llm.kind === 'gemini') {
+      text = await completeGemini(llm.key, llm.model, history, latestUserLine, prep.systemPrompt);
+    } else {
+      text = await completeOpenAi(llm.key, history, prep.systemPrompt);
+    }
+    return { replyText: text ? normalizeNelaStyle(text) : prep.groundedAnswer };
+  } catch (err) {
+    console.error('[messaging-agent-reply] LLM request failed:', err);
+    return { replyText: prep.groundedAnswer };
+  }
+}
+
 Deno.serve(async (request) => {
   if (request.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   if (request.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return jsonResponse(405, { error: 'Method not allowed' });
   }
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
@@ -497,10 +570,14 @@ Deno.serve(async (request) => {
   const authHeader = request.headers.get('Authorization') ?? '';
 
   if (!supabaseUrl || !supabaseAnonKey || !serviceRoleKey) {
-    return new Response(JSON.stringify({ error: 'Server misconfigured' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return jsonResponse(500, { error: 'Server misconfigured' });
+  }
+
+  let body: Body;
+  try {
+    body = (await request.json()) as Body;
+  } catch {
+    return jsonResponse(400, { error: 'Invalid JSON' });
   }
 
   const userClient = createClient(supabaseUrl, supabaseAnonKey, {
@@ -512,21 +589,20 @@ Deno.serve(async (request) => {
     error: authError,
   } = await userClient.auth.getUser();
 
-  if (authError || !user) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-      status: 401,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+  if (body.public === true) {
+    if (!allowPublicIp(clientIp(request))) {
+      return jsonResponse(429, { error: 'Too many questions. Try again in a few minutes.' });
+    }
+    const message = typeof body.message === 'string' ? body.message.trim().slice(0, PUBLIC_MESSAGE_MAX) : '';
+    if (!message) return jsonResponse(400, { error: 'message required' });
+    const history = [...sanitizePublicHistory(body.history), { role: 'user' as const, content: message }];
+    const generated = await replyFromHistory(history, message, 'guest');
+    const replyText = generated.replyText.trim() || 'I could not verify that from Civizen’s current project information.';
+    return jsonResponse(200, { ok: true, reply: replyText });
   }
 
-  let body: Body;
-  try {
-    body = (await request.json()) as Body;
-  } catch {
-    return new Response(JSON.stringify({ error: 'Invalid JSON' }), {
-      status: 400,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+  if (authError || !user) {
+    return jsonResponse(401, { error: 'Unauthorized' });
   }
 
   const conversationId = body.conversation_id?.trim();

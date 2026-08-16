@@ -5565,8 +5565,8 @@ export const baseTranslations = {
       "conversationsHint": "Your chats",
       "loadFailed": "Could not load your conversations.",
       "loadFailedWithReason": "Could not load your conversations. {reason}",
-      "nelaPinnedSubtitle": "In-app assistant",
-      "nelaPinnedLabel": "Civi (In-app assistant)",
+      "nelaPinnedSubtitle": "Your AI Assistant",
+      "nelaPinnedLabel": "Civi. Your AI Assistant",
       "nelaOpenFailed":
         "Could not open a chat with Civi. Your Supabase project may be missing the private messaging migrations, or the Civi system profile row may not exist yet.",
       "nelaOpenFailedWithReason": "Could not open a chat with Civi: {reason}",
@@ -5593,6 +5593,18 @@ export const baseTranslations = {
         "options": "Civi avatar options",
         "switch": "Civi avatar: {name}. Hover or tap to switch.",
         "use": "Use {name} as Civi's avatar"
+      },
+      "civiPublic": {
+        "open": "Open Civi",
+        "titleBefore": "Civi. Your",
+        "aiBadge": "AI",
+        "titleAfter": "Assistant",
+        "close": "Close",
+        "minimize": "Minimize",
+        "placeholder": "Ask about Civizen",
+        "send": "Send",
+        "emptyHint": "Ask about what Civizen is, how it works, or how to get started.",
+        "failed": "Civi could not reply right now. Try again in a moment."
       },
       "profile": {
         "title": "Contact info",

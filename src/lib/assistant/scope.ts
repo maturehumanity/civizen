@@ -6,6 +6,7 @@ const GREETINGS = ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good
 const CIVIZEN_TERMS = [
   'civizen',
   'nela',
+  'civi',
   'agreement',
   'agreements',
   'contract',
