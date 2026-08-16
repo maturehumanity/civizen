@@ -1,11 +1,15 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
+import { formatCheckInAreasLine } from '@/lib/happiness/checkin-patterns';
 import { DOMAIN_LABEL_KEYS, DOMAIN_SHORT_KEYS } from '@/lib/happiness/domains';
 import { overallLevelPhraseKey, recentWellbeingPhraseKey } from '@/lib/happiness/levels';
-import type { ActionOutcomeRating, HappinessDomainId, HappinessLevel, HappinessPublicView } from '@/lib/happiness/types';
+import type { ActionOutcomeRating, HappinessCause, HappinessCheckIn, HappinessDomainId, HappinessLevel, HappinessPublicView } from '@/lib/happiness/types';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+
+import { CheckInPatternCard } from './HappinessCheckInPatterns';
+import { HappinessPrivateHint } from './HappinessShell';
 
 type Translate = (key: string, vars?: Record<string, string | number>) => string;
 
@@ -31,6 +35,8 @@ export function Overview({
   t,
   locale,
   view,
+  checkIns,
+  causes,
   checkinsEnabled,
   onCheckIn,
   onReview,
@@ -40,6 +46,8 @@ export function Overview({
   t: Translate;
   locale: string;
   view?: HappinessPublicView;
+  checkIns: HappinessCheckIn[];
+  causes: HappinessCause[];
   checkinsEnabled: boolean;
   onCheckIn: () => void;
   onReview: () => void;
@@ -54,13 +62,17 @@ export function Overview({
       <Card className="rounded-2xl border-border/70 p-5" data-build-key="happinessCurrentLevel" data-build-label="Current happiness level">
         {empty ? (
           <>
-            <p className="text-lg font-semibold text-foreground">{t('happiness.emptyTitle')}</p>
+            <p className="text-lg font-semibold text-foreground">
+              {t('happiness.emptyTitle')}
+              <HappinessPrivateHint className="ml-1 align-middle" />
+            </p>
             <p className="mt-1 text-sm text-muted-foreground">{t('happiness.emptyBody')}</p>
           </>
         ) : (
           <>
             <p className="text-lg font-semibold leading-snug text-foreground">
               {level ? t(overallLevelPhraseKey(level)) : t('happiness.notEnoughYet')}
+              <HappinessPrivateHint className="ml-1 align-middle" />
             </p>
             {view?.trend.direction && view.trend.direction !== 'unknown' ? (
               <p className="mt-2 text-sm text-muted-foreground">{trendCopy(t, view)}</p>
@@ -117,6 +129,8 @@ export function Overview({
         </p>
       ) : null}
 
+      <CheckInPatternCard t={t} checkIns={checkIns} causes={causes} onImprove={onImprove} />
+
       {view?.pendingFollowUp ? (
         <FollowUpCard t={t} title={view.pendingFollowUp.title} actionId={view.pendingFollowUp.id} onSave={onFollowUp} />
       ) : null}
@@ -125,14 +139,9 @@ export function Overview({
         <Button type="button" onClick={onCheckIn} disabled={!checkinsEnabled} className="w-full sm:w-auto">
           {t('happiness.checkIn')}
         </Button>
-        <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" size="sm" onClick={onReview}>
-            {t('happiness.reviewWellbeing')}
-          </Button>
-          <Button type="button" variant="outline" size="sm" onClick={onImprove}>
-            {t('happiness.improveArea')}
-          </Button>
-        </div>
+        <Button type="button" variant="outline" size="sm" className="w-full sm:w-auto" onClick={onReview}>
+          {t('happiness.reviewWellbeing')}
+        </Button>
         {!checkinsEnabled ? <p className="text-xs text-muted-foreground">{t('happiness.checkinsDisabledHint')}</p> : null}
       </div>
     </div>
@@ -191,12 +200,14 @@ export function CheckInHistory({
   t,
   locale,
   checkIns,
+  causes,
   enabled,
   onCheckIn,
 }: {
-  t: (key: string) => string;
+  t: Translate;
   locale: string;
-  checkIns: { id: string; feeling: string; affectingMost: string | null; createdAt: string }[];
+  checkIns: HappinessCheckIn[];
+  causes: HappinessCause[];
   enabled: boolean;
   onCheckIn: () => void;
 }) {
@@ -217,7 +228,10 @@ export function CheckInHistory({
                 <p className="text-sm text-foreground">{t(`happiness.feelings.${checkIn.feeling}`)}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {formatWhen(checkIn.createdAt, locale)}
-                  {checkIn.affectingMost ? ` · ${t(`happiness.affecting.${checkIn.affectingMost}`)}` : ''}
+                  {(() => {
+                    const detail = formatCheckInAreasLine(checkIn, causes, t, checkIn.id);
+                    return detail ? ` · ${detail}` : '';
+                  })()}
                 </p>
               </Card>
             </li>

@@ -7,8 +7,9 @@ const saveQuickCheckIn = vi.fn(async () => ({
   id: 'c1',
   profileId: 'profile-1',
   feeling: 'good',
-  affectingMost: null,
-  note: null,
+    affectingMost: null,
+    areas: [],
+    note: null,
   createdAt: new Date().toISOString(),
 }));
 
@@ -83,20 +84,49 @@ describe('Happiness pages', () => {
 
   it('shows five-level language without a numeric happiness score', async () => {
     render(
-      <MemoryRouter>
+      <MemoryRouter initialEntries={['/happiness']}>
         <Happiness />
       </MemoryRouter>,
     );
     expect(await screen.findByRole('heading', { name: 'Happiness & Fulfillment' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'This is private to you.' })).toBeTruthy();
+    expect(screen.queryByTestId('app-page-header-back')).toBeNull();
+    expect(screen.getByRole('link', { name: 'This is private to you.' })).toHaveAttribute('href', '/happiness/privacy');
     expect(screen.queryByText(/happiness score/i)).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'This is private to you.' }));
-    expect(document.querySelector('[data-happiness-private-tooltip]')?.className).toMatch(/\bblock\b/);
+    expect(screen.queryByRole('button', { name: 'Improve an area' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Privacy' })).toBeNull();
     expect(screen.getByRole('button', { name: 'Check in' })).toBeTruthy();
     expect(screen.queryByRole('tab', { name: 'Improvement' })).toBeNull();
     for (const label of ['Overview', 'Life areas', 'Check-ins', 'Trends', 'Improve']) {
       expect(screen.getByRole('tab', { name: label })).toBeTruthy();
     }
+  });
+
+  it('lets a member check in from the Check-ins tab', async () => {
+    render(
+      <MemoryRouter initialEntries={['/happiness?section=checkins']}>
+        <Happiness />
+      </MemoryRouter>,
+    );
+    expect(await screen.findByRole('heading', { name: 'Happiness & Fulfillment' })).toBeTruthy();
+    expect(screen.getByRole('tab', { name: 'Check-ins' })).toHaveAttribute('data-state', 'active');
+    expect(screen.getByRole('button', { name: 'Check in' })).toBeTruthy();
+    expect(screen.getByText('No check-ins yet.')).toBeTruthy();
+  });
+
+  it('saves a feeling-only check-in from the first page', async () => {
+    render(
+      <MemoryRouter>
+        <HappinessCheckIn />
+      </MemoryRouter>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Good' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save check-in' }));
+    await waitFor(() =>
+      expect(saveQuickCheckIn).toHaveBeenCalledWith(
+        'profile-1',
+        expect.objectContaining({ feeling: 'good', areas: [], tags: [] }),
+      ),
+    );
   });
 
   it('completes a quick check-in with click then type', async () => {
@@ -106,6 +136,10 @@ describe('Happiness pages', () => {
       </MemoryRouter>,
     );
     fireEvent.click(screen.getByRole('button', { name: 'Good' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Something else' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Helping' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
     const note = screen.getByLabelText('Want to add anything?') as HTMLTextAreaElement;
     fireEvent.click(note);
     note.focus();
@@ -113,5 +147,42 @@ describe('Happiness pages', () => {
     expect(note.value).toContain('walked');
     fireEvent.click(screen.getByRole('button', { name: 'Save check-in' }));
     await waitFor(() => expect(saveQuickCheckIn).toHaveBeenCalled());
+  });
+
+  it('lets a member mark more than one area and a specific work cause', async () => {
+    render(
+      <MemoryRouter>
+        <HappinessCheckIn />
+      </MemoryRouter>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Okay' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Work' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Relationships' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Making things harder' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Helping' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Tasks' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Workload' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save check-in' }));
+    await waitFor(() =>
+      expect(saveQuickCheckIn).toHaveBeenCalledWith(
+        'profile-1',
+        expect.objectContaining({
+          feeling: 'okay',
+          areas: [
+            { category: 'work', polarity: 'problem' },
+            { category: 'relationships', polarity: 'support' },
+          ],
+          tags: expect.arrayContaining([
+            { category: 'work', polarity: 'problem', tag: 'tasks' },
+            { category: 'work', polarity: 'problem', tag: 'workload' },
+          ]),
+        }),
+      ),
+    );
   });
 });

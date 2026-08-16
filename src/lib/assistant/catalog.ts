@@ -263,8 +263,8 @@ export const ASSISTANT_CAPABILITIES: AssistantCapability[] = [
     name: 'Happiness & Fulfillment',
     status: 'implemented',
     description:
-      'Private Happiness & Human Fulfillment. Five levels (Struggling, Unsettled, Balanced, Flourishing, Thriving) — not a numeric Happiness Score. Check-ins, weekly pulse, monthly review, Fulfillment Plans under Improve, causes, and small actions with follow-up. Private by default. Not used for Score, reputation, hiring, or governance power. Work issues open Work Fulfillment. Actual employment uses Marketplace Jobs. Optional privacy-protected group insights are off by default and never show individual Happiness to employers. Civi may receive a grounded Plan brief; it must not invent history or diagnose. Follow-up timing can be stored; notifications are not sent yet.',
-    howTo: 'Open Happiness & Fulfillment from the Profile menu. Check in, review wellbeing, or Improve to start a Fulfillment Plan.',
+      'Private Happiness & Human Fulfillment. Five levels (Struggling, Unsettled, Balanced, Flourishing, Thriving) — not a numeric Happiness Score. Adaptive check-ins record today’s feeling, multiple life areas, and specific supports or problems; weekly pulse, monthly review, Fulfillment Plans under Improve, causes, and small actions with follow-up. Private by default. Not used for Score, reputation, hiring, or governance power. Work issues open Work Fulfillment. Actual employment uses Marketplace Jobs. Optional privacy-protected group insights are off by default and never show individual Happiness to employers. Civi may receive a grounded Plan brief; it must not invent history or diagnose. Follow-up timing can be stored; notifications are not sent yet.',
+    howTo: 'Open Happiness & Fulfillment from the Profile menu. Check in from Overview or the Check-ins tab, review wellbeing, or Improve to start a Fulfillment Plan.',
     routes: ['/happiness', '/happiness/check-in', '/happiness/review', '/happiness/improve', '/happiness/privacy'],
     roles: ['member'],
     relatedCapabilities: ['work_fulfillment', 'study', 'opportunities', 'contribute_hub', 'market', 'wellbeing_aggregate'],

@@ -1,13 +1,17 @@
 import { supabase } from '@/integrations/supabase/client';
 import { ensureWorkFulfillmentProfile } from '@/lib/work-fulfillment/api';
 
-import { AFFECTING_TO_CAUSE_GROUP, AFFECTING_TO_DOMAIN, isoMonthStart, isoWeekStart } from './domains';
+import { buildCheckInCauseRows, primaryAffectingMost } from './checkin-flow';
+import { parseCheckInAreas } from './causes';
+import { isoMonthStart, isoWeekStart } from './domains';
 import { civizenDomainReviewInstrument } from './instruments';
 import { followUpAtFromTiming } from './recommendations';
 import type {
   ActionOutcomeRating,
   AffectingCategory,
   AssessmentInstrument,
+  CausePolarity,
+  CheckInArea,
   CheckInFeeling,
   FollowUpTiming,
   HappinessAction,
@@ -78,32 +82,34 @@ export async function saveHappinessPrivacy(
 
 export async function saveQuickCheckIn(
   profileId: string,
-  input: { feeling: CheckInFeeling; affectingMost?: AffectingCategory | null; note?: string | null },
+  input: {
+    feeling: CheckInFeeling;
+    affectingMost?: AffectingCategory | null;
+    areas?: CheckInArea[];
+    tags?: { category: AffectingCategory; polarity: CausePolarity; tag: string }[];
+    note?: string | null;
+  },
   client: Client = supabase,
 ): Promise<HappinessCheckIn> {
+  const areas = input.areas?.length ? input.areas : parseCheckInAreas([], input.affectingMost ?? null);
+  const affectingMost = primaryAffectingMost(areas);
   const { data, error } = await client
     .from('happiness_checkins' as never)
     .insert({
       profile_id: profileId,
       feeling: input.feeling,
-      affecting_most: input.affectingMost ?? null,
+      affecting_most: affectingMost,
+      areas,
       note: input.note?.trim() || null,
     } as never)
     .select('*')
     .single();
   if (error) throw error;
   const checkIn = mapCheckIn(data as Record<string, unknown>);
-  if (input.affectingMost && input.affectingMost !== 'something_else') {
-    await client.from('happiness_causes' as never).insert({
-      profile_id: profileId,
-      source_kind: 'checkin',
-      source_id: checkIn.id,
-      domain: AFFECTING_TO_DOMAIN[input.affectingMost] ?? null,
-      cause_group: AFFECTING_TO_CAUSE_GROUP[input.affectingMost] ?? 'purpose',
-      category: input.affectingMost,
-      confirmed: true,
-      is_ai_suggestion: false,
-    } as never);
+  const causeRows = buildCheckInCauseRows(profileId, checkIn.id, areas, input.tags ?? []);
+  if (causeRows.length) {
+    const { error: causeError } = await client.from('happiness_causes' as never).insert(causeRows as never);
+    if (causeError) throw causeError;
   }
   return checkIn;
 }
@@ -176,6 +182,7 @@ export async function saveHappinessCause(
     domain: input.domain ?? null,
     cause_group: input.group,
     category: input.category,
+    polarity: 'problem',
     confirmed: true,
     is_ai_suggestion: false,
     note: input.note?.trim() || null,

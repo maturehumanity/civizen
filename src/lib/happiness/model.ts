@@ -13,6 +13,7 @@
  * overall level is capped when distress is severe.
  */
 
+import { parseCheckInAreas } from './causes';
 import { AFFECTING_TO_DOMAIN } from './domains';
 import { HAPPINESS_LEVEL_BOUNDS, internalFromFeeling, internalFromLevel, levelFromInternal } from './levels';
 import {
@@ -76,11 +77,18 @@ function collectSamples(bundle: HappinessObservationBundle, nowMs: number): Weig
     const at = new Date(checkIn.createdAt).getTime();
     const weight = recencyWeight(at, nowMs);
     const value = internalFromFeeling(checkIn.feeling);
+    // Today's feeling informs recent emotional wellbeing. It is not the Happiness & Fulfillment level.
     samples.push({ domain: 'emotional_wellbeing', value, weight, at });
-    samples.push({ domain: 'life_satisfaction', value, weight: weight * 0.45, at });
-    const mapped = checkIn.affectingMost ? AFFECTING_TO_DOMAIN[checkIn.affectingMost] : undefined;
-    if (mapped) {
-      samples.push({ domain: mapped, value, weight: weight * 0.7, at });
+    const areas = checkIn.areas.length ? checkIn.areas : parseCheckInAreas([], checkIn.affectingMost);
+    for (const area of areas) {
+      const mapped = AFFECTING_TO_DOMAIN[area.category];
+      if (!mapped) continue;
+      const polarities = area.polarity === 'both' ? (['problem', 'support'] as const) : [area.polarity];
+      for (const polarity of polarities) {
+        const domainValue =
+          polarity === 'support' ? Math.max(value, internalFromFeeling('okay')) : Math.min(value, internalFromFeeling('okay'));
+        samples.push({ domain: mapped, value: domainValue, weight: weight * (area.polarity === 'both' ? 0.35 : 0.55), at });
+      }
     }
   }
 

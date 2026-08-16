@@ -63,6 +63,17 @@ export const AFFECTING_CATEGORIES = [
 
 export type AffectingCategory = (typeof AFFECTING_CATEGORIES)[number];
 
+export const CHECKIN_AREA_POLARITIES = ['problem', 'support', 'both'] as const;
+export type CheckInAreaPolarity = (typeof CHECKIN_AREA_POLARITIES)[number];
+
+export const CAUSE_POLARITIES = ['problem', 'support'] as const;
+export type CausePolarity = (typeof CAUSE_POLARITIES)[number];
+
+export type CheckInArea = {
+  category: AffectingCategory;
+  polarity: CheckInAreaPolarity;
+};
+
 export const HAPPINESS_CAUSE_GROUPS = [
   'work',
   'health',
@@ -101,6 +112,7 @@ export type HappinessCheckIn = {
   profileId: string;
   feeling: CheckInFeeling;
   affectingMost: AffectingCategory | null;
+  areas: CheckInArea[];
   note: string | null;
   createdAt: string;
 };
@@ -131,6 +143,7 @@ export type HappinessCause = {
   domain: HappinessDomainId | null;
   group: HappinessCauseGroup;
   category: string;
+  polarity: CausePolarity;
   confirmed: boolean;
   isAiSuggestion: boolean;
   note: string | null;

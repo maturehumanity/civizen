@@ -54,7 +54,7 @@ export default function Happiness() {
   const privacy = result?.privacy;
 
   return (
-    <HappinessShell privateHint fallbackPath="/">
+    <HappinessShell showBack={false} fallbackPath="/">
         {result?.backendMissing ? (
           <Card className="rounded-2xl border-border/60 p-4 text-sm text-muted-foreground">{t('happiness.backendUnavailable')}</Card>
         ) : null}
@@ -93,6 +93,8 @@ export default function Happiness() {
             t={t}
             locale={locale}
             view={view}
+            checkIns={result?.checkIns ?? []}
+            causes={result?.causes ?? []}
             checkinsEnabled={privacy?.checkinsEnabled !== false}
             onCheckIn={() => navigate('/happiness/check-in')}
             onReview={() => navigate('/happiness/review')}
@@ -112,6 +114,7 @@ export default function Happiness() {
             t={t}
             locale={locale}
             checkIns={result?.checkIns ?? []}
+            causes={result?.causes ?? []}
             enabled={privacy?.checkinsEnabled !== false}
             onCheckIn={() => navigate('/happiness/check-in')}
           />
@@ -144,12 +147,9 @@ export default function Happiness() {
           </>
         ) : null}
 
-        <p className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
+        <p className="text-sm">
           <Link to="/happiness/work" className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
             {t('happiness.openWorkFulfillment')}
-          </Link>
-          <Link to="/happiness/privacy" className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
-            {t('happiness.openPrivacy')}
           </Link>
         </p>
     </HappinessShell>

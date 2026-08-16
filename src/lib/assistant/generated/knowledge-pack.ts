@@ -6,9 +6,9 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
     "appVersion": "0.1.182",
     "appReleaseId": "20260815-v0.1.182",
     "androidVersionCode": 184,
-    "gitSha": "83d721d6d7a81ffadd73e2af091a5a401b73ee2c",
-    "generatedAt": "2026-08-16T06:00:36.329Z",
-    "sourceFingerprint": "cf64ac7e457529c98d8d700beed134811f9826866da377164a3d6f55d53caca9",
+    "gitSha": "8b36866a432c1670eb02de29b735a19885d14d0a",
+    "generatedAt": "2026-08-16T17:16:22.140Z",
+    "sourceFingerprint": "1a90df5d25e16485a66d8097c3e0beeff278400134d9659b0514b96c611ac746",
     "knowledgeFormat": 1,
     "sourceCount": 26,
     "chunkCount": 331
@@ -511,8 +511,8 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "id": "happiness",
       "name": "Happiness & Fulfillment",
       "status": "implemented",
-      "description": "Private Happiness & Human Fulfillment. Five levels (Struggling, Unsettled, Balanced, Flourishing, Thriving) — not a numeric Happiness Score. Check-ins, weekly pulse, monthly review, Fulfillment Plans under Improve, causes, and small actions with follow-up. Private by default. Not used for Score, reputation, hiring, or governance power. Work issues open Work Fulfillment. Actual employment uses Marketplace Jobs. Optional privacy-protected group insights are off by default and never show individual Happiness to employers. Civi may receive a grounded Plan brief; it must not invent history or diagnose. Follow-up timing can be stored; notifications are not sent yet.",
-      "howTo": "Open Happiness & Fulfillment from the Profile menu. Check in, review wellbeing, or Improve to start a Fulfillment Plan.",
+      "description": "Private Happiness & Human Fulfillment. Five levels (Struggling, Unsettled, Balanced, Flourishing, Thriving) — not a numeric Happiness Score. Adaptive check-ins record today’s feeling, multiple life areas, and specific supports or problems; weekly pulse, monthly review, Fulfillment Plans under Improve, causes, and small actions with follow-up. Private by default. Not used for Score, reputation, hiring, or governance power. Work issues open Work Fulfillment. Actual employment uses Marketplace Jobs. Optional privacy-protected group insights are off by default and never show individual Happiness to employers. Civi may receive a grounded Plan brief; it must not invent history or diagnose. Follow-up timing can be stored; notifications are not sent yet.",
+      "howTo": "Open Happiness & Fulfillment from the Profile menu. Check in from Overview or the Check-ins tab, review wellbeing, or Improve to start a Fulfillment Plan.",
       "routes": [
         "/happiness",
         "/happiness/check-in",
@@ -1756,7 +1756,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "id": "capability:happiness",
       "title": "Happiness & Fulfillment",
       "path": "src/lib/assistant/catalog.ts",
-      "text": "Happiness & Fulfillment status=implemented. Private Happiness & Human Fulfillment. Five levels (Struggling, Unsettled, Balanced, Flourishing, Thriving) — not a numeric Happiness Score. Check-ins, weekly pulse, monthly review, Fulfillment Plans under Improve, causes, and small actions with follow-up. Private by default. Not used for Score, reputation, hiring, or governance power. Work issues open Work Fulfillment. Actual employment uses Marketplace Jobs. Optional privacy-protected group insights are off by default and never show individual Happiness to employers. Civi may receive a grounded Plan brief; it must not invent history or diagnose. Follow-up timing can be stored; notifications are not sent yet. Open Happiness & Fulfillment from the Profile menu. Check in, review wellbeing, or Improve to start a Fulfillment Plan. Routes: /happiness, /happiness/check-in, /happiness/review, /happiness/improve, /happiness/privacy.",
+      "text": "Happiness & Fulfillment status=implemented. Private Happiness & Human Fulfillment. Five levels (Struggling, Unsettled, Balanced, Flourishing, Thriving) — not a numeric Happiness Score. Adaptive check-ins record today’s feeling, multiple life areas, and specific supports or problems; weekly pulse, monthly review, Fulfillment Plans under Improve, causes, and small actions with follow-up. Private by default. Not used for Score, reputation, hiring, or governance power. Work issues open Work Fulfillment. Actual employment uses Marketplace Jobs. Optional privacy-protected group insights are off by default and never show individual Happiness to employers. Civi may receive a grounded Plan brief; it must not invent history or diagnose. Follow-up timing can be stored; notifications are not sent yet. Open Happiness & Fulfillment from the Profile menu. Check in from Overview or the Check-ins tab, review wellbeing, or Improve to start a Fulfillment Plan. Routes: /happiness, /happiness/check-in, /happiness/review, /happiness/improve, /happiness/privacy.",
       "status": "implemented",
       "priority": 3,
       "kind": "capability"
@@ -2935,7 +2935,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "id": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md#3",
       "title": "Implementation Status",
       "path": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md",
-      "text": "## Implementation Status This document is the architecture of the **current implemented system**. Later numbered sections that mention Phase 1–5 are build history — how the capability was assembled — not a member-facing product roadmap. There is no Phase 6 and no next feature phase planned from this document. Future change should come from pilot evidence, privacy/security findings, research requirements, or integration needs. ### Implemented - Happiness Foundation — Implemented - Work Fulfillment & Occupational Fit — Implemented - Active Human Fulfillment Support — Implemented - Privacy-Safe Wellbeing Intelligence — Implemented - Institutional & Community Wellbeing Insights — Implemented - Human Outcome & System Learning Loop — Implemented ### Intentionally deferred",
+      "text": "## Implementation Status This document is the architecture of the **current implemented system**. Later numbered sections that mention Phase 1–5 are build history — how the capability was assembled — not a member-facing product roadmap. There is no Phase 6 and no next feature phase planned from this document. Future change should come from pilot evidence, privacy/security findings, research requirements, or integration needs. ### Implemented",
       "status": "implemented",
       "priority": 6,
       "kind": "doc"
@@ -2944,7 +2944,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "id": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md#4",
       "title": "Implementation Status",
       "path": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md",
-      "text": "- formal scientific evaluation / experimental research design - live notification delivery (follow-up timing can be stored) - broad Fulfillment Plan sharing - provider marketplace - sensitive-demographic research breakdowns - population-informed personal recommendations - city/country or organization league tables - public Happiness profiles - causal effectiveness claims and Happiness impact scores Live aggregate thresholds are the versioned policy `wellbeing-aggregate-privacy-v1`. Compatibility tables and operator notes are in **§25**. ### Public-safe vs internet-public",
+      "text": "- Happiness Foundation — Implemented (adaptive check-in: multiple areas, supports vs problems, specific causes; today’s feeling stays distinct from Happiness & Fulfillment level) - Work Fulfillment & Occupational Fit — Implemented - Active Human Fulfillment Support — Implemented - Privacy-Safe Wellbeing Intelligence — Implemented - Institutional & Community Wellbeing Insights — Implemented - Human Outcome & System Learning Loop — Implemented ### Intentionally deferred",
       "status": "implemented",
       "priority": 6,
       "kind": "doc"
@@ -2953,7 +2953,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "id": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md#5",
       "title": "Implementation Status",
       "path": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md",
-      "text": "**Public-safe** means a lesson was reviewed and intentionally published without restricted aggregate payloads or member identities. `human_outcome_public_lessons` are readable by signed-in Civizen members (`authenticated` SELECT). They are not anonymous internet-public, and Search must not expose restricted snapshots or private Happiness rows. ---",
+      "text": "- formal scientific evaluation / experimental research design - live notification delivery (follow-up timing can be stored) - broad Fulfillment Plan sharing - provider marketplace - sensitive-demographic research breakdowns - population-informed personal recommendations - city/country or organization league tables - public Happiness profiles - causal effectiveness claims and Happiness impact scores Live aggregate thresholds are the versioned policy `wellbeing-aggregate-privacy-v1`. Compatibility tables and operator notes are in **§25**. ### Public-safe vs internet-public",
       "status": "implemented",
       "priority": 6,
       "kind": "doc"
@@ -3016,7 +3016,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "id": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md#12",
       "title": "7. Measurement System",
       "path": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md",
-      "text": "## 7. Measurement System Use multiple levels of participation so the system does not create survey fatigue. ### 7.1 Quick Check-in Purpose: - very low-friction monitoring; - detect short-term changes; - identify possible causes. Example: **How are you feeling today?** - Very difficult - Difficult - Okay - Good - Very good Optional: **What is affecting you most today?** - Work - Health - Relationships - Money / security - Family - Time - Environment - Purpose - Something else Optional free text: - “Want to add anything?” Target completion time: roughly 5–15 seconds. --- ### 7.2 Weekly Wellbeing Pulse Purpose: - detect meaningful changes across core dimensions; - remain lightweight. Use a small rotating set of questions rather than forcing all domains every week.",
+      "text": "## 7. Measurement System Use multiple levels of participation so the system does not create survey fatigue. ### 7.1 Quick Check-in Purpose: - very low-friction monitoring of **today’s feeling**; - identify what is supporting or reducing happiness, not only one broad area; - collect specific, reusable causes so Improve, Work Fulfillment, and Plans can act. Today’s feeling is **not** the member’s Happiness & Fulfillment level. The five-level Happiness state continues to come from the versioned derivation (reviews, pulses, accumulated check-in evidence, Work Fulfillment). A check-in must not collapse to a label such as “Balanced + Work.” The flow is short by default. Today’s feeling and optional life areas share the first screen. Deeper questions appear only after the member selects areas.",
       "status": "implemented",
       "priority": 6,
       "kind": "doc"
@@ -3025,7 +3025,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "id": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md#13",
       "title": "7. Measurement System",
       "path": "docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md",
-      "text": "The system should ensure that all important domains receive enough coverage over time. --- ### 7.3 Monthly Happiness Review Purpose: - provide a broader longitudinal view; - refresh domain-level understanding; - surface actionable areas. It should: - assess all major domains; - show the current five-level state; - show domain levels; - show trend; - identify strongest areas; - identify areas needing attention; - ask whether the person wants help improving anything. --- ### 7.4 Deeper Assessments Architecture should support validated external instruments without coupling Civizen to one instrument. Create a generic Assessment Instrument model supporting: - instrument name; - version; - publisher/source; - license; - language; - questions; - response types; - scoring logic; - allowed use; - interpretation rules; - references.",
+      "text": "1. **How are you feeling today?** (required) and **What’s affecting this today?** (optional, multi-select) on the first Check in page — Very difficult / Difficult / Okay / Good / Very good, then the existing life areas (Work, Health, Relationships, Money / security, Family, Time, Environment, Purpose, Something else). Members may choose more than one area, or save a feeling only. 2. **For each selected area:** is it mostly helping, making things harder, or both? 3. **Concise follow-up tags** only when needed — the existing cause-tag taxonomy for problems, and a small support-tag list in the same cause groups. Skip is always allowed. Environment and Something else stay area-level only. 4. **Optional note.** If Work is a problem, a compact link to Work Fulfillment is enough; do not run a second work assessment inside check-in.",
       "status": "implemented",
       "priority": 6,
       "kind": "doc"

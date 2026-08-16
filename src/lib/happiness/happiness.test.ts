@@ -14,6 +14,7 @@ function checkIn(overrides: Partial<HappinessCheckIn> & { feeling: HappinessChec
     id: overrides.id ?? 'c1',
     profileId: 'p1',
     affectingMost: overrides.affectingMost ?? null,
+    areas: overrides.areas ?? [],
     note: null,
     ...overrides,
   };
@@ -112,5 +113,43 @@ describe('check-in mapping', () => {
     expect(view.overallLevel).toBe('struggling');
     expect(view.latestCheckIn?.feeling).toBe('very_difficult');
     expect(Object.keys(view)).not.toContain('score');
+  });
+
+  it('does not treat a supporting area as distress when today feels difficult', () => {
+    const { view } = deriveHappinessView({
+      checkIns: [
+        checkIn({
+          feeling: 'very_difficult',
+          affectingMost: 'work',
+          areas: [{ category: 'work', polarity: 'support' }],
+          createdAt: '2026-08-15T10:00:00Z',
+        }),
+      ],
+      pulses: [],
+      reviews: [],
+      now: new Date('2026-08-15T12:00:00Z'),
+    });
+    expect(view.domainLevels.emotional_wellbeing).toBe('struggling');
+    expect(view.domainLevels.work_fulfillment).not.toBe('struggling');
+  });
+
+  it('does not copy today’s good feeling onto a work problem', () => {
+    const { view } = deriveHappinessView({
+      checkIns: [
+        checkIn({
+          feeling: 'good',
+          affectingMost: 'work',
+          areas: [{ category: 'work', polarity: 'problem' }],
+          createdAt: '2026-08-15T10:00:00Z',
+        }),
+      ],
+      pulses: [],
+      reviews: [],
+      now: new Date('2026-08-15T12:00:00Z'),
+    });
+    expect(view.latestCheckIn?.feeling).toBe('good');
+    expect(view.domainLevels.emotional_wellbeing).toBe('flourishing');
+    expect(view.domainLevels.work_fulfillment).not.toBe('flourishing');
+    expect(view.domainLevels.work_fulfillment).not.toBe('thriving');
   });
 });

@@ -1659,7 +1659,7 @@ export const baseTranslations = {
     "goingWell": "Going well",
     "needsAttention": "Needs attention",
     "noneYet": "Not enough yet",
-    "latestCheckIn": "Latest check-in: {feeling} · {when}",
+    "latestCheckIn": "Today's feeling: {feeling} · {when}",
     "checkIn": "Check in",
     "reviewWellbeing": "Review my wellbeing",
     "improveArea": "Improve an area",
@@ -1677,9 +1677,28 @@ export const baseTranslations = {
     "saveFollowUp": "Save",
     "followUpSaved": "Saved. Thank you.",
     "checkInTitle": "Check in",
-    "checkInSubtitle": "About 15 seconds. Private to you.",
+    "checkInSubtitle": "Today's feeling, then only what you want to add.",
     "howFeelingToday": "How are you feeling today?",
+    "howFeelingTodayHint": "This is how today feels — not your Happiness & Fulfillment level.",
     "affectingMost": "What is affecting you most today?",
+    "affectingAreas": "What's affecting this today?",
+    "affectingAreasHint": "You can choose more than one.",
+    "areaPolarity": "Is {area} mostly helping or making things harder?",
+    "polarity": {
+      "support": "Helping",
+      "problem": "Making things harder",
+      "both": "Both"
+    },
+    "whatMakingHarder": "What in {area} is making things harder?",
+    "whatHelping": "What in {area} is helping?",
+    "followUpHint": "Choose any that fit. You can skip this.",
+    "workDeeperHint": "Work Fulfillment can go deeper if you want.",
+    "patternsTitle": "What's been affecting this",
+    "patternProblemWithTags": "{area} — {tags} have often been making things harder.",
+    "patternSupportWithTags": "{area} — {tags} have often been a support.",
+    "patternProblem": "{area} has often been making things harder.",
+    "patternSupport": "{area} has often been a support.",
+    "patternImproveHint": "This may be worth addressing in Improve.",
     "wantToAdd": "Want to add anything?",
     "notePlaceholder": "Optional note",
     "saveCheckIn": "Save check-in",
@@ -1861,6 +1880,41 @@ export const baseTranslations = {
         "lack_of_contribution": "Lack of contribution",
         "lack_of_progress": "Lack of progress",
         "lack_of_direction": "Lack of direction"
+      }
+    },
+    "supports": {
+      "work": {
+        "tasks_going_well": "Tasks going well",
+        "supportive_people": "Supportive people",
+        "good_fit": "Good fit",
+        "manageable_workload": "Manageable workload",
+        "meaningful_work": "Meaningful work"
+      },
+      "health": {
+        "rest": "Rest",
+        "energy": "Energy",
+        "movement": "Movement",
+        "care_access": "Access to care"
+      },
+      "relationships": {
+        "belonging": "Belonging",
+        "support": "Support",
+        "connection": "Connection"
+      },
+      "security": {
+        "housing_stable": "Stable housing",
+        "money_ok": "Money feels okay",
+        "safety": "Safety"
+      },
+      "time": {
+        "rest": "Rest",
+        "personal_time": "Personal time",
+        "manageable_pace": "Manageable pace"
+      },
+      "purpose": {
+        "contribution": "Contribution",
+        "progress": "Progress",
+        "direction": "Direction"
       }
     },
     "timing": {

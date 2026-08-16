@@ -1,4 +1,5 @@
-import type { ActionOutcomeRating, HappinessCauseGroup, HappinessCheckIn, HappinessDomainId } from '@/lib/happiness/types';
+import { isCauseTag } from '@/lib/happiness/causes';
+import type { ActionOutcomeRating, HappinessCause, HappinessCauseGroup, HappinessCheckIn, HappinessDomainId } from '@/lib/happiness/types';
 import { FULFILLMENT_INTERVENTIONS } from './library';
 import {
   FULFILLMENT_RECOMMENDATION_MODEL,
@@ -126,7 +127,8 @@ export function recommendationForKey(key: string, domain: HappinessDomainId): Ra
 
 export function observedFactorTagsFromCheckIns(
   domain: HappinessDomainId,
-  checkIns: Pick<HappinessCheckIn, 'affectingMost'>[],
+  checkIns: Pick<HappinessCheckIn, 'affectingMost' | 'areas'>[],
+  causes: Pick<HappinessCause, 'sourceKind' | 'domain' | 'category' | 'polarity' | 'group'>[] = [],
 ): string[] {
   const map: Partial<Record<HappinessDomainId, string>> = {
     time_life_balance: 'time',
@@ -138,8 +140,21 @@ export function observedFactorTagsFromCheckIns(
     environment_community: 'environment',
   };
   const affecting = map[domain];
+  const group = causeGroupForDomain(domain);
+  const tagCounts = new Map<string, number>();
+  for (const cause of causes) {
+    if (cause.sourceKind !== 'checkin' || cause.polarity === 'support') continue;
+    if (cause.domain !== domain && !(group && cause.group === group)) continue;
+    if (!group || !isCauseTag(group, cause.category)) continue;
+    tagCounts.set(cause.category, (tagCounts.get(cause.category) ?? 0) + 1);
+  }
+  const tags = [...tagCounts.entries()].filter(([, hits]) => hits >= 2).map(([tag]) => tag);
+  if (tags.length) return tags;
   if (!affecting) return [];
-  const hits = checkIns.filter((row) => row.affectingMost === affecting).length;
+  const hits = checkIns.filter((row) => {
+    if (row.areas?.some((area) => area.category === affecting && area.polarity !== 'support')) return true;
+    return row.affectingMost === affecting;
+  }).length;
   return hits >= 2 ? [affecting] : [];
 }
 

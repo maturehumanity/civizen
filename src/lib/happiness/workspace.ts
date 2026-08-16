@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 
+import { parseCheckInAreas } from './causes';
 import { deriveHappinessView, emptyHappinessView } from './model';
 import { DEFAULT_HAPPINESS_PRIVACY } from './privacy';
 import { HAPPINESS_LEVELS, HAPPINESS_MODEL_VERSION, HAPPINESS_TRENDS, type HappinessLevel, type HappinessTrend } from './types';
@@ -28,11 +29,13 @@ export function isMissingRelation(error: { message?: string; code?: string } | n
 }
 
 export function mapCheckIn(row: Record<string, unknown>): HappinessCheckIn {
+  const affectingMost = (row.affecting_most as AffectingCategory | null) ?? null;
   return {
     id: String(row.id),
     profileId: String(row.profile_id),
     feeling: row.feeling as CheckInFeeling,
-    affectingMost: (row.affecting_most as AffectingCategory | null) ?? null,
+    affectingMost,
+    areas: parseCheckInAreas(row.areas, affectingMost),
     note: (row.note as string | null) ?? null,
     createdAt: String(row.created_at),
   };
@@ -89,6 +92,7 @@ function mapCause(row: Record<string, unknown>): HappinessCause {
     domain: (row.domain as HappinessDomainId | null) ?? null,
     group: row.cause_group as HappinessCauseGroup,
     category: String(row.category),
+    polarity: row.polarity === 'support' ? 'support' : 'problem',
     confirmed: Boolean(row.confirmed),
     isAiSuggestion: Boolean(row.is_ai_suggestion),
     note: (row.note as string | null) ?? null,

@@ -69,7 +69,7 @@ This document is the architecture of the **current implemented system**. Later n
 
 ### Implemented
 
-- Happiness Foundation — Implemented
+- Happiness Foundation — Implemented (adaptive check-in: multiple areas, supports vs problems, specific causes; today’s feeling stays distinct from Happiness & Fulfillment level)
 - Work Fulfillment & Occupational Fit — Implemented
 - Active Human Fulfillment Support — Implemented
 - Privacy-Safe Wellbeing Intelligence — Implemented
@@ -254,39 +254,24 @@ Use multiple levels of participation so the system does not create survey fatigu
 
 Purpose:
 
-- very low-friction monitoring;
-- detect short-term changes;
-- identify possible causes.
+- very low-friction monitoring of **today’s feeling**;
+- identify what is supporting or reducing happiness, not only one broad area;
+- collect specific, reusable causes so Improve, Work Fulfillment, and Plans can act.
 
-Example:
+Today’s feeling is **not** the member’s Happiness & Fulfillment level. The five-level Happiness state continues to come from the versioned derivation (reviews, pulses, accumulated check-in evidence, Work Fulfillment). A check-in must not collapse to a label such as “Balanced + Work.”
 
-**How are you feeling today?**
+The flow is short by default. Today’s feeling and optional life areas share the first screen. Deeper questions appear only after the member selects areas.
 
-- Very difficult
-- Difficult
-- Okay
-- Good
-- Very good
+1. **How are you feeling today?** (required) and **What’s affecting this today?** (optional, multi-select) on the first Check in page — Very difficult / Difficult / Okay / Good / Very good, then the existing life areas (Work, Health, Relationships, Money / security, Family, Time, Environment, Purpose, Something else). Members may choose more than one area, or save a feeling only.
+2. **For each selected area:** is it mostly helping, making things harder, or both?
+3. **Concise follow-up tags** only when needed — the existing cause-tag taxonomy for problems, and a small support-tag list in the same cause groups. Skip is always allowed. Environment and Something else stay area-level only.
+4. **Optional note.** If Work is a problem, a compact link to Work Fulfillment is enough; do not run a second work assessment inside check-in.
 
-Optional:
+Check in is available from Overview and from the Check-ins tab. Overview stays a status home; it does not host the check-in form.
 
-**What is affecting you most today?**
+Persisted on the existing `happiness_checkins` / `happiness_causes` tables (multiple cause rows per check-in, with polarity). After several check-ins, Overview can explain what within an area appears to be affecting the member (for example Work — tasks and workload have often been making things harder) and that it may be worth addressing in Improve.
 
-- Work
-- Health
-- Relationships
-- Money / security
-- Family
-- Time
-- Environment
-- Purpose
-- Something else
-
-Optional free text:
-
-- “Want to add anything?”
-
-Target completion time: roughly 5–15 seconds.
+Feeling-only save remains valid. Target completion: about 15–45 seconds when the member wants depth; a few taps when they do not.
 
 ---
 
@@ -347,7 +332,7 @@ Do not reproduce copyrighted/licensed instruments without checking their terms.
 
 ## 8. “What Is Affecting This?” Root-Cause Layer
 
-Every important negative change should be explorable.
+Every important negative change should be explorable. Check-in follow-up tags reuse this taxonomy (problems and a small support list in the same groups) rather than a second cause system.
 
 Examples of cause categories:
 
@@ -1042,8 +1027,9 @@ Show:
 - areas needing attention;
 - latest check-in;
 - “Check in”;
-- “Review my wellbeing”;
-- “Improve an area”.
+- “Review my wellbeing”.
+
+Improve an area lives on the Improve tab. Privacy opens from the lock beside the current Happiness level.
 
 ### Details
 
@@ -1132,7 +1118,7 @@ Details, methodology, history, and deeper assessments should be available by cho
 The capability is live. These notes record what shipped; they are not a future roadmap.
 
 - Entry: Profile menu → **Happiness & Fulfillment** (`/happiness`); Home Score card shows a compact Happiness state icon (no visible label) immediately to the right of the tier label, using the same gap and circular chip as View Score Details. The icon is independent of Civizen Score and the Contributor/Catalyst/Steward tier. Home loads the latest `happiness_state_snapshots.overall_level` only — not the full Happiness workspace.
-- Workspace title uses a slow running line only when it does not fit on one line. Privacy is a lock icon beside the title (“This is private to you.” on hover or tap), not a subtitle.
+- Workspace title uses a slow running line only when it does not fit on one line. Privacy is a lock icon beside the current Happiness level on Overview (“This is private to you.” on hover). Tap/click opens `/happiness/privacy`. Overview does not show a Privacy text link or an Improve an area button.
 - Five public levels only (no numeric Happiness Score); working model `happiness-level-v1` (provisional, versioned)
 - Quick check-in, weekly pulse, monthly review, causes, improvement actions, follow-up
 - Privacy controls at `/happiness/privacy` and Settings → Privacy

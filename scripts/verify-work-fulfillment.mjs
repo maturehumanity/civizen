@@ -28,7 +28,7 @@ function assertNoProhibitedCopy(body, where) {
   if (/happiness score/i.test(body) && !/no numeric happiness score|not a happiness score/i.test(body)) {
     throw new Error(`Happiness score language on ${where}:\n${body.slice(0, 800)}`);
   }
-  if (/job fit score|work fulfillment score/i.test(body) && !/there is no work fulfillment score/i.test(body)) {
+  if (/job fit score|work fulfillment score/i.test(body) && !/there is no (work fulfillment|numeric job fit) score/i.test(body)) {
     throw new Error(`Numeric Work/Job Fit score language on ${where}:\n${body.slice(0, 800)}`);
   }
 }
@@ -74,7 +74,7 @@ try {
   await page.getByRole('link', { name: 'Work Fulfillment' }).first().click();
   await page.waitForURL(/\/happiness\/work/, { timeout: 15000 });
   await page.getByRole('heading', { name: 'Work Fulfillment' }).waitFor({ state: 'visible', timeout: 20000 });
-  await page.getByRole('button', { name: /this is private to you/i }).waitFor({ state: 'visible', timeout: 5000 });
+  await page.getByRole('link', { name: /this is private to you/i }).waitFor({ state: 'visible', timeout: 5000 });
 
   const tabLabels = ['Overview', 'Current', 'Joy', 'Fit', 'Improve'];
   for (const label of tabLabels) {
@@ -227,10 +227,7 @@ try {
   await page.getByRole('button', { name: 'Save path' }).click();
 
   await page.getByRole('tab', { name: 'Overview', exact: true }).click();
-  await page.getByText(/going well|needs attention|current level|balanced|flourishing|unsettled|struggling/i).first().waitFor({
-    state: 'visible',
-    timeout: 10000,
-  });
+  await page.getByText('There is no Work Fulfillment score.').waitFor({ state: 'visible', timeout: 10000 });
   await page.getByText(/recorded outcome/i).first().waitFor({ state: 'visible', timeout: 8000 });
   assertNoProhibitedCopy(await page.locator('body').innerText(), 'work overview after walk');
 

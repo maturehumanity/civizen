@@ -77,7 +77,13 @@ try {
   }
 
   await page.getByRole('heading', { name: 'Happiness & Fulfillment' }).waitFor({ state: 'visible', timeout: 20000 });
-  await page.getByRole('button', { name: /this is private to you/i }).waitFor({ state: 'visible', timeout: 5000 });
+  await page.getByRole('link', { name: /this is private to you/i }).waitFor({ state: 'visible', timeout: 5000 });
+  if (await page.getByRole('button', { name: /^Improve an area$/i }).count()) {
+    throw new Error('Overview still shows Improve an area; that action belongs on the Improve tab');
+  }
+  if (await page.getByRole('link', { name: /^Privacy$/i }).count()) {
+    throw new Error('Overview still shows a Privacy text link; the lock should open Privacy');
+  }
   assertNoProhibitedCopy(await page.locator('body').innerText(), 'overview');
 
   const tabLabels = ['Overview', 'Life areas', 'Check-ins', 'Trends', 'Improve'];
@@ -99,17 +105,68 @@ try {
 
   const checkIn = page.getByRole('button', { name: /^Check in$/i });
   await checkIn.waitFor({ state: 'visible', timeout: 10000 });
-  await checkIn.click();
-  await page.waitForURL(/\/happiness\/check-in/, { timeout: 15000 });
-  await page.getByText('How are you feeling today?').waitFor({ state: 'visible', timeout: 10000 });
-  await page.getByRole('button', { name: /^Good$/i }).click();
-  await page.getByRole('button', { name: /^Work$/i }).click();
-  const note = page.getByLabel('Want to add anything?');
-  await note.click();
-  await note.fill('verify walk — work is affecting me');
-  await page.getByRole('button', { name: /Save check-in/i }).click();
-  await page.waitForURL(/\/happiness\/?$/, { timeout: 20000 });
-  await page.getByRole('heading', { name: 'Happiness & Fulfillment' }).waitFor({ state: 'visible', timeout: 20000 });
+
+  async function completeAdaptiveCheckIn({ feeling, area, polarity, tags, note }) {
+    const start = page.getByRole('button', { name: /^Check in$/i });
+    await start.waitFor({ state: 'visible', timeout: 10000 });
+    await start.click();
+    await page.waitForURL(/\/happiness\/check-in/, { timeout: 15000 });
+    await page.getByText('How are you feeling today?').waitFor({ state: 'visible', timeout: 10000 });
+    await page.getByText("What's affecting this today?").waitFor({ state: 'visible', timeout: 10000 });
+    await page.getByRole('button', { name: new RegExp(`^${feeling}$`, 'i') }).click();
+    await page.getByRole('button', { name: new RegExp(`^${area}$`, 'i') }).click();
+    await page.getByRole('button', { name: /^Next$/i }).click();
+    await page.getByRole('button', { name: new RegExp(`^${polarity}$`, 'i') }).click();
+    await page.getByRole('button', { name: /^Next$/i }).click();
+    for (const tag of tags) {
+      const choice = page.getByRole('button', { name: new RegExp(`^${tag}$`, 'i') });
+      await choice.scrollIntoViewIfNeeded();
+      await choice.click();
+    }
+    await page.getByRole('button', { name: /^Next$/i }).click();
+    if (note) {
+      const field = page.getByLabel('Want to add anything?');
+      await field.click();
+      await field.fill(note);
+    }
+    await page.getByRole('button', { name: /Save check-in/i }).click();
+    await page.waitForURL(/\/happiness\/?$/, { timeout: 20000 });
+    await page.getByRole('heading', { name: 'Happiness & Fulfillment' }).waitFor({ state: 'visible', timeout: 20000 });
+  }
+
+  await completeAdaptiveCheckIn({
+    feeling: 'Good',
+    area: 'Work',
+    polarity: 'Making things harder',
+    tags: ['Tasks'],
+    note: 'verify walk — work is affecting me',
+  });
+  await completeAdaptiveCheckIn({
+    feeling: 'Okay',
+    area: 'Work',
+    polarity: 'Making things harder',
+    tags: ['Tasks', 'Workload'],
+    note: null,
+  });
+  await completeAdaptiveCheckIn({
+    feeling: 'Difficult',
+    area: 'Work',
+    polarity: 'Making things harder',
+    tags: ['Workload'],
+    note: null,
+  });
+
+  const checkInOverview = await page.locator('body').innerText();
+  if (!/What's been affecting this/i.test(checkInOverview)) {
+    throw new Error('Overview did not explain check-in patterns after several check-ins');
+  }
+  if (!/Work/i.test(checkInOverview) || !/Tasks/i.test(checkInOverview) || !/making things harder/i.test(checkInOverview)) {
+    throw new Error(`Overview still looks like a shallow area label instead of a specific cause:\n${checkInOverview.slice(0, 1200)}`);
+  }
+  if (/Balanced \+ Work/i.test(checkInOverview)) {
+    throw new Error('Overview collapsed to Balanced + Work');
+  }
+  assertNoProhibitedCopy(checkInOverview, 'overview after check-ins');
 
   await page.getByRole('button', { name: /Review my wellbeing/i }).click();
   await page.waitForURL(/\/happiness\/review/, { timeout: 15000 });
@@ -184,7 +241,10 @@ try {
   await page.getByRole('tab', { name: 'Overview', exact: true }).waitFor({ state: 'visible', timeout: 5000 });
   assertNoProhibitedCopy(await page.locator('body').innerText(), 'work fulfillment');
 
-  await page.goto(`${baseUrl}/happiness/privacy`, { waitUntil: 'networkidle', timeout: 30000 });
+  await page.goto(`${baseUrl}/happiness`, { waitUntil: 'networkidle', timeout: 30000 });
+  await page.getByRole('heading', { name: 'Happiness & Fulfillment' }).waitFor({ state: 'visible', timeout: 15000 });
+  await page.getByRole('link', { name: /this is private to you/i }).click();
+  await page.waitForURL(/\/happiness\/privacy/, { timeout: 15000 });
   await page.getByText(/private by default/i).waitFor({ state: 'visible', timeout: 10000 });
   await page.getByText('Civizen Score').waitFor({ state: 'visible', timeout: 5000 });
   await page.getByText('Optional sharing').waitFor({ state: 'visible', timeout: 5000 });

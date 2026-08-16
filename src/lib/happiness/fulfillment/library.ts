@@ -157,6 +157,7 @@ export const FULFILLMENT_INTERVENTIONS: FulfillmentIntervention[] = [
     key: 'work-open-workspace',
     domains: ['work_fulfillment'],
     causeGroups: ['work'],
+    factorTags: ['tasks', 'workload', 'manager', 'team', 'schedule', 'poor_fit', 'lack_of_autonomy', 'lack_of_purpose'],
     type: 'work_fulfillment',
     titleKey: 'happiness.plans.library.workDelegate.title',
     descriptionKey: 'happiness.plans.library.workDelegate.body',

@@ -126,7 +126,7 @@ describe('Work Fulfillment workspace', () => {
       </MemoryRouter>,
     );
     expect(await screen.findByRole('heading', { name: 'Work Fulfillment' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'This is private to you.' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'This is private to you.' })).toHaveAttribute('href', '/happiness/privacy');
     expect(screen.getByText('Balanced')).toBeTruthy();
     expect(screen.queryByText(/tools are being prepared/i)).toBeNull();
     expect(screen.getByText('There is no Work Fulfillment score.')).toBeTruthy();

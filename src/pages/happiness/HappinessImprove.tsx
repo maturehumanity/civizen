@@ -68,7 +68,7 @@ export default function HappinessImprove() {
   const memory = helpfulnessFromHistory(result?.actions ?? [], result?.outcomes ?? []);
   const suggestions = useMemo(() => {
     if (!recommendationsEnabled) return [];
-    const observed = observedFactorTagsFromCheckIns(domain, result?.checkIns ?? []);
+    const observed = observedFactorTagsFromCheckIns(domain, result?.checkIns ?? [], result?.causes ?? []);
     const factorTags = [...(cause ? [cause] : []), ...observed];
     return recommendForPlan({
       domain,
@@ -84,7 +84,7 @@ export default function HappinessImprove() {
       previouslyHelped: memory.previouslyHelped,
       previouslyUnhelpful: memory.previouslyUnhelpful,
     });
-  }, [cause, domain, group, memory.previouslyHelped, memory.previouslyUnhelpful, recommendationsEnabled, result?.checkIns, sessionHidden, storedFeedback]);
+  }, [cause, domain, group, memory.previouslyHelped, memory.previouslyUnhelpful, recommendationsEnabled, result?.checkIns, result?.causes, sessionHidden, storedFeedback]);
 
   const savedLater = storedFeedback
     .filter((row) => row.feedback === 'saved_later')
@@ -118,7 +118,7 @@ export default function HappinessImprove() {
         followUpAt: reminder.followUpAt,
       });
       if (cause) await savePlanFactor(profile.id, plan.id, { factorKey: cause, certaintyType: 'member_confirmed', sourceType: 'member', note: causeNote });
-      for (const tag of observedFactorTagsFromCheckIns(domain, result?.checkIns ?? []).filter((item) => item !== cause)) {
+      for (const tag of observedFactorTagsFromCheckIns(domain, result?.checkIns ?? [], result?.causes ?? []).filter((item) => item !== cause)) {
         await savePlanFactor(profile.id, plan.id, { factorKey: tag, certaintyType: 'observed_pattern', sourceType: 'checkin_pattern' });
       }
       for (const tag of hypothesisKeysFor(domain, cause)) {
