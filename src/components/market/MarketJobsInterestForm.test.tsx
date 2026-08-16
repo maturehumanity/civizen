@@ -6,6 +6,21 @@ import { MarketJobsInterestForm } from '@/components/market/MarketJobsInterestFo
 
 const submitMock = vi.fn();
 
+const authState = {
+  user: { id: 'user-1' } as { id: string } | null,
+  profile: {
+    id: 'profile-1',
+    username: 'armen',
+    full_name: 'Armen Yeremyan',
+    phone_country_code: 'US',
+    phone_number: '5550100',
+    date_of_birth: '1990-01-01',
+    city: 'Bakersfield',
+    region_code: 'CA',
+    country_code: 'US',
+  } as Record<string, string | null>,
+};
+
 vi.mock('@/lib/submit-market-job-interest', () => ({
   submitMarketJobInterest: (...args: unknown[]) => submitMock(...args),
 }));
@@ -16,20 +31,7 @@ vi.mock('@/lib/geo-locations', () => ({
 }));
 
 vi.mock('@/contexts/AuthContext', () => ({
-  useAuth: () => ({
-    user: { id: 'user-1' },
-    profile: {
-      id: 'profile-1',
-      username: 'armen',
-      full_name: 'Armen Yeremyan',
-      phone_country_code: 'US',
-      phone_number: '5550100',
-      date_of_birth: '1990-01-01',
-      city: 'Bakersfield',
-      region_code: 'CA',
-      country_code: 'US',
-    },
-  }),
+  useAuth: () => authState,
 }));
 
 vi.mock('@/contexts/LanguageContext', async () => {
@@ -52,10 +54,24 @@ class ResizeObserverStub {
   disconnect() {}
 }
 
+const completeProfile = {
+  id: 'profile-1',
+  username: 'armen',
+  full_name: 'Armen Yeremyan',
+  phone_country_code: 'US',
+  phone_number: '5550100',
+  date_of_birth: '1990-01-01',
+  city: 'Bakersfield',
+  region_code: 'CA',
+  country_code: 'US',
+};
+
 describe('MarketJobsInterestForm', () => {
   beforeEach(() => {
     submitMock.mockReset();
     submitMock.mockResolvedValue({ ok: true });
+    authState.user = { id: 'user-1' };
+    authState.profile = { ...completeProfile };
     vi.stubGlobal('ResizeObserver', ResizeObserverStub);
     Element.prototype.scrollIntoView = vi.fn();
   });
@@ -69,7 +85,7 @@ describe('MarketJobsInterestForm', () => {
     expect(screen.getByAltText('United States')).toBeInTheDocument();
   });
 
-  it('reveals contact fields after a job type is chosen and autofills known profile fields', async () => {
+  it('does not re-ask known identity fields after a job type is chosen', async () => {
     render(<MemoryRouter><MarketJobsInterestForm /></MemoryRouter>);
 
     expect(screen.queryByTestId('market-jobs-contact')).not.toBeInTheDocument();
@@ -78,12 +94,33 @@ describe('MarketJobsInterestForm', () => {
     fireEvent.click(await screen.findByRole('option', { name: 'Baker' }));
 
     expect(await screen.findByTestId('market-jobs-contact')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('Armen Yeremyan')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('5550100')).toBeInTheDocument();
+    expect(screen.queryByTestId('market-jobs-identity-fields')).not.toBeInTheDocument();
+    expect(screen.queryByDisplayValue('Armen Yeremyan')).not.toBeInTheDocument();
+    expect(screen.queryByDisplayValue('5550100')).not.toBeInTheDocument();
     const employment = screen.getByTestId('market-jobs-employment-agreement');
     expect(employment).toHaveAttribute('href', expect.stringContaining('type=employment'));
     expect(employment).toHaveAttribute('href', expect.stringContaining('position=Baker'));
     expect(employment).toHaveAttribute('href', expect.stringContaining('from=job'));
+  });
+
+  it('shows outlined identity fields only when profile values are missing', async () => {
+    authState.profile = {
+      ...completeProfile,
+      full_name: '',
+      phone_number: '',
+      date_of_birth: '',
+    };
+
+    render(<MemoryRouter><MarketJobsInterestForm /></MemoryRouter>);
+
+    fireEvent.click(screen.getByLabelText('Job type'));
+    fireEvent.click(await screen.findByRole('option', { name: 'Baker' }));
+
+    const identity = await screen.findByTestId('market-jobs-identity-fields');
+    expect(identity.querySelector('legend')).toHaveTextContent('Full name');
+    expect(screen.getByLabelText('Full name *')).toBeInTheDocument();
+    expect(screen.getByLabelText('Phone number *')).toBeInTheDocument();
+    expect(screen.getByLabelText('Age')).toBeInTheDocument();
   });
 
   it('allows multi-select job types and formats them with or', async () => {
@@ -96,13 +133,15 @@ describe('MarketJobsInterestForm', () => {
     expect(await screen.findByTestId('market-jobs-sentence')).toHaveTextContent('Baker or Barista');
   });
 
-  it('toggles more details and submits', async () => {
+  it('toggles more details and submits known profile values without showing them', async () => {
     render(<MemoryRouter><MarketJobsInterestForm /></MemoryRouter>);
 
     fireEvent.click(screen.getByLabelText('Job type'));
     fireEvent.click(await screen.findByRole('option', { name: 'Cashier' }));
     fireEvent.click(await screen.findByTestId('market-jobs-more-toggle'));
     expect(await screen.findByTestId('market-jobs-details')).toBeInTheDocument();
+    expect(screen.getByLabelText('Hours from')).toBeInTheDocument();
+    expect(screen.getByLabelText('Hours to')).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('market-jobs-submit'));
     await waitFor(() => expect(submitMock).toHaveBeenCalled());
@@ -111,6 +150,7 @@ describe('MarketJobsInterestForm', () => {
         mode: 'seeker',
         jobTypes: ['Cashier'],
         fullName: 'Armen Yeremyan',
+        phoneNumber: '5550100',
         userId: 'user-1',
         profileId: 'profile-1',
       }),

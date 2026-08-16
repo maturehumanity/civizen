@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Check, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -14,6 +14,7 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Input } from '@/components/ui/input';
+import { OutlinedField } from '@/components/ui/outlined-field';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
@@ -30,6 +31,7 @@ import {
   MARKET_JOB_TYPE_SEEDS,
   type MarketJobMode,
 } from '@/lib/market-job-types';
+import { parseWorkFitJobsQuery } from '@/lib/market-jobs-work-fit-prefill';
 import { submitMarketJobInterest } from '@/lib/submit-market-job-interest';
 import { agreementsCreatePath } from '@/lib/agreements-model';
 import { isBusinessUsername } from '@/lib/users-admin';
@@ -194,11 +196,13 @@ function CyclingOptionsLabel({
 export function MarketJobsInterestForm() {
   const { t, language } = useLanguage();
   const { user, profile } = useAuth();
+  const [searchParams] = useSearchParams();
+  const workFitPrefill = parseWorkFitJobsQuery(searchParams.toString());
   const isBusiness = isBusinessUsername(profile?.username);
   const isLoggedIn = Boolean(user?.id);
 
   const [mode, setMode] = useState<MarketJobMode>(() => (isBusiness ? 'employer' : 'seeker'));
-  const [jobTypes, setJobTypes] = useState<string[]>([]);
+  const [jobTypes, setJobTypes] = useState<string[]>(() => workFitPrefill.jobTypes);
   const [jobQuery, setJobQuery] = useState('');
   const [jobOpen, setJobOpen] = useState(false);
   const [jobHovered, setJobHovered] = useState(false);
@@ -230,10 +234,15 @@ export function MarketJobsInterestForm() {
   const [hoursFrom, setHoursFrom] = useState('09:00');
   const [hoursTo, setHoursTo] = useState('18:00');
   const [terms, setTerms] = useState<string[]>(['Full-time']);
-  const [notes, setNotes] = useState('');
+  const [notes, setNotes] = useState(() => workFitPrefill.notes);
   const [submitting, setSubmitting] = useState(false);
 
   const showContact = jobTypes.length > 0;
+  const showNameField = !trimOrEmpty(fullName);
+  const showCompanyField = mode === 'employer' && !trimOrEmpty(companyName);
+  const showPhoneField = !trimOrEmpty(phoneNumber);
+  const showAgeField = !trimOrEmpty(age);
+  const showIdentityFields = showNameField || showCompanyField || showPhoneField || showAgeField;
   const countryOptions = useMemo(() => getCountryOptions(language), [language]);
   const jobOptions = useMemo(() => filterMarketJobTypeOptions(jobQuery, jobTypes), [jobQuery, jobTypes]);
   const selectedJobSet = useMemo(
@@ -637,56 +646,80 @@ export function MarketJobsInterestForm() {
 
       {showContact ? (
         <div className="space-y-3" data-testid="market-jobs-contact">
-          <div className="flex flex-wrap items-end gap-x-4 gap-y-3 text-sm">
-            <label className="min-w-[10rem] flex-1 space-y-1">
-              <span className="text-xs text-muted-foreground">{t('market.jobsForm.fullNameLabel')}</span>
-              <div className="flex items-center gap-2">
-                <Input
-                  value={fullName}
-                  onChange={(event) => setFullName(event.target.value)}
-                  className="h-9 flex-1 border-0 border-b border-dashed border-border/80 bg-transparent px-0 shadow-none focus-visible:ring-0"
-                />
-                {countryCode ? (
-                  <RoundCountryFlag countryCode={countryCode} locale={language} size="sm" />
-                ) : null}
-              </div>
-            </label>
-            {mode === 'employer' ? (
-              <label className="min-w-[10rem] flex-1 space-y-1">
-                <span className="text-xs text-muted-foreground">{t('market.jobsForm.companyLabel')}</span>
-                <Input
-                  value={companyName}
-                  onChange={(event) => setCompanyName(event.target.value)}
-                  className="h-9 border-0 border-b border-dashed border-border/80 bg-transparent px-0 shadow-none focus-visible:ring-0"
-                />
-              </label>
-            ) : null}
-            <label className="min-w-[11rem] flex-1 space-y-1">
-              <span className="text-xs text-muted-foreground">{t('market.jobsForm.phoneLabel')}</span>
-              <div className="flex items-center gap-2">
-                <Input
-                  value={phoneCountryCode}
-                  onChange={(event) => setPhoneCountryCode(event.target.value.toUpperCase())}
-                  className="h-9 w-14 border-0 border-b border-dashed border-border/80 bg-transparent px-0 shadow-none focus-visible:ring-0"
-                  aria-label={t('market.jobsForm.phoneCountryLabel')}
-                />
-                <Input
-                  value={phoneNumber}
-                  onChange={(event) => setPhoneNumber(event.target.value)}
-                  className="h-9 flex-1 border-0 border-b border-dashed border-border/80 bg-transparent px-0 shadow-none focus-visible:ring-0"
-                />
-              </div>
-            </label>
-            <label className="w-20 space-y-1">
-              <span className="text-xs text-muted-foreground">{t('market.jobsForm.ageLabel')}</span>
-              <Input
-                value={age}
-                onChange={(event) => setAge(event.target.value)}
-                className="h-9 border-0 border-b border-dashed border-border/80 bg-transparent px-0 shadow-none focus-visible:ring-0"
-                inputMode="numeric"
-              />
-            </label>
-          </div>
+          {showIdentityFields ? (
+            <div className="flex flex-wrap items-start gap-x-3 gap-y-3 text-sm" data-testid="market-jobs-identity-fields">
+              {showNameField ? (
+                <OutlinedField
+                  className="min-w-[10rem] flex-1"
+                  label={t('market.jobsForm.fullNameLabel')}
+                  htmlFor="market-jobs-full-name"
+                  endAdornment={
+                    countryCode ? (
+                      <RoundCountryFlag countryCode={countryCode} locale={language} size="sm" />
+                    ) : null
+                  }
+                >
+                  <Input
+                    id="market-jobs-full-name"
+                    value={fullName}
+                    onChange={(event) => setFullName(event.target.value)}
+                    autoComplete="name"
+                  />
+                </OutlinedField>
+              ) : null}
+              {showCompanyField ? (
+                <OutlinedField
+                  className="min-w-[10rem] flex-1"
+                  label={t('market.jobsForm.companyLabel')}
+                  htmlFor="market-jobs-company"
+                >
+                  <Input
+                    id="market-jobs-company"
+                    value={companyName}
+                    onChange={(event) => setCompanyName(event.target.value)}
+                    autoComplete="organization"
+                  />
+                </OutlinedField>
+              ) : null}
+              {showPhoneField ? (
+                <OutlinedField
+                  className="min-w-[11rem] flex-1"
+                  label={t('market.jobsForm.phoneLabel')}
+                  htmlFor="market-jobs-phone"
+                >
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={phoneCountryCode}
+                      onChange={(event) => setPhoneCountryCode(event.target.value.toUpperCase())}
+                      className="w-14"
+                      aria-label={t('market.jobsForm.phoneCountryLabel')}
+                      autoComplete="tel-country-code"
+                    />
+                    <Input
+                      id="market-jobs-phone"
+                      value={phoneNumber}
+                      onChange={(event) => setPhoneNumber(event.target.value)}
+                      autoComplete="tel-national"
+                    />
+                  </div>
+                </OutlinedField>
+              ) : null}
+              {showAgeField ? (
+                <OutlinedField
+                  className="w-24"
+                  label={t('market.jobsForm.ageLabel')}
+                  htmlFor="market-jobs-age"
+                >
+                  <Input
+                    id="market-jobs-age"
+                    value={age}
+                    onChange={(event) => setAge(event.target.value)}
+                    inputMode="numeric"
+                  />
+                </OutlinedField>
+              ) : null}
+            </div>
+          ) : null}
 
           <button
             type="button"
@@ -719,14 +752,22 @@ export function MarketJobsInterestForm() {
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <label className="space-y-1 text-sm">
-                  <span className="text-xs text-muted-foreground">{t('market.jobsForm.hoursFromLabel')}</span>
-                  <Input type="time" value={hoursFrom} onChange={(event) => setHoursFrom(event.target.value)} />
-                </label>
-                <label className="space-y-1 text-sm">
-                  <span className="text-xs text-muted-foreground">{t('market.jobsForm.hoursToLabel')}</span>
-                  <Input type="time" value={hoursTo} onChange={(event) => setHoursTo(event.target.value)} />
-                </label>
+                <OutlinedField label={t('market.jobsForm.hoursFromLabel')} htmlFor="market-jobs-hours-from">
+                  <Input
+                    id="market-jobs-hours-from"
+                    type="time"
+                    value={hoursFrom}
+                    onChange={(event) => setHoursFrom(event.target.value)}
+                  />
+                </OutlinedField>
+                <OutlinedField label={t('market.jobsForm.hoursToLabel')} htmlFor="market-jobs-hours-to">
+                  <Input
+                    id="market-jobs-hours-to"
+                    type="time"
+                    value={hoursTo}
+                    onChange={(event) => setHoursTo(event.target.value)}
+                  />
+                </OutlinedField>
               </div>
               <div className="space-y-2">
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
@@ -747,15 +788,15 @@ export function MarketJobsInterestForm() {
                   ))}
                 </div>
               </div>
-              <label className="block space-y-1 text-sm">
-                <span className="text-xs text-muted-foreground">{t('market.jobsForm.notesLabel')}</span>
+              <OutlinedField label={t('market.jobsForm.notesLabel')} htmlFor="market-jobs-notes">
                 <Textarea
+                  id="market-jobs-notes"
                   value={notes}
                   onChange={(event) => setNotes(event.target.value)}
                   rows={3}
                   className="resize-y"
                 />
-              </label>
+              </OutlinedField>
             </div>
           ) : null}
 
