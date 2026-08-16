@@ -8,6 +8,8 @@ import { MarketListingCard } from '@/components/market/MarketListingCard';
 import { MarketListingKindIconToggle } from '@/components/market/MarketListingKindIconToggle';
 import { PostMarketListingDialog } from '@/components/market/PostMarketListingDialog';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { PublicLanguageSelect } from '@/components/public/PublicLanguageSelect';
+import { PublicThemeToggle } from '@/components/public/PublicThemeToggle';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -46,7 +48,7 @@ function readListingKindFromParams(searchParams: URLSearchParams): MarketListing
 
 export default function Market() {
   const { t, language } = useLanguage();
-  const { user, profile } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const { listings, loading: listingsLoading, error: listingsError, refetch: refetchListings } =
     useMarketPublishedListings();
@@ -350,7 +352,25 @@ export default function Market() {
                       <TooltipContent side="bottom">{profileMenuLabel}</TooltipContent>
                     </Tooltip>
                   </>
-                ) : null}
+                ) : authLoading ? null : (
+                  <div
+                    className="flex items-center gap-1.5"
+                    data-testid="market-guest-toolbar"
+                    data-build-key="marketGuestToolbar"
+                    data-build-label="Public Jobs sign-in tools"
+                  >
+                    <PublicLanguageSelect />
+                    <PublicThemeToggle />
+                    <Button type="button" variant="ghost" size="sm" className="h-8 rounded-full px-3 text-xs" asChild>
+                      <Link
+                        to="/login"
+                        state={{ from: { pathname: '/market', search: isJobs ? '?section=jobs' : '' } }}
+                      >
+                        {t('onboarding.signIn')}
+                      </Link>
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </TooltipProvider>
@@ -384,10 +404,10 @@ export default function Market() {
         </header>
 
         <div className="flex-1 space-y-3 px-2 pt-3 sm:px-3" data-build-key="marketGridSection">
-          {!isForYou ? (
+          {!isForYou && !isJobs ? (
             <div className="px-1">
               <h2 className="text-base font-semibold text-foreground">{sectionTitle}</h2>
-              {!isSelling && !isJobs && !isSaved && browseCategoryId ? (
+              {!isSelling && !isSaved && browseCategoryId ? (
                 <p className="mt-0.5 text-xs text-muted-foreground">{t('market.categoriesHint')}</p>
               ) : null}
             </div>
@@ -437,7 +457,7 @@ export default function Market() {
           ) : null}
         </div>
 
-        {!user ? (
+        {!user && !isJobs ? (
           <p className="px-4 pt-2 text-center text-xs text-muted-foreground">{t('market.signInToSell')}</p>
         ) : null}
       </div>

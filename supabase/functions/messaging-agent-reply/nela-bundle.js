@@ -649,12 +649,12 @@ var KNOWLEDGE_PACK = {
     "appVersion": "0.1.183",
     "appReleaseId": "20260816-v0.1.183",
     "androidVersionCode": 185,
-    "gitSha": "98793f185baeb8dd0a5e7a742563dd5ed74a5d7e",
-    "generatedAt": "2026-08-16T17:30:32.870Z",
-    "sourceFingerprint": "b67c05ae8864951c2b1d29810d84270617253530344db45f6ea8624923be0b62",
+    "gitSha": "e41ac2739127c3991fb3db62c71a32fd77519c0e",
+    "generatedAt": "2026-08-16T18:53:49.727Z",
+    "sourceFingerprint": "7c0b31e881c097320861a7060ff502a5bf9945fcf3fac85aba54814123403bf0",
     "knowledgeFormat": 1,
     "sourceCount": 26,
-    "chunkCount": 331
+    "chunkCount": 332
   },
   "capabilities": [
     {
@@ -983,12 +983,13 @@ var KNOWLEDGE_PACK = {
       "id": "market",
       "name": "Market",
       "status": "implemented",
-      "description": "Marketplace for Jobs, listings, products, and services. Start agreement or Contact. Ordinary orders use Marketplace terms.",
-      "howTo": "Open Market from the bottom navigation. Jobs is the default section when For you has no unseen listings.",
+      "description": "Public Jobs board plus marketplace listings, products, and services. Anyone can look for work or post a job without an account. Contact details stay locked until sign-in. Start agreement or Contact for member listings. Ordinary orders use Marketplace terms.",
+      "howTo": "Open Market > Jobs. Guests can browse and post there. Jobs is the default section when For you has no unseen listings.",
       "routes": [
         "/market"
       ],
       "roles": [
+        "guest",
         "member"
       ],
       "relatedCapabilities": [
@@ -1002,7 +1003,8 @@ var KNOWLEDGE_PACK = {
       "sourceRefs": [
         "src/pages/Market.tsx",
         "src/lib/main-nav.ts",
-        "docs/04-operations/dev/agreements.md"
+        "docs/04-operations/dev/agreements.md",
+        "docs/04-operations/dev/market-jobs-public.md"
       ]
     },
     {
@@ -2106,12 +2108,14 @@ var KNOWLEDGE_PACK = {
     {
       "id": "where_are_jobs",
       "question": "Where do I look for a job?",
-      "answer": "Open Market > Jobs. That is Civizen\u2019s employment and job-seeking surface. Work Fulfillment helps you understand fit and improve current work. Contribute Opportunities are for trying activities, not job matching. Happiness and Work Joy stay private and are not sent to employers.",
+      "answer": "Open Market > Jobs. Anyone can look for work or post a job without signing up. Contact details stay locked until you sign in. Work Fulfillment helps you understand fit and improve current work. Contribute Opportunities are for trying activities, not job matching. Happiness and Work Joy stay private and are not sent to employers.",
       "aliases": [
         "job search",
         "employment",
         "hiring",
-        "job fit"
+        "job fit",
+        "post a job",
+        "look for work without account"
       ],
       "capabilityIds": [
         "market",
@@ -2121,7 +2125,26 @@ var KNOWLEDGE_PACK = {
       "sourceRefs": [
         "src/pages/Market.tsx",
         "src/components/market/MarketJobsInterestForm.tsx",
+        "docs/04-operations/dev/market-jobs-public.md",
         "src/lib/happiness/fulfillment/jobs-bridge.ts"
+      ]
+    },
+    {
+      "id": "can_post_job_without_account",
+      "question": "Can I look for a job without signing up?",
+      "answer": "Yes. Open Market > Jobs. Anyone can browse Available work, look for workers, or post an opening without an account. Contact details stay locked until you sign in. There is no paid unlock.",
+      "aliases": [
+        "public jobs",
+        "post job without account",
+        "guest job board"
+      ],
+      "capabilityIds": [
+        "market"
+      ],
+      "sourceRefs": [
+        "docs/04-operations/dev/market-jobs-public.md",
+        "src/pages/Market.tsx",
+        "src/components/market/MarketJobsBoard.tsx"
       ]
     },
     {
@@ -2345,7 +2368,7 @@ var KNOWLEDGE_PACK = {
       "id": "capability:market",
       "title": "Market",
       "path": "src/lib/assistant/catalog.ts",
-      "text": "Market status=implemented. Marketplace for Jobs, listings, products, and services. Start agreement or Contact. Ordinary orders use Marketplace terms. Open Market from the bottom navigation. Jobs is the default section when For you has no unseen listings. Routes: /market.",
+      "text": "Market status=implemented. Public Jobs board plus marketplace listings, products, and services. Anyone can look for work or post a job without an account. Contact details stay locked until sign-in. Start agreement or Contact for member listings. Ordinary orders use Marketplace terms. Open Market > Jobs. Guests can browse and post there. Jobs is the default section when For you has no unseen listings. Routes: /market.",
       "status": "implemented",
       "priority": 3,
       "kind": "capability"
@@ -2831,7 +2854,16 @@ var KNOWLEDGE_PACK = {
       "id": "faq:where_are_jobs",
       "title": "Where do I look for a job?",
       "path": "src/lib/assistant/catalog.ts",
-      "text": "Q: Where do I look for a job? A: Open Market > Jobs. That is Civizen\u2019s employment and job-seeking surface. Work Fulfillment helps you understand fit and improve current work. Contribute Opportunities are for trying activities, not job matching. Happiness and Work Joy stay private and are not sent to employers.",
+      "text": "Q: Where do I look for a job? A: Open Market > Jobs. Anyone can look for work or post a job without signing up. Contact details stay locked until you sign in. Work Fulfillment helps you understand fit and improve current work. Contribute Opportunities are for trying activities, not job matching. Happiness and Work Joy stay private and are not sent to employers.",
+      "status": "implemented",
+      "priority": 5,
+      "kind": "faq"
+    },
+    {
+      "id": "faq:can_post_job_without_account",
+      "title": "Can I look for a job without signing up?",
+      "path": "src/lib/assistant/catalog.ts",
+      "text": "Q: Can I look for a job without signing up? A: Yes. Open Market > Jobs. Anyone can browse Available work, look for workers, or post an opening without an account. Contact details stay locked until you sign in. There is no paid unlock.",
       "status": "implemented",
       "priority": 5,
       "kind": "faq"

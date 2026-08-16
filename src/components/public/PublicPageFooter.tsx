@@ -22,6 +22,12 @@ export function PublicPageFooter() {
         <span aria-hidden className="text-border">
           ·
         </span>
+        <Link to="/market?section=jobs" className="transition-colors hover:text-foreground">
+          {t('onboarding.footerJobs')}
+        </Link>
+        <span aria-hidden className="text-border">
+          ·
+        </span>
         <Link to="/fund" className="transition-colors hover:text-foreground">
           {t('onboarding.footerFund')}
         </Link>

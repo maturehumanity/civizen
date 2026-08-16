@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate, Link } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
@@ -9,10 +9,12 @@ import { Label } from '@/components/ui/label';
 import { UserRound, Lock, ArrowRight, Fingerprint } from 'lucide-react';
 import { PublicAuthHeader } from '@/components/public/PublicAuthHeader';
 import { PublicPageShell } from '@/components/public/PublicPageShell';
+import { resolveAuthReturnPath } from '@/lib/auth-return-path';
 import { getBiometricSignInCapability } from '@/lib/biometric-sign-in';
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { signIn, signInWithBiometrics } = useAuth();
   const { t } = useLanguage();
   const [identifier, setIdentifier] = useState('');
@@ -45,7 +47,7 @@ export default function Login() {
         return;
       }
 
-      navigate('/');
+      navigate(resolveAuthReturnPath(location.state));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign in failed');
     } finally {
@@ -64,7 +66,7 @@ export default function Login() {
       setBiometricLoading(false);
       return;
     }
-    navigate('/');
+    navigate(resolveAuthReturnPath(location.state));
   };
 
   return (

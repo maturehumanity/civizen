@@ -27,6 +27,14 @@ vi.mock('@/components/market/MarketJobsInterestForm', () => ({
   MarketJobsInterestForm: () => <div data-testid="market-jobs-interest-form" />,
 }));
 
+vi.mock('@/components/public/PublicLanguageSelect', () => ({
+  PublicLanguageSelect: () => <button type="button" aria-label="Language" />,
+}));
+
+vi.mock('@/components/public/PublicThemeToggle', () => ({
+  PublicThemeToggle: () => <button type="button" aria-label="Theme" />,
+}));
+
 vi.mock('@/hooks/usePageSecondaryNav', () => ({
   usePageSecondaryNav: () => {},
 }));
@@ -46,11 +54,18 @@ vi.mock('@/lib/use-market-published-listings', () => ({
   }),
 }));
 
+const authState = {
+  user: { id: 'user-1' } as { id: string } | null,
+  loading: false,
+  profile: { id: 'profile-1', full_name: 'Test User', avatar_url: null } as {
+    id: string;
+    full_name: string;
+    avatar_url: null;
+  } | null,
+};
+
 vi.mock('@/contexts/AuthContext', () => ({
-  useAuth: () => ({
-    user: { id: 'user-1' },
-    profile: { id: 'profile-1', full_name: 'Test User', avatar_url: null },
-  }),
+  useAuth: () => authState,
 }));
 
 vi.mock('@/contexts/LanguageContext', async () => {
@@ -70,6 +85,9 @@ vi.mock('@/contexts/LanguageContext', async () => {
 describe('Market', () => {
   beforeEach(() => {
     window.localStorage.clear();
+    authState.user = { id: 'user-1' };
+    authState.loading = false;
+    authState.profile = { id: 'profile-1', full_name: 'Test User', avatar_url: null };
   });
 
   afterEach(() => {
@@ -123,5 +141,22 @@ describe('Market', () => {
     expect(screen.queryByTestId('market-listing-search-bar')).not.toBeInTheDocument();
     fireEvent.click(await screen.findByTestId('market-listing-search-toggle'));
     expect(screen.getByTestId('market-listing-search-bar')).toBeInTheDocument();
+  });
+
+  it('shows public Jobs chrome for guests', async () => {
+    authState.user = null;
+    authState.profile = null;
+    writeLastMarketSection('jobs');
+
+    render(
+      <MemoryRouter initialEntries={['/market']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <Market />
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByTestId('market-jobs-interest-form')).toBeInTheDocument();
+    expect(screen.getByTestId('market-guest-toolbar')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '/login');
+    expect(screen.queryByTestId('user-page-menu-trigger')).not.toBeInTheDocument();
   });
 });

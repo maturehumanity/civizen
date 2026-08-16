@@ -168,6 +168,12 @@ if (!existsSync('docs/04-operations/dev/agreements.md')) {
 if (!agents.includes('agreements.md')) {
   fail('AGENTS.md must reference docs/04-operations/dev/agreements.md');
 }
+if (!existsSync('docs/04-operations/dev/market-jobs-public.md')) {
+  fail('missing docs/04-operations/dev/market-jobs-public.md');
+}
+if (!agents.includes('market-jobs-public.md')) {
+  fail('AGENTS.md must reference docs/04-operations/dev/market-jobs-public.md');
+}
 if (!existsSync('docs/assistant/civizen-assistant-cheatsheet.md')) {
   fail('missing docs/assistant/civizen-assistant-cheatsheet.md');
 }

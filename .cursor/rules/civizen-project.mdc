@@ -31,6 +31,7 @@ Before planning or editing, read (in order):
    - **`docs/04-operations/dev/contribute-page.md`** when touching `/contribute`
    - **`docs/04-operations/dev/phase-1-pilot-operating-model.md`** when touching `/contribute` pilots
    - **`docs/04-operations/dev/agreements.md`** when touching Agreements (`/agreements` is platform-level; Marketplace is an entry point)
+   - **`docs/04-operations/dev/market-jobs-public.md`** when touching public Market Jobs, guest `/market` access, or the Jobs listings board
 8. If the task touches Civi / the built-in assistant:
    - **`docs/assistant/README.md`**, **`docs/assistant/civizen-identity.md`**, and **`docs/assistant/civizen-assistant-cheatsheet.md`**. Identity questions use the identity source first. After product-fact changes, run `npm run assistant:knowledge`. Civi is internal-first; external resources must not override current Civizen project information.
 9. Documentation map: `docs/README.md` (purpose-based IA: foundation · governance · policies · platform · operations · research · proposals · archive · institutional)

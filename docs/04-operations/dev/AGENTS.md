@@ -28,6 +28,7 @@ Before planning or editing, agents **must read**:
    and **`docs/04-operations/dev/contribute-page.md`** when touching `/contribute`
    Phase 1 operating model: **`docs/04-operations/dev/phase-1-pilot-operating-model.md`**
    Agreements workspace: **`docs/04-operations/dev/agreements.md`** (`/agreements` is platform-level; Market is an entry point)
+   Public Market Jobs: **`docs/04-operations/dev/market-jobs-public.md`** when touching public Jobs posting, the listings board, or `/market` guest access
 8. When work touches Civi / the built-in assistant:
    **`docs/assistant/README.md`**, **`docs/assistant/civizen-identity.md`**, and **`docs/assistant/civizen-assistant-cheatsheet.md`**. Identity, purpose, mission, and one-sentence description come from the identity source, not from feature docs. After changing product facts Civi should know, run **`npm run assistant:knowledge`**. Civi is internal-first: Civizen evidence before general AI knowledge. External resources must never override current Civizen project information.
 9. Documentation map: `docs/README.md`

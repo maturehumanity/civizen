@@ -34,6 +34,7 @@ import {
 import { parseWorkFitJobsQuery } from '@/lib/market-jobs-work-fit-prefill';
 import { submitMarketJobInterest } from '@/lib/submit-market-job-interest';
 import { agreementsCreatePath } from '@/lib/agreements-model';
+import { MarketJobsBoard } from '@/components/market/MarketJobsBoard';
 import { isBusinessUsername } from '@/lib/users-admin';
 import { cn } from '@/lib/utils';
 
@@ -195,11 +196,12 @@ function CyclingOptionsLabel({
 
 export function MarketJobsInterestForm() {
   const { t, language } = useLanguage();
-  const { user, profile } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const [searchParams] = useSearchParams();
   const workFitPrefill = parseWorkFitJobsQuery(searchParams.toString());
   const isBusiness = isBusinessUsername(profile?.username);
   const isLoggedIn = Boolean(user?.id);
+  const showModeTabs = !authLoading && !isLoggedIn;
 
   const [mode, setMode] = useState<MarketJobMode>(() => (isBusiness ? 'employer' : 'seeker'));
   const [jobTypes, setJobTypes] = useState<string[]>(() => workFitPrefill.jobTypes);
@@ -236,6 +238,7 @@ export function MarketJobsInterestForm() {
   const [terms, setTerms] = useState<string[]>(['Full-time']);
   const [notes, setNotes] = useState(() => workFitPrefill.notes);
   const [submitting, setSubmitting] = useState(false);
+  const [boardRefreshKey, setBoardRefreshKey] = useState(0);
 
   const showContact = jobTypes.length > 0;
   const showNameField = !trimOrEmpty(fullName);
@@ -344,10 +347,6 @@ export function MarketJobsInterestForm() {
   };
 
   const onSubmit = async () => {
-    if (!user?.id || !profile?.id) {
-      toast.error(t('market.jobsForm.signInRequired'));
-      return;
-    }
     setSubmitting(true);
     const result = await submitMarketJobInterest({
       mode,
@@ -367,8 +366,8 @@ export function MarketJobsInterestForm() {
       hoursTo,
       terms,
       notes,
-      userId: user.id,
-      profileId: profile.id,
+      userId: user?.id ?? null,
+      profileId: profile?.id ?? null,
     });
     setSubmitting(false);
     if (!result.ok) {
@@ -379,6 +378,7 @@ export function MarketJobsInterestForm() {
     setJobTypes([]);
     setNotes('');
     setDetailsOpen(false);
+    setBoardRefreshKey((current) => current + 1);
   };
 
   const filteredCountries = countryOptions.filter((option) => {
@@ -401,7 +401,7 @@ export function MarketJobsInterestForm() {
 
   return (
     <div className="space-y-5 px-1" data-testid="market-jobs-interest-form">
-      {!isLoggedIn ? (
+      {showModeTabs ? (
         <div className="flex justify-center">
           <div
             className="inline-flex rounded-full border border-border/70 bg-muted/20 p-0.5"
@@ -601,46 +601,42 @@ export function MarketJobsInterestForm() {
             </>
           )}
         </SentenceToken>
-        {mode === 'employer' ? (
-          <>
-            {' '}
-            {t('market.jobsForm.employerPayLead')}{' '}
-            <SentenceToken
-              open={payOpen}
-              onOpenChange={setPayOpen}
-              ariaLabel={t('market.jobsForm.payLabel')}
-              empty={!payAmount}
-              panel={
-                <div className="space-y-2 p-3">
-                  <Input
-                    value={payAmount}
-                    onChange={(event) => setPayAmount(event.target.value)}
-                    placeholder={t('market.jobsForm.payAmountPlaceholder')}
-                    inputMode="decimal"
-                  />
-                  <div className="flex flex-wrap gap-1">
-                    {MARKET_JOB_PAY_PERIODS.map((period) => (
-                      <Button
-                        key={period}
-                        type="button"
-                        size="sm"
-                        variant={payPeriod === period ? 'default' : 'outline'}
-                        className="h-7 rounded-full px-2 text-[11px]"
-                        onClick={() => setPayPeriod(period)}
-                      >
-                        {period}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              }
-            >
-              {payAmount
-                ? `$${payAmount} ${payPeriod}`
-                : t('market.jobsForm.payPlaceholder')}
-            </SentenceToken>
-          </>
-        ) : null}
+        {' '}
+        {t('market.jobsForm.employerPayLead')}{' '}
+        <SentenceToken
+          open={payOpen}
+          onOpenChange={setPayOpen}
+          ariaLabel={t('market.jobsForm.payLabel')}
+          empty={!payAmount}
+          panel={
+            <div className="space-y-2 p-3">
+              <Input
+                value={payAmount}
+                onChange={(event) => setPayAmount(event.target.value)}
+                placeholder={t('market.jobsForm.payAmountPlaceholder')}
+                inputMode="decimal"
+              />
+              <div className="flex flex-wrap gap-1">
+                {MARKET_JOB_PAY_PERIODS.map((period) => (
+                  <Button
+                    key={period}
+                    type="button"
+                    size="sm"
+                    variant={payPeriod === period ? 'default' : 'outline'}
+                    className="h-7 rounded-full px-2 text-[11px]"
+                    onClick={() => setPayPeriod(period)}
+                  >
+                    {period}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          }
+        >
+          {payAmount
+            ? `$${payAmount} ${payPeriod}`
+            : t('market.jobsForm.payPlaceholder')}
+        </SentenceToken>
         .
       </p>
 
@@ -827,8 +823,8 @@ export function MarketJobsInterestForm() {
                     relatedTitle: formatEnglishOrList(jobTypes),
                     position: formatEnglishOrList(jobTypes),
                     workLocation: locationText || undefined,
-                    compensation: mode === 'employer' ? payAmount.trim() || undefined : undefined,
-                    payFrequency: mode === 'employer' && payAmount.trim() ? payPeriod : undefined,
+                    compensation: payAmount.trim() || undefined,
+                    payFrequency: payAmount.trim() ? payPeriod : undefined,
                     employmentStatus: terms[0],
                     employmentSelfRole: mode === 'employer' ? 'employer' : 'employee',
                   })}
@@ -840,6 +836,14 @@ export function MarketJobsInterestForm() {
           </div>
         </div>
       ) : null}
+
+      <MarketJobsBoard
+        viewerMode={mode}
+        jobTypes={jobTypes}
+        countryCode={countryCode}
+        city={city}
+        refreshKey={boardRefreshKey}
+      />
     </div>
   );
 }

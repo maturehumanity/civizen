@@ -1,6 +1,6 @@
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Suspense, useEffect, useState } from "react";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
@@ -10,6 +10,7 @@ import { ThemeStorageSync } from "@/components/app/ThemeStorageSync";
 import { AppCrashBoundary } from "@/components/app/AppCrashBoundary";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { permissionListHas } from "@/lib/access-control";
+import { resolveAuthReturnPath } from "@/lib/auth-return-path";
 import { lazyWithChunkReload } from "@/lib/lazy-with-chunk-reload";
 import { happinessAppRoutes } from "@/pages/happiness/happiness-app-routes";
 import { Toaster } from "@/components/ui/toaster";
@@ -117,6 +118,7 @@ const BUILD_OVERLAY_STORAGE_KEY = 'civizen-build-overlay-enabled-v1';
 function AuthRedirect({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const { t } = useLanguage();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -127,7 +129,7 @@ function AuthRedirect({ children }: { children: React.ReactNode }) {
   }
 
   if (user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to={resolveAuthReturnPath(location.state)} replace />;
   }
 
   return <>{children}</>;
@@ -393,7 +395,7 @@ const App = () => (
                       </ProtectedRoute>
                     }
                   />
-                  <Route path="/market" element={<ProtectedRoute><Market /></ProtectedRoute>} />
+                  <Route path="/market" element={<Market />} />
                   <Route path="/market/taxonomy" element={<ProtectedRoute><MarketTaxonomy /></ProtectedRoute>} />
                   <Route path="/agreements/new" element={<ProtectedRoute><AgreementCreate /></ProtectedRoute>} />
                   <Route path="/agreements/:agreementId" element={<ProtectedRoute><AgreementDetail /></ProtectedRoute>} />

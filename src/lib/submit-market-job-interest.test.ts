@@ -74,10 +74,66 @@ describe('submitMarketJobInterest', () => {
         job_types: ['Baker'],
         full_name: 'Ada Lovelace',
         company_name: null,
-        pay_amount: null,
+        pay_amount: '275',
         user_id: 'u1',
         profile_id: 'p1',
       }),
     );
+  });
+
+  it('inserts a public employer row without an account', async () => {
+    const result = await submitMarketJobInterest({
+      mode: 'employer',
+      jobTypes: ['Cook'],
+      city: 'Yerevan',
+      regionCode: '',
+      countryCode: 'AM',
+      payAmount: '200000',
+      payPeriod: 'Monthly pay',
+      fullName: 'Cafe Ararat',
+      companyName: 'Cafe Ararat',
+      phoneCountryCode: 'AM',
+      phoneNumber: '55112233',
+      age: '',
+      days: [],
+      hoursFrom: '',
+      hoursTo: '',
+      terms: ['Full-time'],
+      notes: '',
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect(insertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mode: 'employer',
+        company_name: 'Cafe Ararat',
+        user_id: null,
+        profile_id: null,
+      }),
+    );
+  });
+
+  it('requires a phone number', async () => {
+    await expect(
+      submitMarketJobInterest({
+        mode: 'seeker',
+        jobTypes: ['Baker'],
+        city: '',
+        regionCode: '',
+        countryCode: '',
+        payAmount: '',
+        payPeriod: '',
+        fullName: 'Ada',
+        companyName: '',
+        phoneCountryCode: '',
+        phoneNumber: '',
+        age: '',
+        days: [],
+        hoursFrom: '',
+        hoursTo: '',
+        terms: [],
+        notes: '',
+      }),
+    ).resolves.toEqual({ ok: false, message: 'Phone number is required.' });
   });
 });

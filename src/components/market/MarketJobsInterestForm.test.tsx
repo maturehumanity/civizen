@@ -8,6 +8,7 @@ const submitMock = vi.fn();
 
 const authState = {
   user: { id: 'user-1' } as { id: string } | null,
+  loading: false,
   profile: {
     id: 'profile-1',
     username: 'armen',
@@ -23,6 +24,10 @@ const authState = {
 
 vi.mock('@/lib/submit-market-job-interest', () => ({
   submitMarketJobInterest: (...args: unknown[]) => submitMock(...args),
+}));
+
+vi.mock('@/components/market/MarketJobsBoard', () => ({
+  MarketJobsBoard: () => <div data-testid="market-jobs-board" />,
 }));
 
 vi.mock('@/lib/geo-locations', () => ({
@@ -71,6 +76,7 @@ describe('MarketJobsInterestForm', () => {
     submitMock.mockReset();
     submitMock.mockResolvedValue({ ok: true });
     authState.user = { id: 'user-1' };
+    authState.loading = false;
     authState.profile = { ...completeProfile };
     vi.stubGlobal('ResizeObserver', ResizeObserverStub);
     Element.prototype.scrollIntoView = vi.fn();
@@ -153,6 +159,36 @@ describe('MarketJobsInterestForm', () => {
         phoneNumber: '5550100',
         userId: 'user-1',
         profileId: 'profile-1',
+      }),
+    );
+  });
+
+  it('lets guests post without signing in and shows Worker/Employer tabs', async () => {
+    authState.user = null;
+    authState.profile = null;
+
+    render(<MemoryRouter><MarketJobsInterestForm /></MemoryRouter>);
+
+    expect(screen.getByTestId('market-jobs-mode-tabs')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Employer' }));
+    fireEvent.click(screen.getByLabelText('Job type'));
+    fireEvent.click(await screen.findByRole('option', { name: 'Baker' }));
+
+    fireEvent.change(screen.getByLabelText('Full name *'), { target: { value: 'Ada Cafe' } });
+    fireEvent.change(screen.getByLabelText('Company name *'), { target: { value: 'Ada Cafe' } });
+    fireEvent.change(screen.getByLabelText('Phone number *'), { target: { value: '5559999' } });
+    fireEvent.click(screen.getByTestId('market-jobs-submit'));
+
+    await waitFor(() => expect(submitMock).toHaveBeenCalled());
+    expect(submitMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mode: 'employer',
+        jobTypes: ['Baker'],
+        fullName: 'Ada Cafe',
+        companyName: 'Ada Cafe',
+        phoneNumber: '5559999',
+        userId: null,
+        profileId: null,
       }),
     );
   });

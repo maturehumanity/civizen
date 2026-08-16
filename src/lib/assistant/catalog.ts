@@ -183,13 +183,13 @@ export const ASSISTANT_CAPABILITIES: AssistantCapability[] = [
     name: 'Market',
     status: 'implemented',
     description:
-      'Marketplace for Jobs, listings, products, and services. Start agreement or Contact. Ordinary orders use Marketplace terms.',
-    howTo: 'Open Market from the bottom navigation. Jobs is the default section when For you has no unseen listings.',
+      'Public Jobs board plus marketplace listings, products, and services. Anyone can look for work or post a job without an account. Contact details stay locked until sign-in. Start agreement or Contact for member listings. Ordinary orders use Marketplace terms.',
+    howTo: 'Open Market > Jobs. Guests can browse and post there. Jobs is the default section when For you has no unseen listings.',
     routes: ['/market'],
-    roles: ['member'],
+    roles: ['guest', 'member'],
     relatedCapabilities: ['agreements', 'prototype_credits'],
     aliases: ['marketplace', 'listings'],
-    sourceRefs: ['src/pages/Market.tsx', 'src/lib/main-nav.ts', 'docs/04-operations/dev/agreements.md'],
+    sourceRefs: ['src/pages/Market.tsx', 'src/lib/main-nav.ts', 'docs/04-operations/dev/agreements.md', 'docs/04-operations/dev/market-jobs-public.md'],
   },
   {
     id: 'agreements',
@@ -843,10 +843,19 @@ export const ASSISTANT_FAQ: AssistantFaqItem[] = [
     id: 'where_are_jobs',
     question: 'Where do I look for a job?',
     answer:
-      'Open Market > Jobs. That is Civizen’s employment and job-seeking surface. Work Fulfillment helps you understand fit and improve current work. Contribute Opportunities are for trying activities, not job matching. Happiness and Work Joy stay private and are not sent to employers.',
-    aliases: ['job search', 'employment', 'hiring', 'job fit'],
+      'Open Market > Jobs. Anyone can look for work or post a job without signing up. Contact details stay locked until you sign in. Work Fulfillment helps you understand fit and improve current work. Contribute Opportunities are for trying activities, not job matching. Happiness and Work Joy stay private and are not sent to employers.',
+    aliases: ['job search', 'employment', 'hiring', 'job fit', 'post a job', 'look for work without account'],
     capabilityIds: ['market', 'work_fulfillment', 'happiness'],
-    sourceRefs: ['src/pages/Market.tsx', 'src/components/market/MarketJobsInterestForm.tsx', 'src/lib/happiness/fulfillment/jobs-bridge.ts'],
+    sourceRefs: ['src/pages/Market.tsx', 'src/components/market/MarketJobsInterestForm.tsx', 'docs/04-operations/dev/market-jobs-public.md', 'src/lib/happiness/fulfillment/jobs-bridge.ts'],
+  },
+  {
+    id: 'can_post_job_without_account',
+    question: 'Can I look for a job without signing up?',
+    answer:
+      'Yes. Open Market > Jobs. Anyone can browse Available work, look for workers, or post an opening without an account. Contact details stay locked until you sign in. There is no paid unlock.',
+    aliases: ['public jobs', 'post job without account', 'guest job board'],
+    capabilityIds: ['market'],
+    sourceRefs: ['docs/04-operations/dev/market-jobs-public.md', 'src/pages/Market.tsx', 'src/components/market/MarketJobsBoard.tsx'],
   },
   {
     id: 'can_employer_see_happiness',

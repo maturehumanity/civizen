@@ -28,5 +28,6 @@ describe('PublicPageFooter', () => {
       </MemoryRouter>,
     );
     expect(screen.getByRole('link', { name: 'Areas' })).toHaveAttribute('href', '/areas');
+    expect(screen.getByRole('link', { name: 'Jobs' })).toHaveAttribute('href', '/market?section=jobs');
   });
 });

@@ -17,6 +17,13 @@
 - **Privacy:** owner-only RLS for individual records; optional aggregate participation is a separate table; privileged generation is `service_role` collect → trusted TS engine → persist without rewrite; Wellbeing Insights call `get_wellbeing_aggregate` / stored snapshots only; Human Outcome Reviews compare those snapshots only (no private Happiness joins); never feeds Civizen Score; Jobs prefill uses approved shareable prefs only
 - **Home shortcut:** latest `happiness_state_snapshots.overall_level` only — not the full Happiness workspace
 
+## Market
+
+- **Route:** `/market` is public. Default section is Jobs.
+- **Public Jobs:** guests can post looking-for-work or job openings and browse Available work / Available workers. Contact details stay locked until sign-in. Spec: `docs/04-operations/dev/market-jobs-public.md`.
+- **Member Market:** listings, Sell, Saved, Agreements, prototype credits.
+- **Spec:** `docs/04-operations/dev/nav-secondary-carousel.md` for the arc; Jobs form in `MarketJobsInterestForm`.
+
 ## Secondary navigation (arc)
 
 - **Component:** `NavSecondaryCarousel` (+ geometry module)
