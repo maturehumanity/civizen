@@ -12,6 +12,7 @@ import {
   FileText,
   Globe,
   GraduationCap,
+  Heart,
   Home,
   LogIn,
   ArrowLeftRight,
@@ -71,6 +72,7 @@ export type PageId =
   | 'market'
   | 'agreements'
   | 'earnings'
+  | 'happiness'
   | 'profile'
   | 'editProfile'
   | 'settings'
@@ -100,6 +102,10 @@ export type FeatureId =
   | 'trustFeed'
   | 'messaging'
   | 'scoreSnapshot'
+  | 'happinessFoundation'
+  | 'workFulfillment'
+  | 'fulfillmentPlans'
+  | 'wellbeingAggregatePrivacy'
   | 'directorySearch'
   | 'publicProfiles'
   | 'endorsements'
@@ -168,6 +174,7 @@ export const pageRegistry: Record<PageId, RegistryEntry<PageId>> = {
   market: { id: 'market', icon: Store, labelKey: 'features.pages.market' },
   agreements: { id: 'agreements', icon: FileSignature, labelKey: 'features.pages.agreements' },
   earnings: { id: 'earnings', icon: CircleDollarSign, labelKey: 'features.pages.earnings' },
+  happiness: { id: 'happiness', icon: Heart, labelKey: 'features.pages.happiness' },
   profile: { id: 'profile', icon: UserRound, labelKey: 'features.pages.profile' },
   editProfile: { id: 'editProfile', icon: Edit3, labelKey: 'features.pages.editProfile' },
   settings: { id: 'settings', icon: Settings2, labelKey: 'features.pages.settings' },
@@ -323,6 +330,46 @@ export const featureRegistry: FeatureEntry[] = [
     detailsKey: 'features.catalog.scoreSnapshot.details',
     section: 'identity',
     page: 'profile',
+  },
+  {
+    id: 'happinessFoundation',
+    icon: Heart,
+    titleKey: 'features.catalog.happinessFoundation.title',
+    summaryKey: 'features.catalog.happinessFoundation.summary',
+    workflowKey: 'features.catalog.happinessFoundation.workflow',
+    detailsKey: 'features.catalog.happinessFoundation.details',
+    section: 'identity',
+    page: 'happiness',
+  },
+  {
+    id: 'workFulfillment',
+    icon: Heart,
+    titleKey: 'features.catalog.workFulfillment.title',
+    summaryKey: 'features.catalog.workFulfillment.summary',
+    workflowKey: 'features.catalog.workFulfillment.workflow',
+    detailsKey: 'features.catalog.workFulfillment.details',
+    section: 'identity',
+    page: 'happiness',
+  },
+  {
+    id: 'fulfillmentPlans',
+    icon: Heart,
+    titleKey: 'features.catalog.fulfillmentPlans.title',
+    summaryKey: 'features.catalog.fulfillmentPlans.summary',
+    workflowKey: 'features.catalog.fulfillmentPlans.workflow',
+    detailsKey: 'features.catalog.fulfillmentPlans.details',
+    section: 'identity',
+    page: 'happiness',
+  },
+  {
+    id: 'wellbeingAggregatePrivacy',
+    icon: Shield,
+    titleKey: 'features.catalog.wellbeingAggregatePrivacy.title',
+    summaryKey: 'features.catalog.wellbeingAggregatePrivacy.summary',
+    workflowKey: 'features.catalog.wellbeingAggregatePrivacy.workflow',
+    detailsKey: 'features.catalog.wellbeingAggregatePrivacy.details',
+    section: 'identity',
+    page: 'happiness',
   },
   {
     id: 'directorySearch',

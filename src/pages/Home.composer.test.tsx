@@ -175,6 +175,13 @@ vi.mock('@/contexts/LanguageContext', async () => {
   };
 });
 
+vi.mock('@/lib/happiness/use-happiness-shortcut', () => ({
+  useHappinessShortcutLevel: () => ({
+    level: 'balanced',
+    loading: false,
+  }),
+}));
+
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: supabaseMock,
 }));
@@ -234,5 +241,25 @@ describe('Home post composer focus', () => {
     fireEvent.mouseDown(chrome!);
     expect(focusChromeMock).toHaveBeenCalled();
     expect(focusChromeMock.mock.calls[0]?.[1]).toBeInstanceOf(HTMLElement);
+  }, 15000);
+});
+
+describe('Home Happiness shortcut on the Score card', () => {
+  it('shows a Happiness state icon without extra wording or a Happiness number', async () => {
+    const Home = (await import('@/pages/Home')).default;
+    render(
+      <MemoryRouter>
+        <Home />
+      </MemoryRouter>,
+    );
+
+    const shortcut = await screen.findByRole('link', {
+      name: 'Open Happiness & Fulfillment. Current level: Balanced.',
+    });
+    expect(shortcut.querySelector('[data-happiness-state="balanced"]')).toBeTruthy();
+    expect(shortcut.querySelector('[data-happiness-state]')?.textContent).toBe('');
+    expect(shortcut).toHaveAttribute('href', '/happiness');
+    expect(screen.getByRole('heading', { name: /your civizen score/i })).toBeTruthy();
+    expect(screen.queryByText(/happiness score/i)).toBeNull();
   }, 15000);
 });

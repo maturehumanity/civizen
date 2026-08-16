@@ -102,7 +102,7 @@ export function AppPageHeader({
           {typeof title === 'string' || typeof title === 'number' ? (
             <h1
               className={cn(
-                'min-w-0 text-2xl font-display font-bold leading-snug text-foreground',
+                'min-w-0 flex-1 text-2xl font-display font-bold leading-snug text-foreground',
                 titleClassName,
               )}
               data-testid="app-page-header-title"
@@ -114,7 +114,7 @@ export function AppPageHeader({
               role="heading"
               aria-level={1}
               className={cn(
-                'flex min-w-0 items-center gap-2 text-2xl font-display font-bold leading-snug text-foreground',
+                'flex min-w-0 flex-1 items-center gap-2 text-2xl font-display font-bold leading-snug text-foreground',
                 titleClassName,
               )}
               data-testid="app-page-header-title"

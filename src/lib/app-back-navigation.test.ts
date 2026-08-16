@@ -33,5 +33,7 @@ describe('app-back-navigation', () => {
     expect(getAppBackFallback('/contribute/policy')).toBe('/');
     expect(getAppBackFallback('/u/armen')).toBe('/search');
     expect(getAppBackFallback('/earnings')).toBe('/');
+    expect(getAppBackFallback('/happiness/work')).toBe('/happiness');
+    expect(getAppBackFallback('/wellbeing-insights/outcome')).toBe('/wellbeing-insights');
   });
 });

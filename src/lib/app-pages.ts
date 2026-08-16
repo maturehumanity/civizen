@@ -1,7 +1,7 @@
 import type { AppPermission } from '@/lib/access-control';
 import { permissionListHasAny } from '@/lib/access-control';
 import type { LucideIcon } from 'lucide-react';
-import { Award, BookOpen, FileSignature, Landmark, LayoutGrid } from 'lucide-react';
+import { Award, BookOpen, FileSignature, Heart, Landmark, LayoutGrid } from 'lucide-react';
 import { pageRegistry } from '@/lib/feature-registry';
 import { PROFILE_MENU_EXCLUDED_PAGE_IDS } from '@/lib/main-nav';
 
@@ -15,6 +15,7 @@ export type NavigablePageId =
   | 'market'
   | 'agreements'
   | 'earnings'
+  | 'happiness'
   | 'search'
   | 'endorse'
   | 'profile'
@@ -52,6 +53,7 @@ export const appPageLinks: AppPageLink[] = [
   { id: 'market', path: '/market', labelKey: pageRegistry.market.labelKey, icon: pageRegistry.market.icon },
   { id: 'agreements', path: '/agreements', labelKey: pageRegistry.agreements.labelKey, icon: FileSignature },
   { id: 'earnings', path: '/earnings', labelKey: pageRegistry.earnings.labelKey, icon: pageRegistry.earnings.icon },
+  { id: 'happiness', path: '/happiness', labelKey: pageRegistry.happiness.labelKey, icon: Heart },
   {
     id: 'search',
     path: '/search',

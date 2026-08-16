@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { HomeHappinessShortcut } from '@/components/home/HomeHappinessShortcut';
 import { CivizenScore } from '@/components/ui/CivizenScore';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -1314,7 +1315,7 @@ export default function Home() {
                             <TooltipTrigger asChild>
                               <button
                                 type="button"
-                                className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border/70 bg-card/80 text-primary outline-none transition-colors hover:bg-muted/70 focus-visible:ring-2 focus-visible:ring-primary/20"
+                                className="inline-flex h-[28px] w-[28px] min-h-[28px] min-w-[28px] shrink-0 items-center justify-center rounded-full border border-border/70 bg-card/80 text-primary outline-none transition-colors hover:bg-muted/70 focus-visible:ring-2 focus-visible:ring-primary/20"
                                 aria-label={t('home.viewScoreDetails')}
                                 onClick={() => navigate('/profile')}
                               >
@@ -1333,6 +1334,9 @@ export default function Home() {
                         {scoreCoverageCaption(score, t) ? (
                           <p className="text-sm text-muted-foreground">{scoreCoverageCaption(score, t)}</p>
                         ) : null}
+                        <div className="mt-2 flex justify-end">
+                          <HomeHappinessShortcut profileId={profile?.id} />
+                        </div>
                       </>
                     ) : (
                       <>
@@ -1344,7 +1348,7 @@ export default function Home() {
                             <TooltipTrigger asChild>
                               <button
                                 type="button"
-                                className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border/70 bg-card/80 text-primary outline-none transition-colors hover:bg-muted/70 focus-visible:ring-2 focus-visible:ring-primary/20"
+                                className="inline-flex h-[28px] w-[28px] min-h-[28px] min-w-[28px] shrink-0 items-center justify-center rounded-full border border-border/70 bg-card/80 text-primary outline-none transition-colors hover:bg-muted/70 focus-visible:ring-2 focus-visible:ring-primary/20"
                                 aria-label={t('home.viewScoreDetails')}
                                 onClick={() => navigate('/profile')}
                               >
@@ -1357,34 +1361,37 @@ export default function Home() {
                             </TooltipContent>
                           </Tooltip>
                         </div>
-                        {score.tier.finalTier ? (
-                          homePointsToNextLabel ? (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <p
-                                  className={`mt-1 cursor-default text-sm font-semibold uppercase tracking-wide outline-none ${getDevelopmentalScoreColor(
-                                    score.overall.score,
-                                    score.tier.finalTier,
-                                  )}`}
-                                  tabIndex={0}
-                                  aria-label={`${homeScoreTierLabel}. ${homePointsToNextLabel}`}
-                                >
-                                  {homeScoreTierLabel}
-                                </p>
-                              </TooltipTrigger>
-                              <TooltipContent side="bottom">{homePointsToNextLabel}</TooltipContent>
-                            </Tooltip>
-                          ) : (
-                            <p
-                              className={`mt-1 text-sm font-semibold uppercase tracking-wide ${getDevelopmentalScoreColor(
-                                score.overall.score,
-                                score.tier.finalTier,
-                              )}`}
-                            >
-                              {homeScoreTierLabel}
-                            </p>
-                          )
-                        ) : null}
+                        <div className="mt-1 flex items-center gap-1.5">
+                          {score.tier.finalTier ? (
+                            homePointsToNextLabel ? (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <p
+                                    className={`min-w-0 truncate cursor-default text-sm font-semibold uppercase tracking-wide outline-none ${getDevelopmentalScoreColor(
+                                      score.overall.score,
+                                      score.tier.finalTier,
+                                    )}`}
+                                    tabIndex={0}
+                                    aria-label={`${homeScoreTierLabel}. ${homePointsToNextLabel}`}
+                                  >
+                                    {homeScoreTierLabel}
+                                  </p>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom">{homePointsToNextLabel}</TooltipContent>
+                              </Tooltip>
+                            ) : (
+                              <p
+                                className={`min-w-0 truncate text-sm font-semibold uppercase tracking-wide ${getDevelopmentalScoreColor(
+                                  score.overall.score,
+                                  score.tier.finalTier,
+                                )}`}
+                              >
+                                {homeScoreTierLabel}
+                              </p>
+                            )
+                          ) : null}
+                          <HomeHappinessShortcut profileId={profile?.id} className="shrink-0" />
+                        </div>
                       </>
                     )}
                   </div>

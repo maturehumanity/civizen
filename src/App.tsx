@@ -11,6 +11,7 @@ import { AppCrashBoundary } from "@/components/app/AppCrashBoundary";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { permissionListHas } from "@/lib/access-control";
 import { lazyWithChunkReload } from "@/lib/lazy-with-chunk-reload";
+import { happinessAppRoutes } from "@/pages/happiness/happiness-app-routes";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 
@@ -398,6 +399,7 @@ const App = () => (
                   <Route path="/agreements/:agreementId" element={<ProtectedRoute><AgreementDetail /></ProtectedRoute>} />
                   <Route path="/agreements" element={<ProtectedRoute><Agreements /></ProtectedRoute>} />
                   <Route path="/earnings" element={<ProtectedRoute><Earnings /></ProtectedRoute>} />
+                  {happinessAppRoutes}
                   <Route
                     path="/profile"
                     element={

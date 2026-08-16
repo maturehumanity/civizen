@@ -7,6 +7,9 @@
  *
  * Reputation uses Bayesian-style shrinkage toward a neutral prior. The prior
  * is used only inside an observed category; zero evidence stays unknown/null.
+ *
+ * Happiness & Human Fulfillment data must never feed this model, public
+ * reputation, employment ranking, or governance power.
  */
 
 export const SCORE_CALCULATION_VERSION = 'civizen-score-v2.0';

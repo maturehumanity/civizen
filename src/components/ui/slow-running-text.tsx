@@ -34,6 +34,7 @@ export function SlowRunningText({
     };
 
     update();
+    if (typeof ResizeObserver === 'undefined') return;
     const observer = new ResizeObserver(update);
     observer.observe(container);
     return () => observer.disconnect();

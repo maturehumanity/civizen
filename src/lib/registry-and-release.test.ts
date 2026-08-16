@@ -12,6 +12,7 @@ describe('feature-registry', () => {
   it('registers core pages used by admin and navigation', () => {
     expect(pageRegistry.home).toBeTruthy();
     expect(pageRegistry.earnings).toBeTruthy();
+    expect(pageRegistry.happiness).toBeTruthy();
     expect(pageRegistry.adminUsers).toBeTruthy();
     expect(pageRegistry.settings).toBeTruthy();
     expect(Object.keys(sectionRegistry).length).toBeGreaterThan(0);

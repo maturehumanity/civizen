@@ -1636,6 +1636,802 @@ export const baseTranslations = {
     "rowSignedHint": "Signed agreement",
     "rowPendingHint": "Awaiting signatures"
   },
+  "happiness": {
+    "navTitle": "Happiness & Fulfillment",
+    "pageTitle": "Happiness & Fulfillment",
+    "homeShortcutAria": "Open Happiness & Fulfillment. Current level: {level}.",
+    "homeShortcutAriaUnassessed": "Open Happiness & Fulfillment. Current level not established yet.",
+    "homeShortcutTooltipUnassessed": "Not assessed yet",
+    "privateHint": "This is private to you.",
+    "signIn": "Sign in to see how life is going.",
+    "backendUnavailable": "Happiness is not available right now. Try again later.",
+    "detailsLabel": "Happiness details",
+    "sections": {
+      "overview": "Overview",
+      "areas": "Life areas",
+      "checkins": "Check-ins",
+      "trends": "Trends",
+      "improvement": "Improve"
+    },
+    "emptyTitle": "How is life going?",
+    "emptyBody": "A short check-in is enough to start. You can add a fuller review when you want more detail.",
+    "notEnoughYet": "There is not enough yet to describe your recent wellbeing.",
+    "goingWell": "Going well",
+    "needsAttention": "Needs attention",
+    "noneYet": "Not enough yet",
+    "latestCheckIn": "Latest check-in: {feeling} · {when}",
+    "checkIn": "Check in",
+    "reviewWellbeing": "Review my wellbeing",
+    "improveArea": "Improve an area",
+    "checkinsDisabledHint": "Check-ins are turned off in your privacy settings.",
+    "openWorkFulfillment": "Work Fulfillment",
+    "openPrivacy": "Privacy",
+    "privacySettingsHint": "Happiness check-ins, notes, and recommendations stay private. Open Happiness privacy to review or delete them.",
+    "notYet": "Not yet",
+    "noCheckIns": "No check-ins yet.",
+    "trendsEmpty": "Trends appear after a few check-ins or a review.",
+    "noActions": "No improvement actions yet.",
+    "dismissed": "Set aside",
+    "didThisHelp": "Did this help?",
+    "optionalComment": "Want to add anything?",
+    "saveFollowUp": "Save",
+    "followUpSaved": "Saved. Thank you.",
+    "checkInTitle": "Check in",
+    "checkInSubtitle": "About 15 seconds. Private to you.",
+    "howFeelingToday": "How are you feeling today?",
+    "affectingMost": "What is affecting you most today?",
+    "wantToAdd": "Want to add anything?",
+    "notePlaceholder": "Optional note",
+    "saveCheckIn": "Save check-in",
+    "checkInSaved": "Check-in saved.",
+    "saveFailed": "Could not save. Try again.",
+    "reviewTitle": "Review my wellbeing",
+    "reviewSubtitle": "A fuller look at the areas of your life.",
+    "weeklyPulse": "This week's pulse",
+    "monthlyReview": "Full review",
+    "weeklyPulseHint": "A few life areas this week, rotating so all important areas are covered over time.",
+    "monthlyReviewHint": "All ten life areas. This refreshes your Happiness Profile.",
+    "wantHelpImproving": "I want help improving something.",
+    "saveReview": "Save review",
+    "reviewSaved": "Review saved.",
+    "improveTitle": "Improve an area",
+    "improveSubtitle": "Choose one area. Suggestions stay small and practical.",
+    "chooseArea": "Which area do you want to improve?",
+    "whatIsAffecting": "What is affecting this?",
+    "moreSpecifically": "More specifically",
+    "causeNote": "Optional note",
+    "followUpWhen": "When should we check whether this helped?",
+    "suggestions": "Suggestions",
+    "suggestionsDisclaimer": "These are practical next steps, not a diagnosis, and not a claim that unhappiness is only an individual responsibility.",
+    "recordAction": "I'll try this",
+    "notRelevant": "Not relevant",
+    "dismissedLocal": "Noted.",
+    "actionSaved": "Action recorded. You can say whether it helped now, or wait for the follow-up.",
+    "modelWorkingNote": "These levels are a working guide, not a diagnosis or a scientifically final formula.",
+    "recommendationsDisabledHint": "Recommendations are turned off in your privacy settings.",
+    "workTitle": "Work Fulfillment",
+    "workSubtitle": "How work fits what you enjoy, what you are good at, and how you want to live.",
+    "workPreview": "Work Fulfillment is a distinct part of Happiness. It looks at enjoyment, fit, and the conditions of work — not only a job title.",
+    "workToolsPreparing": "Work Fulfillment looks at current work, joy, fit, and improving the role first.",
+    "workLadderTitle": "If work feels off",
+    "workLadderHint": "The first step is to understand the problem. A new career is not the automatic next step.",
+    "workNoAutoCareer": "Civizen will not automatically recommend changing careers.",
+    "workProfileReady": "Your Work Fulfillment profile can inform Contribute, Study, and Marketplace Jobs.",
+    "privacyTitle": "Happiness privacy",
+    "privacySubtitle": "You can see, correct, and delete this information.",
+    "privacyNeverUsed": "Your Happiness Level, check-ins, notes, and causes are private by default. They are not used for:",
+    "disableCheckins": "Check-ins",
+    "disableCheckinsHint": "Turn off to stop quick check-in prompts.",
+    "enableRecommendations": "Suggestions",
+    "enableRecommendationsHint": "Turn off to stop improvement suggestions.",
+    "optionalSharing": "Optional sharing",
+    "optionalSharingHint": "Off by default. Nothing is shared with employers, organizations, or other members unless you turn this on later for a specific, explained use.",
+    "aggregateParticipation": "Privacy-protected group insights",
+    "aggregateParticipationHint": "Your individual Happiness & Fulfillment information remains private. If you choose to participate, qualifying information may contribute to privacy-protected group insights only when enough people are included. This is not employer access, Job Fit sharing, or a public profile.",
+    "aggregateParticipationWithdraw": "You can turn this off later. New group insights will stop using your information. Already recorded group insights are not automatically rewritten.",
+    "collectedTitle": "What has been collected",
+    "collectedSummary": "{checkins} check-ins · {reviews} reviews · {actions} actions",
+    "removeEntry": "Remove",
+    "deleteAll": "Delete my Happiness data",
+    "deleteConfirm": "Delete all Happiness and Work Fulfillment records for this account? This cannot be undone.",
+    "deleted": "Happiness data deleted.",
+    "levels": {
+      "struggling": "Struggling",
+      "unsettled": "Unsettled",
+      "balanced": "Balanced",
+      "flourishing": "Flourishing",
+      "thriving": "Thriving"
+    },
+    "levelPhrase": {
+      "struggling": "Your current happiness level is Struggling.",
+      "unsettled": "Your current happiness level is Unsettled.",
+      "balanced": "Your current happiness level is Balanced.",
+      "flourishing": "Your current happiness level is Flourishing.",
+      "thriving": "Your current happiness level is Thriving."
+    },
+    "recentPhrase": {
+      "struggling": "Your recent wellbeing appears to be Struggling.",
+      "unsettled": "Your recent wellbeing appears to be Unsettled.",
+      "balanced": "Your recent wellbeing appears to be Balanced.",
+      "flourishing": "Your recent wellbeing appears to be Flourishing.",
+      "thriving": "Your recent wellbeing appears to be Thriving."
+    },
+    "levelMoved": "Your level has moved from {from} to {to}.",
+    "trend": {
+      "improving": "Improving",
+      "stable": "Stable",
+      "declining": "Declining",
+      "unknown": "Not enough yet for a trend"
+    },
+    "trendImprovingWeeks": "Improving for {weeks} weeks",
+    "workDeclinedRecently": "Work Fulfillment has declined recently.",
+    "feelings": {
+      "very_difficult": "Very difficult",
+      "difficult": "Difficult",
+      "okay": "Okay",
+      "good": "Good",
+      "very_good": "Very good"
+    },
+    "affecting": {
+      "work": "Work",
+      "health": "Health",
+      "relationships": "Relationships",
+      "money_security": "Money / security",
+      "family": "Family",
+      "time": "Time",
+      "environment": "Environment",
+      "purpose": "Purpose",
+      "something_else": "Something else"
+    },
+    "domains": {
+      "life_satisfaction": "Life Satisfaction",
+      "emotional_wellbeing": "Emotional Wellbeing",
+      "meaning_purpose": "Meaning & Purpose",
+      "relationships_belonging": "Relationships & Belonging",
+      "health_vitality": "Health & Vitality",
+      "autonomy_freedom": "Autonomy & Freedom",
+      "security_stability": "Security & Stability",
+      "time_life_balance": "Time & Life Balance",
+      "environment_community": "Environment & Community",
+      "work_fulfillment": "Work / Occupation Fulfillment"
+    },
+    "domainsShort": {
+      "life_satisfaction": "Life satisfaction",
+      "emotional_wellbeing": "Emotional wellbeing",
+      "meaning_purpose": "Meaning",
+      "relationships_belonging": "Relationships",
+      "health_vitality": "Health",
+      "autonomy_freedom": "Autonomy",
+      "security_stability": "Security",
+      "time_life_balance": "Time balance",
+      "environment_community": "Environment",
+      "work_fulfillment": "Work Fulfillment"
+    },
+    "causeGroups": {
+      "work": "Work",
+      "health": "Health",
+      "relationships": "Relationships",
+      "security": "Security",
+      "time": "Time",
+      "purpose": "Purpose"
+    },
+    "causes": {
+      "work": {
+        "tasks": "Tasks",
+        "workload": "Workload",
+        "manager": "Manager",
+        "team": "Team",
+        "schedule": "Schedule",
+        "commute": "Commute",
+        "pay": "Pay",
+        "instability": "Instability",
+        "lack_of_autonomy": "Lack of autonomy",
+        "lack_of_purpose": "Lack of purpose",
+        "poor_fit": "Poor fit",
+        "unsafe_environment": "Unsafe environment"
+      },
+      "health": {
+        "physical_discomfort": "Physical discomfort",
+        "sleep": "Sleep",
+        "energy": "Energy",
+        "access_to_care": "Access to care",
+        "movement_activity": "Movement / activity"
+      },
+      "relationships": {
+        "loneliness": "Loneliness",
+        "conflict": "Conflict",
+        "family_pressure": "Family pressure",
+        "lack_of_belonging": "Lack of belonging"
+      },
+      "security": {
+        "housing": "Housing",
+        "money": "Money",
+        "employment_instability": "Employment instability",
+        "personal_safety": "Personal safety"
+      },
+      "time": {
+        "overwork": "Overwork",
+        "caregiving": "Caregiving",
+        "commute": "Commute",
+        "insufficient_rest": "Insufficient rest",
+        "lack_of_personal_time": "Lack of personal time"
+      },
+      "purpose": {
+        "feeling_underused": "Feeling underused",
+        "lack_of_contribution": "Lack of contribution",
+        "lack_of_progress": "Lack of progress",
+        "lack_of_direction": "Lack of direction"
+      }
+    },
+    "timing": {
+      "three_days": "In 3 days",
+      "one_week": "In a week",
+      "two_weeks": "In 2 weeks"
+    },
+    "helped": {
+      "not_at_all": "Not at all",
+      "a_little": "A little",
+      "somewhat": "Somewhat",
+      "a_lot": "A lot"
+    },
+    "integration": {
+      "study": "Study",
+      "contribute": "Contribute",
+      "opportunities": "Opportunities",
+      "challenges": "Community Challenges",
+      "governance_solutions": "Governance Solutions",
+      "work_fulfillment": "Work Fulfillment",
+      "jobs": "Marketplace Jobs",
+      "messaging": "Civi"
+    },
+    "plans": {
+      "planSubtitle": "A private plan for one area of life you want to improve.",
+      "activeHeading": "Active",
+      "pausedHeading": "Paused",
+      "suggestedHeading": "Suggested areas",
+      "recentHeading": "Recently completed",
+      "savedLaterHeading": "Saved for later",
+      "noActive": "No active plans yet. Start with one area.",
+      "tooManyActive": "You already have several active areas. Focusing on one or two may make them easier to work on.",
+      "helpedLabel": "Helped",
+      "improveThisArea": "Improve this area",
+      "improvingArea": "Improving {area}",
+      "changeArea": "Choose a different area",
+      "saveOutcome": "Save",
+      "resume": "Continue",
+      "removePlan": "Remove plan",
+      "deletePlanConfirm": "Remove this plan? Check-ins and Work Fulfillment stay.",
+      "communityCaution": "This stays private until you choose to open a community or governance path. Nothing is published automatically.",
+      "domainImprovedSince": "Your {area} has improved since you started this plan. That does not by itself prove this plan caused the change.",
+      "reminderHeading": "Follow-up",
+      "reminderDeferred": "Civizen stores when to follow up. Notifications are not sent yet.",
+      "reminder": {
+        "none": "No reminder",
+        "weekly": "Weekly",
+        "chosen_date": "Pick a date",
+        "later": "Later"
+      },
+      "feedback": {
+        "not_relevant": "Not relevant",
+        "tried_before": "Tried before",
+        "not_now": "Not now",
+        "saved_later": "Save for later"
+      },
+      "statusHint": {
+        "exploring": "You are still deciding what to try.",
+        "active": "You are working on this plan.",
+        "paused": "Paused for now. Pausing is not a failure. You can continue whenever it fits.",
+        "completed": "Completed means you are done with this plan. It is not a score.",
+        "stopped": "Stopped — this is no longer needed. Stopping is not a failure."
+      },
+      "workDelegateTitle": "Work Fulfillment has its own workspace",
+      "workDelegateBody": "For work issues, continue in Work Fulfillment. If you want actual employment, use Marketplace Jobs. Contribute is for trying activities, not job matching.",
+      "openJobs": "Look for a job",
+      "tryContributeTrial": "Try this kind of work through Contribute",
+      "jobVsContributionFit": "Contribution Fit is for trying, learning, and demonstrating capability. Job Fit is for actual employment on Marketplace Jobs. There is no numeric Job Fit score.",
+      "workJobsHint": "When you are ready to seek employment, Marketplace Jobs is the destination — not Opportunities alone. Only approved shareable preferences can prefill the form. Private Work Joy, diagnoses, and notes stay here.",
+      "betterLookLike": "What would better look like?",
+      "betterPlaceholder": "For example: two evenings each week that are actually free.",
+      "wantToImprove": "What I want to improve",
+      "whatMayAffect": "What may be affecting it",
+      "whatImTrying": "What I'm trying",
+      "noOutcomeYet": "You have not described what better would look like yet.",
+      "noFactorsYet": "No contributing factors recorded yet.",
+      "whySeeingThis": "Why am I seeing this?",
+      "whatChanged": "What changed? (optional)",
+      "supportHeading": "Support",
+      "supportHint": "Some things are easier with another person. Civizen does not try to solve every problem through conversation alone.",
+      "openSupport": "Open this support",
+      "askCivi": "Ask Civi about this plan",
+      "openCivi": "Open Civi",
+      "pause": "Pause",
+      "complete": "Complete plan",
+      "stop": "Stop — this is no longer needed",
+      "healthBoundary": "Civizen Happiness is not medical or mental-health diagnosis, therapy, or a prescription service. Seek qualified professional help where appropriate.",
+      "certainty": {
+        "member_confirmed": "You said…",
+        "observed_pattern": "Your recent records show…",
+        "hypothesis": "One possibility to explore…"
+      },
+      "progress": {
+        "exploring": "Exploring",
+        "trying": "Trying something",
+        "seeing_improvement": "Seeing improvement",
+        "needs_another_approach": "Needs another approach",
+        "paused": "Paused",
+        "completed": "Completed",
+        "stopped": "Stopped"
+      },
+      "why": {
+        "domain_selected": "You selected this life area.",
+        "member_confirmed": "You confirmed a related factor.",
+        "observed_pattern": "Recent check-ins often mention this area.",
+        "hypothesis": "This is a possible factor to explore — not a confirmed cause.",
+        "previously_helped": "This kind of action helped you before.",
+        "smallest_step": "This is a small, reversible next step.",
+        "human_support": "This may be easier to work through with another person.",
+        "work_delegate": "Work issues belong in Work Fulfillment rather than a generic plan.",
+        "jobs_not_contribute": "Actual employment seeking belongs on Marketplace Jobs, not only Contribute Opportunities.",
+        "system_constraint": "This may be partly a system or community issue, not only a personal one."
+      },
+      "library": {
+        "timeEvening": {
+          "title": "Keep two evenings free from work this week",
+          "body": "A small, reversible scheduling change — not a life overhaul."
+        },
+        "commuteSystem": {
+          "title": "Explore whether the commute is a community issue",
+          "body": "If there is no viable alternative, this may be a system constraint rather than something you can fix alone.",
+          "caution": "Your private Happiness record is not published as a Community Challenge unless you choose that."
+        },
+        "relationshipsReach": {
+          "title": "Reach out to one person or group",
+          "body": "A single contact is enough to start."
+        },
+        "healthRest": {
+          "title": "Protect one stretch of rest this week",
+          "body": "A practical rest step — not a diagnosis."
+        },
+        "healthProfessional": {
+          "title": "Consider qualified professional support",
+          "body": "Health and emotional concerns may be easier with a qualified person. Civizen is not therapy."
+        },
+        "purposeContribute": {
+          "title": "Join one meaningful activity through Contribute",
+          "body": "Trying a contribution can show whether an activity feels purposeful."
+        },
+        "securityNext": {
+          "title": "Write down the next practical security step",
+          "body": "One concrete next action — not a credit or hiring decision."
+        },
+        "securitySupport": {
+          "title": "Talk this through with a person or service",
+          "body": "Complex money or security issues are often easier with another person."
+        },
+        "environmentCommunity": {
+          "title": "See whether a Community Challenge already exists",
+          "body": "Local conditions may need a community response. You choose whether to participate.",
+          "caution": "Nothing from this private plan is published automatically."
+        },
+        "lifeOneArea": {
+          "title": "Name one part of life to tend this week",
+          "body": "Keep the next step small and specific."
+        },
+        "emotionalPerson": {
+          "title": "Involve someone you trust",
+          "body": "This may be easier with a friend, family member, or qualified professional. Not a diagnosis."
+        },
+        "autonomyChoice": {
+          "title": "Choose one decision you can make this week",
+          "body": "A small autonomy experiment."
+        },
+        "autonomyStudy": {
+          "title": "Look at a Study path that could build confidence",
+          "body": "Learning can help when the issue is capability or confidence — not a diagnosis."
+        },
+        "workDelegate": {
+          "title": "Open Work Fulfillment",
+          "body": "Work issues use the Work Fulfillment workspace, not a duplicate generic plan."
+        },
+        "workContribute": {
+          "title": "Try this kind of work through Contribute",
+          "body": "A trial to see whether the work feels fulfilling — Contribution Fit, not job matching."
+        },
+        "workJobs": {
+          "title": "Look for employment on Marketplace Jobs",
+          "body": "When you want actual employment, use Marketplace Jobs. Approved shareable preferences can prefill the form. Private Work Joy and diagnoses do not transfer."
+        },
+        "workStudy": {
+          "title": "Look at relevant learning in Study",
+          "body": "Learn or reskill where a capability gap exists."
+        }
+      },
+      "support": {
+        "friendFamily": {
+          "title": "A friend or family member",
+          "body": "Someone you already trust."
+        },
+        "mentor": {
+          "title": "A mentor or experienced peer",
+          "body": "Guidance from someone who has done similar work."
+        },
+        "professional": {
+          "title": "A qualified professional",
+          "body": "For health, legal, or complex financial questions. Civizen is not that professional."
+        },
+        "study": {
+          "title": "Study",
+          "body": "Learning paths already in Civizen."
+        },
+        "contribute": {
+          "title": "Contribute",
+          "body": "People, groups, and activities you can join."
+        },
+        "work": {
+          "title": "Work Fulfillment",
+          "body": "The specialized workspace for current work and occupational fit."
+        },
+        "jobs": {
+          "title": "Marketplace Jobs",
+          "body": "Actual employment and employer matching."
+        },
+        "challenge": {
+          "title": "Community Challenges",
+          "body": "Only if you choose to take a private concern into public community work."
+        },
+        "governance": {
+          "title": "Governance Solutions",
+          "body": "A public civic path, only if you choose to open it. Your private plan is not posted."
+        }
+      },
+      "factors": {
+        "limited_transport_or_local_conditions": "limited transport or local conditions",
+        "local_conditions_outside_personal_control": "local conditions outside personal control",
+        "local_housing_or_income_conditions": "local housing or income conditions",
+        "time": "time and rest",
+        "overwork": "overwork",
+        "commute": "commute"
+      }
+    },
+    "recs": {
+      "workUnderstand": {
+        "title": "Name what is draining about current work",
+        "why": "Suggested because Work Fulfillment needs attention. Understanding the current role comes before changing careers."
+      },
+      "workTryContribute": {
+        "title": "Try a related activity through Contribute",
+        "why": "A short contribution can show whether an activity fits before a larger change."
+      },
+      "workLearn": {
+        "title": "Look at relevant learning in Study",
+        "why": "If a different role needs skills, learning is a practical next step — not an automatic career change."
+      },
+      "workExploreTrial": {
+        "title": "Browse a low-risk opportunity",
+        "why": "Opportunities can be a trial, not a ranking of your wellbeing."
+      },
+      "healthRest": {
+        "title": "Protect one stretch of rest this week",
+        "why": "Suggested because Health & Vitality needs attention."
+      },
+      "timeBoundary": {
+        "title": "Set one time boundary this week",
+        "why": "Suggested because Time & Life Balance needs attention."
+      },
+      "relationshipsReach": {
+        "title": "Reach out to one person or group",
+        "why": "Suggested because Relationships & Belonging needs attention."
+      },
+      "securityNext": {
+        "title": "Write down the next practical security step",
+        "why": "Suggested because Security & Stability needs attention. This is not a credit or hiring decision."
+      },
+      "purposeContribute": {
+        "title": "Find one way to contribute that uses what you are good at",
+        "why": "Suggested because Meaning & Purpose needs attention."
+      },
+      "autonomyChoice": {
+        "title": "Choose one part of your week you can decide yourself",
+        "why": "Suggested because Autonomy & Freedom needs attention."
+      },
+      "environmentWalk": {
+        "title": "Spend time in a place that feels better, or name a local issue",
+        "why": "Suggested because Environment & Community needs attention."
+      },
+      "lifeOneArea": {
+        "title": "Pick one area to improve this week",
+        "why": "A single focus is usually more useful than trying to change everything."
+      }
+    },
+    "work": {
+      "ladder": {
+        "understand": "Understand the problem",
+        "improveCurrent": "Improve the current role",
+        "redesignTasks": "Redesign tasks",
+        "adjustWorkload": "Adjust workload or schedule",
+        "changeEnvironment": "Change team or environment",
+        "exploreAdjacent": "Explore adjacent roles",
+        "tryContribute": "Try alternative work through a contribution",
+        "learn": "Learn or reskill",
+        "transition": "Transition to a new role",
+        "monitor": "Monitor after a transition"
+      },
+      "sections": {
+        "overview": "Overview",
+        "current": "Current",
+        "joy": "Joy",
+        "fit": "Fit",
+        "improve": "Improve"
+      },
+      "sectionNames": {
+        "overview": "Overview",
+        "current": "Current work",
+        "joy": "Work Joy",
+        "fit": "My Fit",
+        "improve": "Improve"
+      },
+      "currentLevel": "Current level",
+      "goingWell": "Going well",
+      "needsAttention": "Needs attention",
+      "nextLook": "What to look at next",
+      "addContext": "Add current work",
+      "saveContext": "Save work context",
+      "roleTitle": "Role or title",
+      "organization": "Organization or context (optional)",
+      "workType": "Kind of work",
+      "startDate": "Started (optional)",
+      "hours": "Hours or workload (optional)",
+      "location": "Where you work (optional)",
+      "primary": "This is my primary work right now",
+      "primaryShort": "Primary",
+      "makePrimary": "Make primary",
+      "makePrimaryNamed": "Make {title} primary",
+      "assessingThisWork": "Which work to assess",
+      "assessingNamed": "Assessing {title}",
+      "joyForThisWork": "Work Joy for",
+      "envTitle": "Environment that fits you",
+      "autonomyTitle": "Autonomy that fits you",
+      "lifestyleSchedule": "Schedule or lifestyle notes (optional)",
+      "envAxes": {
+        "individualVsTeam": "Working with others",
+        "remoteVsOnsite": "Where you work best",
+        "structuredVsFlexible": "Structure"
+      },
+      "envPick": {
+        "individual": "Mostly individual",
+        "mixed": "Mix of both",
+        "team": "Mostly with a team",
+        "structured": "More structured",
+        "flexible": "More flexible"
+      },
+      "autonomyAxes": {
+        "methods": "How you do the work",
+        "schedule": "When you work"
+      },
+      "autonomyPick": {
+        "low": "Less needed",
+        "moderate": "Some",
+        "high": "A lot"
+      },
+      "startAction": "Start",
+      "completeAction": "Mark complete",
+      "actionStatus": {
+        "planned": "Planned",
+        "in_progress": "In progress",
+        "completed": "Completed",
+        "dismissed": "Set aside"
+      },
+      "outcomeRecorded": "Recorded outcome: {rating}",
+      "shareableNotPrivateSource": "Opportunity Fit uses only these approved preferences — not Work Joy, diagnoses, notes, or intervention history.",
+      "description": "Optional description",
+      "assessWork": "Assess this work",
+      "saveAssessment": "Save assessment",
+      "howDidItFeel": "How did this work feel?",
+      "whatDoing": "What were you doing?",
+      "activityOptional": "Activity is optional. Tag only if it helps.",
+      "saveJoy": "Save Work Joy",
+      "joySaved": "Work Joy saved.",
+      "joyHistory": "Recent Work Joy",
+      "noJoyYet": "No Work Joy entries yet.",
+      "patternsTitle": "What your entries suggest",
+      "patternsNeedMore": "A few more Work Joy entries are needed before patterns appear.",
+      "oftenHigher": "You often report higher enjoyment when this involves {tag}.",
+      "recentSuggestsHigher": "Your recent entries suggest {tag} is often associated with higher enjoyment.",
+      "oftenLower": "You often report lower enjoyment when this involves {tag}.",
+      "recentSuggests": "Your recent entries suggest {tag} is often associated with lower enjoyment.",
+      "worthExploring": "This may be worth exploring: {tag} often feels draining.",
+      "notACalling": "These are patterns to consider, not a claim about what you are meant to do.",
+      "hypothesesTitle": "What may be affecting your work fulfillment",
+      "hypothesesHint": "Possible sources to explore — not a diagnosis, and not an instruction to change jobs.",
+      "occupationMayFit": "The occupation itself may fit you reasonably well, while your current task mix and autonomy appear to be the larger concerns.",
+      "improveFirst": "Improve current work",
+      "chooseIssue": "Choose one work issue",
+      "wantToChange": "What I want to change",
+      "recordImprove": "Record this action",
+      "exploreTitle": "Explore nearby kinds of work",
+      "whyMayFit": "Why it may fit",
+      "thingsToExplore": "Things to explore",
+      "tryThisWork": "Try this kind of work",
+      "openStudy": "See related learning",
+      "openOpportunities": "See existing opportunities",
+      "alignment": {
+        "strong_alignment": "Strong alignment",
+        "some_alignment": "Some alignment",
+        "worth_exploring": "Worth exploring",
+        "limited_alignment": "Limited alignment"
+      },
+      "shareableTitle": "Shareable opportunity preferences",
+      "shareableHint": "Private Work Joy, notes, and role problems stay here. Approve only the preferences you want used when looking at Opportunities.",
+      "approveShareable": "Use these preferences when looking at Opportunities",
+      "transitionTitle": "Lightweight transition path",
+      "transitionTarget": "Role or work type",
+      "transitionWhy": "Why I'm exploring it",
+      "alreadyHave": "What I already have",
+      "whatINeed": "What I need",
+      "saveTransition": "Save path",
+      "followUpTitle": "Did this change improve your work experience?",
+      "howFeelsNow": "How does the work feel now?",
+      "saveFollowUp": "Save follow-up",
+      "capabilitiesHint": "Skills, experience, and contributions stay on your profile. Work Fulfillment does not copy them.",
+      "openProfileCapabilities": "Open Skills and Contributions",
+      "noNumericScore": "There is no Work Fulfillment score.",
+      "types": {
+        "employed": "Employed",
+        "self_employed": "Self-employed",
+        "founder": "Founder / business owner",
+        "contractor": "Contractor / freelancer",
+        "student_trainee": "Student / trainee",
+        "volunteer": "Volunteer / contributor",
+        "caregiver": "Caregiver",
+        "between_roles": "Between roles / seeking work",
+        "other": "Other meaningful occupation"
+      },
+      "locations": {
+        "remote": "Remote",
+        "hybrid": "Hybrid",
+        "onsite": "On-site",
+        "mixed": "Mixed",
+        "not_specified": "Not specified"
+      },
+      "status": {
+        "current": "Current",
+        "paused": "Paused",
+        "ended": "Ended"
+      },
+      "feelings": {
+        "draining": "Draining",
+        "mostly_unpleasant": "Unpleasant",
+        "neutral": "Neutral",
+        "enjoyable": "Enjoyable",
+        "energizing": "Energizing"
+      },
+      "activities": {
+        "working_alone": "Working alone",
+        "collaborating": "Collaborating",
+        "leading": "Leading",
+        "teaching": "Teaching",
+        "creating": "Creating",
+        "analyzing": "Analyzing",
+        "organizing": "Organizing",
+        "helping": "Helping",
+        "researching": "Researching",
+        "building": "Building",
+        "solving_problems": "Solving problems",
+        "routine_administration": "Routine administration",
+        "customer_public": "Customer / public interaction",
+        "physical_work": "Physical work",
+        "other": "Other"
+      },
+      "valuesTitle": "Values that matter in work",
+      "values": {
+        "creativity": "Creativity",
+        "service": "Service",
+        "learning": "Learning",
+        "independence": "Independence",
+        "stability": "Stability",
+        "income": "Income",
+        "impact": "Social impact",
+        "mastery": "Mastery",
+        "leadership": "Leadership",
+        "exploration": "Exploration",
+        "recognition": "Recognition"
+      },
+      "dimensions": {
+        "task_enjoyment": "Task enjoyment",
+        "strength_utilization": "Strength use",
+        "meaning_purpose": "Purpose",
+        "autonomy": "Autonomy",
+        "environment_social": "Team environment",
+        "workload_pace": "Workload",
+        "schedule_lifestyle": "Time balance",
+        "growth_learning": "Growth",
+        "recognition_fairness": "Recognition",
+        "security_compensation": "Security & compensation"
+      },
+      "dimensionPrompts": {
+        "task_enjoyment": "Do you generally enjoy the work you spend time doing?",
+        "strength_utilization": "Does the work use abilities you value and perform well?",
+        "meaning_purpose": "Do you understand and value the result of the work?",
+        "autonomy": "Do you have enough control over methods, priorities, decisions, and schedule?",
+        "environment_social": "Does the team, leadership, and setting fit you?",
+        "workload_pace": "Is the workload sustainable — not constantly overwhelming or underusing you?",
+        "schedule_lifestyle": "Does the work fit the rest of your life?",
+        "growth_learning": "Does the work offer appropriate challenge and learning?",
+        "recognition_fairness": "Do you feel your contribution is respected and treated fairly?",
+        "security_compensation": "Does the work provide an acceptable level of sustainability and security for you?"
+      },
+      "hypotheses": {
+        "occupation_mismatch": "The occupation itself may be a poor fit.",
+        "task_mix_mismatch": "The mix of tasks may be the larger concern.",
+        "underused_strengths": "Strengths you value may be underused.",
+        "work_environment_mismatch": "The work environment may not fit you.",
+        "team_management": "Team or leadership context may be reducing fulfillment.",
+        "insufficient_autonomy": "Autonomy may be too low for how you work best.",
+        "unsustainable_workload": "Workload or pace may be unsustainable.",
+        "schedule_lifestyle_mismatch": "Schedule or lifestyle fit may be off.",
+        "compensation_security": "Security or compensation may not meet what you need.",
+        "lack_of_growth": "Growth and learning may be limited.",
+        "lack_of_recognition": "Recognition or fairness may be missing.",
+        "lack_of_purpose": "The work may not feel meaningful enough.",
+        "temporary_situational_stress": "This may be temporary situational stress.",
+        "insufficient_evidence": "There is not enough evidence yet to say what is driving this."
+      },
+      "recs": {
+        "increaseFulfilling": {
+          "title": "Spend more time on the parts that already feel fulfilling",
+          "why": "Your assessment and Work Joy suggest the occupation may be workable, while the task mix needs attention."
+        },
+        "reduceDraining": {
+          "title": "Reduce or reallocate repeatedly draining tasks",
+          "why": "Repeated draining entries are a reason to look at task mix before a career change."
+        },
+        "seekAutonomy": {
+          "title": "Seek more control over methods or priorities",
+          "why": "Autonomy appears to be a larger concern than the occupation itself."
+        },
+        "adjustSchedule": {
+          "title": "Adjust schedule where you can",
+          "why": "Schedule and lifestyle fit is showing strain."
+        },
+        "addressWorkload": {
+          "title": "Address workload or pace",
+          "why": "Workload looks unsustainable from your current-work assessment."
+        },
+        "environment": {
+          "title": "Look at team or working environment",
+          "why": "Environment and social fit may be reducing fulfillment."
+        },
+        "exploreAdjacent": {
+          "title": "Explore a nearby kind of work",
+          "why": "You chose to look further, or the occupation itself may not be the best fit."
+        },
+        "tryContribute": {
+          "title": "Try this kind of work through Contribute",
+          "why": "A short contribution lets you feel the work before a major transition."
+        },
+        "lookForJobs": {
+          "title": "Look for employment on Marketplace Jobs",
+          "why": "When you want actual employment, Marketplace Jobs is the destination. Contribute remains a trial. Private Work Joy and diagnoses are not sent to employers."
+        },
+        "learnStudy": {
+          "title": "See related learning in Study",
+          "why": "A possible role may fit your preferences while some capabilities still need evidence."
+        }
+      }
+    },
+    "prohibited": {
+      "civizen_score": "Civizen Score",
+      "public_reputation": "Public reputation",
+      "trust_ranking": "Trust ranking",
+      "governance_voting_power": "Governance voting power",
+      "employment_ranking": "Employment ranking",
+      "hiring_eligibility": "Hiring eligibility",
+      "insurance_decisions": "Insurance decisions",
+      "credit_decisions": "Credit decisions",
+      "access_to_rights_or_services": "Access to rights or services",
+      "disciplinary_decisions": "Disciplinary decisions"
+    }
+  },
   "governance": {
     "title": "Governance Policies",
     "subtitle": "Manage the foundational policy controls that guide issuance, stability, and oversight.",
@@ -2823,6 +3619,7 @@ export const baseTranslations = {
       "market": "Market",
       "agreements": "Agreements",
       "earnings": "Earnings",
+      "happiness": "Happiness & Fulfillment",
       "profile": "Profile",
       "editProfile": "Edit Profile",
       "settings": "Settings",
@@ -3020,6 +3817,65 @@ export const baseTranslations = {
           "The score card summarizes your current trust position.",
           "It highlights how many endorsements currently support your profile.",
           "The component is designed as a quick entry point into your deeper identity view."
+        ]
+      },
+      "happinessFoundation": {
+        "title": "Happiness & Fulfillment",
+        "summary": "A private way to notice how life is going, what is affecting it, and what might help — without a public Happiness Score.",
+        "workflow": [
+          "Open Happiness & Fulfillment from the Profile menu.",
+          "Complete a short check-in or a fuller wellbeing review.",
+          "See which life areas are going well and which need attention.",
+          "Choose one area to improve, or start a Fulfillment Plan and later say whether it helped."
+        ],
+        "details": [
+          "The public result uses five levels: Struggling, Unsettled, Balanced, Flourishing, and Thriving.",
+          "These are states, not identities. Happiness data is private by default.",
+          "It is not used for Civizen Score, reputation, hiring, or governance power.",
+          "Work Fulfillment is a distinct part of the Happiness Profile.",
+          "Fulfillment Plans live under Improve. Work issues open Work Fulfillment. Actual jobs use Marketplace Jobs."
+        ]
+      },
+      "workFulfillment": {
+        "title": "Work Fulfillment",
+        "summary": "A distinct subunit for how work actually feels, kept separate from the broader Happiness Profile.",
+        "workflow": [
+          "Open Happiness & Fulfillment, then Work Fulfillment.",
+          "See the current Work Fulfillment life-area state.",
+          "Improve current work first. Use Contribute to try work, Study to learn, and Marketplace Jobs when seeking actual employment."
+        ],
+        "details": [
+          "Current work, Work Joy, Fit, and improve-current-work are the live Work Fulfillment path.",
+          "Work Joy Monitor, Fit, and improve-current-work are live. Marketplace Jobs is the employment destination.",
+          "Low work fulfillment does not automatically recommend a career change."
+        ]
+      },
+      "fulfillmentPlans": {
+        "title": "Fulfillment Plans",
+        "summary": "A private, longer-running plan for one life area — understand, try, follow up, and adapt.",
+        "workflow": [
+          "Open Happiness & Fulfillment, then Improve.",
+          "Choose an area, say what better would look like, and pick a small next step.",
+          "Record whether it helped, then continue, pause, or complete the plan."
+        ],
+        "details": [
+          "Plans are owner-only. They are not Score, hiring, or public ranking.",
+          "Work Fulfillment stays the specialized workspace. Marketplace Jobs is for actual employment.",
+          "There is no numeric Fulfillment or Job Fit score."
+        ]
+      },
+      "wellbeingAggregatePrivacy": {
+        "title": "Privacy-protected group insights",
+        "summary": "Optional participation in privacy-protected group insights. Individual Happiness stays private.",
+        "workflow": [
+          "Open Happiness & Fulfillment, then Privacy.",
+          "Read that individual Happiness remains private.",
+          "Turn privacy-protected group insights on or off. Off is the default."
+        ],
+        "details": [
+          "Participation is separate from Job Fit sharing, public profile, employer access, and Civi.",
+          "Group insights are only produced when enough participating members are included.",
+          "There is no employer dashboard of individual Happiness."
         ]
       },
       "directorySearch": {
