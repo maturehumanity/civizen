@@ -2,7 +2,7 @@
 
 ## Current focus
 
-**Live + Testing v0.1.182 (2026-08-15):** Build 184 (`20260815-v0.1.182`) published to Testing and Live. Includes Happiness & Human Fulfillment (Foundation through Human Outcome Reviews), Home Happiness shortcut, and Market Jobs known-identity / outlined fields.
+**Live + Testing v0.1.183 (2026-08-16):** Build 185 (`20260816-v0.1.183`) published to Testing and Live. Includes adaptive Happiness check-in (feeling + areas on one page), Privacy from the Overview lock, and Improve only from the Improve tab.
 
 **Happiness hub header (2026-08-16):** The Happiness first page has no Back chevron. The heart mark sits at the content inset without a circular background, using the same header gap as the title. The title row uses the same top offset and 40px height as Search and Profile. “This is private to you.” is a lock icon beside the current Happiness level on Overview; tap/click opens `/happiness/privacy`. Overview does not show a Privacy text link or an Improve an area button (Improve is the tab).
 
