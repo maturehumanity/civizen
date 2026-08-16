@@ -37,6 +37,15 @@ vi.mock('@/contexts/AuthContext', () => ({
   }),
 }));
 
+vi.mock('@/lib/happiness/outcomes', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/happiness/outcomes')>('@/lib/happiness/outcomes');
+  return {
+    ...actual,
+    listHumanOutcomeReviews: async () => [],
+    listPublicOutcomeLessons: async () => [],
+  };
+});
+
 vi.mock('@/lib/agreements-api', () => ({
   listAgreementsForEntity: async () => [],
 }));

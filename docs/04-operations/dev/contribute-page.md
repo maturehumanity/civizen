@@ -36,7 +36,7 @@ Organization Partnership currently opens the public **International Partnerships
 |------|-------------|
 | Community Challenges | `/contribute/challenges` |
 
-Implementation **Projects** live inside Challenges. There is no separate community-projects or tasks board. `/contribute/projects` redirects here. `/contribute/tasks` redirects to Opportunities.
+Implementation **Projects** live inside Challenges. There is no separate community-projects or tasks board. `/contribute/projects` redirects here. `/contribute/tasks` redirects to Opportunities. When a Challenge is linked from a wellbeing pattern, coordinators may open a **Human Outcome Review** after implementation. Operational delivery and later privacy-safe human-outcome evidence stay separate; causality is not inferred.
 
 ### Knowledge
 

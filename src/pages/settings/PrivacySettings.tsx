@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { AppPageHeader } from '@/components/layout/AppPageHeader';
+import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,6 +13,7 @@ import {
   isBiometricSignInSupportedPlatform,
 } from '@/lib/biometric-sign-in';
 import { Fingerprint, Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 
 export default function PrivacySettings() {
@@ -103,6 +105,16 @@ export default function PrivacySettings() {
               aria-label={t('settings.biometricTitle')}
             />
           </div>
+        </Card>
+
+        <Card className="space-y-3 border-border/80 p-4">
+          <div className="space-y-1">
+            <h2 className="text-sm font-semibold text-foreground">{t('happiness.privacyTitle')}</h2>
+            <p className="text-xs text-muted-foreground leading-relaxed">{t('happiness.privacySettingsHint')}</p>
+          </div>
+          <Button type="button" variant="outline" size="sm" asChild>
+            <Link to="/happiness/privacy">{t('happiness.openPrivacy')}</Link>
+          </Button>
         </Card>
       </div>
     </AppLayout>

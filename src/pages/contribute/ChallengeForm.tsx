@@ -21,62 +21,12 @@ import {
   updateCommunityChallenge,
 } from '@/lib/challenges-api';
 import type { ChallengePayload, CommunityChallenge, ContributionProgram } from '@/lib/challenges';
+import { emptyChallengeForm, formFromChallenge, type ChallengeFormState } from '@/lib/challenges-form';
+import { takeWellbeingHandoff } from '@/lib/happiness/insights/handoff';
 import { listCurrentAreas } from '@/lib/classification';
 import { profileCanManagePublisher } from '@/lib/opportunities';
 import { listOwnedLinkedProfileIds } from '@/lib/opportunities-api';
 import { toast } from 'sonner';
-
-type FormState = {
-  programId: string;
-  newProgramTitle: string;
-  newProgramSummary: string;
-  title: string;
-  problemStatement: string;
-  whyItMatters: string;
-  affected: string;
-  areaNodeId: string;
-  scope: string;
-  successCriteria: string;
-  evidenceLinks: string;
-  constraints: string;
-  resources: string;
-  contextDetail: string;
-};
-
-const emptyForm: FormState = {
-  programId: '',
-  newProgramTitle: '',
-  newProgramSummary: '',
-  title: '',
-  problemStatement: '',
-  whyItMatters: '',
-  affected: '',
-  areaNodeId: 'none',
-  scope: '',
-  successCriteria: '',
-  evidenceLinks: '',
-  constraints: '',
-  resources: '',
-  contextDetail: '',
-};
-
-function formFromChallenge(row: CommunityChallenge): FormState {
-  return {
-    ...emptyForm,
-    programId: row.programId,
-    title: row.title,
-    problemStatement: row.problemStatement,
-    whyItMatters: row.whyItMatters,
-    affected: row.affected ?? '',
-    areaNodeId: row.areaNodeId ?? 'none',
-    scope: row.scope ?? '',
-    successCriteria: row.successCriteria,
-    evidenceLinks: row.evidenceLinks ?? '',
-    constraints: row.constraints ?? '',
-    resources: row.resources ?? '',
-    contextDetail: row.contextDetail ?? '',
-  };
-}
 
 export default function ChallengeForm() {
   const { challengeId } = useParams<{ challengeId: string }>();
@@ -89,7 +39,7 @@ export default function ChallengeForm() {
   const editing = Boolean(challengeId);
   const areas = useMemo(() => listCurrentAreas(), []);
 
-  const [form, setForm] = useState(emptyForm);
+  const [form, setForm] = useState(emptyChallengeForm);
   const [programs, setPrograms] = useState<ContributionProgram[]>([]);
   const [existing, setExisting] = useState<CommunityChallenge | null>(null);
   const [loading, setLoading] = useState(true);
@@ -97,6 +47,7 @@ export default function ChallengeForm() {
   const [showDetails, setShowDetails] = useState(false);
   const [showNewProgram, setShowNewProgram] = useState(false);
   const [unauthorized, setUnauthorized] = useState(false);
+  const wellbeingHandoff = useRef(challengeId ? null : takeWellbeingHandoff());
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -106,11 +57,23 @@ export default function ChallengeForm() {
       const managed = publisherIds.length > 0 ? await listManagedPrograms(publisherIds) : [];
       setPrograms(managed);
       if (!challengeId) {
+        const handoff = wellbeingHandoff.current;
         setForm((current) => ({
           ...current,
+          ...(handoff
+            ? {
+                title: handoff.title,
+                problemStatement: handoff.problemStatement,
+                whyItMatters: handoff.whyItMatters,
+                evidenceLinks: handoff.evidenceLinks,
+                contextDetail: handoff.contextDetail,
+                successCriteria: handoff.successCriteria,
+              }
+            : {}),
           programId: current.programId || managed[0]?.id || '',
         }));
         setShowNewProgram(managed.length === 0);
+        setShowDetails(Boolean(handoff));
         setLoading(false);
         return;
       }
@@ -145,7 +108,7 @@ export default function ChallengeForm() {
     void load();
   }, [load]);
 
-  const setField = <K extends keyof FormState>(key: K, value: FormState[K]) => {
+  const setField = <K extends keyof ChallengeFormState>(key: K, value: ChallengeFormState[K]) => {
     setForm((current) => ({ ...current, [key]: value }));
   };
 

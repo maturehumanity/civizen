@@ -37,6 +37,7 @@ import {
   type SolutionProblemStatus,
 } from '@/lib/solutions-constants';
 import { toast } from 'sonner';
+import { HumanOutcomeLinks } from '@/pages/wellbeing/HumanOutcomeLinks';
 
 function statusBadgeVariant(status: SolutionProblemStatus): 'default' | 'secondary' | 'outline' | 'destructive' {
   if (status === 'consensus' || status === 'resolved' || status === 'accepted') return 'default';
@@ -181,6 +182,8 @@ export default function SolutionProblemDetail() {
             ) : undefined
           }
         />
+
+        {problem ? <HumanOutcomeLinks governanceSolutionId={problem.id} /> : null}
 
         {loading ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">

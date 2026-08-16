@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePageMeta } from '@/hooks/usePageMeta';
+import { takeWellbeingHandoff } from '@/lib/happiness/insights/handoff';
 import { listSolutionAuthorities } from '@/lib/solution-authorities';
 import { categorizeSolutionIssue } from '@/lib/solution-categorize';
 import {
@@ -75,6 +76,14 @@ export default function SolutionsHub() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    const handoff = takeWellbeingHandoff();
+    if (!handoff) return;
+    setTitle(handoff.title);
+    setBody(`${handoff.problemStatement}\n\n${handoff.evidenceLinks}\n\n${handoff.contextDetail}`);
+    setComposerOpen(true);
+  }, []);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();

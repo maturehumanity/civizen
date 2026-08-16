@@ -48,7 +48,7 @@ Demo Programs (seeded, founder-published, ordinary members can join): Education-
 
 ## Community Challenges
 
-Flow: Challenge → Proposal → coordinator selection → Project → Opportunities → Contributions → Outcome → Completion → Solution Record.
+Flow: Challenge → Proposal → coordinator selection → Project → Opportunities → Contributions → Outcome → Completion → Solution Record. When the Challenge came from a wellbeing pattern, a Human Outcome Review may later compare privacy-safe baseline and follow-up evidence. That review is not a Happiness impact score and does not change contributor reputation.
 
 Selecting a proposal is not completion. Completing requires a selected proposal, a Project, and a recorded outcome. Distinct from Governance Solutions (`solution_problems`).
 

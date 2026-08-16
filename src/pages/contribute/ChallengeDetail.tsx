@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-
 import { AppLayout } from '@/components/layout/AppLayout';
 import { AppPageHeader } from '@/components/layout/AppPageHeader';
 import { Badge } from '@/components/ui/badge';
@@ -47,11 +46,11 @@ import {
 import { listCurrentAreas } from '@/lib/classification';
 import type { KnowledgeSpace } from '@/lib/knowledge';
 import { listManagedKnowledgeSpaces, publishSolutionRecordAsResource } from '@/lib/knowledge-api';
+import { HumanOutcomeLinks } from '@/pages/wellbeing/HumanOutcomeLinks';
 import { profileCanManagePublisher } from '@/lib/opportunities';
 import { listOwnedLinkedProfileIds } from '@/lib/opportunities-api';
 import { toast } from 'sonner';
 import { RelatedAgreementsCard } from '@/components/agreements/RelatedAgreementsCard';
-
 type ProjectOpportunity = { id: string; title: string; status: string; summary: string };
 
 const emptyProposal: ProposalPayload = {
@@ -440,6 +439,7 @@ export default function ChallengeDetail() {
             {solution?.reuseNotes ? (
               <p className="text-sm text-muted-foreground">{solution.reuseNotes}</p>
             ) : null}
+            <HumanOutcomeLinks challengeId={challenge.id} projectId={project?.id} />
             {solution?.knowledgeResourceId && solution.knowledgeSpaceId ? (
               <Link
                 to={`/contribute/knowledge/${solution.knowledgeSpaceId}/resources/${solution.knowledgeResourceId}`}
