@@ -13,6 +13,15 @@ export type AssistantSourcePriority = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 export type HistoryTurn = { role: 'user' | 'assistant'; content: string };
 
+export type CiviLearnedMemoryKind = 'general' | 'grounded';
+
+export type CiviLearnedMemory = {
+  questionKey: string;
+  question: string;
+  answer: string;
+  kind: CiviLearnedMemoryKind;
+};
+
 export type AssistantCapability = {
   id: string;
   name: string;
@@ -154,6 +163,7 @@ export type NelaDiagnostics = {
   externalResourceKind: ExternalResourceKind;
   externalResourcesInvoked: ExternalResourceKind[];
   usedRuntimeData: boolean;
+  usedLearnedMemoryKey: string | null;
   knowledge: {
     appVersion: string;
     appReleaseId: string;
@@ -182,4 +192,5 @@ export type PrepareNelaTurnOptions = {
   externalAdapter?: ExternalResourceAdapter | null;
   debug?: boolean;
   audience?: 'member' | 'guest';
+  learnedMemories?: CiviLearnedMemory[];
 };

@@ -1,5 +1,6 @@
 import { shapeAnswerToQuestion } from './answer-shape';
 import { IDENTITY_FAQ_IDS, classifyAssistantTopic } from './identity';
+import { pickLearnedMemory } from './learned-memory';
 import { buildNelaSystemPrompt, formatRetrievedContext, shouldSkipLlm } from './prompt';
 import { resolveConversationalQuery } from './query-rewrite';
 import { preferCurrentEvidence, retrieveKnowledge, tokenize } from './retrieval';
@@ -194,9 +195,18 @@ export function prepareNelaTurn(messages: HistoryTurn[], options: PrepareNelaTur
     }
   }
 
+  let usedLearnedMemoryKey: string | null = null;
+  const learnedHit =
+    !greeting && !rewritten.isVerification
+      ? pickLearnedMemory(searchQuery, options.learnedMemories, {
+          catalogFaqScore: retrieval.faq[0]?.score,
+          topic,
+        })
+      : null;
+
   const externalResourcesInvoked: ExternalResourceKind[] = [];
   const invokeKind = shouldInvokeExternalSearch(resourcePlan, latestText);
-  if (invokeKind && options.externalAdapter?.search) {
+  if (invokeKind && !learnedHit && options.externalAdapter?.search) {
     void options.externalAdapter.search(resolvedQuery);
     externalResourcesInvoked.push(invokeKind);
   }
@@ -221,6 +231,14 @@ export function prepareNelaTurn(messages: HistoryTurn[], options: PrepareNelaTur
     if (groundedAnswer === UNVERIFIED && kinds.includes('external_world')) {
       groundedAnswer = 'I do not have a Civizen-specific fact for that. I can explain the general topic, separate from current Civizen features.';
     }
+  }
+
+  if (
+    learnedHit &&
+    resourcePlan.internalResolution !== 'requires_runtime_data'
+  ) {
+    groundedAnswer = learnedHit.answer;
+    usedLearnedMemoryKey = learnedHit.questionKey;
   }
 
   if (inScope && !greeting) {
@@ -263,7 +281,7 @@ export function prepareNelaTurn(messages: HistoryTurn[], options: PrepareNelaTur
       resolvedQuery,
       isVerification: rewritten.isVerification,
       previousUserQuestion: rewritten.previousUserQuestion,
-      matchedFaqId: retrieval.faq[0]?.item.id ?? null,
+      matchedFaqId: usedLearnedMemoryKey ? `learned:${usedLearnedMemoryKey}` : retrieval.faq[0]?.item.id ?? null,
       matchedCapabilityIds: retrieval.capabilities.map((h) => h.item.id),
       retrievedPaths: retrieval.documents.map((h) => h.chunk.path),
       capabilityStatuses: retrieval.capabilities.map((h) => ({ id: h.item.id, status: h.item.status })),
@@ -275,6 +293,7 @@ export function prepareNelaTurn(messages: HistoryTurn[], options: PrepareNelaTur
       externalResourceKind: resourcePlan.externalResourceKind,
       externalResourcesInvoked,
       usedRuntimeData: Boolean(options.runtimeData?.summary),
+      usedLearnedMemoryKey,
       knowledge: {
         appVersion: pack.meta.appVersion,
         appReleaseId: pack.meta.appReleaseId,

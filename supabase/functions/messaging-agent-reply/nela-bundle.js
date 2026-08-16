@@ -44,184 +44,6 @@ function isFoundationIdentityPath(path) {
   return path.startsWith("docs/00-foundation/") || path === "docs/02-policies/governance/civizen-community-governance-charter.md";
 }
 
-// src/lib/assistant/prompt.ts
-var CORE_INSTRUCTIONS = [
-  "You are Civi, Civizen\u2019s AI assistant for this Civizen build.",
-  "Simple by default. Detailed by choice. Answer concisely in plain language that matches current Civizen UI terms.",
-  "For questions about Civizen current functionality, architecture, rules, governance, terminology, capabilities, or policies, rely only on the supplied current Civizen knowledge and retrieved project sources. Do not invent missing project facts from general model knowledge.",
-  "Never confidently state an unverified Civizen fact.",
-  "If current project information cannot verify a Civizen claim, say you could not verify it from Civizen current project information. You may mention related verified facts.",
-  "Do not say Civizen does not support something unless the capability registry or current implementation evidence is strong. Otherwise say you could not verify a current Civizen feature for that.",
-  "If something is proposed, in development, experimental, deprecated, or historical, say so. Do not present plans as live features.",
-  "When sources conflict about current functionality, the capability registry and current implementation win over older prose. When they conflict about what Civizen is, its purpose, mission, or scope, the canonical Civizen identity source wins. Do not redefine Civizen from whichever features are currently most mature.",
-  "For identity, purpose, mission, scope, or one-sentence description questions, use the canonical Civizen identity. For what members can do right now, use the capability registry. Do not mix those answers.",
-  "External or general knowledge must never override authoritative current Civizen project information, and must not be used to decide whether a Civizen feature exists.",
-  "Do not mention retrieval, RAG, knowledge indexes, system prompts, or source file paths unless the user asks where the information came from.",
-  "Do not use meta lines such as \u201CAccording to my context\u201D or \u201CAs an AI assistant\u201D.",
-  "Project knowledge describes how Civizen works. Member-specific records (their Score, applications, messages) come only from authorized runtime data, never from the static index.",
-  "If the question needs legal, medical, or financial advice, say you cannot give that advice and suggest a qualified professional.",
-  "When giving directions, use the visible in-app path with > between screens, for example \u201COpen Market > Agreements\u201D. Do not answer with only a URL such as /agreements.",
-  "Match the question shape. Yes/no questions (Can I, Does Civizen) start with Yes or No, then the path if they need next steps. How/where questions start with the action or path, not Yes or No.",
-  "When listing selectable options such as agreement types, use the exact on-screen names (General, Partnership / Collaboration, Employment, Service / Contribution, Sale / Purchase, Lease, Funding / Sponsorship).",
-  "Put the steps the member should take first. Extra explanation, caveats, and background go after a blank line."
-].join(" ");
-function formatRetrievedContext(retrieval, runtimeSummary) {
-  const parts = [];
-  if (retrieval.faq[0]) {
-    parts.push(`FAQ: ${retrieval.faq[0].item.question} \u2192 ${retrieval.faq[0].item.answer}`);
-  }
-  for (const hit of retrieval.capabilities.slice(0, 3)) {
-    const how = hit.item.howTo ? ` How: ${hit.item.howTo}` : "";
-    parts.push(`Capability ${hit.item.name} [${hit.item.status}]: ${hit.item.description}${how}`);
-  }
-  for (const hit of retrieval.documents.slice(0, 4)) {
-    parts.push(
-      `Source (${hit.chunk.status}, priority ${hit.chunk.priority}, ${hit.chunk.title}): ${hit.chunk.text.slice(0, 700)}`
-    );
-  }
-  if (runtimeSummary) {
-    parts.push(`Authorized member data: ${runtimeSummary}`);
-  }
-  return parts.join("\n\n");
-}
-function buildNelaSystemPrompt(args) {
-  const { pack, resolvedQuery, retrievedContext, groundedAnswer, resourcePlan, isVerification, audience } = args;
-  const meta = pack.meta;
-  const escalation = resourcePlan.allowExternalResources ? `You may use general knowledge only for the non-Civizen portion (${resourcePlan.externalResourceKind}). Civizen facts still come only from the evidence below.` : "Do not use general/pretrained knowledge as a source of Civizen facts. Do not search or invent external Civizen claims.";
-  const verify = isVerification ? "This is a verification follow-up. Re-check the previous claim against higher-authority Civizen evidence. Correct yourself if needed and briefly say what you verified." : "";
-  const guest = audience === "guest" ? "This visitor is not signed in. Answer from public project knowledge. Do not claim access to personal records. If a step needs an account, say they can create one from Sign up. Public pages such as Areas, Governance, documents, About, and Market Jobs can be used without registering." : "";
-  return [
-    CORE_INSTRUCTIONS,
-    guest,
-    `Knowledge build: app ${meta.appVersion} (${meta.appReleaseId}).`,
-    `Resolved question: ${resolvedQuery}`,
-    `Internal resolution: ${resourcePlan.internalResolution}. ${escalation}`,
-    verify,
-    "Preferred grounded answer to stay consistent with:",
-    groundedAnswer,
-    "Evidence:",
-    retrievedContext || "(no additional passages)"
-  ].filter(Boolean).join("\n\n");
-}
-function shouldSkipLlm(prep) {
-  if (!prep.inScope) return true;
-  if (prep.isGreeting) return true;
-  if (prep.resourcePlan.internalResolution === "requires_runtime_data" && !prep.resourcePlan.allowLlmReasoning) {
-    return true;
-  }
-  if (prep.resourcePlan.allowLlmReasoning) return false;
-  if (prep.resourcePlan.allowExternalResources) return false;
-  return prep.diagnostics.confidence === "high" && prep.resourcePlan.internalResolution === "sufficient";
-}
-
-// src/lib/assistant/query-rewrite.ts
-var VERIFICATION_PATTERNS = [
-  /^\s*are you sure\b/i,
-  /^\s*check again\b/i,
-  /^\s*where did you get that\b/i,
-  /^\s*is that (true|correct|right|accurate)\b/i,
-  /^\s*really\??\s*$/i,
-  /^\s*verify( that)?\b/i,
-  /^\s*didn['’]?t we implement\b/i,
-  /^\s*i think we have that\b/i,
-  /^\s*what about the feature we added\b/i,
-  /^\s*can you (double[- ]?check|confirm|verify)\b/i,
-  /^\s*positive\??\s*$/i,
-  /^\s*(are you )?positive\??\s*$/i,
-  /^\s*you sure\??\s*$/i,
-  /^\s*confirm\??\s*$/i,
-  /^\s*certain\??\s*$/i,
-  /^\s*definitely\??\s*$/i,
-  /^\s*absolutely\??\s*$/i
-];
-var SHORT_FOLLOWUP_MAX = 90;
-function isVerificationFollowUp(content) {
-  const c = content.trim();
-  if (!c) return false;
-  return VERIFICATION_PATTERNS.some((re) => re.test(c));
-}
-function isScopeRefusal(content) {
-  const c = content.trim().toLowerCase();
-  return c.includes("i can only help with civizen-related topics");
-}
-function lastTurn(messages, role) {
-  for (let i = messages.length - 1; i >= 0; i -= 1) {
-    if (messages[i].role === role && messages[i].content.trim()) return messages[i];
-  }
-  return null;
-}
-function lastSubstantiveUserMessage(messages) {
-  const latest = messages.filter((m) => m.role === "user" && m.content.trim());
-  for (let i = latest.length - 1; i >= 0; i -= 1) {
-    const text = latest[i].content.trim();
-    if (isVerificationFollowUp(text)) continue;
-    if (text.length <= 1) continue;
-    return latest[i];
-  }
-  return latest[latest.length - 1] ?? null;
-}
-function lastSubstantiveAssistantMessage(messages) {
-  for (let i = messages.length - 1; i >= 0; i -= 1) {
-    const m = messages[i];
-    if (m.role !== "assistant") continue;
-    const text = m.content.trim();
-    if (!text) continue;
-    if (isScopeRefusal(text)) continue;
-    if (text.toLowerCase().includes("could not generate a reply")) continue;
-    return m;
-  }
-  return null;
-}
-function applyAliases(query, aliases) {
-  let next = query;
-  for (const entry of aliases) {
-    for (const alias of entry.aliases) {
-      const re = new RegExp(`\\b${escapeRegExp(alias)}\\b`, "ig");
-      if (re.test(next) && !next.toLowerCase().includes(entry.current.toLowerCase())) {
-        next = `${next} ${entry.current}`;
-      }
-    }
-  }
-  return next;
-}
-function escapeRegExp(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-function resolveConversationalQuery(messages, aliases = []) {
-  const latest = lastTurn(messages, "user");
-  const latestText = latest?.content.trim() ?? "";
-  const previousUser = lastSubstantiveUserMessage(messages.filter((m) => m !== latest));
-  const previousAssistant = lastSubstantiveAssistantMessage(messages);
-  const previousUserQuestion = previousUser?.content.trim() ?? null;
-  const previousAssistantClaim = previousAssistant?.content.trim() ?? null;
-  if (!latestText) {
-    return {
-      resolvedQuery: previousUserQuestion ?? "",
-      isVerification: false,
-      previousUserQuestion,
-      previousAssistantClaim
-    };
-  }
-  const verification = isVerificationFollowUp(latestText);
-  if (verification) {
-    const original = previousUserQuestion || "the previous Civizen question";
-    const claim = previousAssistantClaim || "the previous answer";
-    const resolvedQuery = applyAliases(
-      `Verify the previous Civizen answer. Original question: ${original} Previous answer: ${claim} Follow-up: ${latestText}`,
-      aliases
-    );
-    return { resolvedQuery, isVerification: true, previousUserQuestion, previousAssistantClaim };
-  }
-  const shortFollowUp = latestText.length <= SHORT_FOLLOWUP_MAX && Boolean(previousUserQuestion) && /\b(it|one|that|this|they|them|those|there)\b/i.test(latestText);
-  const combined = shortFollowUp ? `${latestText} (about: ${previousUserQuestion})` : latestText;
-  return {
-    resolvedQuery: applyAliases(combined, aliases),
-    isVerification: false,
-    previousUserQuestion,
-    previousAssistantClaim
-  };
-}
-
 // src/lib/assistant/retrieval.ts
 var STOP = /* @__PURE__ */ new Set([
   "a",
@@ -400,6 +222,298 @@ function preferCurrentEvidence(hits) {
     if (a.chunk.priority !== b.chunk.priority) return a.chunk.priority - b.chunk.priority;
     return b.score - a.score;
   });
+}
+
+// src/lib/assistant/learned-memory.ts
+var CIVI_LEARNED_ANSWER_MIN = 40;
+var CIVI_LEARNED_ANSWER_MAX = 2e3;
+var ONE_OFF_RE = /\b(help me (draft|write|improve|plan|revise)|brainstorm|make this (better|stronger)|critique)\b/i;
+var CIVIZEN_FEATURE_CLAIM_RE = /\b(civizen (now )?(has|supports|offers|includes|lets you|allows you)|you can (create|sign|open|use|post|vote) .{0,80}(in|on|through|with) civizen)\b/i;
+var UNVERIFIED_RE = /couldn['’]t verify|could not verify/i;
+function memoryQuestionKey(question) {
+  return tokenize(question).join(" ").slice(0, 180);
+}
+function memoryToFaq(memory) {
+  return {
+    id: `learned:${memory.questionKey}`,
+    question: memory.question,
+    answer: memory.answer,
+    aliases: [memory.questionKey],
+    capabilityIds: [],
+    sourceRefs: ["civi-learned-memory"]
+  };
+}
+function overlapRatio(query, text) {
+  const generic = /* @__PURE__ */ new Set(["civizen", "nela", "civi", "app", "feature", "platform"]);
+  const qTerms = tokenize(query).filter((term) => !generic.has(term));
+  if (!qTerms.length) return 1;
+  const hay = new Set(tokenize(text));
+  return qTerms.filter((term) => hay.has(term)).length / qTerms.length;
+}
+function pickLearnedMemory(query, memories, options) {
+  if (!memories?.length) return null;
+  const topic = options?.topic ?? classifyAssistantTopic(query);
+  if (topic === "identity" || topic === "current_capability") return null;
+  const hits = searchFaq(query, memories.map(memoryToFaq), 2);
+  const hit = hits[0];
+  if (!hit || hit.score < 1.5) return null;
+  const memory = memories.find((item) => `learned:${item.questionKey}` === hit.item.id);
+  if (!memory) return null;
+  if (overlapRatio(query, `${memory.question} ${memory.answer}`) < 0.28) return null;
+  if (memory.kind === "grounded" && (options?.catalogFaqScore ?? 0) >= hit.score) return null;
+  return memory;
+}
+function evidenceText(prep) {
+  return `${prep.groundedAnswer}
+${prep.retrievedContext}`;
+}
+function looksLikeInventedCivizenFact(answer, evidence) {
+  if (!CIVIZEN_FEATURE_CLAIM_RE.test(answer)) return false;
+  return overlapRatio(answer, evidence) < 0.28;
+}
+function reviewLlmAnswerForLearning(args) {
+  const { question, llmAnswer, prep } = args;
+  const answer = llmAnswer.trim();
+  const questionKey = memoryQuestionKey(question);
+  if (prep.skipLlm) return { action: "skip", reason: "already answered without the model" };
+  if (prep.diagnostics.usedLearnedMemoryKey) return { action: "skip", reason: "already answered from Civi memory" };
+  if (prep.isGreeting || prep.isVerification) return { action: "skip", reason: "not a reusable question" };
+  const kinds = prep.resourcePlan.kinds;
+  const general = kinds.includes("general_reasoning") || kinds.includes("external_world");
+  if (!prep.inScope && !general) return { action: "skip", reason: "not a reusable question" };
+  if (!questionKey) return { action: "skip", reason: "question too thin to remember" };
+  if (answer.length < CIVI_LEARNED_ANSWER_MIN || answer.length > CIVI_LEARNED_ANSWER_MAX) {
+    return { action: "skip", reason: "answer length is not reusable" };
+  }
+  if (UNVERIFIED_RE.test(answer) && answer.length < 180) return { action: "skip", reason: "unverified placeholder" };
+  if (classifyAssistantTopic(question) !== "other") return { action: "skip", reason: "canonical Civizen topic" };
+  if (prep.resourcePlan.internalResolution === "requires_runtime_data") {
+    return { action: "skip", reason: "personal records are not stored in Civi memory" };
+  }
+  if (ONE_OFF_RE.test(question)) return { action: "skip", reason: "one-off drafting request" };
+  const product = kinds.includes("civizen_product");
+  const evidence = evidenceText(prep);
+  if (product && prep.resourcePlan.internalResolution === "insufficient" && !kinds.includes("external_world")) {
+    return { action: "skip", reason: "unverified Civizen facts are not learned from the model" };
+  }
+  if (looksLikeInventedCivizenFact(answer, evidence)) {
+    return { action: "skip", reason: "model invented a Civizen capability" };
+  }
+  if (product && overlapRatio(answer, prep.groundedAnswer) >= 0.3 && !UNVERIFIED_RE.test(prep.groundedAnswer)) {
+    return {
+      action: "learn",
+      kind: "grounded",
+      questionKey,
+      question: question.trim(),
+      answer
+    };
+  }
+  if (general && !product) {
+    return {
+      action: "learn",
+      kind: "general",
+      questionKey,
+      question: question.trim(),
+      answer
+    };
+  }
+  if (general && product && !looksLikeInventedCivizenFact(answer, evidence)) {
+    return {
+      action: "learn",
+      kind: "general",
+      questionKey,
+      question: question.trim(),
+      answer
+    };
+  }
+  return { action: "skip", reason: "answer is not a reusable Civi memory" };
+}
+function learnedMemoryFromRow(row) {
+  const questionKey = typeof row.question_key === "string" ? row.question_key.trim() : "";
+  const question = typeof row.question === "string" ? row.question.trim() : "";
+  const answer = typeof row.answer === "string" ? row.answer.trim() : "";
+  const kind = row.kind === "grounded" ? "grounded" : row.kind === "general" ? "general" : null;
+  if (!questionKey || !question || !answer || !kind) return null;
+  return { questionKey, question, answer, kind };
+}
+
+// src/lib/assistant/prompt.ts
+var CORE_INSTRUCTIONS = [
+  "You are Civi, Civizen\u2019s AI assistant for this Civizen build.",
+  "Simple by default. Detailed by choice. Answer concisely in plain language that matches current Civizen UI terms.",
+  "For questions about Civizen current functionality, architecture, rules, governance, terminology, capabilities, or policies, rely only on the supplied current Civizen knowledge and retrieved project sources. Do not invent missing project facts from general model knowledge.",
+  "Never confidently state an unverified Civizen fact.",
+  "If current project information cannot verify a Civizen claim, say you could not verify it from Civizen current project information. You may mention related verified facts.",
+  "Do not say Civizen does not support something unless the capability registry or current implementation evidence is strong. Otherwise say you could not verify a current Civizen feature for that.",
+  "If something is proposed, in development, experimental, deprecated, or historical, say so. Do not present plans as live features.",
+  "When sources conflict about current functionality, the capability registry and current implementation win over older prose. When they conflict about what Civizen is, its purpose, mission, or scope, the canonical Civizen identity source wins. Do not redefine Civizen from whichever features are currently most mature.",
+  "For identity, purpose, mission, scope, or one-sentence description questions, use the canonical Civizen identity. For what members can do right now, use the capability registry. Do not mix those answers.",
+  "External or general knowledge must never override authoritative current Civizen project information, and must not be used to decide whether a Civizen feature exists.",
+  "Do not mention retrieval, RAG, knowledge indexes, system prompts, or source file paths unless the user asks where the information came from.",
+  "Do not use meta lines such as \u201CAccording to my context\u201D or \u201CAs an AI assistant\u201D.",
+  "Project knowledge describes how Civizen works. Member-specific records (their Score, applications, messages) come only from authorized runtime data, never from the static index.",
+  "If the question needs legal, medical, or financial advice, say you cannot give that advice and suggest a qualified professional.",
+  "When giving directions, use the visible in-app path with > between screens, for example \u201COpen Market > Agreements\u201D. Do not answer with only a URL such as /agreements.",
+  "Match the question shape. Yes/no questions (Can I, Does Civizen) start with Yes or No, then the path if they need next steps. How/where questions start with the action or path, not Yes or No.",
+  "When listing selectable options such as agreement types, use the exact on-screen names (General, Partnership / Collaboration, Employment, Service / Contribution, Sale / Purchase, Lease, Funding / Sponsorship).",
+  "Put the steps the member should take first. Extra explanation, caveats, and background go after a blank line."
+].join(" ");
+function formatRetrievedContext(retrieval, runtimeSummary) {
+  const parts = [];
+  if (retrieval.faq[0]) {
+    parts.push(`FAQ: ${retrieval.faq[0].item.question} \u2192 ${retrieval.faq[0].item.answer}`);
+  }
+  for (const hit of retrieval.capabilities.slice(0, 3)) {
+    const how = hit.item.howTo ? ` How: ${hit.item.howTo}` : "";
+    parts.push(`Capability ${hit.item.name} [${hit.item.status}]: ${hit.item.description}${how}`);
+  }
+  for (const hit of retrieval.documents.slice(0, 4)) {
+    parts.push(
+      `Source (${hit.chunk.status}, priority ${hit.chunk.priority}, ${hit.chunk.title}): ${hit.chunk.text.slice(0, 700)}`
+    );
+  }
+  if (runtimeSummary) {
+    parts.push(`Authorized member data: ${runtimeSummary}`);
+  }
+  return parts.join("\n\n");
+}
+function buildNelaSystemPrompt(args) {
+  const { pack, resolvedQuery, retrievedContext, groundedAnswer, resourcePlan, isVerification, audience } = args;
+  const meta = pack.meta;
+  const escalation = resourcePlan.allowExternalResources ? `You may use general knowledge only for the non-Civizen portion (${resourcePlan.externalResourceKind}). Civizen facts still come only from the evidence below.` : "Do not use general/pretrained knowledge as a source of Civizen facts. Do not search or invent external Civizen claims.";
+  const verify = isVerification ? "This is a verification follow-up. Re-check the previous claim against higher-authority Civizen evidence. Correct yourself if needed and briefly say what you verified." : "";
+  const guest = audience === "guest" ? "This visitor is not signed in. Answer from public project knowledge. Do not claim access to personal records. If a step needs an account, say they can create one from Sign up. Public pages such as Areas, Governance, documents, About, and Market Jobs can be used without registering." : "";
+  return [
+    CORE_INSTRUCTIONS,
+    guest,
+    `Knowledge build: app ${meta.appVersion} (${meta.appReleaseId}).`,
+    `Resolved question: ${resolvedQuery}`,
+    `Internal resolution: ${resourcePlan.internalResolution}. ${escalation}`,
+    verify,
+    "Preferred grounded answer to stay consistent with:",
+    groundedAnswer,
+    "Evidence:",
+    retrievedContext || "(no additional passages)"
+  ].filter(Boolean).join("\n\n");
+}
+function shouldSkipLlm(prep) {
+  if (prep.diagnostics.usedLearnedMemoryKey) return true;
+  if (!prep.inScope) return true;
+  if (prep.isGreeting) return true;
+  if (prep.resourcePlan.internalResolution === "requires_runtime_data" && !prep.resourcePlan.allowLlmReasoning) {
+    return true;
+  }
+  if (prep.resourcePlan.allowLlmReasoning) return false;
+  if (prep.resourcePlan.allowExternalResources) return false;
+  return prep.diagnostics.confidence === "high" && prep.resourcePlan.internalResolution === "sufficient";
+}
+
+// src/lib/assistant/query-rewrite.ts
+var VERIFICATION_PATTERNS = [
+  /^\s*are you sure\b/i,
+  /^\s*check again\b/i,
+  /^\s*where did you get that\b/i,
+  /^\s*is that (true|correct|right|accurate)\b/i,
+  /^\s*really\??\s*$/i,
+  /^\s*verify( that)?\b/i,
+  /^\s*didn['’]?t we implement\b/i,
+  /^\s*i think we have that\b/i,
+  /^\s*what about the feature we added\b/i,
+  /^\s*can you (double[- ]?check|confirm|verify)\b/i,
+  /^\s*positive\??\s*$/i,
+  /^\s*(are you )?positive\??\s*$/i,
+  /^\s*you sure\??\s*$/i,
+  /^\s*confirm\??\s*$/i,
+  /^\s*certain\??\s*$/i,
+  /^\s*definitely\??\s*$/i,
+  /^\s*absolutely\??\s*$/i
+];
+var SHORT_FOLLOWUP_MAX = 90;
+function isVerificationFollowUp(content) {
+  const c = content.trim();
+  if (!c) return false;
+  return VERIFICATION_PATTERNS.some((re) => re.test(c));
+}
+function isScopeRefusal(content) {
+  const c = content.trim().toLowerCase();
+  return c.includes("i can only help with civizen-related topics");
+}
+function lastTurn(messages, role) {
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    if (messages[i].role === role && messages[i].content.trim()) return messages[i];
+  }
+  return null;
+}
+function lastSubstantiveUserMessage(messages) {
+  const latest = messages.filter((m) => m.role === "user" && m.content.trim());
+  for (let i = latest.length - 1; i >= 0; i -= 1) {
+    const text = latest[i].content.trim();
+    if (isVerificationFollowUp(text)) continue;
+    if (text.length <= 1) continue;
+    return latest[i];
+  }
+  return latest[latest.length - 1] ?? null;
+}
+function lastSubstantiveAssistantMessage(messages) {
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    const m = messages[i];
+    if (m.role !== "assistant") continue;
+    const text = m.content.trim();
+    if (!text) continue;
+    if (isScopeRefusal(text)) continue;
+    if (text.toLowerCase().includes("could not generate a reply")) continue;
+    return m;
+  }
+  return null;
+}
+function applyAliases(query, aliases) {
+  let next = query;
+  for (const entry of aliases) {
+    for (const alias of entry.aliases) {
+      const re = new RegExp(`\\b${escapeRegExp(alias)}\\b`, "ig");
+      if (re.test(next) && !next.toLowerCase().includes(entry.current.toLowerCase())) {
+        next = `${next} ${entry.current}`;
+      }
+    }
+  }
+  return next;
+}
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+function resolveConversationalQuery(messages, aliases = []) {
+  const latest = lastTurn(messages, "user");
+  const latestText = latest?.content.trim() ?? "";
+  const previousUser = lastSubstantiveUserMessage(messages.filter((m) => m !== latest));
+  const previousAssistant = lastSubstantiveAssistantMessage(messages);
+  const previousUserQuestion = previousUser?.content.trim() ?? null;
+  const previousAssistantClaim = previousAssistant?.content.trim() ?? null;
+  if (!latestText) {
+    return {
+      resolvedQuery: previousUserQuestion ?? "",
+      isVerification: false,
+      previousUserQuestion,
+      previousAssistantClaim
+    };
+  }
+  const verification = isVerificationFollowUp(latestText);
+  if (verification) {
+    const original = previousUserQuestion || "the previous Civizen question";
+    const claim = previousAssistantClaim || "the previous answer";
+    const resolvedQuery = applyAliases(
+      `Verify the previous Civizen answer. Original question: ${original} Previous answer: ${claim} Follow-up: ${latestText}`,
+      aliases
+    );
+    return { resolvedQuery, isVerification: true, previousUserQuestion, previousAssistantClaim };
+  }
+  const shortFollowUp = latestText.length <= SHORT_FOLLOWUP_MAX && Boolean(previousUserQuestion) && /\b(it|one|that|this|they|them|those|there)\b/i.test(latestText);
+  const combined = shortFollowUp ? `${latestText} (about: ${previousUserQuestion})` : latestText;
+  return {
+    resolvedQuery: applyAliases(combined, aliases),
+    isVerification: false,
+    previousUserQuestion,
+    previousAssistantClaim
+  };
 }
 
 // src/lib/assistant/scope.ts
@@ -649,15 +763,15 @@ function retrievalConfidence(retrieval) {
 // src/lib/assistant/generated/knowledge-pack.ts
 var KNOWLEDGE_PACK = {
   "meta": {
-    "appVersion": "0.1.184",
-    "appReleaseId": "20260816-v0.1.184",
-    "androidVersionCode": 186,
-    "gitSha": "fbff08b526aa958dc05c73e36d1186665345b65d",
-    "generatedAt": "2026-08-16T19:56:20.431Z",
-    "sourceFingerprint": "bbb28c344d3f81fbbf3d6a208ac6b60a90ce39ef7a5ffa35a44e27989e41b376",
+    "appVersion": "0.1.185",
+    "appReleaseId": "20260816-v0.1.185",
+    "androidVersionCode": 187,
+    "gitSha": "5f803e3e4e22cf4a72b806171957a39d785fe66a",
+    "generatedAt": "2026-08-16T21:28:33.499Z",
+    "sourceFingerprint": "fdf9bacf88312e177942270c7a880e33ede4b5ce98d43b8fb641be62b4bcf8ae",
     "knowledgeFormat": 1,
     "sourceCount": 26,
-    "chunkCount": 333
+    "chunkCount": 334
   },
   "capabilities": [
     {
@@ -1083,11 +1197,12 @@ var KNOWLEDGE_PACK = {
       "id": "nela",
       "name": "Civi",
       "status": "implemented",
-      "description": "Civi is Civizen\u2019s AI assistant. Visitors can ask project questions without creating an account. Members also find Civi pinned in Messaging. Answers from current project knowledge for this build.",
-      "howTo": "Open the Civi button at the lower right, or Messaging after you sign in.",
+      "description": "Civi is Civizen\u2019s AI assistant. Visitors can ask project questions without creating an account. Members also find Civi pinned in Messaging. Answers from current project knowledge for this build. When Civi does not already have a good answer and uses Gemini, it checks that reply and may remember it for similar questions later. Identity, the capability registry, and the cheat sheet still win. Personal records are not stored in Civi memory. During development, founders can review questions and replies at Settings > AI Agent.",
+      "howTo": "Open the Civi button at the lower right, or Messaging after you sign in. Founders can review interaction history from Settings > AI Agent.",
       "routes": [
         "/onboarding",
-        "/messaging"
+        "/messaging",
+        "/settings/ai-agent"
       ],
       "roles": [
         "guest",
@@ -1107,7 +1222,9 @@ var KNOWLEDGE_PACK = {
       "sourceRefs": [
         "supabase/functions/messaging-agent-reply/index.ts",
         "src/lib/messaging-constants.ts",
-        "src/components/public/PublicCiviWidget.tsx"
+        "src/components/public/PublicCiviWidget.tsx",
+        "src/lib/assistant/learned-memory.ts",
+        "src/pages/settings/AiAgentSettings.tsx"
       ]
     },
     {
@@ -2423,7 +2540,7 @@ var KNOWLEDGE_PACK = {
       "id": "capability:nela",
       "title": "Civi",
       "path": "src/lib/assistant/catalog.ts",
-      "text": "Civi status=implemented. Civi is Civizen\u2019s AI assistant. Visitors can ask project questions without creating an account. Members also find Civi pinned in Messaging. Answers from current project knowledge for this build. Open the Civi button at the lower right, or Messaging after you sign in. Routes: /onboarding, /messaging.",
+      "text": "Civi status=implemented. Civi is Civizen\u2019s AI assistant. Visitors can ask project questions without creating an account. Members also find Civi pinned in Messaging. Answers from current project knowledge for this build. When Civi does not already have a good answer and uses Gemini, it checks that reply and may remember it for similar questions later. Identity, the capability registry, and the cheat sheet still win. Personal records are not stored in Civi memory. During development, founders can review questions and replies at Settings > AI Agent. Open the Civi button at the lower right, or Messaging after you sign in. Founders can review interaction history from Settings > AI Agent. Routes: /onboarding, /messaging, /settings/ai-agent.",
       "status": "implemented",
       "priority": 3,
       "kind": "capability"
@@ -3026,7 +3143,7 @@ var KNOWLEDGE_PACK = {
       "id": "docs/assistant/civizen-assistant-cheatsheet.md#0",
       "title": "Civizen Assistant Cheat Sheet",
       "path": "docs/assistant/civizen-assistant-cheatsheet.md",
-      "text": "# Civizen Assistant Cheat Sheet Compact high-confidence facts for Civi. Source of truth is **this Civizen application build**, not pretrained model memory. Civi is internal-first: conversation context \u2192 canonical identity (what Civizen is) \u2192 FAQ / this cheat sheet \u2192 capability registry (what works now) \u2192 project knowledge search \u2192 authorized member data \u2192 AI reasoning over that evidence \u2192 broader API resources only when the request is actually about the outside world. External resources must never override current Civizen project information. Product principle: **Simple by default. Detailed by choice.**",
+      "text": "# Civizen Assistant Cheat Sheet Compact high-confidence facts for Civi. Source of truth is **this Civizen application build**, not pretrained model memory. Civi is internal-first: conversation context \u2192 canonical identity (what Civizen is) \u2192 FAQ / this cheat sheet \u2192 capability registry (what works now) \u2192 project knowledge search \u2192 authorized member data \u2192 checked Civi memory \u2192 AI reasoning over that evidence \u2192 broader API resources only when the request is actually about the outside world. External resources must never override current Civizen project information. Product principle: **Simple by default. Detailed by choice.**",
       "status": "implemented",
       "priority": 5,
       "kind": "cheatsheet"
@@ -3161,7 +3278,7 @@ var KNOWLEDGE_PACK = {
       "id": "docs/assistant/README.md#1",
       "title": "Layout",
       "path": "docs/assistant/README.md",
-      "text": "## Layout | Path | Role | | --- | --- | | [`civizen-identity.md`](./civizen-identity.md) | Canonical identity, purpose, and one-sentence definition | | [`civizen-assistant-cheatsheet.md`](./civizen-assistant-cheatsheet.md) | Compact canonical facts for frequent questions | | `src/lib/assistant/catalog.ts` | Machine-readable capabilities, FAQ, and terminology aliases | | `src/lib/assistant/generated/knowledge-pack.ts` | Generated searchable index (do not edit by hand) | | `supabase/functions/messaging-agent-reply/nela-bundle.js` | Bundled retrieval runtime for the Civi edge function |",
+      "text": "## Layout | Path | Role | | --- | --- | | [`civizen-identity.md`](./civizen-identity.md) | Canonical identity, purpose, and one-sentence definition | | [`civizen-assistant-cheatsheet.md`](./civizen-assistant-cheatsheet.md) | Compact canonical facts for frequent questions | | `src/lib/assistant/catalog.ts` | Machine-readable capabilities, FAQ, and terminology aliases | | `src/lib/assistant/learned-memory.ts` | Checked Gemini-answer memory (does not override identity or capabilities) | | `src/pages/settings/AiAgentSettings.tsx` | Founder development review of Civi questions and replies | | `src/lib/assistant/generated/knowledge-pack.ts` | Generated searchable index (do not edit by hand) | | `supabase/functions/messaging-agent-reply/nela-bundle.js` | Bundled retrieval runtime for the Civi edge function |",
       "status": "implemented",
       "priority": 5,
       "kind": "doc"
@@ -3179,13 +3296,22 @@ var KNOWLEDGE_PACK = {
       "id": "docs/assistant/README.md#3",
       "title": "Internal-first routing",
       "path": "docs/assistant/README.md",
-      "text": "## Internal-first routing Civi uses the closest authoritative resource first: 1. Conversation context 2. Canonical identity (`civizen-identity.md`) for what Civizen is, its purpose, mission, scope, or one-sentence description 3. FAQ / this cheat sheet 4. Capability registry for what is implemented **now** 5. Project knowledge index 6. Authorized runtime / member data 7. AI reasoning over collected evidence 8. Broader API-agent resources only when the request needs the outside world Identity questions must not be answered by reconstructing Civizen from feature docs. Capability questions must not be answered with the identity sentence alone. Civizen product facts stay internal even after escalation. Missing internal evidence does not authorize a generic web/model guess about Civizen.",
+      "text": "## Internal-first routing Civi uses the closest authoritative resource first: 1. Conversation context 2. Canonical identity (`civizen-identity.md`) for what Civizen is, its purpose, mission, scope, or one-sentence description 3. FAQ / this cheat sheet 4. Capability registry for what is implemented **now** 5. Project knowledge index 6. Authorized runtime / member data 7. Civi memory of **checked** previous model answers (similar questions only; never overrides 2\u20135) 8. AI reasoning over collected evidence 9. Broader API-agent resources only when the request needs the outside world Identity questions must not be answered by reconstructing Civizen from feature docs. Capability questions must not be answered with the identity sentence alone.",
       "status": "implemented",
       "priority": 5,
       "kind": "doc"
     },
     {
       "id": "docs/assistant/README.md#4",
+      "title": "Internal-first routing",
+      "path": "docs/assistant/README.md",
+      "text": "Civizen product facts stay internal even after escalation. Missing internal evidence does not authorize a generic web/model guess about Civizen. Gemini (or another model) may fill a gap for a general or mixed question; Civi then **checks** that reply before storing it. Invented Civizen capabilities, personal records, and one-off drafts are not remembered.",
+      "status": "implemented",
+      "priority": 5,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/assistant/README.md#5",
       "title": "Status vocabulary",
       "path": "docs/assistant/README.md",
       "text": "## Status vocabulary Capabilities use: `implemented` \xB7 `experimental` \xB7 `in_development` \xB7 `proposed` \xB7 `deprecated` \xB7 `historical`. \u201CCivizen supports X\u201D means X is **implemented** in this build.",
@@ -5430,9 +5556,14 @@ function prepareNelaTurn(messages, options = {}) {
       if (!resourcePlan.kinds.includes(kind)) resourcePlan.kinds.push(kind);
     }
   }
+  let usedLearnedMemoryKey = null;
+  const learnedHit = !greeting && !rewritten.isVerification ? pickLearnedMemory(searchQuery, options.learnedMemories, {
+    catalogFaqScore: retrieval.faq[0]?.score,
+    topic
+  }) : null;
   const externalResourcesInvoked = [];
   const invokeKind = shouldInvokeExternalSearch(resourcePlan, latestText);
-  if (invokeKind && options.externalAdapter?.search) {
+  if (invokeKind && !learnedHit && options.externalAdapter?.search) {
     void options.externalAdapter.search(resolvedQuery);
     externalResourcesInvoked.push(invokeKind);
   }
@@ -5451,6 +5582,10 @@ function prepareNelaTurn(messages, options = {}) {
     if (groundedAnswer === UNVERIFIED && kinds.includes("external_world")) {
       groundedAnswer = "I do not have a Civizen-specific fact for that. I can explain the general topic, separate from current Civizen features.";
     }
+  }
+  if (learnedHit && resourcePlan.internalResolution !== "requires_runtime_data") {
+    groundedAnswer = learnedHit.answer;
+    usedLearnedMemoryKey = learnedHit.questionKey;
   }
   if (inScope && !greeting) {
     const shapeQuery = rewritten.isVerification ? rewritten.previousUserQuestion ?? latestText : latestText;
@@ -5488,7 +5623,7 @@ For your account: ${options.runtimeData.summary}`.trim();
       resolvedQuery,
       isVerification: rewritten.isVerification,
       previousUserQuestion: rewritten.previousUserQuestion,
-      matchedFaqId: retrieval.faq[0]?.item.id ?? null,
+      matchedFaqId: usedLearnedMemoryKey ? `learned:${usedLearnedMemoryKey}` : retrieval.faq[0]?.item.id ?? null,
       matchedCapabilityIds: retrieval.capabilities.map((h) => h.item.id),
       retrievedPaths: retrieval.documents.map((h) => h.chunk.path),
       capabilityStatuses: retrieval.capabilities.map((h) => ({ id: h.item.id, status: h.item.status })),
@@ -5500,6 +5635,7 @@ For your account: ${options.runtimeData.summary}`.trim();
       externalResourceKind: resourcePlan.externalResourceKind,
       externalResourcesInvoked,
       usedRuntimeData: Boolean(options.runtimeData?.summary),
+      usedLearnedMemoryKey,
       knowledge: {
         appVersion: pack.meta.appVersion,
         appReleaseId: pack.meta.appReleaseId,
@@ -5512,10 +5648,34 @@ For your account: ${options.runtimeData.summary}`.trim();
   prep.skipLlm = shouldSkipLlm(prep);
   return prep;
 }
+
+// src/lib/assistant/interaction-log.ts
+function classifyCiviInteractionSource(args) {
+  if (args.abused) return "refusal";
+  if (!args.prep) return "refusal";
+  if (args.prep.isGreeting) return "greeting";
+  if (!args.prep.inScope) return "refusal";
+  if (args.prep.diagnostics.usedLearnedMemoryKey) return "memory";
+  if (args.usedModel) return "model";
+  return "knowledge";
+}
+function shouldRecordCiviInteraction(args) {
+  if (args.source === "greeting") return false;
+  return args.question.trim().length > 0;
+}
+function redactSensitiveCiviQuestion(question, abused) {
+  if (abused) return "[Blocked]";
+  return question.trim();
+}
 export {
   KNOWLEDGE_PACK,
+  classifyCiviInteractionSource,
   classifyRequest,
   isVerificationFollowUp,
+  learnedMemoryFromRow,
   prepareNelaTurn,
-  resolveConversationalQuery
+  redactSensitiveCiviQuestion,
+  resolveConversationalQuery,
+  reviewLlmAnswerForLearning,
+  shouldRecordCiviInteraction
 };

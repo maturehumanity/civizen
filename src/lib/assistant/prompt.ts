@@ -88,6 +88,7 @@ export function buildNelaSystemPrompt(args: {
 }
 
 export function shouldSkipLlm(prep: Pick<NelaTurnPrep, 'resourcePlan' | 'diagnostics' | 'isGreeting' | 'inScope'>): boolean {
+  if (prep.diagnostics.usedLearnedMemoryKey) return true;
   if (!prep.inScope) return true;
   if (prep.isGreeting) return true;
   if (prep.resourcePlan.internalResolution === 'requires_runtime_data' && !prep.resourcePlan.allowLlmReasoning) {

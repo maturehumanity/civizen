@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { loadLanguageOptions, type LanguageCode, type LanguageOption } from '@/lib/i18n.runtime';
 import { permissionListHas, permissionListHasAny, type AppPermission } from '@/lib/access-control';
+import { canViewCiviAgentSettings } from '@/lib/assistant/interaction-log';
 import { isOfficialCivizenOrgProfile } from '@/lib/civizen-org-account';
 import { APP_VERSION_TAG, ANDROID_VERSION_CODE } from '@/lib/app-release';
 import {
@@ -39,6 +40,7 @@ import {
   KeyRound,
   ShieldCheck,
   Fingerprint,
+  Bot,
   Landmark,
   LayoutGrid,
   Lightbulb,
@@ -235,8 +237,20 @@ export default function Settings() {
       ]
     : [];
 
-  const visibleSettingsItems = settingsItems.filter(
-    (item) => {
+  const canViewAiAgent = canViewCiviAgentSettings(profile?.role);
+
+  const visibleSettingsItems = [
+    ...(canViewAiAgent
+      ? [
+          {
+            icon: Bot,
+            labelKey: 'settings.aiAgent',
+            descriptionKey: 'settings.aiAgentDescription',
+            path: '/settings/ai-agent',
+          } satisfies SettingsNavItem,
+        ]
+      : []),
+    ...settingsItems.filter((item) => {
       if (item.path === '/settings/social-accounts' && !isCivizenOrgAccount) {
         return false;
       }
@@ -244,8 +258,8 @@ export default function Settings() {
         !item.requiredPermissions ||
         permissionListHasAny(profile?.effective_permissions || [], item.requiredPermissions)
       );
-    },
-  );
+    }),
+  ];
 
   const primaryRowLabel = (row: PrimarySettingsRow): string => {
     if (row.kind === 'language') return t('settings.languageTitle');

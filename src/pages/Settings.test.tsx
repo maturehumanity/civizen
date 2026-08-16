@@ -119,6 +119,18 @@ describe('Settings page', () => {
     expect(screen.queryByRole('button', { name: /App channel/i })).not.toBeInTheDocument();
   });
 
+  it('hides the AI Agent review page from ordinary members', () => {
+    authProfileState.profile = { effective_permissions: [], role: 'member' };
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <Settings />
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByText('AI Agent')).not.toBeInTheDocument();
+  });
+
   it('shows the live/test app channel selector for updates.test holders', async () => {
     authProfileState.profile = { effective_permissions: ['updates.test'], role: 'founder' };
     window.localStorage.removeItem(APP_UPDATE_CHANNEL_KEY);
@@ -154,6 +166,7 @@ describe('Settings page', () => {
     );
 
     const titles = [
+      'AI Agent',
       'Appearance',
       'Edit Profile',
       'Help and support',

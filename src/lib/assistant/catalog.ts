@@ -228,9 +228,9 @@ export const ASSISTANT_CAPABILITIES: AssistantCapability[] = [
     name: 'Civi',
     status: 'implemented',
     description:
-      'Civi is Civizen’s AI assistant. Visitors can ask project questions without creating an account. Members also find Civi pinned in Messaging. Answers from current project knowledge for this build.',
-    howTo: 'Open the Civi button at the lower right, or Messaging after you sign in.',
-    routes: ['/onboarding', '/messaging'],
+      'Civi is Civizen’s AI assistant. Visitors can ask project questions without creating an account. Members also find Civi pinned in Messaging. Answers from current project knowledge for this build. When Civi does not already have a good answer and uses Gemini, it checks that reply and may remember it for similar questions later. Identity, the capability registry, and the cheat sheet still win. Personal records are not stored in Civi memory. During development, founders can review questions and replies at Settings > AI Agent.',
+    howTo: 'Open the Civi button at the lower right, or Messaging after you sign in. Founders can review interaction history from Settings > AI Agent.',
+    routes: ['/onboarding', '/messaging', '/settings/ai-agent'],
     roles: ['guest', 'member'],
     relatedCapabilities: ['messaging'],
     aliases: ['nela', 'civi', 'assistant', 'in-app assistant', 'ai assistant', 'your ai assistant'],
@@ -238,6 +238,8 @@ export const ASSISTANT_CAPABILITIES: AssistantCapability[] = [
       'supabase/functions/messaging-agent-reply/index.ts',
       'src/lib/messaging-constants.ts',
       'src/components/public/PublicCiviWidget.tsx',
+      'src/lib/assistant/learned-memory.ts',
+      'src/pages/settings/AiAgentSettings.tsx',
     ],
   },
   {

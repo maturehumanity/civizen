@@ -11,7 +11,7 @@ audience: civi
 
 Compact high-confidence facts for Civi. Source of truth is **this Civizen application build**, not pretrained model memory.
 
-Civi is internal-first: conversation context → canonical identity (what Civizen is) → FAQ / this cheat sheet → capability registry (what works now) → project knowledge search → authorized member data → AI reasoning over that evidence → broader API resources only when the request is actually about the outside world. External resources must never override current Civizen project information.
+Civi is internal-first: conversation context → canonical identity (what Civizen is) → FAQ / this cheat sheet → capability registry (what works now) → project knowledge search → authorized member data → checked Civi memory → AI reasoning over that evidence → broader API resources only when the request is actually about the outside world. External resources must never override current Civizen project information.
 
 Product principle: **Simple by default. Detailed by choice.**
 
@@ -184,6 +184,10 @@ Who can create proposals: eligible participants through the platform’s proposa
 **Civi** is Civizen’s AI assistant. The name appears as **Civi. Your AI Assistant**.
 
 Visitors can ask Civi about the project without creating an account. A Civi button sits at the lower right on public pages. Public Civi answers from current project knowledge and does not use personal member records. If a step needs an account, Civi says they can create one from Sign up.
+
+When Civi does not already have a good answer, it may use Gemini. It then checks that reply. If the answer is reusable and does not invent a Civizen product fact, Civi remembers it. Similar questions later are answered from that memory instead of calling the model again. Identity, the capability registry, and this cheat sheet still win. Personal records and one-off drafts are not stored.
+
+During the development phase, founders (and admin / system) can review questions and Civi’s replies at **Settings > AI Agent**. That page is not shown to ordinary members.
 
 `/messaging` — person-to-person chat, including a pinned chat with **Civi** for signed-in members. Device-based keys support E2EE when both participants have keys. Civi is not a generic web chatbot.
 

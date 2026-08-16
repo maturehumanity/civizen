@@ -3,15 +3,15 @@ import type { KnowledgePack } from '../types';
 
 export const KNOWLEDGE_PACK: KnowledgePack = {
   "meta": {
-    "appVersion": "0.1.184",
-    "appReleaseId": "20260816-v0.1.184",
-    "androidVersionCode": 186,
-    "gitSha": "fbff08b526aa958dc05c73e36d1186665345b65d",
-    "generatedAt": "2026-08-16T19:56:20.431Z",
-    "sourceFingerprint": "bbb28c344d3f81fbbf3d6a208ac6b60a90ce39ef7a5ffa35a44e27989e41b376",
+    "appVersion": "0.1.185",
+    "appReleaseId": "20260816-v0.1.185",
+    "androidVersionCode": 187,
+    "gitSha": "5f803e3e4e22cf4a72b806171957a39d785fe66a",
+    "generatedAt": "2026-08-16T21:28:33.499Z",
+    "sourceFingerprint": "fdf9bacf88312e177942270c7a880e33ede4b5ce98d43b8fb641be62b4bcf8ae",
     "knowledgeFormat": 1,
     "sourceCount": 26,
-    "chunkCount": 333
+    "chunkCount": 334
   },
   "capabilities": [
     {
@@ -437,11 +437,12 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "id": "nela",
       "name": "Civi",
       "status": "implemented",
-      "description": "Civi is Civizen’s AI assistant. Visitors can ask project questions without creating an account. Members also find Civi pinned in Messaging. Answers from current project knowledge for this build.",
-      "howTo": "Open the Civi button at the lower right, or Messaging after you sign in.",
+      "description": "Civi is Civizen’s AI assistant. Visitors can ask project questions without creating an account. Members also find Civi pinned in Messaging. Answers from current project knowledge for this build. When Civi does not already have a good answer and uses Gemini, it checks that reply and may remember it for similar questions later. Identity, the capability registry, and the cheat sheet still win. Personal records are not stored in Civi memory. During development, founders can review questions and replies at Settings > AI Agent.",
+      "howTo": "Open the Civi button at the lower right, or Messaging after you sign in. Founders can review interaction history from Settings > AI Agent.",
       "routes": [
         "/onboarding",
-        "/messaging"
+        "/messaging",
+        "/settings/ai-agent"
       ],
       "roles": [
         "guest",
@@ -461,7 +462,9 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "sourceRefs": [
         "supabase/functions/messaging-agent-reply/index.ts",
         "src/lib/messaging-constants.ts",
-        "src/components/public/PublicCiviWidget.tsx"
+        "src/components/public/PublicCiviWidget.tsx",
+        "src/lib/assistant/learned-memory.ts",
+        "src/pages/settings/AiAgentSettings.tsx"
       ]
     },
     {
@@ -1777,7 +1780,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "id": "capability:nela",
       "title": "Civi",
       "path": "src/lib/assistant/catalog.ts",
-      "text": "Civi status=implemented. Civi is Civizen’s AI assistant. Visitors can ask project questions without creating an account. Members also find Civi pinned in Messaging. Answers from current project knowledge for this build. Open the Civi button at the lower right, or Messaging after you sign in. Routes: /onboarding, /messaging.",
+      "text": "Civi status=implemented. Civi is Civizen’s AI assistant. Visitors can ask project questions without creating an account. Members also find Civi pinned in Messaging. Answers from current project knowledge for this build. When Civi does not already have a good answer and uses Gemini, it checks that reply and may remember it for similar questions later. Identity, the capability registry, and the cheat sheet still win. Personal records are not stored in Civi memory. During development, founders can review questions and replies at Settings > AI Agent. Open the Civi button at the lower right, or Messaging after you sign in. Founders can review interaction history from Settings > AI Agent. Routes: /onboarding, /messaging, /settings/ai-agent.",
       "status": "implemented",
       "priority": 3,
       "kind": "capability"
@@ -2380,7 +2383,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "id": "docs/assistant/civizen-assistant-cheatsheet.md#0",
       "title": "Civizen Assistant Cheat Sheet",
       "path": "docs/assistant/civizen-assistant-cheatsheet.md",
-      "text": "# Civizen Assistant Cheat Sheet Compact high-confidence facts for Civi. Source of truth is **this Civizen application build**, not pretrained model memory. Civi is internal-first: conversation context → canonical identity (what Civizen is) → FAQ / this cheat sheet → capability registry (what works now) → project knowledge search → authorized member data → AI reasoning over that evidence → broader API resources only when the request is actually about the outside world. External resources must never override current Civizen project information. Product principle: **Simple by default. Detailed by choice.**",
+      "text": "# Civizen Assistant Cheat Sheet Compact high-confidence facts for Civi. Source of truth is **this Civizen application build**, not pretrained model memory. Civi is internal-first: conversation context → canonical identity (what Civizen is) → FAQ / this cheat sheet → capability registry (what works now) → project knowledge search → authorized member data → checked Civi memory → AI reasoning over that evidence → broader API resources only when the request is actually about the outside world. External resources must never override current Civizen project information. Product principle: **Simple by default. Detailed by choice.**",
       "status": "implemented",
       "priority": 5,
       "kind": "cheatsheet"
@@ -2515,7 +2518,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "id": "docs/assistant/README.md#1",
       "title": "Layout",
       "path": "docs/assistant/README.md",
-      "text": "## Layout | Path | Role | | --- | --- | | [`civizen-identity.md`](./civizen-identity.md) | Canonical identity, purpose, and one-sentence definition | | [`civizen-assistant-cheatsheet.md`](./civizen-assistant-cheatsheet.md) | Compact canonical facts for frequent questions | | `src/lib/assistant/catalog.ts` | Machine-readable capabilities, FAQ, and terminology aliases | | `src/lib/assistant/generated/knowledge-pack.ts` | Generated searchable index (do not edit by hand) | | `supabase/functions/messaging-agent-reply/nela-bundle.js` | Bundled retrieval runtime for the Civi edge function |",
+      "text": "## Layout | Path | Role | | --- | --- | | [`civizen-identity.md`](./civizen-identity.md) | Canonical identity, purpose, and one-sentence definition | | [`civizen-assistant-cheatsheet.md`](./civizen-assistant-cheatsheet.md) | Compact canonical facts for frequent questions | | `src/lib/assistant/catalog.ts` | Machine-readable capabilities, FAQ, and terminology aliases | | `src/lib/assistant/learned-memory.ts` | Checked Gemini-answer memory (does not override identity or capabilities) | | `src/pages/settings/AiAgentSettings.tsx` | Founder development review of Civi questions and replies | | `src/lib/assistant/generated/knowledge-pack.ts` | Generated searchable index (do not edit by hand) | | `supabase/functions/messaging-agent-reply/nela-bundle.js` | Bundled retrieval runtime for the Civi edge function |",
       "status": "implemented",
       "priority": 5,
       "kind": "doc"
@@ -2533,13 +2536,22 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "id": "docs/assistant/README.md#3",
       "title": "Internal-first routing",
       "path": "docs/assistant/README.md",
-      "text": "## Internal-first routing Civi uses the closest authoritative resource first: 1. Conversation context 2. Canonical identity (`civizen-identity.md`) for what Civizen is, its purpose, mission, scope, or one-sentence description 3. FAQ / this cheat sheet 4. Capability registry for what is implemented **now** 5. Project knowledge index 6. Authorized runtime / member data 7. AI reasoning over collected evidence 8. Broader API-agent resources only when the request needs the outside world Identity questions must not be answered by reconstructing Civizen from feature docs. Capability questions must not be answered with the identity sentence alone. Civizen product facts stay internal even after escalation. Missing internal evidence does not authorize a generic web/model guess about Civizen.",
+      "text": "## Internal-first routing Civi uses the closest authoritative resource first: 1. Conversation context 2. Canonical identity (`civizen-identity.md`) for what Civizen is, its purpose, mission, scope, or one-sentence description 3. FAQ / this cheat sheet 4. Capability registry for what is implemented **now** 5. Project knowledge index 6. Authorized runtime / member data 7. Civi memory of **checked** previous model answers (similar questions only; never overrides 2–5) 8. AI reasoning over collected evidence 9. Broader API-agent resources only when the request needs the outside world Identity questions must not be answered by reconstructing Civizen from feature docs. Capability questions must not be answered with the identity sentence alone.",
       "status": "implemented",
       "priority": 5,
       "kind": "doc"
     },
     {
       "id": "docs/assistant/README.md#4",
+      "title": "Internal-first routing",
+      "path": "docs/assistant/README.md",
+      "text": "Civizen product facts stay internal even after escalation. Missing internal evidence does not authorize a generic web/model guess about Civizen. Gemini (or another model) may fill a gap for a general or mixed question; Civi then **checks** that reply before storing it. Invented Civizen capabilities, personal records, and one-off drafts are not remembered.",
+      "status": "implemented",
+      "priority": 5,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/assistant/README.md#5",
       "title": "Status vocabulary",
       "path": "docs/assistant/README.md",
       "text": "## Status vocabulary Capabilities use: `implemented` · `experimental` · `in_development` · `proposed` · `deprecated` · `historical`. “Civizen supports X” means X is **implemented** in this build.",

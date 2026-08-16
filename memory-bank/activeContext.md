@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Civi checked memory + Settings > AI Agent (2026-08-16):** When Civi does not already have a good answer and uses Gemini, it checks that reply and may store it as Civi memory. Similar questions later are answered from memory instead of calling the model again. Identity, the capability registry, and the cheat sheet still win. Unverified Civizen product claims, personal records, and one-off drafts are not stored. Founders can review questions and replies at Settings > AI Agent during development (`/settings/ai-agent`; founder / admin / system only). LANGUAGE_PACK_VERSION 206.
+
 **Civi. Your AI Assistant (2026-08-16):** The name is **Civi. Your AI Assistant** (no longer “Civi (In-app assistant)”). Visitors can ask Civi about the project without registering — a Civi button sits at the lower right on public pages. Signed-in members still use Civi in Messaging. Public answers use project knowledge only (no personal records). LANGUAGE_PACK_VERSION 204.
 
 **Public Market Jobs (2026-08-16):** `/market` is public. Jobs is the first open participation surface: anyone can look for work or post a job without an account. Available work / Available workers lists show sanitized rows; unlocking contact details requires sign-in (not payment). The public website homepage is onboarding, so Jobs is linked from the header, hero, Choose your path, and `/jobs`. Sell, Saved, Agreements, and prototype credits stay member-only. Spec: `docs/04-operations/dev/market-jobs-public.md`. LANGUAGE_PACK_VERSION 205.

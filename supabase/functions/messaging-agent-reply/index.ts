@@ -1,5 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
-import { prepareNelaTurn } from './nela-bundle.js';
+import { prepareNelaTurn, learnedMemoryFromRow, reviewLlmAnswerForLearning } from './nela-bundle.js';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -529,16 +529,132 @@ function sanitizePublicHistory(raw: unknown): HistoryTurn[] {
     .slice(-PUBLIC_HISTORY_LIMIT);
 }
 
-async function replyFromHistory(history: HistoryTurn[], latestUserLine: string, audience: 'member' | 'guest') {
+function classifyCiviInteractionSource(args: {
+  prep: ReturnType<typeof prepareNelaTurn> | null;
+  usedModel: boolean;
+  abused?: boolean;
+}): 'knowledge' | 'memory' | 'model' | 'refusal' | 'greeting' {
+  if (args.abused) return 'refusal';
+  if (!args.prep) return 'refusal';
+  if (args.prep.isGreeting) return 'greeting';
+  if (!args.prep.inScope) return 'refusal';
+  if (args.prep.diagnostics.usedLearnedMemoryKey) return 'memory';
+  if (args.usedModel) return 'model';
+  return 'knowledge';
+}
+
+function shouldRecordCiviInteraction(args: {
+  question: string;
+  source: 'knowledge' | 'memory' | 'model' | 'refusal' | 'greeting';
+}): boolean {
+  if (args.source === 'greeting') return false;
+  return args.question.trim().length > 0;
+}
+
+function redactSensitiveCiviQuestion(question: string, abused: boolean): string {
+  if (abused) return '[Blocked]';
+  return question.trim();
+}
+
+async function loadLearnedMemories(admin: ReturnType<typeof createClient>) {
+  try {
+    const { data, error } = await admin.rpc('list_civi_learned_memories', { p_limit: 200 });
+    if (error || !Array.isArray(data)) return [];
+    return data.map(learnedMemoryFromRow).filter((row): row is NonNullable<typeof row> => Boolean(row));
+  } catch (err) {
+    console.warn('[messaging-agent-reply] learned memory load skipped', err);
+    return [];
+  }
+}
+
+async function rememberCheckedReply(
+  admin: ReturnType<typeof createClient>,
+  question: string,
+  replyText: string,
+  prep: ReturnType<typeof prepareNelaTurn>,
+): Promise<boolean> {
+  try {
+    if (prep.diagnostics.usedLearnedMemoryKey) {
+      await admin.rpc('touch_civi_learned_memory', { p_question_key: prep.diagnostics.usedLearnedMemoryKey });
+      return false;
+    }
+    if (prep.skipLlm) return false;
+    const decision = reviewLlmAnswerForLearning({ question, llmAnswer: replyText, prep });
+    if (decision.action !== 'learn') return false;
+    await admin.rpc('ingest_civi_learned_memory', {
+      p_question_key: decision.questionKey,
+      p_question: decision.question,
+      p_answer: decision.answer,
+      p_kind: decision.kind,
+    });
+    return true;
+  } catch (err) {
+    console.warn('[messaging-agent-reply] learned memory persist skipped', err);
+    return false;
+  }
+}
+
+async function recordInteraction(
+  admin: ReturnType<typeof createClient>,
+  args: {
+    question: string;
+    answer: string;
+    audience: 'guest' | 'member';
+    channel: 'public' | 'messaging';
+    prep: ReturnType<typeof prepareNelaTurn> | null;
+    usedModel: boolean;
+    abused?: boolean;
+    remembered?: boolean;
+    actorProfileId?: string | null;
+    conversationId?: string | null;
+  },
+) {
+  const source = classifyCiviInteractionSource({
+    prep: args.prep,
+    usedModel: args.usedModel,
+    abused: args.abused,
+  });
+  const question = redactSensitiveCiviQuestion(args.question, Boolean(args.abused));
+  if (!shouldRecordCiviInteraction({ question, source })) return;
+  try {
+    await admin.rpc('ingest_civi_interaction', {
+      p_audience: args.audience,
+      p_channel: args.channel,
+      p_question: question,
+      p_answer: args.answer.trim().slice(0, 8000),
+      p_answer_source: source,
+      p_remembered: Boolean(args.remembered),
+      p_actor_profile_id: args.actorProfileId ?? null,
+      p_conversation_id: args.conversationId ?? null,
+    });
+  } catch (err) {
+    console.warn('[messaging-agent-reply] interaction log skipped', err);
+  }
+}
+
+async function replyFromHistory(
+  admin: ReturnType<typeof createClient>,
+  history: HistoryTurn[],
+  latestUserLine: string,
+  audience: 'member' | 'guest',
+) {
   const llm = resolveLlm();
   const abuseCategory = classifyAbuse(latestUserLine);
   if (abuseCategory) {
-    return { replyText: abuseRefusalReply(abuseCategory) };
+    return {
+      replyText: abuseRefusalReply(abuseCategory),
+      prep: null as ReturnType<typeof prepareNelaTurn> | null,
+      usedModel: false,
+      remembered: false,
+      abused: true,
+    };
   }
 
-  const prep = prepareNelaTurn(history, { audience });
+  const memories = await loadLearnedMemories(admin);
+  const prep = prepareNelaTurn(history, { audience, learnedMemories: memories });
   if (!prep.inScope || prep.isGreeting || prep.skipLlm || llm.kind === 'none') {
-    return { replyText: prep.groundedAnswer };
+    const remembered = await rememberCheckedReply(admin, latestUserLine, prep.groundedAnswer, prep);
+    return { replyText: prep.groundedAnswer, prep, usedModel: false, remembered, abused: false };
   }
 
   try {
@@ -548,10 +664,13 @@ async function replyFromHistory(history: HistoryTurn[], latestUserLine: string, 
     } else {
       text = await completeOpenAi(llm.key, history, prep.systemPrompt);
     }
-    return { replyText: text ? normalizeNelaStyle(text) : prep.groundedAnswer };
+    const usedModel = Boolean(text);
+    const replyText = text ? normalizeNelaStyle(text) : prep.groundedAnswer;
+    const remembered = await rememberCheckedReply(admin, latestUserLine, replyText, { ...prep, skipLlm: false });
+    return { replyText, prep, usedModel, remembered, abused: false };
   } catch (err) {
     console.error('[messaging-agent-reply] LLM request failed:', err);
-    return { replyText: prep.groundedAnswer };
+    return { replyText: prep.groundedAnswer, prep, usedModel: false, remembered: false, abused: false };
   }
 }
 
@@ -589,6 +708,10 @@ Deno.serve(async (request) => {
     error: authError,
   } = await userClient.auth.getUser();
 
+  const admin = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+
   if (body.public === true) {
     if (!allowPublicIp(clientIp(request))) {
       return jsonResponse(429, { error: 'Too many questions. Try again in a few minutes.' });
@@ -596,8 +719,18 @@ Deno.serve(async (request) => {
     const message = typeof body.message === 'string' ? body.message.trim().slice(0, PUBLIC_MESSAGE_MAX) : '';
     if (!message) return jsonResponse(400, { error: 'message required' });
     const history = [...sanitizePublicHistory(body.history), { role: 'user' as const, content: message }];
-    const generated = await replyFromHistory(history, message, 'guest');
+    const generated = await replyFromHistory(admin, history, message, 'guest');
     const replyText = generated.replyText.trim() || 'I could not verify that from Civizen’s current project information.';
+    await recordInteraction(admin, {
+      question: message,
+      answer: replyText,
+      audience: 'guest',
+      channel: 'public',
+      prep: generated.prep,
+      usedModel: generated.usedModel,
+      abused: generated.abused,
+      remembered: generated.remembered,
+    });
     return jsonResponse(200, { ok: true, reply: replyText });
   }
 
@@ -612,10 +745,6 @@ Deno.serve(async (request) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
-
-  const admin = createClient(supabaseUrl, serviceRoleKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
 
   const { data: conv, error: convError } = await admin
     .from('private_conversations')
@@ -695,14 +824,21 @@ Deno.serve(async (request) => {
   let replyText = '';
   let moderationMetric: ModerationMetricCategory | null = null;
   let diagnostics: Record<string, unknown> | null = null;
+  let usedModel = false;
+  let remembered = false;
+  let abused = false;
+  let memberPrep: ReturnType<typeof prepareNelaTurn> | null = null;
 
   const latestUserLine = String(last.content ?? '');
   const abuseCategory = classifyAbuse(latestUserLine);
   if (abuseCategory) {
     replyText = abuseRefusalReply(abuseCategory);
     moderationMetric = abuseMetricCategory(abuseCategory);
+    abused = true;
   } else {
-    const prep = prepareNelaTurn(history);
+    const memories = await loadLearnedMemories(admin);
+    const prep = prepareNelaTurn(history, { learnedMemories: memories });
+    memberPrep = prep;
     const debugRequested = body.debug === true;
     const debugRole = String((callerProfile as { role?: string }).role ?? '');
     const debugAllowed =
@@ -735,17 +871,32 @@ Deno.serve(async (request) => {
         } else {
           text = await completeOpenAi(llm.key, effectiveHistory, prep.systemPrompt);
         }
+        usedModel = Boolean(text);
         replyText = text ? normalizeNelaStyle(text) : prep.groundedAnswer;
       } catch (err) {
         console.error('[messaging-agent-reply] LLM request failed:', err);
         replyText = prep.groundedAnswer;
       }
     }
+    remembered = await rememberCheckedReply(admin, latestUserLine, replyText, prep);
   }
 
   if (!replyText.trim()) {
     replyText = 'I could not verify that from Civizen’s current project information.';
   }
+
+  await recordInteraction(admin, {
+    question: latestUserLine,
+    answer: replyText,
+    audience: 'member',
+    channel: 'messaging',
+    prep: memberPrep,
+    usedModel,
+    abused,
+    remembered,
+    actorProfileId: callerProfile.id,
+    conversationId,
+  });
 
   if (moderationMetric) {
     await recordModerationMetric(admin, moderationMetric);
