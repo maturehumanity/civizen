@@ -6,6 +6,8 @@
 
 **Public Market Jobs (2026-08-16):** `/market` is public. Jobs is the first open participation surface: anyone can look for work or post a job without an account. Available work / Available workers lists show sanitized rows; unlocking contact details requires sign-in (not payment). Sell, Saved, Agreements, and prototype credits stay member-only. Spec: `docs/04-operations/dev/market-jobs-public.md`. LANGUAGE_PACK_VERSION 203.
 
+**Live + Testing v0.1.184 (2026-08-16):** Build 186 (`20260816-v0.1.184`) published to Testing and Live. Includes public Civi (Civi. Your AI Assistant) so visitors can ask about the project without registering, plus Public Market Jobs.
+
 **Live + Testing v0.1.183 (2026-08-16):** Build 185 (`20260816-v0.1.183`) published to Testing and Live. Includes adaptive Happiness check-in (feeling + areas on one page), Privacy from the Overview lock, and Improve only from the Improve tab.
 
 **Happiness hub header (2026-08-16):** The Happiness first page has no Back chevron. The heart mark sits at the content inset without a circular background, using the same header gap as the title. The title row uses the same top offset and 40px height as Search and Profile. “This is private to you.” is a lock icon beside the current Happiness level on Overview; tap/click opens `/happiness/privacy`. Overview does not show a Privacy text link or an Improve an area button (Improve is the tab).
