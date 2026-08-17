@@ -50,6 +50,8 @@ describe('PublicCiviWidget', () => {
     expect(await screen.findByText('Civizen is an open participatory system.')).toBeInTheDocument();
     expect(screen.getByTestId('civi-chat-bubble-user').className).toContain('civi-chat-bubble--user');
     expect(screen.getByTestId('civi-chat-bubble-assistant').className).toContain('civi-chat-bubble--assistant');
+    expect(screen.getByTestId('civi-chat-tail-user')).toBeInTheDocument();
+    expect(screen.getByTestId('civi-chat-tail-assistant')).toBeInTheDocument();
   });
 
   it('enlarges the panel when the upper-left corner is dragged left and up', () => {

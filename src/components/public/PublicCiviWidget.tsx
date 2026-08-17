@@ -22,6 +22,32 @@ type ChatItem = HistoryTurn & { id: string };
 type PanelSize = { width: number; height: number };
 export type ResizeEdge = 'n' | 'w' | 'nw';
 
+/** WhatsApp Web `tail-out` / `tail-in` paths — side hook at the outer bottom corner, not a downward nub. */
+function CiviChatTail({ side }: { side: 'user' | 'assistant' }) {
+  const outgoing = side === 'user';
+  return (
+    <svg
+      data-testid={outgoing ? 'civi-chat-tail-user' : 'civi-chat-tail-assistant'}
+      className={cn(
+        'pointer-events-none absolute bottom-0 h-[13px] w-2 overflow-visible',
+        outgoing ? '-right-2 fill-primary' : '-left-2 fill-muted',
+      )}
+      viewBox="0 0 8 13"
+      width="8"
+      height="13"
+      aria-hidden
+    >
+      <path
+        d={
+          outgoing
+            ? 'M6.467 2.568 0 11.193V0h5.188c1.77 0 2.338 1.496 1.279 2.568z'
+            : 'M1.533 2.568 8 11.193V0H2.812C1.042 0 .474 1.496 1.533 2.568z'
+        }
+      />
+    </svg>
+  );
+}
+
 function clampSize(width: number, height: number): PanelSize {
   const maxW = typeof window === 'undefined' ? DEFAULT_WIDTH : Math.max(MIN_WIDTH, window.innerWidth - VIEW_MARGIN);
   const maxH = typeof window === 'undefined' ? DEFAULT_HEIGHT : Math.max(MIN_HEIGHT, window.innerHeight - VIEW_MARGIN);
@@ -350,7 +376,7 @@ export function PublicCiviWidget() {
         <div
           ref={listRef}
           data-testid="public-civi-thread"
-          className="civi-thread-scroll min-h-0 flex-1 space-y-3 px-4 py-3 touch-pan-y"
+          className="civi-thread-scroll min-h-0 flex-1 space-y-3 px-5 py-3 touch-pan-y"
           style={{ scrollbarWidth: 'none' }}
         >
           {messages.length === 0 ? (
@@ -374,6 +400,7 @@ export function PublicCiviWidget() {
                         : 'civi-chat-bubble--assistant bg-muted text-foreground',
                     )}
                   >
+                    <CiviChatTail side={item.role === 'user' ? 'user' : 'assistant'} />
                     {blocks ? (
                       <>
                         <p className="whitespace-pre-wrap break-words [overflow-wrap:break-word]">

@@ -245,50 +245,14 @@
   background: transparent;
 }
 
-/* Public Civi: WhatsApp-style chat tails on the lower corner. */
+/* Public Civi: WhatsApp Web tail paths sit on the outer bottom corner and point sideways. */
 .civi-chat-bubble {
   position: relative;
+  overflow: visible;
 }
 .civi-chat-bubble--user {
-  border-radius: 1rem 1rem 0.2rem 1rem;
+  border-radius: 0.75rem 0.75rem 0 0.75rem;
 }
 .civi-chat-bubble--assistant {
-  border-radius: 1rem 1rem 1rem 0.2rem;
-}
-.civi-chat-bubble--user::after,
-.civi-chat-bubble--assistant::after,
-.civi-chat-bubble--user::before,
-.civi-chat-bubble--assistant::before {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  width: 0.5rem;
-  height: 0.75rem;
-}
-.civi-chat-bubble--user::after,
-.civi-chat-bubble--assistant::after {
-  width: 0.5rem;
-}
-.civi-chat-bubble--user::before,
-.civi-chat-bubble--assistant::before {
-  width: 0.625rem;
-  background: hsl(var(--card));
-}
-.civi-chat-bubble--user::after {
-  right: -0.5rem;
-  background: hsl(var(--primary));
-  border-bottom-left-radius: 0.75rem 0.65rem;
-}
-.civi-chat-bubble--user::before {
-  right: -0.625rem;
-  border-bottom-left-radius: 0.55rem;
-}
-.civi-chat-bubble--assistant::after {
-  left: -0.5rem;
-  background: hsl(var(--muted));
-  border-bottom-right-radius: 0.75rem 0.65rem;
-}
-.civi-chat-bubble--assistant::before {
-  left: -0.625rem;
-  border-bottom-right-radius: 0.55rem;
+  border-radius: 0.75rem 0.75rem 0.75rem 0;
 }
