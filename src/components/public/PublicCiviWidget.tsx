@@ -22,14 +22,23 @@ type ChatItem = HistoryTurn & { id: string };
 type PanelSize = { width: number; height: number };
 export type ResizeEdge = 'n' | 'w' | 'nw';
 
-/** WhatsApp Web `tail-out` / `tail-in` paths — side hook at the outer bottom corner, not a downward nub. */
+/** First bubble in a same-sender run gets a tail; later ones in that run do not. */
+export function civiBubbleIsTailed(messages: Array<{ role: string }>, index: number): boolean {
+  if (index <= 0) return true;
+  return messages[index - 1]?.role !== messages[index]?.role;
+}
+
+/**
+ * WhatsApp-style tail: top outer corner, top edge flush with the bubble,
+ * inner edge curves down to the side. Incoming = top-left, outgoing = top-right.
+ */
 function CiviChatTail({ side }: { side: 'user' | 'assistant' }) {
   const outgoing = side === 'user';
   return (
     <svg
       data-testid={outgoing ? 'civi-chat-tail-user' : 'civi-chat-tail-assistant'}
       className={cn(
-        'pointer-events-none absolute bottom-0 h-[13px] w-2 overflow-visible',
+        'pointer-events-none absolute top-0 h-[13px] w-2 overflow-visible',
         outgoing ? '-right-2 fill-primary' : '-left-2 fill-muted',
       )}
       viewBox="0 0 8 13"
@@ -40,8 +49,8 @@ function CiviChatTail({ side }: { side: 'user' | 'assistant' }) {
       <path
         d={
           outgoing
-            ? 'M6.467 2.568 0 11.193V0h5.188c1.77 0 2.338 1.496 1.279 2.568z'
-            : 'M1.533 2.568 8 11.193V0H2.812C1.042 0 .474 1.496 1.533 2.568z'
+            ? 'M0 0h8C7 3 4 8 0 13V0z'
+            : 'M8 0H0c1 3 4 8 8 13V0z'
         }
       />
     </svg>
@@ -376,31 +385,39 @@ export function PublicCiviWidget() {
         <div
           ref={listRef}
           data-testid="public-civi-thread"
-          className="civi-thread-scroll min-h-0 flex-1 space-y-3 px-5 py-3 touch-pan-y"
+          className="civi-thread-scroll min-h-0 flex-1 px-5 py-3 touch-pan-y"
           style={{ scrollbarWidth: 'none' }}
         >
           {messages.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t('chatBar.private.civiPublic.emptyHint')}</p>
           ) : (
-            messages.map((item) => {
+            messages.map((item, index) => {
               const blocks = item.role === 'assistant' ? splitAssistantMessageBlocks(item.content) : null;
+              const tailed = civiBubbleIsTailed(messages, index);
+              const sameSenderAsPrev = index > 0 && messages[index - 1]?.role === item.role;
               return (
                 <div
                   key={item.id}
                   data-civi-turn=""
                   data-civi-role={item.role}
-                  className={cn('flex', item.role === 'user' ? 'justify-end' : 'justify-start')}
+                  className={cn(
+                    'flex',
+                    item.role === 'user' ? 'justify-end' : 'justify-start',
+                    index === 0 ? '' : sameSenderAsPrev ? 'mt-1' : 'mt-3',
+                  )}
                 >
                   <div
                     data-testid={item.role === 'user' ? 'civi-chat-bubble-user' : 'civi-chat-bubble-assistant'}
+                    data-tailed={tailed ? 'true' : 'false'}
                     className={cn(
                       'civi-chat-bubble max-w-[85%] px-3 py-2 text-sm',
                       item.role === 'user'
                         ? 'civi-chat-bubble--user bg-primary text-primary-foreground'
                         : 'civi-chat-bubble--assistant bg-muted text-foreground',
+                      tailed ? 'civi-chat-bubble--tailed' : 'civi-chat-bubble--plain',
                     )}
                   >
-                    <CiviChatTail side={item.role === 'user' ? 'user' : 'assistant'} />
+                    {tailed ? <CiviChatTail side={item.role === 'user' ? 'user' : 'assistant'} /> : null}
                     {blocks ? (
                       <>
                         <p className="whitespace-pre-wrap break-words [overflow-wrap:break-word]">

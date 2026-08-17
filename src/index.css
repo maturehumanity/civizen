@@ -245,14 +245,17 @@
   background: transparent;
 }
 
-/* Public Civi: WhatsApp Web tail paths sit on the outer bottom corner and point sideways. */
+/* Public Civi: WhatsApp tails sit on the top outer corner (first message in a run only). */
 .civi-chat-bubble {
   position: relative;
   overflow: visible;
 }
-.civi-chat-bubble--user {
-  border-radius: 0.75rem 0.75rem 0 0.75rem;
+.civi-chat-bubble--user.civi-chat-bubble--tailed {
+  border-radius: 0.5rem 0 0.5rem 0.5rem;
 }
-.civi-chat-bubble--assistant {
-  border-radius: 0.75rem 0.75rem 0.75rem 0;
+.civi-chat-bubble--assistant.civi-chat-bubble--tailed {
+  border-radius: 0 0.5rem 0.5rem 0.5rem;
+}
+.civi-chat-bubble--plain {
+  border-radius: 0.5rem;
 }

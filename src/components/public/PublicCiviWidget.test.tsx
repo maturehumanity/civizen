@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { panelSizeAfterEdgeDrag, panelSizeAfterNwDrag, PublicCiviWidget, scrollTopForLastExchange } from '@/components/public/PublicCiviWidget';
+import { panelSizeAfterEdgeDrag, panelSizeAfterNwDrag, PublicCiviWidget, civiBubbleIsTailed, scrollTopForLastExchange } from '@/components/public/PublicCiviWidget';
 import { CIVI_AVATAR_STORAGE_KEY, setCiviAvatarId } from '@/lib/civi-avatar';
 import { baseTranslations, translateMessage } from '@/lib/i18n';
 
@@ -49,9 +49,25 @@ describe('PublicCiviWidget', () => {
 
     expect(await screen.findByText('Civizen is an open participatory system.')).toBeInTheDocument();
     expect(screen.getByTestId('civi-chat-bubble-user').className).toContain('civi-chat-bubble--user');
+    expect(screen.getByTestId('civi-chat-bubble-user').className).toContain('civi-chat-bubble--tailed');
     expect(screen.getByTestId('civi-chat-bubble-assistant').className).toContain('civi-chat-bubble--assistant');
+    expect(screen.getByTestId('civi-chat-bubble-assistant').className).toContain('civi-chat-bubble--tailed');
     expect(screen.getByTestId('civi-chat-tail-user')).toBeInTheDocument();
     expect(screen.getByTestId('civi-chat-tail-assistant')).toBeInTheDocument();
+    const userTailClass = screen.getByTestId('civi-chat-tail-user').getAttribute('class') ?? '';
+    const assistantTailClass = screen.getByTestId('civi-chat-tail-assistant').getAttribute('class') ?? '';
+    expect(userTailClass).toContain('top-0');
+    expect(userTailClass).toContain('-right-2');
+    expect(assistantTailClass).toContain('top-0');
+    expect(assistantTailClass).toContain('-left-2');
+  });
+
+  it('puts a tail only on the first bubble in a same-sender run', () => {
+    const run = [{ role: 'user' }, { role: 'user' }, { role: 'assistant' }, { role: 'assistant' }];
+    expect(civiBubbleIsTailed(run, 0)).toBe(true);
+    expect(civiBubbleIsTailed(run, 1)).toBe(false);
+    expect(civiBubbleIsTailed(run, 2)).toBe(true);
+    expect(civiBubbleIsTailed(run, 3)).toBe(false);
   });
 
   it('enlarges the panel when the upper-left corner is dragged left and up', () => {

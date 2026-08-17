@@ -8,7 +8,7 @@
 
 **Civi knowledge on every change (2026-08-16):** New or changed user-facing surfaces, flows, and public mission copy update the cheat sheet and catalog in the same session, then `npm run assistant:knowledge`. Knowledge regen indexes live nav, Contribute lanes, and Civi page links. Philosophy of Mature Humanity is in the indexed sources. Why Civizen Exists is a catalog capability.
 
-**Public Civi widget resize (2026-08-16):** Hover the top or left edge for a rounded grip. Drag the top to change height only, the left to change width only, or the rounded corner for both. The last question and its answer stay in view when they fit. Messages use WhatsApp Web tail paths on the outer bottom corner (side hooks, not downward nubs). LANGUAGE_PACK_VERSION 208.
+**Public Civi widget resize (2026-08-16):** Hover the top or left edge for a rounded grip. Drag the top to change height only, the left to change width only, or the rounded corner for both. The last question and its answer stay in view when they fit. Chat tails match WhatsApp: top-left for Civi, top-right for the visitor, only on the first message in a same-sender run. LANGUAGE_PACK_VERSION 208.
 
 **Public Civi resize, hidden scrollbar, peace answers (2026-08-16):** Public Civi answers peace/hardship from this build before calling the live model. The thread scrolls without a visible scrollbar.
 
