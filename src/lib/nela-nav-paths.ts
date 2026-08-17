@@ -2,6 +2,7 @@ import { agreementsCreatePath } from '@/lib/agreements-model';
 
 /** Visible in-app paths Civi should speak, longest labels first for link matching. */
 export const NELA_PAGE_LINKS: readonly { label: string; href: string }[] = [
+  { label: 'Why Civizen Exists', href: '/why-this-exists' },
   { label: 'Community Governance Charter', href: '/governance/charter' },
   { label: 'Organization Partnership', href: '/partners' },
   { label: 'Governance Solutions', href: '/governance/solutions' },

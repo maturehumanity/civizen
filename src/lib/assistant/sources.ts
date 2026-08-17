@@ -36,6 +36,7 @@ export const INDEXED_SOURCES: IndexedSource[] = [
   { path: 'docs/02-policies/institutional/world-citizenship-and-civic-status-notice.md', priority: SOURCE_PRIORITY.canonicalDocs, status: 'implemented' },
   { path: 'docs/00-foundation/recognized-planetary-citizenship-pathway.md', priority: SOURCE_PRIORITY.canonicalDocs, status: 'implemented' },
   { path: 'docs/00-foundation/the-civizen-charter.md', priority: SOURCE_PRIORITY.canonicalDocs, status: 'implemented' },
+  { path: 'docs/00-foundation/philosophy-of-mature-humanity.md', priority: SOURCE_PRIORITY.canonicalDocs, status: 'implemented' },
   { path: 'docs/00-foundation/why-civizen-exists-page-brief.md', priority: SOURCE_PRIORITY.canonicalDocs, status: 'implemented' },
   { path: 'docs/04-operations/contributor-processes/content-status-retrieval-rules.md', priority: SOURCE_PRIORITY.canonicalDocs, status: 'implemented' },
   { path: 'docs/institutional/governance-framework.md', priority: SOURCE_PRIORITY.otherCurrentDocs, status: 'proposed' },

@@ -22,11 +22,13 @@ describe('Civi peace and cooperation', () => {
     expect(prep.skipLlm).toBe(true);
     expect(prep.groundedAnswer).toBe(PEACE_COOPERATION_REPLY);
     expect(prep.groundedAnswer).not.toMatch(/^Yes\./);
-    expect(prep.groundedAnswer).toMatch(/practical systems/i);
+    expect(prep.groundedAnswer).toMatch(/unite around shared human responsibility/i);
+    expect(prep.groundedAnswer).toMatch(/Unity does not require uniformity/i);
     expect(prep.groundedAnswer).toMatch(/signing up/);
     expect(prep.groundedAnswer).toMatch(/make a contribution/);
-    expect(prep.groundedAnswer).toMatch(/Study/);
+    expect(prep.groundedAnswer).toMatch(/\bStudy\b/);
     expect(prep.groundedAnswer).toMatch(/Governance/);
+    expect(prep.groundedAnswer).not.toMatch(/learn in Study/i);
     expect(prep.groundedAnswer).not.toMatch(/Start with Sign up\./);
     expect(prep.groundedAnswer).not.toMatch(/unites only when disaster/i);
     expect(prep.groundedAnswer).not.toMatch(/Volunteer/i);

@@ -245,6 +245,24 @@ export const ASSISTANT_CAPABILITIES: AssistantCapability[] = [
     ],
   },
   {
+    id: 'why_civizen_exists',
+    name: 'Why Civizen Exists',
+    status: 'implemented',
+    description:
+      'Public founding message: Civizen exists to help people unite around shared human responsibility, with practical systems for cooperation and peace. Unity does not require uniformity. Nations and cultures stay. Complementary world citizenship is a civic identity, not current legal nationality.',
+    howTo: 'Open Why Civizen Exists from the public site, or ask Civi how we can stop wars or unite humanity.',
+    routes: ['/why-this-exists'],
+    roles: ['guest', 'member'],
+    relatedCapabilities: ['study', 'contribute_hub', 'governance'],
+    aliases: ['why this exists', 'why civizen', 'founding message', 'unite humanity'],
+    sourceRefs: [
+      'docs/00-foundation/why-civizen-exists-page-brief.md',
+      'docs/00-foundation/recognized-planetary-citizenship-pathway.md',
+      'docs/00-foundation/the-civizen-charter.md',
+      'src/lib/assistant/peace.ts',
+    ],
+  },
+  {
     id: 'profile',
     name: 'Profiles',
     status: 'implemented',

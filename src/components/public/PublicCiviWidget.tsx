@@ -20,6 +20,7 @@ const VIEW_MARGIN = 24;
 
 type ChatItem = HistoryTurn & { id: string };
 type PanelSize = { width: number; height: number };
+export type ResizeEdge = 'n' | 'w' | 'nw';
 
 function clampSize(width: number, height: number): PanelSize {
   const maxW = typeof window === 'undefined' ? DEFAULT_WIDTH : Math.max(MIN_WIDTH, window.innerWidth - VIEW_MARGIN);
@@ -32,7 +33,20 @@ function clampSize(width: number, height: number): PanelSize {
   };
 }
 
-/** Upper-left drag: moving the pointer left/up enlarges the panel. */
+/** Top/left/corner drag: moving toward the outside enlarges the panel. */
+export function panelSizeAfterEdgeDrag(
+  start: PanelSize,
+  startX: number,
+  startY: number,
+  clientX: number,
+  clientY: number,
+  edge: ResizeEdge,
+): PanelSize {
+  const nextWidth = edge === 'n' ? start.width : start.width + (startX - clientX);
+  const nextHeight = edge === 'w' ? start.height : start.height + (startY - clientY);
+  return clampSize(nextWidth, nextHeight);
+}
+
 export function panelSizeAfterNwDrag(
   start: PanelSize,
   startX: number,
@@ -40,7 +54,15 @@ export function panelSizeAfterNwDrag(
   clientX: number,
   clientY: number,
 ): PanelSize {
-  return clampSize(start.width + (startX - clientX), start.height + (startY - clientY));
+  return panelSizeAfterEdgeDrag(start, startX, startY, clientX, clientY, 'nw');
+}
+
+/** Keep the last question + answer fully visible when they fit; otherwise pin the question at the top. */
+export function scrollTopForLastExchange(pairTop: number, pairBottom: number, viewHeight: number): number {
+  if (viewHeight <= 0) return 0;
+  const height = pairBottom - pairTop;
+  if (height <= viewHeight) return Math.max(0, pairBottom - viewHeight);
+  return Math.max(0, pairTop);
 }
 
 function loadSize(): PanelSize {
@@ -111,7 +133,13 @@ export function PublicCiviWidget() {
   const [size, setSize] = useState<PanelSize>(loadSize);
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const dragRef = useRef<{ startX: number; startY: number; startW: number; startH: number } | null>(null);
+  const dragRef = useRef<{
+    edge: ResizeEdge;
+    startX: number;
+    startY: number;
+    startW: number;
+    startH: number;
+  } | null>(null);
   const sizeRef = useRef(size);
   sizeRef.current = size;
 
@@ -126,12 +154,28 @@ export function PublicCiviWidget() {
       const drag = dragRef.current;
       if (!drag) return;
       event.preventDefault();
-      setSize(panelSizeAfterNwDrag({ width: drag.startW, height: drag.startH }, drag.startX, drag.startY, event.clientX, event.clientY));
+      setSize(
+        panelSizeAfterEdgeDrag(
+          { width: drag.startW, height: drag.startH },
+          drag.startX,
+          drag.startY,
+          event.clientX,
+          event.clientY,
+          drag.edge,
+        ),
+      );
     };
     const onUp = (event: PointerEvent) => {
       const drag = dragRef.current;
       if (!drag) return;
-      const next = panelSizeAfterNwDrag({ width: drag.startW, height: drag.startH }, drag.startX, drag.startY, event.clientX, event.clientY);
+      const next = panelSizeAfterEdgeDrag(
+        { width: drag.startW, height: drag.startH },
+        drag.startX,
+        drag.startY,
+        event.clientX,
+        event.clientY,
+        drag.edge,
+      );
       dragRef.current = null;
       setSize(next);
       persistSize(next);
@@ -157,8 +201,31 @@ export function PublicCiviWidget() {
   useEffect(() => {
     if (!open) return;
     const node = listRef.current;
-    if (node) node.scrollTop = node.scrollHeight;
+    const frame = window.requestAnimationFrame(() => {
+      if (!node) return;
+      const turns = [...node.querySelectorAll<HTMLElement>('[data-civi-turn]')];
+      if (!turns.length) {
+        node.scrollTop = 0;
+        return;
+      }
+      let start = turns.length - 1;
+      for (let index = turns.length - 1; index >= 0; index -= 1) {
+        if (turns[index]?.dataset.civiRole === 'user') {
+          start = index;
+          break;
+        }
+      }
+      const first = turns[start];
+      const last = turns[start + 1] ?? first;
+      if (!first || !last) return;
+      node.scrollTop = scrollTopForLastExchange(
+        first.offsetTop,
+        last.offsetTop + last.offsetHeight,
+        node.clientHeight,
+      );
+    });
     inputRef.current?.focus();
+    return () => window.cancelAnimationFrame(frame);
   }, [open, messages, busy]);
 
   const send = async () => {
@@ -190,11 +257,12 @@ export function PublicCiviWidget() {
     }
   };
 
-  const onResizePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+  const onResizePointerDown = (edge: ResizeEdge) => (event: React.PointerEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
     event.currentTarget.setPointerCapture?.(event.pointerId);
     dragRef.current = {
+      edge,
       startX: event.clientX,
       startY: event.clientY,
       startW: sizeRef.current.width,
@@ -226,14 +294,32 @@ export function PublicCiviWidget() {
       >
         <button
           type="button"
+          data-testid="public-civi-resize-n"
+          aria-label={t('chatBar.private.civiPublic.resizeHeight')}
+          className="group/n absolute left-6 right-6 top-0 z-20 flex h-3 cursor-ns-resize touch-none items-start justify-center"
+          onPointerDown={onResizePointerDown('n')}
+        >
+          <span className="mt-0.5 h-1.5 w-10 rounded-full bg-primary opacity-0 transition-opacity group-hover/n:opacity-80" aria-hidden />
+        </button>
+        <button
+          type="button"
+          data-testid="public-civi-resize-w"
+          aria-label={t('chatBar.private.civiPublic.resizeWidth')}
+          className="group/w absolute bottom-6 left-0 top-6 z-20 flex w-3 cursor-ew-resize touch-none items-center justify-start"
+          onPointerDown={onResizePointerDown('w')}
+        >
+          <span className="ml-0.5 h-10 w-1.5 rounded-full bg-primary opacity-0 transition-opacity group-hover/w:opacity-80" aria-hidden />
+        </button>
+        <button
+          type="button"
           data-testid="public-civi-resize"
           aria-label={t('chatBar.private.civiPublic.resize')}
-          className="absolute left-0 top-0 z-20 flex h-9 w-9 cursor-nwse-resize touch-none items-start justify-start rounded-br-md p-1.5 text-primary"
-          onPointerDown={onResizePointerDown}
+          className="group/nw absolute left-0 top-0 z-30 flex h-5 w-5 cursor-nwse-resize touch-none items-start justify-start rounded-tl-2xl"
+          onPointerDown={onResizePointerDown('nw')}
         >
-          <span className="mt-0.5 ml-0.5 inline-block h-3.5 w-3.5 border-l-2 border-t-2 border-current" aria-hidden />
+          <span className="ml-1 mt-1 h-2.5 w-2.5 rounded-full bg-primary opacity-0 transition-opacity group-hover/nw:opacity-80" aria-hidden />
         </button>
-        <header className="flex items-center gap-2 border-b border-border px-3 py-2 pl-8">
+        <header className="flex items-center gap-2 border-b border-border px-3 py-2">
           <CiviAvatar className="h-9 w-9" />
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-foreground">
@@ -264,7 +350,7 @@ export function PublicCiviWidget() {
         <div
           ref={listRef}
           data-testid="public-civi-thread"
-          className="civi-thread-scroll min-h-0 flex-1 space-y-3 px-3 py-3 touch-pan-y"
+          className="civi-thread-scroll min-h-0 flex-1 space-y-3 px-4 py-3 touch-pan-y"
           style={{ scrollbarWidth: 'none' }}
         >
           {messages.length === 0 ? (
@@ -273,11 +359,19 @@ export function PublicCiviWidget() {
             messages.map((item) => {
               const blocks = item.role === 'assistant' ? splitAssistantMessageBlocks(item.content) : null;
               return (
-                <div key={item.id} className={cn('flex', item.role === 'user' ? 'justify-end' : 'justify-start')}>
+                <div
+                  key={item.id}
+                  data-civi-turn=""
+                  data-civi-role={item.role}
+                  className={cn('flex', item.role === 'user' ? 'justify-end' : 'justify-start')}
+                >
                   <div
+                    data-testid={item.role === 'user' ? 'civi-chat-bubble-user' : 'civi-chat-bubble-assistant'}
                     className={cn(
-                      'max-w-[85%] rounded-2xl px-3 py-2 text-sm',
-                      item.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground',
+                      'civi-chat-bubble max-w-[85%] px-3 py-2 text-sm',
+                      item.role === 'user'
+                        ? 'civi-chat-bubble--user bg-primary text-primary-foreground'
+                        : 'civi-chat-bubble--assistant bg-muted text-foreground',
                     )}
                   >
                     {blocks ? (

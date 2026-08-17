@@ -25,6 +25,7 @@ import { AGREEMENT_TYPES } from '../src/lib/agreements-model.ts';
 import { APP_ROLES } from '../src/lib/access-control.ts';
 import { CONTRIBUTE_LANES } from '../src/lib/contribute-lanes.ts';
 import { MAIN_NAV_ITEMS } from '../src/lib/main-nav.ts';
+import { NELA_PAGE_LINKS } from '../src/lib/nela-nav-paths.ts';
 import { LUMA_PROTOTYPE_NOTICE } from '../src/lib/prototype-credits.ts';
 import { listCurrentAreas } from '../src/lib/classification/registry.ts';
 
@@ -122,6 +123,15 @@ function structuredChunks(): KnowledgeChunk[] {
       title: 'Primary navigation',
       path: 'src/lib/main-nav.ts',
       text: `Current bottom navigation paths: ${nav}.`,
+      status: 'implemented',
+      priority: SOURCE_PRIORITY.runtimeStructured,
+      kind: 'registry',
+    },
+    {
+      id: 'registry:civi-pages',
+      title: 'Pages Civi can open',
+      path: 'src/lib/nela-nav-paths.ts',
+      text: `Civi can link these live pages in answers: ${NELA_PAGE_LINKS.map((page) => `${page.label} (${page.href})`).join('; ')}.`,
       status: 'implemented',
       priority: SOURCE_PRIORITY.runtimeStructured,
       kind: 'registry',
