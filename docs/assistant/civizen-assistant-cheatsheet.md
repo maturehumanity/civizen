@@ -155,7 +155,7 @@ Created when a Community Challenge completes with a recorded outcome. A coordina
 
 ## Market
 
-`/market` is public. **Jobs** (`/jobs`, also Market > Jobs) is the first open participation surface: anyone can look for work or post a job without an account. The public website header and onboarding hero link to Jobs. Contact details stay locked until sign-in. Other Market sections (For you, Local, Sell, products/services) remain member workflows. Members can list products/services and start agreements. Ordinary purchases are Order + Marketplace terms — they do **not** auto-create a Sale / Purchase Agreement.
+`/market` is public. **Jobs** (`/jobs`, also Market > Jobs) is the first open participation surface: anyone can look for work or post a job without an account. The sentence form fills city/region/country from the visitor’s location, shows an indicative minimum pay for the rotating job type, and includes Full-time, level, job/volunteering/internship, and start. The public website header and onboarding hero link to Jobs. Contact details stay locked until sign-in. Other Market sections (For you, Local, Sell, products/services) remain member workflows. Members can list products/services and start agreements. Ordinary purchases are Order + Marketplace terms — they do **not** auto-create a Sale / Purchase Agreement.
 
 Luma amounts on listings are **illustrative prototype credits**, not checkout or settlement. There is no sold-via-Luma buy button.
 

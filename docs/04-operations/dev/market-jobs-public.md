@@ -16,6 +16,9 @@ The public website (civizen.world) sends visitors to onboarding, not Jobs. Jobs 
 - Anyone can open Market > Jobs.
 - Worker / Employer toggle is visible to guests.
 - Anyone can post looking-for-work or a job opening from the sentence form.
+- The sentence includes engagement, level, job type, arrangement, place, start, and pay.
+- Place is filled from the signed-in profile when known, otherwise from the visitor’s IP (city, region, country). Visitors can still change it.
+- Pay starts as an indicative monthly minimum for the visible job type and the detected country. It updates as job types rotate or change, unless the visitor edits pay.
 - Anyone can browse **Available work** (employer posts) or **Available workers** (seeker posts).
 - Public rows show job type, place, age, pay, a public name, and a **masked** phone. Employer company names stay dotted until unlocked.
 

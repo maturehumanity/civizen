@@ -53,6 +53,24 @@ export const MARKET_JOB_TERMS = [
   'Temporary',
 ] as const;
 
+export const MARKET_JOB_LEVELS = [
+  'Entry-level',
+  'Junior',
+  'Mid-level',
+  'Senior',
+  'Lead',
+  'Manager',
+] as const;
+
+export const MARKET_JOB_ARRANGEMENTS = ['job', 'volunteering', 'internship'] as const;
+
+export const MARKET_JOB_STARTS = [
+  'Immediately',
+  'Within 2 weeks',
+  'Open to discuss',
+  'Starting date',
+] as const;
+
 export type MarketJobMode = 'seeker' | 'employer';
 
 export function filterMarketJobTypeOptions(query: string, selected: readonly string[] = []): string[] {

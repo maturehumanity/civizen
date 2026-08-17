@@ -6,9 +6,9 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
     "appVersion": "0.1.191",
     "appReleaseId": "20260816-v0.1.191",
     "androidVersionCode": 193,
-    "gitSha": "e2fbf117fc4bbb05698dc42916da83346a7661ac",
-    "generatedAt": "2026-08-17T01:23:56.145Z",
-    "sourceFingerprint": "72b869a537e561d75cbec28f50963e428929d835a6397ce0a77acf8ae8f403ae",
+    "gitSha": "29f4c237dab85e018cbd2d3e827378e16148dcc7",
+    "generatedAt": "2026-08-17T02:12:48.018Z",
+    "sourceFingerprint": "c54d3f1adaa37ee66d7de69d3d2a08a9bc471eaf22ce67499386c680dd1ae7a3",
     "knowledgeFormat": 1,
     "sourceCount": 27,
     "chunkCount": 353
@@ -341,7 +341,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "name": "Market",
       "status": "implemented",
       "description": "Public Jobs board plus marketplace listings, products, and services. Anyone can look for work or post a job without an account. Contact details stay locked until sign-in. Start agreement or Contact for member listings. Ordinary orders use Marketplace terms.",
-      "howTo": "Open Jobs from the public website, or Market > Jobs. Guests can browse and post there. Jobs is the default Market section when For you has no unseen listings.",
+      "howTo": "Open Jobs from the public website, or Market > Jobs. The sentence fills place from your location and shows a guide pay for the job type. Guests can browse and post there.",
       "routes": [
         "/jobs",
         "/market"
@@ -1828,7 +1828,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "id": "capability:market",
       "title": "Market",
       "path": "src/lib/assistant/catalog.ts",
-      "text": "Market status=implemented. Public Jobs board plus marketplace listings, products, and services. Anyone can look for work or post a job without an account. Contact details stay locked until sign-in. Start agreement or Contact for member listings. Ordinary orders use Marketplace terms. Open Jobs from the public website, or Market > Jobs. Guests can browse and post there. Jobs is the default Market section when For you has no unseen listings. Routes: /jobs, /market.",
+      "text": "Market status=implemented. Public Jobs board plus marketplace listings, products, and services. Anyone can look for work or post a job without an account. Contact details stay locked until sign-in. Start agreement or Contact for member listings. Ordinary orders use Marketplace terms. Open Jobs from the public website, or Market > Jobs. The sentence fills place from your location and shows a guide pay for the job type. Guests can browse and post there. Routes: /jobs, /market.",
       "status": "implemented",
       "priority": 3,
       "kind": "capability"

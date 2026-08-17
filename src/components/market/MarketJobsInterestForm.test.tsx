@@ -35,6 +35,12 @@ vi.mock('@/lib/geo-locations', () => ({
   listGeoCities: async () => ['Bakersfield'],
 }));
 
+const detectVisitorLocationMock = vi.fn();
+
+vi.mock('@/lib/device-location', () => ({
+  detectVisitorLocation: (...args: unknown[]) => detectVisitorLocationMock(...args),
+}));
+
 vi.mock('@/contexts/AuthContext', () => ({
   useAuth: () => authState,
 }));
@@ -80,15 +86,27 @@ describe('MarketJobsInterestForm', () => {
     authState.profile = { ...completeProfile };
     vi.stubGlobal('ResizeObserver', ResizeObserverStub);
     Element.prototype.scrollIntoView = vi.fn();
+    detectVisitorLocationMock.mockReset();
+    detectVisitorLocationMock.mockResolvedValue({
+      city: 'Yerevan',
+      regionCode: null,
+      countryCode: 'AM',
+      countryName: 'Armenia',
+    });
   });
 
   it('hides Worker/Employer tabs for logged-in users and cycles job type labels', () => {
     render(<MemoryRouter><MarketJobsInterestForm /></MemoryRouter>);
 
     expect(screen.queryByTestId('market-jobs-mode-tabs')).not.toBeInTheDocument();
+    expect(screen.getByTestId('market-jobs-sentence')).toHaveTextContent(/Full-time/);
+    expect(screen.getByTestId('market-jobs-sentence')).toHaveTextContent(/Mid-level/);
+    expect(screen.getByTestId('market-jobs-sentence')).toHaveTextContent(/immediately/);
     expect(screen.getByTestId('market-jobs-sentence')).toHaveTextContent(/Baker|Cashier|Cook|Driver/);
     expect(screen.getByTestId('market-jobs-sentence')).toHaveTextContent('Bakersfield, CA');
+    expect(screen.getByTestId('market-jobs-sentence')).toHaveTextContent(/\$\d/);
     expect(screen.getByAltText('United States')).toBeInTheDocument();
+    expect(detectVisitorLocationMock).not.toHaveBeenCalled();
   });
 
   it('does not re-ask known identity fields after a job type is chosen', async () => {
@@ -157,6 +175,7 @@ describe('MarketJobsInterestForm', () => {
         jobTypes: ['Cashier'],
         fullName: 'Armen Yeremyan',
         phoneNumber: '5550100',
+        terms: ['Full-time', 'Mid-level', 'job', 'Immediately'],
         userId: 'user-1',
         profileId: 'profile-1',
       }),
@@ -170,6 +189,7 @@ describe('MarketJobsInterestForm', () => {
     render(<MemoryRouter><MarketJobsInterestForm /></MemoryRouter>);
 
     expect(screen.getByTestId('market-jobs-mode-tabs')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId('market-jobs-sentence')).toHaveTextContent('Yerevan'));
     fireEvent.click(screen.getByRole('button', { name: 'Employer' }));
     fireEvent.click(screen.getByLabelText('Job type'));
     fireEvent.click(await screen.findByRole('option', { name: 'Baker' }));
@@ -187,9 +207,41 @@ describe('MarketJobsInterestForm', () => {
         fullName: 'Ada Cafe',
         companyName: 'Ada Cafe',
         phoneNumber: '5559999',
+        city: 'Yerevan',
+        countryCode: 'AM',
         userId: null,
         profileId: null,
       }),
     );
+  });
+
+  it('updates guide pay when the selected job type changes', async () => {
+    render(<MemoryRouter><MarketJobsInterestForm /></MemoryRouter>);
+
+    fireEvent.click(screen.getByLabelText('Job type'));
+    fireEvent.click(await screen.findByRole('option', { name: 'Baker' }));
+    expect(await screen.findByTestId('market-jobs-sentence')).toHaveTextContent('$3,200');
+
+    fireEvent.click(screen.getByLabelText('Job type'));
+    fireEvent.click(await screen.findByRole('option', { name: 'Electrician' }));
+    expect(await screen.findByTestId('market-jobs-sentence')).toHaveTextContent('$4,800');
+  });
+
+  it('opens engagement, level, arrangement, and start choices in the sentence', async () => {
+    render(<MemoryRouter><MarketJobsInterestForm /></MemoryRouter>);
+
+    fireEvent.click(screen.getByLabelText('Engagement'));
+    fireEvent.click(screen.getByRole('button', { name: 'Part-time' }));
+    fireEvent.click(screen.getByLabelText('Level'));
+    fireEvent.click(screen.getByRole('button', { name: 'Senior' }));
+    fireEvent.click(screen.getByLabelText('Arrangement'));
+    fireEvent.click(screen.getByRole('button', { name: 'internship' }));
+    fireEvent.click(screen.getByLabelText('Start'));
+    fireEvent.click(screen.getByRole('button', { name: 'Within 2 weeks' }));
+
+    expect(screen.getByTestId('market-jobs-sentence')).toHaveTextContent('Part-time');
+    expect(screen.getByTestId('market-jobs-sentence')).toHaveTextContent('Senior');
+    expect(screen.getByTestId('market-jobs-sentence')).toHaveTextContent('internship');
+    expect(screen.getByTestId('market-jobs-sentence')).toHaveTextContent('Within 2 weeks');
   });
 });

@@ -186,7 +186,7 @@ export const ASSISTANT_CAPABILITIES: AssistantCapability[] = [
     status: 'implemented',
     description:
       'Public Jobs board plus marketplace listings, products, and services. Anyone can look for work or post a job without an account. Contact details stay locked until sign-in. Start agreement or Contact for member listings. Ordinary orders use Marketplace terms.',
-    howTo: 'Open Jobs from the public website, or Market > Jobs. Guests can browse and post there. Jobs is the default Market section when For you has no unseen listings.',
+    howTo: 'Open Jobs from the public website, or Market > Jobs. The sentence fills place from your location and shows a guide pay for the job type. Guests can browse and post there.',
     routes: ['/jobs', '/market'],
     roles: ['guest', 'member'],
     relatedCapabilities: ['agreements', 'prototype_credits'],

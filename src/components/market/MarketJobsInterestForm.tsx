@@ -20,13 +20,22 @@ import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getCountryOptions } from '@/lib/countries';
+import { detectVisitorLocation } from '@/lib/device-location';
 import { listGeoCities, listGeoRegions, type GeoRegionOption } from '@/lib/geo-locations';
+import {
+  formatMarketJobPayAmount,
+  guideMonthlyPayUsd,
+  localizeGuideMonthlyPay,
+} from '@/lib/market-job-guide-pay';
 import {
   ageFromDateOfBirth,
   filterMarketJobTypeOptions,
   formatEnglishOrList,
+  MARKET_JOB_ARRANGEMENTS,
   MARKET_JOB_DAYS,
+  MARKET_JOB_LEVELS,
   MARKET_JOB_PAY_PERIODS,
+  MARKET_JOB_STARTS,
   MARKET_JOB_TERMS,
   MARKET_JOB_TYPE_SEEDS,
   type MarketJobMode,
@@ -154,17 +163,7 @@ function SentenceToken({
   );
 }
 
-function CyclingOptionsLabel({
-  options,
-  active,
-  paused,
-  fallback,
-}: {
-  options: readonly string[];
-  active: boolean;
-  paused: boolean;
-  fallback: string;
-}) {
+function useCyclingIndex(length: number, enabled: boolean, paused: boolean) {
   const [index, setIndex] = useState(0);
   const [preferReducedMotion, setPreferReducedMotion] = useState(false);
 
@@ -178,19 +177,61 @@ function CyclingOptionsLabel({
   }, []);
 
   useEffect(() => {
-    if (!active || paused || preferReducedMotion || options.length <= 1) return;
+    if (!enabled || paused || preferReducedMotion || length <= 1) return;
     const timer = window.setInterval(() => {
-      setIndex((current) => (current + 1) % options.length);
+      setIndex((current) => (current + 1) % length);
     }, 1600);
     return () => window.clearInterval(timer);
-  }, [active, paused, preferReducedMotion, options]);
+  }, [enabled, paused, preferReducedMotion, length]);
 
+  return index;
+}
+
+function CyclingOptionsLabel({
+  options,
+  index,
+  active,
+  fallback,
+}: {
+  options: readonly string[];
+  index: number;
+  active: boolean;
+  fallback: string;
+}) {
   if (!active || options.length === 0) return <>{fallback}</>;
-  const label = options[index % options.length] ?? fallback;
+  const label = options[((index % options.length) + options.length) % options.length] ?? fallback;
   return (
     <span className="inline-block min-w-[4.5ch] font-semibold text-primary transition-opacity duration-300" aria-hidden>
       {label}
     </span>
+  );
+}
+
+function ChoicePanel({
+  options,
+  value,
+  onChange,
+}: {
+  options: readonly string[];
+  value: string;
+  onChange: (next: string) => void;
+}) {
+  return (
+    <div className="flex flex-col p-1">
+      {options.map((option) => (
+        <button
+          key={option}
+          type="button"
+          className={cn(
+            'rounded-md px-3 py-1.5 text-left text-sm transition-colors hover:bg-primary/10',
+            option === value && 'bg-primary/15 font-medium text-primary',
+          )}
+          onClick={() => onChange(option)}
+        >
+          {option}
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -220,6 +261,18 @@ export function MarketJobsInterestForm() {
   const [payAmount, setPayAmount] = useState('');
   const [payPeriod, setPayPeriod] = useState('Monthly pay');
   const [payOpen, setPayOpen] = useState(false);
+  const [payPeriodOpen, setPayPeriodOpen] = useState(false);
+  const [payTouched, setPayTouched] = useState(false);
+  const locationTouchedRef = useRef(false);
+
+  const [engagement, setEngagement] = useState<string>('Full-time');
+  const [engagementOpen, setEngagementOpen] = useState(false);
+  const [level, setLevel] = useState<string>('Mid-level');
+  const [levelOpen, setLevelOpen] = useState(false);
+  const [arrangement, setArrangement] = useState<string>('job');
+  const [arrangementOpen, setArrangementOpen] = useState(false);
+  const [startWhen, setStartWhen] = useState<string>('Immediately');
+  const [startOpen, setStartOpen] = useState(false);
 
   const [fullName, setFullName] = useState(() => trimOrEmpty(profile?.full_name));
   const [companyName, setCompanyName] = useState(() =>
@@ -235,7 +288,6 @@ export function MarketJobsInterestForm() {
   const [days, setDays] = useState<string[]>(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']);
   const [hoursFrom, setHoursFrom] = useState('09:00');
   const [hoursTo, setHoursTo] = useState('18:00');
-  const [terms, setTerms] = useState<string[]>(['Full-time']);
   const [notes, setNotes] = useState(() => workFitPrefill.notes);
   const [submitting, setSubmitting] = useState(false);
   const [boardRefreshKey, setBoardRefreshKey] = useState(0);
@@ -253,6 +305,14 @@ export function MarketJobsInterestForm() {
     [jobTypes],
   );
   const pauseJobCycle = jobOpen || jobHovered;
+  const jobCycleIndex = useCyclingIndex(
+    MARKET_JOB_TYPE_SEEDS.length,
+    jobTypes.length === 0,
+    pauseJobCycle,
+  );
+  const displayedJobType =
+    jobTypes[jobTypes.length - 1] ??
+    MARKET_JOB_TYPE_SEEDS[((jobCycleIndex % MARKET_JOB_TYPE_SEEDS.length) + MARKET_JOB_TYPE_SEEDS.length) % MARKET_JOB_TYPE_SEEDS.length];
 
   useEffect(() => {
     setMode(isBusiness ? 'employer' : 'seeker');
@@ -277,6 +337,9 @@ export function MarketJobsInterestForm() {
     if (nextCity) setCity((current) => trimOrEmpty(current) || nextCity);
     if (nextRegion) setRegionCode((current) => trimOrEmpty(current) || nextRegion);
     if (nextCountry) setCountryCode((current) => trimOrEmpty(current) || nextCountry);
+    if (nextCity || nextRegion || nextCountry) {
+      locationTouchedRef.current = true;
+    }
     if (isBusinessUsername(profile?.username) && nextName) {
       setCompanyName((current) => trimOrEmpty(current) || nextName);
     }
@@ -320,8 +383,46 @@ export function MarketJobsInterestForm() {
     };
   }, [countryCode, regionCode]);
 
+  useEffect(() => {
+    const hasProfilePlace = Boolean(
+      trimOrEmpty(profile?.city) || trimOrEmpty(profile?.region_code) || trimOrEmpty(profile?.country_code),
+    );
+    if (hasProfilePlace || locationTouchedRef.current) return;
+    if (trimOrEmpty(city) || trimOrEmpty(countryCode)) return;
+
+    let cancelled = false;
+    void detectVisitorLocation()
+      .then((detected) => {
+        if (cancelled || locationTouchedRef.current) return;
+        if (detected.city) setCity(detected.city);
+        if (detected.regionCode) setRegionCode(detected.regionCode);
+        if (detected.countryCode) {
+          setCountryCode(detected.countryCode);
+          setPhoneCountryCode((current) => trimOrEmpty(current) || detected.countryCode || 'US');
+        }
+      })
+      .catch(() => {
+        /* Keep the placeholder if IP lookup is unavailable. */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [city, countryCode, profile?.city, profile?.country_code, profile?.region_code]);
+
+  useEffect(() => {
+    if (payTouched || !displayedJobType) return;
+    const localized = localizeGuideMonthlyPay(guideMonthlyPayUsd(displayedJobType), countryCode || 'US');
+    setPayAmount(String(localized.value));
+    setPayPeriod('Monthly pay');
+  }, [countryCode, displayedJobType, payTouched]);
+
   const locationText = [city, regionCode].filter(Boolean).join(', ');
   const locationEmpty = !city && !regionCode && !countryCode;
+  const payNumber = Number(String(payAmount).replace(/[^\d.]/g, ''));
+  const payDisplay =
+    Number.isFinite(payNumber) && payNumber > 0
+      ? formatMarketJobPayAmount(payNumber, countryCode)
+      : t('market.jobsForm.payPlaceholder');
 
   const toggleJobType = (job: string) => {
     setJobTypes((current) => {
@@ -340,10 +441,8 @@ export function MarketJobsInterestForm() {
     );
   };
 
-  const toggleTerm = (term: string) => {
-    setTerms((current) =>
-      current.includes(term) ? current.filter((item) => item !== term) : [...current, term],
-    );
+  const markLocationTouched = () => {
+    locationTouchedRef.current = true;
   };
 
   const onSubmit = async () => {
@@ -364,7 +463,7 @@ export function MarketJobsInterestForm() {
       days,
       hoursFrom,
       hoursTo,
-      terms,
+      terms: [engagement, level, arrangement, startWhen],
       notes,
       userId: user?.id ?? null,
       profileId: profile?.id ?? null,
@@ -445,6 +544,24 @@ export function MarketJobsInterestForm() {
       <p className="text-base leading-relaxed text-foreground sm:text-lg" data-testid="market-jobs-sentence">
         {mode === 'seeker' ? t('market.jobsForm.seekerLead') : t('market.jobsForm.employerLead')}{' '}
         <SentenceToken
+          open={engagementOpen}
+          onOpenChange={setEngagementOpen}
+          ariaLabel={t('market.jobsForm.engagementLabel')}
+          empty={false}
+          panel={<ChoicePanel options={MARKET_JOB_TERMS} value={engagement} onChange={(next) => { setEngagement(next); setEngagementOpen(false); }} />}
+        >
+          {engagement}
+        </SentenceToken>{' '}
+        <SentenceToken
+          open={levelOpen}
+          onOpenChange={setLevelOpen}
+          ariaLabel={t('market.jobsForm.levelLabel')}
+          empty={false}
+          panel={<ChoicePanel options={MARKET_JOB_LEVELS} value={level} onChange={(next) => { setLevel(next); setLevelOpen(false); }} />}
+        >
+          {level}
+        </SentenceToken>{' '}
+        <SentenceToken
           open={jobOpen}
           onOpenChange={setJobOpen}
           onHoverChange={setJobHovered}
@@ -506,13 +623,22 @@ export function MarketJobsInterestForm() {
           ) : (
             <CyclingOptionsLabel
               options={MARKET_JOB_TYPE_SEEDS}
+              index={jobCycleIndex}
               active
-              paused={pauseJobCycle}
               fallback={t('market.jobsForm.jobTypePlaceholder')}
             />
           )}
         </SentenceToken>{' '}
-        {mode === 'seeker' ? t('market.jobsForm.seekerMid') : t('market.jobsForm.employerMid')}{' '}
+        <SentenceToken
+          open={arrangementOpen}
+          onOpenChange={setArrangementOpen}
+          ariaLabel={t('market.jobsForm.arrangementLabel')}
+          empty={false}
+          panel={<ChoicePanel options={MARKET_JOB_ARRANGEMENTS} value={arrangement} onChange={(next) => { setArrangement(next); setArrangementOpen(false); }} />}
+        >
+          {arrangement}
+        </SentenceToken>{' '}
+        {t('market.jobsForm.seekerMid')}{' '}
         <SentenceToken
           open={locationOpen}
           onOpenChange={setLocationOpen}
@@ -534,6 +660,7 @@ export function MarketJobsInterestForm() {
                       key={option.code}
                       value={`${option.label} ${option.code}`}
                       onSelect={() => {
+                        markLocationTouched();
                         setCountryCode(option.code);
                         setRegionCode('');
                         setCity('');
@@ -554,6 +681,7 @@ export function MarketJobsInterestForm() {
                         key={region.code}
                         value={`${region.name} ${region.code}`}
                         onSelect={() => {
+                          markLocationTouched();
                           setRegionCode(region.code);
                           setCity('');
                           setLocationQuery('');
@@ -571,6 +699,7 @@ export function MarketJobsInterestForm() {
                         key={name}
                         value={name}
                         onSelect={() => {
+                          markLocationTouched();
                           setCity(name);
                           setLocationQuery('');
                           setLocationOpen(false);
@@ -601,7 +730,18 @@ export function MarketJobsInterestForm() {
             </>
           )}
         </SentenceToken>
-        {' '}
+        {', '}
+        {t('market.jobsForm.startingLead')}{' '}
+        <SentenceToken
+          open={startOpen}
+          onOpenChange={setStartOpen}
+          ariaLabel={t('market.jobsForm.startLabel')}
+          empty={false}
+          panel={<ChoicePanel options={MARKET_JOB_STARTS} value={startWhen} onChange={(next) => { setStartWhen(next); setStartOpen(false); }} />}
+        >
+          {startWhen === 'Immediately' ? t('market.jobsForm.startImmediately') : startWhen}
+        </SentenceToken>
+        {', '}
         {t('market.jobsForm.employerPayLead')}{' '}
         <SentenceToken
           open={payOpen}
@@ -612,30 +752,26 @@ export function MarketJobsInterestForm() {
             <div className="space-y-2 p-3">
               <Input
                 value={payAmount}
-                onChange={(event) => setPayAmount(event.target.value)}
+                onChange={(event) => {
+                  setPayTouched(true);
+                  setPayAmount(event.target.value);
+                }}
                 placeholder={t('market.jobsForm.payAmountPlaceholder')}
                 inputMode="decimal"
               />
-              <div className="flex flex-wrap gap-1">
-                {MARKET_JOB_PAY_PERIODS.map((period) => (
-                  <Button
-                    key={period}
-                    type="button"
-                    size="sm"
-                    variant={payPeriod === period ? 'default' : 'outline'}
-                    className="h-7 rounded-full px-2 text-[11px]"
-                    onClick={() => setPayPeriod(period)}
-                  >
-                    {period}
-                  </Button>
-                ))}
-              </div>
             </div>
           }
         >
-          {payAmount
-            ? `$${payAmount} ${payPeriod}`
-            : t('market.jobsForm.payPlaceholder')}
+          {payDisplay}
+        </SentenceToken>{' '}
+        <SentenceToken
+          open={payPeriodOpen}
+          onOpenChange={setPayPeriodOpen}
+          ariaLabel={t('market.jobsForm.payPeriodLabel')}
+          empty={false}
+          panel={<ChoicePanel options={MARKET_JOB_PAY_PERIODS} value={payPeriod} onChange={(next) => { setPayTouched(true); setPayPeriod(next); setPayPeriodOpen(false); }} />}
+        >
+          {payPeriod}
         </SentenceToken>
         .
       </p>
@@ -765,25 +901,6 @@ export function MarketJobsInterestForm() {
                   />
                 </OutlinedField>
               </div>
-              <div className="space-y-2">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                  {t('market.jobsForm.termsHeading')}
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {MARKET_JOB_TERMS.map((term) => (
-                    <Button
-                      key={term}
-                      type="button"
-                      size="sm"
-                      variant={terms.includes(term) ? 'secondary' : 'outline'}
-                      className="h-8 rounded-full px-3 text-xs"
-                      onClick={() => toggleTerm(term)}
-                    >
-                      {term}
-                    </Button>
-                  ))}
-                </div>
-              </div>
               <OutlinedField label={t('market.jobsForm.notesLabel')} htmlFor="market-jobs-notes">
                 <Textarea
                   id="market-jobs-notes"
@@ -825,7 +942,7 @@ export function MarketJobsInterestForm() {
                     workLocation: locationText || undefined,
                     compensation: payAmount.trim() || undefined,
                     payFrequency: payAmount.trim() ? payPeriod : undefined,
-                    employmentStatus: terms[0],
+                    employmentStatus: engagement,
                     employmentSelfRole: mode === 'employer' ? 'employer' : 'employee',
                   })}
                 >

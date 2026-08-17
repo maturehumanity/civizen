@@ -38,18 +38,7 @@ type BigDataCloudResponse = {
   countryName?: string;
 };
 
-async function reverseGeocodeBigDataCloud(latitude: number, longitude: number): Promise<DetectedDeviceLocation> {
-  const url = new URL('https://api.bigdatacloud.net/data/reverse-geocode-client');
-  url.searchParams.set('latitude', String(latitude));
-  url.searchParams.set('longitude', String(longitude));
-  url.searchParams.set('localityLanguage', 'en');
-
-  const response = await fetch(url.toString());
-  if (!response.ok) {
-    throw new Error(`reverse_geocode_failed_${response.status}`);
-  }
-
-  const data = (await response.json()) as BigDataCloudResponse;
+export function parseBigDataCloudLocation(data: BigDataCloudResponse): DetectedDeviceLocation {
   const countryCode = data.countryCode?.trim().toUpperCase() || null;
   const city = (data.city || data.locality || '').trim() || null;
   const regionCode = normalizeRegionCode(data.principalSubdivisionCode, countryCode);
@@ -60,6 +49,26 @@ async function reverseGeocodeBigDataCloud(latitude: number, longitude: number): 
     countryCode,
     countryName: data.countryName?.trim() || null,
   };
+}
+
+async function fetchBigDataCloudLocation(latitude?: number, longitude?: number): Promise<DetectedDeviceLocation> {
+  const url = new URL('https://api.bigdatacloud.net/data/reverse-geocode-client');
+  if (typeof latitude === 'number' && typeof longitude === 'number') {
+    url.searchParams.set('latitude', String(latitude));
+    url.searchParams.set('longitude', String(longitude));
+  }
+  url.searchParams.set('localityLanguage', 'en');
+
+  const response = await fetch(url.toString());
+  if (!response.ok) {
+    throw new Error(`reverse_geocode_failed_${response.status}`);
+  }
+
+  return parseBigDataCloudLocation((await response.json()) as BigDataCloudResponse);
+}
+
+async function reverseGeocodeBigDataCloud(latitude: number, longitude: number): Promise<DetectedDeviceLocation> {
+  return fetchBigDataCloudLocation(latitude, longitude);
 }
 
 export function requestDevicePosition(options?: PositionOptions): Promise<GeolocationPosition> {
@@ -105,4 +114,9 @@ export async function detectDeviceLocation(
 ): Promise<DetectedDeviceLocation> {
   const position = await requestDevicePosition(options);
   return reverseGeocodeBigDataCloud(position.coords.latitude, position.coords.longitude);
+}
+
+/** Infer city / region / country from the visitor IP. Does not prompt for GPS. */
+export async function detectVisitorLocation(): Promise<DetectedDeviceLocation> {
+  return fetchBigDataCloudLocation();
 }
