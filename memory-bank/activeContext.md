@@ -2,7 +2,13 @@
 
 ## Current focus
 
-**Public Civi peace aim (2026-08-16):** “How can we stop wars?” leads with Yes: Civizen aims to eventually stop wars as a result of its activities and engagement. Then Sign up, Study, Contribute, Governance. Not manifesto recap. Does not lead with what Civizen cannot do. Canonical reply: `src/lib/assistant/peace.ts`. Shipping as **v0.1.187** (build 189, `20260816-v0.1.187`).
+**Public Civi peace aim (2026-08-16):** “How can we stop wars?” is in scope as a Civizen purpose question. The reply is a compact form of founding docs (why Civizen exists, identity, world citizenship) in ordinary sentences: signing up, then make a contribution. How-questions do not start with Yes. Canonical reply: `src/lib/assistant/peace.ts`. Shipping as **v0.1.188** (build 190, `20260816-v0.1.188`).
+
+**Public Civi resize, hidden scrollbar, peace answers (2026-08-16):** Public Civi answers peace/hardship from this build before calling the live model. Visitors drag the upper-left corner to resize. The thread scrolls without a visible scrollbar. LANGUAGE_PACK_VERSION 207.
+
+**Civi personal hardship (2026-08-16):** “I'm homeless, can you help me?” must not be answered as Contribute / Volunteer routing. Civi acknowledges the situation, is honest that Civizen is not a shelter or emergency service, points to local emergency services / 211, and may mention Jobs (`Open Market > Jobs`). Community Challenges is not emergency housing. Canonical reply: `src/lib/assistant/hardship.ts`.
+
+**Live + Testing v0.1.187 (2026-08-16):** Build 189 (`20260816-v0.1.187`) published to Testing and Live. Peace answer still led with Yes; replaced by v0.1.188.
 
 **Public Civi resize, hidden scrollbar, peace answers (2026-08-16):** Public Civi answers peace/hardship from this build before calling the live model. Visitors drag the upper-left corner to resize. The thread scrolls without a visible scrollbar. LANGUAGE_PACK_VERSION 207.
 

@@ -22,11 +22,11 @@ import { KNOWLEDGE_PACK as GENERATED_PACK } from './generated/knowledge-pack';
 const UNVERIFIED =
   "I couldn't verify that from Civizen's current project information.";
 const SCOPE_REFUSAL =
-  'I can only help with Civizen-related topics such as Contribute, Agreements, governance, Study, Market, messaging, and how to use this app. Please ask a Civizen-specific question.';
+  'I can help with Civizen — what it is, why it exists, how people participate, and how to use this app. Please ask a question about Civizen.';
 const GREETING =
-  'Hi! I can help with Civizen features, Contribute, Agreements, governance, Study, Market, and account settings. What would you like to do?';
+  'Hi! I can help with what Civizen is, why it exists, Contribute, Agreements, governance, Study, Market, and account settings. What would you like to do?';
 const GREETING_GUEST =
-  'Hi. I am Civi, your AI assistant. I can answer questions about Civizen — what it is, how it works, and how to get started.';
+  'Hi. I am Civi, your AI assistant. I can answer questions about Civizen — what it is, why it exists, how people participate, and how to get started.';
 
 function statusPrefix(status: AssistantCapabilityStatus): string {
   switch (status) {
@@ -257,7 +257,7 @@ export function prepareNelaTurn(messages: HistoryTurn[], options: PrepareNelaTur
     usedLearnedMemoryKey = learnedHit.questionKey;
   }
 
-  if (inScope && !greeting && !canned) {
+  if (inScope && !greeting) {
     const shapeQuery = rewritten.isVerification
       ? (rewritten.previousUserQuestion ?? latestText)
       : latestText;

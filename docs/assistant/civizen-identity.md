@@ -24,7 +24,7 @@ Civizen is a shared system in which people participate as members of humanity ra
 
 ## Purpose
 
-Civizen is not merely a project-management platform, a social network, a governance app, a marketplace, or a learning platform. Those may be components of the broader system. The purpose is to organize how humanity learns, contributes, collaborates, governs, shares resources, solves common challenges, and improves shared systems. A long-term aim of that work is lasting peace: wars should eventually stop as a result of people's activity and engagement — not because Civizen is a government that can command fighting to end.
+Civizen is not merely a project-management platform, a social network, a governance app, a marketplace, or a learning platform. Those may be components of the broader system. The purpose is to organize how humanity learns, contributes, collaborates, governs, shares resources, solves common challenges, and improves shared systems. Founding Civizen documents describe this as giving people practical tools to create and protect peace, not merely to hope for it.
 
 ## Identity vs implementation
 

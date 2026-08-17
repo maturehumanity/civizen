@@ -54,9 +54,19 @@ const CIVIZEN_TERMS = [
   'how to',
   'how do i',
   'how can i',
+  'how can we',
+  'how do we',
   'where is',
   'feature',
   'app',
+  'peace',
+  'war',
+  'wars',
+  'humanity',
+  'citizenship',
+  'cooperate',
+  'cooperation',
+  'coexistence',
 ];
 
 export function isGreetingOnly(content: string): boolean {

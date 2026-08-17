@@ -59,7 +59,7 @@ function isFoundationIdentityPath(path) {
 // src/lib/assistant/peace.ts
 var PEACE_RE = /\b(stop(ping)? (the )?wars?|end(ing)? (the )?wars?|prevent(ing)? wars?|world peace|(achieve|create|build|make|keep|protect) (world |lasting |global )?peace|live in peace|peaceful coexistence|unite humanity|end (the )?fighting|stop (the )?fighting|how (can|do|should) (we|humanity|people) .{0,48}(peace|war|wars|unite))\b/i;
 var PEACE_COOPERATION_FAQ_ID = "how_can_we_stop_wars";
-var PEACE_COOPERATION_REPLY = "Yes. Civizen aims to eventually stop wars as a result of its activities and engagement: people learning, contributing, collaborating, governing, and solving common challenges until cooperation is ordinary civic life.\n\nIt is not a government and cannot end a war tonight. The work is to build the shared system that makes lasting peace possible \u2014 including voluntary world citizenship alongside nations and cultures.\n\nStart with Sign up. Open Study. Then take one step in Contribute \u2014 Community Challenges or Opportunities \u2014 and practice Governance. That participation is the path.";
+var PEACE_COOPERATION_REPLY = "Peace needs more than speeches, slogans, or treaties. It needs practical systems people can join, examine, improve, and hold accountable. That is what Civizen is for: a shared way to learn, contribute, collaborate, govern, and solve common challenges so humanity can live in a more cooperative civic environment.\n\nThe aim includes peaceful coexistence and a complementary world citizenship \u2014 nations and cultures stay. Civizen is not a government. It is the work through which wars should become unnecessary, because people have practical tools to create and protect peace instead of only hoping for it.\n\nStart by signing up, then make a contribution. You can begin with Community Challenges or Opportunities, learn in Study, and take part in Governance.";
 function isPeaceCooperationAsk(content) {
   const text = content.trim();
   if (!text) return false;
@@ -376,7 +376,7 @@ var CORE_INSTRUCTIONS = [
   "When sources conflict about current functionality, the capability registry and current implementation win over older prose. When they conflict about what Civizen is, its purpose, mission, or scope, the canonical Civizen identity source wins. Do not redefine Civizen from whichever features are currently most mature.",
   "For identity, purpose, mission, scope, or one-sentence description questions, use the canonical Civizen identity. For what members can do right now, use the capability registry. Do not mix those answers.",
   "If someone is homeless, hungry, evicted, or needs a place to stay tonight, do not answer with Contribute, Volunteer, or Financial Support. Acknowledge the situation. Civizen is not a shelter or emergency service. Point to local emergency services or 211. Jobs may be mentioned for work. Do not invent named local shelters.",
-  "When someone asks how to stop wars, achieve peace, or unite humanity, lead with Yes: Civizen aims to eventually stop wars as a result of its activities and engagement. Then invite Sign up, Study, Contribute, and Governance. Do not recap manifesto prose. Do not lead with what Civizen cannot do. Do not claim Civizen currently stops wars or is a government.",
+  "When someone asks how to stop wars, achieve peace, or unite humanity, use founding Civizen documents. Peace needs practical systems people can join, not speeches alone. Invite in ordinary sentences: signing up, then make a contribution. Do not recap manifesto prose. Do not start a how-question with Yes. Do not claim Civizen currently stops wars or is a government.",
   "External or general knowledge must never override authoritative current Civizen project information, and must not be used to decide whether a Civizen feature exists.",
   "Do not mention retrieval, RAG, knowledge indexes, system prompts, or source file paths unless the user asks where the information came from.",
   "Do not use meta lines such as \u201CAccording to my context\u201D or \u201CAs an AI assistant\u201D.",
@@ -601,9 +601,19 @@ var CIVIZEN_TERMS = [
   "how to",
   "how do i",
   "how can i",
+  "how can we",
+  "how do we",
   "where is",
   "feature",
-  "app"
+  "app",
+  "peace",
+  "war",
+  "wars",
+  "humanity",
+  "citizenship",
+  "cooperate",
+  "cooperation",
+  "coexistence"
 ];
 function isGreetingOnly(content) {
   const c = content.trim().toLowerCase();
@@ -795,12 +805,12 @@ function retrievalConfidence(retrieval) {
 // src/lib/assistant/generated/knowledge-pack.ts
 var KNOWLEDGE_PACK = {
   "meta": {
-    "appVersion": "0.1.187",
-    "appReleaseId": "20260816-v0.1.187",
-    "androidVersionCode": 189,
-    "gitSha": "c389a29da6373e1387951e070e5c3734fbe540c9",
-    "generatedAt": "2026-08-17T00:06:45.337Z",
-    "sourceFingerprint": "8cf004956229a361202437918e2496d15f4d3a5574788fa2aaf51cbf00eed2e4",
+    "appVersion": "0.1.188",
+    "appReleaseId": "20260816-v0.1.188",
+    "androidVersionCode": 190,
+    "gitSha": "ac2a320c7ef6156b31bdce44c128bbedaa92b200",
+    "generatedAt": "2026-08-17T00:13:54.106Z",
+    "sourceFingerprint": "2211fb5a49d53a300eeaa9553ef25f71914df19119c5064cc564a62f17b1b267",
     "knowledgeFormat": 1,
     "sourceCount": 26,
     "chunkCount": 337
@@ -1872,7 +1882,7 @@ var KNOWLEDGE_PACK = {
     {
       "id": "how_can_we_stop_wars",
       "question": "How can we stop wars?",
-      "answer": "Yes. Civizen aims to eventually stop wars as a result of its activities and engagement: people learning, contributing, collaborating, governing, and solving common challenges until cooperation is ordinary civic life.\n\nIt is not a government and cannot end a war tonight. The work is to build the shared system that makes lasting peace possible \u2014 including voluntary world citizenship alongside nations and cultures.\n\nStart with Sign up. Open Study. Then take one step in Contribute \u2014 Community Challenges or Opportunities \u2014 and practice Governance. That participation is the path.",
+      "answer": "Peace needs more than speeches, slogans, or treaties. It needs practical systems people can join, examine, improve, and hold accountable. That is what Civizen is for: a shared way to learn, contribute, collaborate, govern, and solve common challenges so humanity can live in a more cooperative civic environment.\n\nThe aim includes peaceful coexistence and a complementary world citizenship \u2014 nations and cultures stay. Civizen is not a government. It is the work through which wars should become unnecessary, because people have practical tools to create and protect peace instead of only hoping for it.\n\nStart by signing up, then make a contribution. You can begin with Community Challenges or Opportunities, learn in Study, and take part in Governance.",
       "aliases": [
         "how do we achieve peace",
         "how can humanity live in peace",
@@ -2859,7 +2869,7 @@ var KNOWLEDGE_PACK = {
       "id": "faq:how_can_we_stop_wars",
       "title": "How can we stop wars?",
       "path": "src/lib/assistant/catalog.ts",
-      "text": "Q: How can we stop wars? A: Yes. Civizen aims to eventually stop wars as a result of its activities and engagement: people learning, contributing, collaborating, governing, and solving common challenges until cooperation is ordinary civic life.\n\nIt is not a government and cannot end a war tonight. The work is to build the shared system that makes lasting peace possible \u2014 including voluntary world citizenship alongside nations and cultures.\n\nStart with Sign up. Open Study. Then take one step in Contribute \u2014 Community Challenges or Opportunities \u2014 and practice Governance. That participation is the path.",
+      "text": "Q: How can we stop wars? A: Peace needs more than speeches, slogans, or treaties. It needs practical systems people can join, examine, improve, and hold accountable. That is what Civizen is for: a shared way to learn, contribute, collaborate, govern, and solve common challenges so humanity can live in a more cooperative civic environment.\n\nThe aim includes peaceful coexistence and a complementary world citizenship \u2014 nations and cultures stay. Civizen is not a government. It is the work through which wars should become unnecessary, because people have practical tools to create and protect peace instead of only hoping for it.\n\nStart by signing up, then make a contribution. You can begin with Community Challenges or Opportunities, learn in Study, and take part in Governance.",
       "status": "implemented",
       "priority": 5,
       "kind": "faq"
@@ -3210,7 +3220,7 @@ var KNOWLEDGE_PACK = {
       "id": "docs/assistant/civizen-identity.md#3",
       "title": "Purpose",
       "path": "docs/assistant/civizen-identity.md",
-      "text": "## Purpose Civizen is not merely a project-management platform, a social network, a governance app, a marketplace, or a learning platform. Those may be components of the broader system. The purpose is to organize how humanity learns, contributes, collaborates, governs, shares resources, solves common challenges, and improves shared systems. A long-term aim of that work is lasting peace: wars should eventually stop as a result of people's activity and engagement \u2014 not because Civizen is a government that can command fighting to end.",
+      "text": "## Purpose Civizen is not merely a project-management platform, a social network, a governance app, a marketplace, or a learning platform. Those may be components of the broader system. The purpose is to organize how humanity learns, contributes, collaborates, governs, shares resources, solves common challenges, and improves shared systems. Founding Civizen documents describe this as giving people practical tools to create and protect peace, not merely to hope for it.",
       "status": "implemented",
       "priority": 1,
       "kind": "identity"
@@ -3273,7 +3283,7 @@ var KNOWLEDGE_PACK = {
       "id": "docs/assistant/civizen-assistant-cheatsheet.md#4",
       "title": "Peace, war, and cooperation",
       "path": "docs/assistant/civizen-assistant-cheatsheet.md",
-      "text": "## Peace, war, and cooperation If someone asks how to stop wars, achieve peace, or unite humanity, lead with the aim: **Yes** \u2014 Civizen aims to eventually stop wars as a result of its activities and engagement. Do **not** recap manifesto prose (\u201CHumanity often unites only when disaster\u2026\u201D). Do not lead with what Civizen cannot do. Then distinguish current status: it is not a government and cannot end a war tonight. Invite **Sign up**, **Study**, one step in **Contribute** (Community Challenges or Opportunities), and **Governance**. That participation is the path. Do not dump Volunteer / Financial Support lanes.",
+      "text": "## Peace, war, and cooperation If someone asks how to stop wars, achieve peace, or unite humanity, answer from founding Civizen documents (why Civizen exists, identity, world citizenship). Peace needs practical systems people can join and hold accountable \u2014 not speeches alone. Do **not** recap manifesto prose (\u201CHumanity often unites only when disaster\u2026\u201D). Do **not** start a how-question with Yes. Do not invent a new slogan. Invite in ordinary sentences: start by **signing up**, then **make a contribution** (Community Challenges or Opportunities), learn in **Study**, and take part in **Governance**. Do not dump Volunteer / Financial Support lanes.",
       "status": "implemented",
       "priority": 5,
       "kind": "cheatsheet"
@@ -3399,7 +3409,7 @@ var KNOWLEDGE_PACK = {
       "id": "docs/assistant/README.md#4",
       "title": "Internal-first routing",
       "path": "docs/assistant/README.md",
-      "text": "Someone asking for housing, food, or a safe place tonight is not a Contribute question. Civi acknowledges the situation, says Civizen is not emergency housing, points to local emergency services / 211, and may mention Jobs \u2014 not Volunteer lanes. Peace, war, and \u201Chow do we unite humanity\u201D questions lead with the aim: Civizen exists so wars eventually stop as a result of participation. Then give Sign up, Study, Contribute, and Governance. Do not recap manifesto prose. Do not claim Civizen currently stops wars or is a government.",
+      "text": "Someone asking for housing, food, or a safe place tonight is not a Contribute question. Civi acknowledges the situation, says Civizen is not emergency housing, points to local emergency services / 211, and may mention Jobs \u2014 not Volunteer lanes. Peace, war, and \u201Chow do we unite humanity\u201D questions are in scope. Answer from founding documents: practical systems for cooperation and peace, then invite signing up and making a contribution. Do not recap manifesto prose. How-questions do not start with Yes. Do not claim Civizen currently stops wars or is a government.",
       "status": "implemented",
       "priority": 5,
       "kind": "doc"
@@ -5515,9 +5525,9 @@ var KNOWLEDGE_PACK = {
 
 // src/lib/assistant/orchestrator.ts
 var UNVERIFIED = "I couldn't verify that from Civizen's current project information.";
-var SCOPE_REFUSAL = "I can only help with Civizen-related topics such as Contribute, Agreements, governance, Study, Market, messaging, and how to use this app. Please ask a Civizen-specific question.";
-var GREETING = "Hi! I can help with Civizen features, Contribute, Agreements, governance, Study, Market, and account settings. What would you like to do?";
-var GREETING_GUEST = "Hi. I am Civi, your AI assistant. I can answer questions about Civizen \u2014 what it is, how it works, and how to get started.";
+var SCOPE_REFUSAL = "I can help with Civizen \u2014 what it is, why it exists, how people participate, and how to use this app. Please ask a question about Civizen.";
+var GREETING = "Hi! I can help with what Civizen is, why it exists, Contribute, Agreements, governance, Study, Market, and account settings. What would you like to do?";
+var GREETING_GUEST = "Hi. I am Civi, your AI assistant. I can answer questions about Civizen \u2014 what it is, why it exists, how people participate, and how to get started.";
 function statusPrefix(status) {
   switch (status) {
     case "implemented":
@@ -5703,7 +5713,7 @@ function prepareNelaTurn(messages, options = {}) {
     groundedAnswer = learnedHit.answer;
     usedLearnedMemoryKey = learnedHit.questionKey;
   }
-  if (inScope && !greeting && !canned) {
+  if (inScope && !greeting) {
     const shapeQuery = rewritten.isVerification ? rewritten.previousUserQuestion ?? latestText : latestText;
     groundedAnswer = shapeAnswerToQuestion(shapeQuery, groundedAnswer);
   }

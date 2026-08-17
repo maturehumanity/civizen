@@ -1,6 +1,7 @@
 /**
  * Humanity-scale peace / cooperation asks.
- * Answer with practical Civizen steps, not manifesto recap.
+ * Compact form of founding Civizen documents — not a new manifesto.
+ * Sources: why-civizen-exists, identity, recognized planetary citizenship pathway.
  */
 
 const PEACE_RE =
@@ -9,7 +10,7 @@ const PEACE_RE =
 export const PEACE_COOPERATION_FAQ_ID = 'how_can_we_stop_wars';
 
 export const PEACE_COOPERATION_REPLY =
-  'Yes. Civizen aims to eventually stop wars as a result of its activities and engagement: people learning, contributing, collaborating, governing, and solving common challenges until cooperation is ordinary civic life.\n\nIt is not a government and cannot end a war tonight. The work is to build the shared system that makes lasting peace possible — including voluntary world citizenship alongside nations and cultures.\n\nStart with Sign up. Open Study. Then take one step in Contribute — Community Challenges or Opportunities — and practice Governance. That participation is the path.';
+  'Peace needs more than speeches, slogans, or treaties. It needs practical systems people can join, examine, improve, and hold accountable. That is what Civizen is for: a shared way to learn, contribute, collaborate, govern, and solve common challenges so humanity can live in a more cooperative civic environment.\n\nThe aim includes peaceful coexistence and a complementary world citizenship — nations and cultures stay. Civizen is not a government. It is the work through which wars should become unnecessary, because people have practical tools to create and protect peace instead of only hoping for it.\n\nStart by signing up, then make a contribution. You can begin with Community Challenges or Opportunities, learn in Study, and take part in Governance.';
 
 export function isPeaceCooperationAsk(content: string): boolean {
   const text = content.trim();

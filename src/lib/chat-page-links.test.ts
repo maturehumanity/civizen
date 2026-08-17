@@ -16,6 +16,17 @@ describe('chat page links', () => {
     expect(resolveChatPageHref('/javascript:alert(1)')).toBeNull();
   });
 
+  it('links signing up and making a contribution in ordinary sentences', () => {
+    const parts = splitChatPageLinks('Start by signing up, then make a contribution.');
+    expect(parts).toEqual([
+      { type: 'text', value: 'Start by ' },
+      { type: 'page', value: 'signing up', href: '/signup' },
+      { type: 'text', value: ', then ' },
+      { type: 'page', value: 'make a contribution', href: '/contribute' },
+      { type: 'text', value: '.' },
+    ]);
+  });
+
   it('links Sign up in a Civi peace answer', () => {
     const parts = splitChatPageLinks('Start with Sign up, then open Study.');
     expect(parts).toEqual([
