@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Live + Testing v0.1.193 (2026-08-16):** Build 195 (`20260816-v0.1.193`) published to Testing and Live. Public Market Jobs title is Marketplace / Jobs. Signed-in members can unfold More for days, hours, languages, and notes. Secondary sentence tokens stay dimmer than job type, place, and pay.
+
 **Live + Testing v0.1.192 (2026-08-16):** Build 194 (`20260816-v0.1.192`) published to Testing and Live. Public Market Jobs sentence auto-fills city/region/country, shows indicative minimum pay for the rotating job type, and includes Full-time, level, arrangement, and start. `/jobs` stays public.
 
 **Live + Testing v0.1.191 (2026-08-16):** Build 193 (`20260816-v0.1.191`) published to Testing and Live. Public Civi chat tails sit on the top outer corner (top-left for Civi, top-right for the visitor), only on the first message in a same-sender run.
