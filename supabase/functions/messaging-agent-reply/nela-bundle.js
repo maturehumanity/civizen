@@ -808,9 +808,9 @@ var KNOWLEDGE_PACK = {
     "appVersion": "0.1.193",
     "appReleaseId": "20260816-v0.1.193",
     "androidVersionCode": 195,
-    "gitSha": "64a92a485a49f32df353a9851bc76f9f0e9c03c2",
-    "generatedAt": "2026-08-17T03:00:36.994Z",
-    "sourceFingerprint": "ee5b3d5127a1e200606d79acf256d1b8457fda359c0b1df51379606c45d0612a",
+    "gitSha": "fed39fd7a4b1099507625a9c48654d51320714c1",
+    "generatedAt": "2026-08-17T03:09:13.547Z",
+    "sourceFingerprint": "2ec2012d274057b2776c89467823b8f03f3646bd77ce4c8e9a24a7abafe5916c",
     "knowledgeFormat": 1,
     "sourceCount": 27,
     "chunkCount": 353
@@ -1143,7 +1143,7 @@ var KNOWLEDGE_PACK = {
       "name": "Market",
       "status": "implemented",
       "description": "Public Jobs board plus marketplace listings, products, and services. Anyone can look for work or post a job without an account. Contact details stay locked until sign-in. Start agreement or Contact for member listings. Ordinary orders use Marketplace terms.",
-      "howTo": "Open Jobs from the public website, or Market > Jobs. The page title is Marketplace / Jobs. The sentence fills place from your location and shows a guide pay for the job type. Guests can browse and post there. Signed-in members can unfold More for work days, hours, languages, and notes.",
+      "howTo": "Open Jobs from the public website, or Market > Jobs. The page title is Marketplace / Jobs. The sentence fills place from your location and shows a guide pay for the job type. Employers look for a person, not a job. Guests can browse and post there. Signed-in members can unfold More for work days, hours, languages, and notes.",
       "routes": [
         "/jobs",
         "/market"
@@ -2630,7 +2630,7 @@ var KNOWLEDGE_PACK = {
       "id": "capability:market",
       "title": "Market",
       "path": "src/lib/assistant/catalog.ts",
-      "text": "Market status=implemented. Public Jobs board plus marketplace listings, products, and services. Anyone can look for work or post a job without an account. Contact details stay locked until sign-in. Start agreement or Contact for member listings. Ordinary orders use Marketplace terms. Open Jobs from the public website, or Market > Jobs. The page title is Marketplace / Jobs. The sentence fills place from your location and shows a guide pay for the job type. Guests can browse and post there. Signed-in members can unfold More for work days, hours, languages, and notes. Routes: /jobs, /market.",
+      "text": "Market status=implemented. Public Jobs board plus marketplace listings, products, and services. Anyone can look for work or post a job without an account. Contact details stay locked until sign-in. Start agreement or Contact for member listings. Ordinary orders use Marketplace terms. Open Jobs from the public website, or Market > Jobs. The page title is Marketplace / Jobs. The sentence fills place from your location and shows a guide pay for the job type. Employers look for a person, not a job. Guests can browse and post there. Signed-in members can unfold More for work days, hours, languages, and notes. Routes: /jobs, /market.",
       "status": "implemented",
       "priority": 3,
       "kind": "capability"

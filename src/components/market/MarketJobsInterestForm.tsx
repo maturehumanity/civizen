@@ -153,7 +153,7 @@ function SentenceToken({
           onFocus={() => setHovered(true)}
           onBlur={() => setHovered(false)}
         >
-          <span className="inline-flex items-center gap-1.5 whitespace-normal">{children}</span>
+          <span className="inline-flex items-center gap-1.5 whitespace-normal leading-none">{children}</span>
         </button>
       </PopoverTrigger>
       <PopoverContent
@@ -667,18 +667,28 @@ export function MarketJobsInterestForm() {
               fallback={t('market.jobsForm.jobTypePlaceholder')}
             />
           )}
-        </SentenceToken>{' '}
-        <SentenceToken
-          open={arrangementOpen}
-          onOpenChange={setArrangementOpen}
-          ariaLabel={t('market.jobsForm.arrangementLabel')}
-          empty={false}
-          emphasis="secondary"
-          panel={<ChoicePanel options={MARKET_JOB_ARRANGEMENTS} value={arrangement} onChange={(next) => { setArrangement(next); setArrangementOpen(false); }} />}
-        >
-          {arrangement}
-        </SentenceToken>{' '}
-        {t('market.jobsForm.seekerMid')}{' '}
+        </SentenceToken>
+        {mode === 'seeker' ? (
+          <>
+            {' '}
+            <SentenceToken
+              open={arrangementOpen}
+              onOpenChange={setArrangementOpen}
+              ariaLabel={t('market.jobsForm.arrangementLabel')}
+              empty={false}
+              emphasis="secondary"
+              panel={<ChoicePanel options={MARKET_JOB_ARRANGEMENTS} value={arrangement} onChange={(next) => { setArrangement(next); setArrangementOpen(false); }} />}
+            >
+              {arrangement}
+            </SentenceToken>{' '}
+            {t('market.jobsForm.seekerMid')}{' '}
+          </>
+        ) : (
+          <>
+            {' '}
+            {t('market.jobsForm.employerMid')}{' '}
+          </>
+        )}
         <SentenceToken
           open={locationOpen}
           onOpenChange={setLocationOpen}
@@ -764,7 +774,7 @@ export function MarketJobsInterestForm() {
                   countryCode={countryCode}
                   locale={language}
                   size="xs"
-                  className="translate-y-px"
+                  className="block"
                 />
               ) : null}
             </>

@@ -113,6 +113,8 @@ describe('MarketJobsInterestForm', () => {
     expect(screen.getByTestId('market-jobs-sentence')).toHaveTextContent('Bakersfield, CA');
     expect(screen.getByTestId('market-jobs-sentence')).toHaveTextContent(/\$\d/);
     expect(screen.getByAltText('United States')).toBeInTheDocument();
+    expect(screen.getByAltText('United States')).toHaveClass('block');
+    expect(screen.getByAltText('United States').className).not.toMatch(/translate-y-px/);
     expect(detectVisitorLocationMock).not.toHaveBeenCalled();
   });
 
@@ -211,6 +213,9 @@ describe('MarketJobsInterestForm', () => {
     expect(screen.getByTestId('market-jobs-mode-tabs')).toBeInTheDocument();
     await waitFor(() => expect(screen.getByTestId('market-jobs-sentence')).toHaveTextContent('Yerevan'));
     fireEvent.click(screen.getByRole('button', { name: 'Employer' }));
+    expect(screen.queryByLabelText('Arrangement')).not.toBeInTheDocument();
+    expect(screen.getByTestId('market-jobs-sentence')).toHaveTextContent(/We're looking for a/);
+    expect(screen.getByTestId('market-jobs-sentence')).not.toHaveTextContent(/job in/);
     fireEvent.click(screen.getByLabelText('Job type'));
     fireEvent.click(await screen.findByRole('option', { name: 'Baker' }));
 

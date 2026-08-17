@@ -16,7 +16,7 @@ The public website (civizen.world) sends visitors to onboarding, not Jobs. Jobs 
 - Anyone can open Market > Jobs.
 - Worker / Employer toggle is visible to guests.
 - Anyone can post looking-for-work or a job opening from the sentence form.
-- The sentence includes engagement, level, job type, arrangement, place, start, and pay.
+- The sentence includes engagement, level, job type, place, start, and pay. Workers also choose job / volunteering / internship. Employers do not use the word “job” in the sentence — they are looking for a person.
 - Job type, place, and pay stay the bright tokens. Engagement, level, arrangement, start, and pay period stay a bit dimmer.
 - The Jobs section title is **Marketplace / Jobs**. `/jobs` is the public short URL and stays on Market > Jobs (`/market?section=jobs`).
 - Signed-in members can unfold **More** to set preferred work days, hours, languages, and notes.
