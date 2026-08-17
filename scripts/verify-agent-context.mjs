@@ -112,6 +112,12 @@ if (!existsSync('scripts/verify-home-post-composer.mjs')) {
 if (!agents.includes('verify:home-post-composer')) {
   fail('AGENTS.md must reference verify:home-post-composer in post-dev / interaction gates');
 }
+if (!existsSync('scripts/verify-post-likes-rls.mjs')) {
+  fail('missing scripts/verify-post-likes-rls.mjs');
+}
+if (!agents.includes('verify:post-likes-rls')) {
+  fail('AGENTS.md must reference verify:post-likes-rls');
+}
 if (!existsSync('scripts/verify-home-happiness-shortcut.mjs')) {
   fail('missing scripts/verify-home-happiness-shortcut.mjs');
 }

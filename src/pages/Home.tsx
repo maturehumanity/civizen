@@ -1062,6 +1062,15 @@ export default function Home() {
           description: t('home.savedLocallyLikeDescription'),
         });
       } else {
+        // Roll back optimistic UI when the server rejected the like.
+        setOptimisticLikeStates((prev) => ({
+          ...prev,
+          [postId]: hasLiked,
+        }));
+        setPostLikes((prev) => ({
+          ...prev,
+          [postId]: likedByUsers,
+        }));
         toast.error(t('home.couldNotSaveLike'), {
           description: t('common.tryAgainMoment'),
         });

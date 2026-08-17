@@ -1,7 +1,7 @@
 {
   "name": "civizen",
   "private": true,
-  "version": "0.1.194",
+  "version": "0.1.195",
   "type": "module",
   "engines": {
     "node": ">=24.18.1",
@@ -42,6 +42,7 @@
     "verify:arc-carousel-layout": "npx tsx scripts/verify-arc-carousel-layout.mjs",
     "verify:arc-carousel-visible": "node scripts/verify-arc-carousel-visible.mjs",
     "verify:home-post-composer": "node scripts/verify-home-post-composer.mjs",
+    "verify:post-likes-rls": "node scripts/verify-post-likes-rls.mjs",
     "verify:home-happiness-shortcut": "node scripts/verify-home-happiness-shortcut.mjs",
     "verify:profile-score-dial": "node scripts/verify-profile-score-dial.mjs",
     "verify:happiness-foundation": "node scripts/verify-happiness-foundation.mjs",
@@ -51,7 +52,7 @@
     "verify:wellbeing-insights": "node scripts/verify-wellbeing-insights.mjs",
     "verify:human-outcome-loop": "node scripts/verify-human-outcome-loop.mjs",
     "verify:ci": "node scripts/verify-ci.mjs",
-    "verify:post-dev": "npm run verify:agent-context && npm run verify:dev-load && npm run verify:arc-carousel-layout && npm run verify:arc-carousel-visible && npm run verify:home-post-composer && npm run verify:home-happiness-shortcut && npm run verify:profile-score-dial && npm run verify:happiness-foundation && npm run verify:work-fulfillment && npm run verify:fulfillment-plans && npm run verify:wellbeing-aggregate-privacy && npm run verify:wellbeing-insights && npm run verify:human-outcome-loop",
+    "verify:post-dev": "npm run verify:agent-context && npm run verify:dev-load && npm run verify:arc-carousel-layout && npm run verify:arc-carousel-visible && npm run verify:home-post-composer && npm run verify:post-likes-rls && npm run verify:home-happiness-shortcut && npm run verify:profile-score-dial && npm run verify:happiness-foundation && npm run verify:work-fulfillment && npm run verify:fulfillment-plans && npm run verify:wellbeing-aggregate-privacy && npm run verify:wellbeing-insights && npm run verify:human-outcome-loop",
     "release:guard": "node scripts/verify-release-lifecycle.mjs",
     "release:testing": "CIVIZEN_UPDATE_CHANNEL=testing npm run update:application",
     "release:production:promote": "npm run promote:android-testing-to-release && npm run build"
