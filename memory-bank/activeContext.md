@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Live + Testing v0.1.190 build 192 with WhatsApp Web side-hook tails.**
+
 **Public Civi peace aim (2026-08-16):** “How can we stop wars?” is in scope. The reply leads with uniting around shared human responsibility (founding docs), then ordinary linked sentences: signing up, make a contribution, Study, Community Challenges, Opportunities, Governance. Not “learn in Study”. How-questions do not start with Yes. Canonical reply: `src/lib/assistant/peace.ts`.
 
 **Civi knowledge on every change (2026-08-16):** New or changed user-facing surfaces, flows, and public mission copy update the cheat sheet and catalog in the same session, then `npm run assistant:knowledge`. Knowledge regen indexes live nav, Contribute lanes, and Civi page links. Philosophy of Mature Humanity is in the indexed sources. Why Civizen Exists is a catalog capability.
