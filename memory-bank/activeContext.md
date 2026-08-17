@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Live + Testing v0.1.194 (2026-08-16):** Build 196 (`20260816-v0.1.194`) published to Testing and Live. Employer Jobs sentences look for a person (no arrangement word “job”). The place token country flag sits on the text line.
+
 **Live + Testing v0.1.193 (2026-08-16):** Build 195 (`20260816-v0.1.193`) published to Testing and Live. Public Market Jobs title is Marketplace / Jobs. Signed-in members can unfold More for days, hours, languages, and notes. Secondary sentence tokens stay dimmer than job type, place, and pay.
 
 **Live + Testing v0.1.192 (2026-08-16):** Build 194 (`20260816-v0.1.192`) published to Testing and Live. Public Market Jobs sentence auto-fills city/region/country, shows indicative minimum pay for the rotating job type, and includes Full-time, level, arrangement, and start. `/jobs` stays public.
