@@ -128,6 +128,7 @@ describe('Market', () => {
     );
 
     expect(await screen.findByTestId('market-jobs-interest-form')).toBeInTheDocument();
+    expect(screen.getByTestId('market-page-title')).toHaveTextContent('Marketplace / Jobs');
     expect(screen.queryByText(/transactional specialist help/i)).not.toBeInTheDocument();
   });
 
@@ -155,6 +156,7 @@ describe('Market', () => {
     );
 
     expect(await screen.findByTestId('market-jobs-interest-form')).toBeInTheDocument();
+    expect(screen.getByTestId('market-page-title')).toHaveTextContent('Marketplace / Jobs');
     expect(screen.getByTestId('market-guest-toolbar')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '/login');
     expect(screen.queryByTestId('user-page-menu-trigger')).not.toBeInTheDocument();

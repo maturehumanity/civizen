@@ -186,7 +186,7 @@ export const ASSISTANT_CAPABILITIES: AssistantCapability[] = [
     status: 'implemented',
     description:
       'Public Jobs board plus marketplace listings, products, and services. Anyone can look for work or post a job without an account. Contact details stay locked until sign-in. Start agreement or Contact for member listings. Ordinary orders use Marketplace terms.',
-    howTo: 'Open Jobs from the public website, or Market > Jobs. The sentence fills place from your location and shows a guide pay for the job type. Guests can browse and post there.',
+    howTo: 'Open Jobs from the public website, or Market > Jobs. The page title is Marketplace / Jobs. The sentence fills place from your location and shows a guide pay for the job type. Guests can browse and post there. Signed-in members can unfold More for work days, hours, languages, and notes.',
     routes: ['/jobs', '/market'],
     roles: ['guest', 'member'],
     relatedCapabilities: ['agreements', 'prototype_credits'],
@@ -920,7 +920,7 @@ export const ASSISTANT_FAQ: AssistantFaqItem[] = [
     id: 'where_are_jobs',
     question: 'Where do I look for a job?',
     answer:
-      'Open Jobs from the public website, or Market > Jobs. Anyone can look for work or post a job without signing up. Contact details stay locked until you sign in. Work Fulfillment helps you understand fit and improve current work. Contribute Opportunities are for trying activities, not job matching. Happiness and Work Joy stay private and are not sent to employers.',
+      'Open Jobs from the public website, or Market > Jobs. Anyone can look for work or post a job without signing up. Signed-in members can unfold More for work days, hours, languages, and notes. Contact details stay locked until you sign in. Work Fulfillment helps you understand fit and improve current work. Contribute Opportunities are for trying activities, not job matching. Happiness and Work Joy stay private and are not sent to employers.',
     aliases: ['job search', 'employment', 'hiring', 'job fit', 'post a job', 'look for work without account'],
     capabilityIds: ['market', 'work_fulfillment', 'happiness'],
     sourceRefs: ['src/pages/Market.tsx', 'src/components/market/MarketJobsInterestForm.tsx', 'docs/04-operations/dev/market-jobs-public.md', 'src/lib/happiness/fulfillment/jobs-bridge.ts'],

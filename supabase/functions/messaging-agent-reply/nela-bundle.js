@@ -808,9 +808,9 @@ var KNOWLEDGE_PACK = {
     "appVersion": "0.1.192",
     "appReleaseId": "20260816-v0.1.192",
     "androidVersionCode": 194,
-    "gitSha": "2813b975ed9c6d415425b88e43a8481ce87d1356",
-    "generatedAt": "2026-08-17T02:26:03.135Z",
-    "sourceFingerprint": "8ccc69841bd3427c4189aa8657759baec9b2777e962d6d938b3ab4186a532643",
+    "gitSha": "56789093464c43fd8fefe731af33d1146102dc76",
+    "generatedAt": "2026-08-17T02:52:18.322Z",
+    "sourceFingerprint": "2e401588d892880140d017f70cd3a744ce82b419ae3d815bfed56bfceefe99fa",
     "knowledgeFormat": 1,
     "sourceCount": 27,
     "chunkCount": 353
@@ -1143,7 +1143,7 @@ var KNOWLEDGE_PACK = {
       "name": "Market",
       "status": "implemented",
       "description": "Public Jobs board plus marketplace listings, products, and services. Anyone can look for work or post a job without an account. Contact details stay locked until sign-in. Start agreement or Contact for member listings. Ordinary orders use Marketplace terms.",
-      "howTo": "Open Jobs from the public website, or Market > Jobs. The sentence fills place from your location and shows a guide pay for the job type. Guests can browse and post there.",
+      "howTo": "Open Jobs from the public website, or Market > Jobs. The page title is Marketplace / Jobs. The sentence fills place from your location and shows a guide pay for the job type. Guests can browse and post there. Signed-in members can unfold More for work days, hours, languages, and notes.",
       "routes": [
         "/jobs",
         "/market"
@@ -2370,7 +2370,7 @@ var KNOWLEDGE_PACK = {
     {
       "id": "where_are_jobs",
       "question": "Where do I look for a job?",
-      "answer": "Open Jobs from the public website, or Market > Jobs. Anyone can look for work or post a job without signing up. Contact details stay locked until you sign in. Work Fulfillment helps you understand fit and improve current work. Contribute Opportunities are for trying activities, not job matching. Happiness and Work Joy stay private and are not sent to employers.",
+      "answer": "Open Jobs from the public website, or Market > Jobs. Anyone can look for work or post a job without signing up. Signed-in members can unfold More for work days, hours, languages, and notes. Contact details stay locked until you sign in. Work Fulfillment helps you understand fit and improve current work. Contribute Opportunities are for trying activities, not job matching. Happiness and Work Joy stay private and are not sent to employers.",
       "aliases": [
         "job search",
         "employment",
@@ -2630,7 +2630,7 @@ var KNOWLEDGE_PACK = {
       "id": "capability:market",
       "title": "Market",
       "path": "src/lib/assistant/catalog.ts",
-      "text": "Market status=implemented. Public Jobs board plus marketplace listings, products, and services. Anyone can look for work or post a job without an account. Contact details stay locked until sign-in. Start agreement or Contact for member listings. Ordinary orders use Marketplace terms. Open Jobs from the public website, or Market > Jobs. The sentence fills place from your location and shows a guide pay for the job type. Guests can browse and post there. Routes: /jobs, /market.",
+      "text": "Market status=implemented. Public Jobs board plus marketplace listings, products, and services. Anyone can look for work or post a job without an account. Contact details stay locked until sign-in. Start agreement or Contact for member listings. Ordinary orders use Marketplace terms. Open Jobs from the public website, or Market > Jobs. The page title is Marketplace / Jobs. The sentence fills place from your location and shows a guide pay for the job type. Guests can browse and post there. Signed-in members can unfold More for work days, hours, languages, and notes. Routes: /jobs, /market.",
       "status": "implemented",
       "priority": 3,
       "kind": "capability"
@@ -3152,7 +3152,7 @@ var KNOWLEDGE_PACK = {
       "id": "faq:where_are_jobs",
       "title": "Where do I look for a job?",
       "path": "src/lib/assistant/catalog.ts",
-      "text": "Q: Where do I look for a job? A: Open Jobs from the public website, or Market > Jobs. Anyone can look for work or post a job without signing up. Contact details stay locked until you sign in. Work Fulfillment helps you understand fit and improve current work. Contribute Opportunities are for trying activities, not job matching. Happiness and Work Joy stay private and are not sent to employers.",
+      "text": "Q: Where do I look for a job? A: Open Jobs from the public website, or Market > Jobs. Anyone can look for work or post a job without signing up. Signed-in members can unfold More for work days, hours, languages, and notes. Contact details stay locked until you sign in. Work Fulfillment helps you understand fit and improve current work. Contribute Opportunities are for trying activities, not job matching. Happiness and Work Joy stay private and are not sent to employers.",
       "status": "implemented",
       "priority": 5,
       "kind": "faq"

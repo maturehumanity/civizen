@@ -103,6 +103,13 @@ describe('MarketJobsInterestForm', () => {
     expect(screen.getByTestId('market-jobs-sentence')).toHaveTextContent(/Mid-level/);
     expect(screen.getByTestId('market-jobs-sentence')).toHaveTextContent(/immediately/);
     expect(screen.getByTestId('market-jobs-sentence')).toHaveTextContent(/Baker|Cashier|Cook|Driver/);
+    expect(screen.getByLabelText('Engagement')).toHaveAttribute('data-token-emphasis', 'secondary');
+    expect(screen.getByLabelText('Level')).toHaveAttribute('data-token-emphasis', 'secondary');
+    expect(screen.getByLabelText('Arrangement')).toHaveAttribute('data-token-emphasis', 'secondary');
+    expect(screen.getByLabelText('Start')).toHaveAttribute('data-token-emphasis', 'secondary');
+    expect(screen.getByLabelText('Pay period')).toHaveAttribute('data-token-emphasis', 'secondary');
+    expect(screen.getByLabelText('Job type')).toHaveAttribute('data-token-emphasis', 'primary');
+    expect(screen.getByLabelText('Location')).toHaveAttribute('data-token-emphasis', 'primary');
     expect(screen.getByTestId('market-jobs-sentence')).toHaveTextContent('Bakersfield, CA');
     expect(screen.getByTestId('market-jobs-sentence')).toHaveTextContent(/\$\d/);
     expect(screen.getByAltText('United States')).toBeInTheDocument();
@@ -166,6 +173,14 @@ describe('MarketJobsInterestForm', () => {
     expect(await screen.findByTestId('market-jobs-details')).toBeInTheDocument();
     expect(screen.getByLabelText('Hours from')).toBeInTheDocument();
     expect(screen.getByLabelText('Hours to')).toBeInTheDocument();
+    expect(screen.getByText('Languages')).toBeInTheDocument();
+    expect(screen.getByLabelText('Notes')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Monday', pressed: true })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'English', pressed: true })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('market-jobs-add-language'));
+    fireEvent.click(await screen.findByRole('option', { name: /Russian/i }));
+    fireEvent.change(screen.getByLabelText('Notes'), { target: { value: 'Weekdays only' } });
 
     fireEvent.click(screen.getByTestId('market-jobs-submit'));
     await waitFor(() => expect(submitMock).toHaveBeenCalled());
@@ -176,6 +191,11 @@ describe('MarketJobsInterestForm', () => {
         fullName: 'Armen Yeremyan',
         phoneNumber: '5550100',
         terms: ['Full-time', 'Mid-level', 'job', 'Immediately'],
+        languages: ['en', 'ru'],
+        notes: 'Weekdays only',
+        days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+        hoursFrom: '09:00',
+        hoursTo: '18:00',
         userId: 'user-1',
         profileId: 'profile-1',
       }),
@@ -200,6 +220,7 @@ describe('MarketJobsInterestForm', () => {
     fireEvent.click(screen.getByTestId('market-jobs-submit'));
 
     await waitFor(() => expect(submitMock).toHaveBeenCalled());
+    expect(screen.queryByTestId('market-jobs-more-toggle')).not.toBeInTheDocument();
     expect(submitMock).toHaveBeenCalledWith(
       expect.objectContaining({
         mode: 'employer',
@@ -209,6 +230,7 @@ describe('MarketJobsInterestForm', () => {
         phoneNumber: '5559999',
         city: 'Yerevan',
         countryCode: 'AM',
+        languages: [],
         userId: null,
         profileId: null,
       }),

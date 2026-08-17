@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Check, Loader2 } from 'lucide-react';
+import { Check, Loader2, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { RoundCountryFlag } from '@/components/governance/RoundCountryFlag';
@@ -40,6 +40,12 @@ import {
   MARKET_JOB_TYPE_SEEDS,
   type MarketJobMode,
 } from '@/lib/market-job-types';
+import {
+  defaultMarketJobLanguages,
+  filterMarketJobLanguageOptions,
+  marketJobLanguageFlagCountry,
+  marketJobLanguageLabel,
+} from '@/lib/market-job-languages';
 import { parseWorkFitJobsQuery } from '@/lib/market-jobs-work-fit-prefill';
 import { submitMarketJobInterest } from '@/lib/submit-market-job-interest';
 import { agreementsCreatePath } from '@/lib/agreements-model';
@@ -63,6 +69,8 @@ type SentenceTokenProps = {
   empty: boolean;
   /** When false, empty tokens keep the accent color (used for cycling job types). */
   dimWhenEmpty?: boolean;
+  /** Secondary dropdowns stay quieter so job type, place, and pay stay first. */
+  emphasis?: 'primary' | 'secondary';
   children: ReactNode;
   panel: ReactNode;
   contentClassName?: string;
@@ -76,6 +84,7 @@ function SentenceToken({
   ariaLabel,
   empty,
   dimWhenEmpty = true,
+  emphasis = 'primary',
   children,
   panel,
   contentClassName,
@@ -124,8 +133,12 @@ function SentenceToken({
           type="button"
           aria-label={ariaLabel}
           aria-expanded={open}
+          data-token-emphasis={emphasis}
           className={cn(
-            'ml-0.5 mr-0.5 inline-flex max-w-[min(22rem,calc(100vw-6rem))] items-center rounded-sm border-b border-dashed border-primary/55 px-0.5 text-left font-medium text-primary transition-colors hover:border-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+            'ml-0.5 mr-0.5 inline-flex max-w-[min(22rem,calc(100vw-6rem))] items-center rounded-sm border-b border-dashed px-0.5 text-left transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+            emphasis === 'secondary'
+              ? 'border-primary/35 font-normal text-primary/55 hover:border-primary/70 hover:text-primary'
+              : 'border-primary/55 font-medium text-primary hover:border-primary',
             empty && dimWhenEmpty && 'text-muted-foreground',
             triggerClassName,
           )}
@@ -288,11 +301,22 @@ export function MarketJobsInterestForm() {
   const [days, setDays] = useState<string[]>(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']);
   const [hoursFrom, setHoursFrom] = useState('09:00');
   const [hoursTo, setHoursTo] = useState('18:00');
+  const [languages, setLanguages] = useState<string[]>(() =>
+    defaultMarketJobLanguages(language, trimOrEmpty(profile?.country_code)),
+  );
+  const [languageOpen, setLanguageOpen] = useState(false);
+  const [languageQuery, setLanguageQuery] = useState('');
+  const languagesTouchedRef = useRef(false);
   const [notes, setNotes] = useState(() => workFitPrefill.notes);
   const [submitting, setSubmitting] = useState(false);
   const [boardRefreshKey, setBoardRefreshKey] = useState(0);
 
   const showContact = jobTypes.length > 0;
+  const showMoreDetails = isLoggedIn && showContact;
+  const languageOptionsForJobs = useMemo(
+    () => filterMarketJobLanguageOptions(languageQuery, languages, language),
+    [language, languageQuery, languages],
+  );
   const showNameField = !trimOrEmpty(fullName);
   const showCompanyField = mode === 'employer' && !trimOrEmpty(companyName);
   const showPhoneField = !trimOrEmpty(phoneNumber);
@@ -416,6 +440,11 @@ export function MarketJobsInterestForm() {
     setPayPeriod('Monthly pay');
   }, [countryCode, displayedJobType, payTouched]);
 
+  useEffect(() => {
+    if (languagesTouchedRef.current) return;
+    setLanguages(defaultMarketJobLanguages(language, countryCode));
+  }, [countryCode, language]);
+
   const locationText = [city, regionCode].filter(Boolean).join(', ');
   const locationEmpty = !city && !regionCode && !countryCode;
   const payNumber = Number(String(payAmount).replace(/[^\d.]/g, ''));
@@ -441,6 +470,13 @@ export function MarketJobsInterestForm() {
     );
   };
 
+  const toggleLanguage = (code: string) => {
+    languagesTouchedRef.current = true;
+    setLanguages((current) =>
+      current.includes(code) ? current.filter((item) => item !== code) : [...current, code],
+    );
+  };
+
   const markLocationTouched = () => {
     locationTouchedRef.current = true;
   };
@@ -463,6 +499,7 @@ export function MarketJobsInterestForm() {
       days,
       hoursFrom,
       hoursTo,
+      languages: isLoggedIn ? languages : [],
       terms: [engagement, level, arrangement, startWhen],
       notes,
       userId: user?.id ?? null,
@@ -548,6 +585,7 @@ export function MarketJobsInterestForm() {
           onOpenChange={setEngagementOpen}
           ariaLabel={t('market.jobsForm.engagementLabel')}
           empty={false}
+          emphasis="secondary"
           panel={<ChoicePanel options={MARKET_JOB_TERMS} value={engagement} onChange={(next) => { setEngagement(next); setEngagementOpen(false); }} />}
         >
           {engagement}
@@ -557,6 +595,7 @@ export function MarketJobsInterestForm() {
           onOpenChange={setLevelOpen}
           ariaLabel={t('market.jobsForm.levelLabel')}
           empty={false}
+          emphasis="secondary"
           panel={<ChoicePanel options={MARKET_JOB_LEVELS} value={level} onChange={(next) => { setLevel(next); setLevelOpen(false); }} />}
         >
           {level}
@@ -634,6 +673,7 @@ export function MarketJobsInterestForm() {
           onOpenChange={setArrangementOpen}
           ariaLabel={t('market.jobsForm.arrangementLabel')}
           empty={false}
+          emphasis="secondary"
           panel={<ChoicePanel options={MARKET_JOB_ARRANGEMENTS} value={arrangement} onChange={(next) => { setArrangement(next); setArrangementOpen(false); }} />}
         >
           {arrangement}
@@ -737,6 +777,7 @@ export function MarketJobsInterestForm() {
           onOpenChange={setStartOpen}
           ariaLabel={t('market.jobsForm.startLabel')}
           empty={false}
+          emphasis="secondary"
           panel={<ChoicePanel options={MARKET_JOB_STARTS} value={startWhen} onChange={(next) => { setStartWhen(next); setStartOpen(false); }} />}
         >
           {startWhen === 'Immediately' ? t('market.jobsForm.startImmediately') : startWhen}
@@ -769,6 +810,7 @@ export function MarketJobsInterestForm() {
           onOpenChange={setPayPeriodOpen}
           ariaLabel={t('market.jobsForm.payPeriodLabel')}
           empty={false}
+          emphasis="secondary"
           panel={<ChoicePanel options={MARKET_JOB_PAY_PERIODS} value={payPeriod} onChange={(next) => { setPayTouched(true); setPayPeriod(next); setPayPeriodOpen(false); }} />}
         >
           {payPeriod}
@@ -853,53 +895,155 @@ export function MarketJobsInterestForm() {
             </div>
           ) : null}
 
-          <button
-            type="button"
-            className="text-sm font-medium text-primary hover:underline"
-            onClick={() => setDetailsOpen((current) => !current)}
-            data-testid="market-jobs-more-toggle"
-          >
-            {detailsOpen ? t('common.less') : t('common.more')}
-          </button>
+          {showMoreDetails ? (
+            <button
+              type="button"
+              className="text-sm font-medium text-primary hover:underline"
+              onClick={() => setDetailsOpen((current) => !current)}
+              data-testid="market-jobs-more-toggle"
+            >
+              {detailsOpen ? t('common.less') : t('common.more')}
+            </button>
+          ) : null}
 
-          {detailsOpen ? (
-            <div className="space-y-4 rounded-xl border border-border/60 bg-card/40 p-3" data-testid="market-jobs-details">
+          {showMoreDetails && detailsOpen ? (
+            <div className="space-y-4" data-testid="market-jobs-details">
               <div className="space-y-2">
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                   {t('market.jobsForm.daysHeading')}
                 </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {MARKET_JOB_DAYS.map((day) => (
-                    <Button
-                      key={day}
-                      type="button"
-                      size="sm"
-                      variant={days.includes(day) ? 'secondary' : 'outline'}
-                      className="h-8 rounded-full px-3 text-xs"
-                      onClick={() => toggleDay(day)}
-                    >
-                      {day.slice(0, 3)}
-                    </Button>
-                  ))}
+                <div className="flex flex-wrap gap-1.5" role="group" aria-label={t('market.jobsForm.daysHeading')}>
+                  {MARKET_JOB_DAYS.map((day) => {
+                    const selected = days.includes(day);
+                    return (
+                      <button
+                        key={day}
+                        type="button"
+                        aria-label={day}
+                        aria-pressed={selected}
+                        className={cn(
+                          'h-8 w-8 rounded-full text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                          selected
+                            ? 'bg-primary/15 text-primary ring-1 ring-primary/40'
+                            : 'border border-border text-muted-foreground hover:bg-muted/60',
+                        )}
+                        onClick={() => toggleDay(day)}
+                      >
+                        {day.slice(0, 1)}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <OutlinedField label={t('market.jobsForm.hoursFromLabel')} htmlFor="market-jobs-hours-from">
+              <OutlinedField label={t('market.jobsForm.hoursLabel')} htmlFor="market-jobs-hours-from">
+                <div className="flex items-center gap-2">
                   <Input
                     id="market-jobs-hours-from"
                     type="time"
                     value={hoursFrom}
                     onChange={(event) => setHoursFrom(event.target.value)}
+                    aria-label={t('market.jobsForm.hoursFromLabel')}
                   />
-                </OutlinedField>
-                <OutlinedField label={t('market.jobsForm.hoursToLabel')} htmlFor="market-jobs-hours-to">
+                  <span className="text-muted-foreground" aria-hidden>
+                    –
+                  </span>
                   <Input
                     id="market-jobs-hours-to"
                     type="time"
                     value={hoursTo}
                     onChange={(event) => setHoursTo(event.target.value)}
+                    aria-label={t('market.jobsForm.hoursToLabel')}
                   />
-                </OutlinedField>
+                </div>
+              </OutlinedField>
+              <div className="space-y-2">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  {t('market.jobsForm.languagesHeading')}
+                </p>
+                <div
+                  className="flex flex-wrap items-center gap-1.5"
+                  role="group"
+                  aria-label={t('market.jobsForm.languagesHeading')}
+                >
+                  {languages.map((code) => {
+                    const flagCountry = marketJobLanguageFlagCountry(code);
+                    return (
+                      <button
+                        key={code}
+                        type="button"
+                        aria-label={marketJobLanguageLabel(code, language)}
+                        aria-pressed
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 ring-1 ring-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        onClick={() => toggleLanguage(code)}
+                      >
+                        {flagCountry ? (
+                          <RoundCountryFlag
+                            countryCode={flagCountry}
+                            locale={language}
+                            size="md"
+                            className="h-8 w-8"
+                          />
+                        ) : (
+                          <span className="text-[10px] font-semibold uppercase">{code.slice(0, 2)}</span>
+                        )}
+                      </button>
+                    );
+                  })}
+                  <Popover open={languageOpen} onOpenChange={setLanguageOpen}>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label={t('market.jobsForm.addLanguage')}
+                        data-testid="market-jobs-add-language"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-dashed border-border text-muted-foreground transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <Plus className="h-4 w-4" aria-hidden />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent align="start" className="w-[min(18rem,calc(100vw-2rem))] p-0">
+                      <Command>
+                        <CommandInput
+                          value={languageQuery}
+                          onValueChange={setLanguageQuery}
+                          placeholder={t('market.jobsForm.languageSearch')}
+                        />
+                        <CommandList>
+                          <CommandEmpty>{t('market.jobsForm.languageEmpty')}</CommandEmpty>
+                          <CommandGroup>
+                            {languageOptionsForJobs.map((option) => {
+                              const selected = languages.includes(option.code);
+                              return (
+                                <CommandItem
+                                  key={option.code}
+                                  value={`${option.label} ${option.code}`}
+                                  onSelect={() => {
+                                    toggleLanguage(option.code);
+                                    setLanguageQuery('');
+                                  }}
+                                >
+                                  <Check
+                                    className={cn('mr-2 h-4 w-4', selected ? 'opacity-100' : 'opacity-0')}
+                                    aria-hidden
+                                  />
+                                  <span className="inline-flex items-center gap-2">
+                                    {marketJobLanguageFlagCountry(option.code) ? (
+                                      <RoundCountryFlag
+                                        countryCode={marketJobLanguageFlagCountry(option.code)}
+                                        locale={language}
+                                        size="xs"
+                                      />
+                                    ) : null}
+                                    {option.label}
+                                  </span>
+                                </CommandItem>
+                              );
+                            })}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
               <OutlinedField label={t('market.jobsForm.notesLabel')} htmlFor="market-jobs-notes">
                 <Textarea

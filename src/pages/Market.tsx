@@ -192,11 +192,7 @@ export default function Market() {
     setSearchParams(
       (current) => {
         const next = new URLSearchParams(current);
-        if (section === MARKET_FALLBACK_SECTION) {
-          next.delete('section');
-        } else {
-          next.set('section', section);
-        }
+        next.set('section', section);
         if (listingKind === 'service') {
           next.set('kind', 'service');
         } else {
@@ -239,8 +235,19 @@ export default function Market() {
               <div className="flex min-w-0 flex-1 items-center gap-0.5">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <h1 className="truncate text-xl font-display font-bold leading-none tracking-tight text-foreground">
-                      {t('market.title')}
+                    <h1
+                      className="truncate text-xl font-display font-bold leading-none tracking-tight text-foreground"
+                      data-testid="market-page-title"
+                    >
+                      {isJobs ? (
+                        <>
+                          <span className="font-semibold text-muted-foreground">{t('market.title')}</span>
+                          <span className="font-normal text-muted-foreground"> / </span>
+                          <span>{t('market.categories.jobs')}</span>
+                        </>
+                      ) : (
+                        t('market.title')
+                      )}
                     </h1>
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="max-w-xs text-sm leading-relaxed">

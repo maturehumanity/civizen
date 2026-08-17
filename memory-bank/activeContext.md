@@ -40,7 +40,7 @@
 
 **Civi. Your AI Assistant (2026-08-16):** The name is **Civi. Your AI Assistant** (no longer “Civi (In-app assistant)”). Visitors can ask Civi about the project without registering — a Civi button sits at the lower right on public pages. Signed-in members still use Civi in Messaging. Public answers use project knowledge only (no personal records). LANGUAGE_PACK_VERSION 204.
 
-**Public Market Jobs (2026-08-16):** `/market` is public. The Jobs sentence fills city/region/country from the visitor’s location, shows indicative minimum pay for the rotating job type, and includes Full-time, level, arrangement, and start. LANGUAGE_PACK_VERSION 209.
+**Public Market Jobs (2026-08-16):** `/market` is public. The Jobs section title is Marketplace / Jobs. The sentence fills city/region/country from the visitor’s location, shows indicative minimum pay for the rotating job type, and includes Full-time, level, arrangement, and start. Those extra dropdowns stay dimmer than job type, place, and pay. Signed-in members can unfold More for preferred work days, hours, languages, and notes. LANGUAGE_PACK_VERSION 210.
 
 **Live + Testing v0.1.184 (2026-08-16):** Build 186 (`20260816-v0.1.184`) published to Testing and Live. Includes public Civi (Civi. Your AI Assistant) so visitors can ask about the project without registering, plus Public Market Jobs.
 

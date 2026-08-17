@@ -17,6 +17,7 @@ export type MarketJobInterestPayload = {
   days: string[];
   hoursFrom: string;
   hoursTo: string;
+  languages: string[];
   terms: string[];
   notes: string;
   userId?: string | null;
@@ -63,6 +64,7 @@ export async function submitMarketJobInterest(payload: MarketJobInterestPayload)
     days: payload.days,
     hours_from: payload.hoursFrom.trim() || null,
     hours_to: payload.hoursTo.trim() || null,
+    languages: payload.languages.map((item) => item.trim()).filter(Boolean),
     terms: payload.terms,
     notes: payload.notes.trim() || null,
     user_id: userId,
