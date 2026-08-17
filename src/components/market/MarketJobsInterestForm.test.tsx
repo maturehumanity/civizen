@@ -222,7 +222,6 @@ describe('MarketJobsInterestForm', () => {
     fireEvent.click(await screen.findByRole('option', { name: 'Baker' }));
     expect(await screen.findByTestId('market-jobs-sentence')).toHaveTextContent('$3,200');
 
-    fireEvent.click(screen.getByLabelText('Job type'));
     fireEvent.click(await screen.findByRole('option', { name: 'Electrician' }));
     expect(await screen.findByTestId('market-jobs-sentence')).toHaveTextContent('$4,800');
   });
