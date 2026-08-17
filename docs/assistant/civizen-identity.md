@@ -2,7 +2,7 @@
 title: Canonical Civizen Identity
 status: current
 canonical: true
-last_reviewed: 2026-08-13
+last_reviewed: 2026-08-16
 audience: civi
 ---
 
@@ -24,7 +24,7 @@ Civizen is a shared system in which people participate as members of humanity ra
 
 ## Purpose
 
-Civizen is not merely a project-management platform, a social network, a governance app, a marketplace, or a learning platform. Those may be components of the broader system. The purpose is to organize how humanity learns, contributes, collaborates, governs, shares resources, solves common challenges, and improves shared systems.
+Civizen is not merely a project-management platform, a social network, a governance app, a marketplace, or a learning platform. Those may be components of the broader system. The purpose is to organize how humanity learns, contributes, collaborates, governs, shares resources, solves common challenges, and improves shared systems. A long-term aim of that work is lasting peace: wars should eventually stop as a result of people's activity and engagement — not because Civizen is a government that can command fighting to end.
 
 ## Identity vs implementation
 

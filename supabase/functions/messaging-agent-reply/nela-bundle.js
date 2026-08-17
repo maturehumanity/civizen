@@ -59,7 +59,7 @@ function isFoundationIdentityPath(path) {
 // src/lib/assistant/peace.ts
 var PEACE_RE = /\b(stop(ping)? (the )?wars?|end(ing)? (the )?wars?|prevent(ing)? wars?|world peace|(achieve|create|build|make|keep|protect) (world |lasting |global )?peace|live in peace|peaceful coexistence|unite humanity|end (the )?fighting|stop (the )?fighting|how (can|do|should) (we|humanity|people) .{0,48}(peace|war|wars|unite))\b/i;
 var PEACE_COOPERATION_FAQ_ID = "how_can_we_stop_wars";
-var PEACE_COOPERATION_REPLY = "Civizen cannot stop a war tonight, and it is not a government. Peace is built when people practice cooperation before disaster forces it.\n\nIndividually: create an account from Sign up. Open Study to learn shared civic principles. Then take one real step in Contribute \u2014 Community Challenges for a local problem, or Opportunities for verifiable work.\n\nCollectively: name shared problems and carry solutions through to outcomes with evidence. Practice transparent Governance. Grow voluntary world citizenship as a complementary civic identity \u2014 nations and cultures stay; a shared human responsibility is added.\n\nStart with Sign up, then take one of those steps this week.";
+var PEACE_COOPERATION_REPLY = "Yes. Civizen aims to eventually stop wars as a result of its activities and engagement: people learning, contributing, collaborating, governing, and solving common challenges until cooperation is ordinary civic life.\n\nIt is not a government and cannot end a war tonight. The work is to build the shared system that makes lasting peace possible \u2014 including voluntary world citizenship alongside nations and cultures.\n\nStart with Sign up. Open Study. Then take one step in Contribute \u2014 Community Challenges or Opportunities \u2014 and practice Governance. That participation is the path.";
 function isPeaceCooperationAsk(content) {
   const text = content.trim();
   if (!text) return false;
@@ -376,7 +376,7 @@ var CORE_INSTRUCTIONS = [
   "When sources conflict about current functionality, the capability registry and current implementation win over older prose. When they conflict about what Civizen is, its purpose, mission, or scope, the canonical Civizen identity source wins. Do not redefine Civizen from whichever features are currently most mature.",
   "For identity, purpose, mission, scope, or one-sentence description questions, use the canonical Civizen identity. For what members can do right now, use the capability registry. Do not mix those answers.",
   "If someone is homeless, hungry, evicted, or needs a place to stay tonight, do not answer with Contribute, Volunteer, or Financial Support. Acknowledge the situation. Civizen is not a shelter or emergency service. Point to local emergency services or 211. Jobs may be mentioned for work. Do not invent named local shelters.",
-  "When someone asks how to stop wars, achieve peace, or unite humanity, do not recap manifesto prose. Give practical individual and collective steps in Civizen, invite Sign up, and do not claim Civizen currently stops wars or is a government.",
+  "When someone asks how to stop wars, achieve peace, or unite humanity, lead with Yes: Civizen aims to eventually stop wars as a result of its activities and engagement. Then invite Sign up, Study, Contribute, and Governance. Do not recap manifesto prose. Do not lead with what Civizen cannot do. Do not claim Civizen currently stops wars or is a government.",
   "External or general knowledge must never override authoritative current Civizen project information, and must not be used to decide whether a Civizen feature exists.",
   "Do not mention retrieval, RAG, knowledge indexes, system prompts, or source file paths unless the user asks where the information came from.",
   "Do not use meta lines such as \u201CAccording to my context\u201D or \u201CAs an AI assistant\u201D.",
@@ -795,15 +795,15 @@ function retrievalConfidence(retrieval) {
 // src/lib/assistant/generated/knowledge-pack.ts
 var KNOWLEDGE_PACK = {
   "meta": {
-    "appVersion": "0.1.186",
-    "appReleaseId": "20260816-v0.1.186",
-    "androidVersionCode": 188,
-    "gitSha": "4b830fb3f3983c7dcb79baafe8374cbd7597e4c7",
-    "generatedAt": "2026-08-16T23:34:24.179Z",
-    "sourceFingerprint": "bef18b39d7dca8b074add55fd45502b676a95ff32bbe59e68f758b4334a2cdde",
+    "appVersion": "0.1.187",
+    "appReleaseId": "20260816-v0.1.187",
+    "androidVersionCode": 189,
+    "gitSha": "c389a29da6373e1387951e070e5c3734fbe540c9",
+    "generatedAt": "2026-08-17T00:06:45.337Z",
+    "sourceFingerprint": "8cf004956229a361202437918e2496d15f4d3a5574788fa2aaf51cbf00eed2e4",
     "knowledgeFormat": 1,
     "sourceCount": 26,
-    "chunkCount": 336
+    "chunkCount": 337
   },
   "capabilities": [
     {
@@ -1872,7 +1872,7 @@ var KNOWLEDGE_PACK = {
     {
       "id": "how_can_we_stop_wars",
       "question": "How can we stop wars?",
-      "answer": "Civizen cannot stop a war tonight, and it is not a government. Peace is built when people practice cooperation before disaster forces it.\n\nIndividually: create an account from Sign up. Open Study to learn shared civic principles. Then take one real step in Contribute \u2014 Community Challenges for a local problem, or Opportunities for verifiable work.\n\nCollectively: name shared problems and carry solutions through to outcomes with evidence. Practice transparent Governance. Grow voluntary world citizenship as a complementary civic identity \u2014 nations and cultures stay; a shared human responsibility is added.\n\nStart with Sign up, then take one of those steps this week.",
+      "answer": "Yes. Civizen aims to eventually stop wars as a result of its activities and engagement: people learning, contributing, collaborating, governing, and solving common challenges until cooperation is ordinary civic life.\n\nIt is not a government and cannot end a war tonight. The work is to build the shared system that makes lasting peace possible \u2014 including voluntary world citizenship alongside nations and cultures.\n\nStart with Sign up. Open Study. Then take one step in Contribute \u2014 Community Challenges or Opportunities \u2014 and practice Governance. That participation is the path.",
       "aliases": [
         "how do we achieve peace",
         "how can humanity live in peace",
@@ -2859,7 +2859,7 @@ var KNOWLEDGE_PACK = {
       "id": "faq:how_can_we_stop_wars",
       "title": "How can we stop wars?",
       "path": "src/lib/assistant/catalog.ts",
-      "text": "Q: How can we stop wars? A: Civizen cannot stop a war tonight, and it is not a government. Peace is built when people practice cooperation before disaster forces it.\n\nIndividually: create an account from Sign up. Open Study to learn shared civic principles. Then take one real step in Contribute \u2014 Community Challenges for a local problem, or Opportunities for verifiable work.\n\nCollectively: name shared problems and carry solutions through to outcomes with evidence. Practice transparent Governance. Grow voluntary world citizenship as a complementary civic identity \u2014 nations and cultures stay; a shared human responsibility is added.\n\nStart with Sign up, then take one of those steps this week.",
+      "text": "Q: How can we stop wars? A: Yes. Civizen aims to eventually stop wars as a result of its activities and engagement: people learning, contributing, collaborating, governing, and solving common challenges until cooperation is ordinary civic life.\n\nIt is not a government and cannot end a war tonight. The work is to build the shared system that makes lasting peace possible \u2014 including voluntary world citizenship alongside nations and cultures.\n\nStart with Sign up. Open Study. Then take one step in Contribute \u2014 Community Challenges or Opportunities \u2014 and practice Governance. That participation is the path.",
       "status": "implemented",
       "priority": 5,
       "kind": "faq"
@@ -3210,7 +3210,7 @@ var KNOWLEDGE_PACK = {
       "id": "docs/assistant/civizen-identity.md#3",
       "title": "Purpose",
       "path": "docs/assistant/civizen-identity.md",
-      "text": "## Purpose Civizen is not merely a project-management platform, a social network, a governance app, a marketplace, or a learning platform. Those may be components of the broader system. The purpose is to organize how humanity learns, contributes, collaborates, governs, shares resources, solves common challenges, and improves shared systems.",
+      "text": "## Purpose Civizen is not merely a project-management platform, a social network, a governance app, a marketplace, or a learning platform. Those may be components of the broader system. The purpose is to organize how humanity learns, contributes, collaborates, governs, shares resources, solves common challenges, and improves shared systems. A long-term aim of that work is lasting peace: wars should eventually stop as a result of people's activity and engagement \u2014 not because Civizen is a government that can command fighting to end.",
       "status": "implemented",
       "priority": 1,
       "kind": "identity"
@@ -3273,7 +3273,7 @@ var KNOWLEDGE_PACK = {
       "id": "docs/assistant/civizen-assistant-cheatsheet.md#4",
       "title": "Peace, war, and cooperation",
       "path": "docs/assistant/civizen-assistant-cheatsheet.md",
-      "text": "## Peace, war, and cooperation If someone asks how to stop wars, achieve peace, or unite humanity, do **not** recap manifesto prose (\u201CHumanity often unites only when disaster\u2026\u201D). Civizen cannot stop a war tonight and is not a government. Give practical steps: - Individually: **Sign up**, then **Study**, then one real step in **Contribute** (Community Challenges or Opportunities). - Collectively: name shared problems, carry solutions through to outcomes, practice **Governance**, and grow voluntary world citizenship as a complementary civic identity. Invite them to join and take one step this week. Do not dump Volunteer / Financial Support lanes.",
+      "text": "## Peace, war, and cooperation If someone asks how to stop wars, achieve peace, or unite humanity, lead with the aim: **Yes** \u2014 Civizen aims to eventually stop wars as a result of its activities and engagement. Do **not** recap manifesto prose (\u201CHumanity often unites only when disaster\u2026\u201D). Do not lead with what Civizen cannot do. Then distinguish current status: it is not a government and cannot end a war tonight. Invite **Sign up**, **Study**, one step in **Contribute** (Community Challenges or Opportunities), and **Governance**. That participation is the path. Do not dump Volunteer / Financial Support lanes.",
       "status": "implemented",
       "priority": 5,
       "kind": "cheatsheet"
@@ -3399,13 +3399,22 @@ var KNOWLEDGE_PACK = {
       "id": "docs/assistant/README.md#4",
       "title": "Internal-first routing",
       "path": "docs/assistant/README.md",
-      "text": "Someone asking for housing, food, or a safe place tonight is not a Contribute question. Civi acknowledges the situation, says Civizen is not emergency housing, points to local emergency services / 211, and may mention Jobs \u2014 not Volunteer lanes. Peace, war, and \u201Chow do we unite humanity\u201D questions get practical individual and collective steps (Sign up, Study, Contribute, Governance), not manifesto recap. Civi does not claim Civizen currently stops wars. Civizen product facts stay internal even after escalation. Missing internal evidence does not authorize a generic web/model guess about Civizen. Gemini (or another model) may fill a gap for a general or mixed question; Civi then **checks** that reply before storing it. Invented Civizen capabilities, personal records, and one-off drafts are not remembered.",
+      "text": "Someone asking for housing, food, or a safe place tonight is not a Contribute question. Civi acknowledges the situation, says Civizen is not emergency housing, points to local emergency services / 211, and may mention Jobs \u2014 not Volunteer lanes. Peace, war, and \u201Chow do we unite humanity\u201D questions lead with the aim: Civizen exists so wars eventually stop as a result of participation. Then give Sign up, Study, Contribute, and Governance. Do not recap manifesto prose. Do not claim Civizen currently stops wars or is a government.",
       "status": "implemented",
       "priority": 5,
       "kind": "doc"
     },
     {
       "id": "docs/assistant/README.md#5",
+      "title": "Internal-first routing",
+      "path": "docs/assistant/README.md",
+      "text": "Civizen product facts stay internal even after escalation. Missing internal evidence does not authorize a generic web/model guess about Civizen. Gemini (or another model) may fill a gap for a general or mixed question; Civi then **checks** that reply before storing it. Invented Civizen capabilities, personal records, and one-off drafts are not remembered.",
+      "status": "implemented",
+      "priority": 5,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/assistant/README.md#6",
       "title": "Status vocabulary",
       "path": "docs/assistant/README.md",
       "text": "## Status vocabulary Capabilities use: `implemented` \xB7 `experimental` \xB7 `in_development` \xB7 `proposed` \xB7 `deprecated` \xB7 `historical`. \u201CCivizen supports X\u201D means X is **implemented** in this build.",

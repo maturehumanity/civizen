@@ -21,9 +21,13 @@ describe('Civi peace and cooperation', () => {
     expect(prep.inScope).toBe(true);
     expect(prep.skipLlm).toBe(true);
     expect(prep.groundedAnswer).toBe(PEACE_COOPERATION_REPLY);
+    expect(prep.groundedAnswer).toMatch(/^Yes\./);
+    expect(prep.groundedAnswer).toMatch(/aims to eventually stop wars/i);
+    expect(prep.groundedAnswer).toMatch(/activities and engagement/i);
     expect(prep.groundedAnswer).toMatch(/Sign up/);
     expect(prep.groundedAnswer).toMatch(/Study/);
     expect(prep.groundedAnswer).toMatch(/Contribute/);
+    expect(prep.groundedAnswer).not.toMatch(/^Civizen cannot stop a war/i);
     expect(prep.groundedAnswer).not.toMatch(/unites only when disaster/i);
     expect(prep.groundedAnswer).not.toMatch(/Volunteer/i);
   });
