@@ -12,6 +12,8 @@
 
 **Civi personal hardship (2026-08-16):** “I'm homeless, can you help me?” must not be answered as Contribute / Volunteer routing. Civi acknowledges the situation, is honest that Civizen is not a shelter or emergency service, points to local emergency services / 211, and may mention Jobs (`Open Market > Jobs`). Community Challenges is not emergency housing. Canonical reply: `src/lib/assistant/hardship.ts`.
 
+**Live + Testing v0.1.189 (2026-08-16):** Build 191 (`20260816-v0.1.189`) published to Testing and Live. Public Civi uses WhatsApp-style chat tails, rounded top/left resize grips, and a wars reply that leads with uniting around shared human responsibility.
+
 **Live + Testing v0.1.188 (2026-08-16):** Build 190 (`20260816-v0.1.188`) published to Testing and Live. Public Civi answers “How can we stop wars?” from founding documents in ordinary sentences.
 
 **Public Civi widget resize (2026-08-16):** Hover the top or left edge for a rounded grip. Drag the top to change height only, the left to change width only, or the rounded corner for both. The last question and its answer stay in view when they fit. LANGUAGE_PACK_VERSION 208.
