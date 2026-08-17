@@ -59,7 +59,7 @@ function isFoundationIdentityPath(path) {
 // src/lib/assistant/peace.ts
 var PEACE_RE = /\b(stop(ping)? (the )?wars?|end(ing)? (the )?wars?|prevent(ing)? wars?|world peace|(achieve|create|build|make|keep|protect) (world |lasting |global )?peace|live in peace|peaceful coexistence|unite humanity|end (the )?fighting|stop (the )?fighting|how (can|do|should) (we|humanity|people) .{0,48}(peace|war|wars|unite))\b/i;
 var PEACE_COOPERATION_FAQ_ID = "how_can_we_stop_wars";
-var PEACE_COOPERATION_REPLY = "Peace needs more than speeches, slogans, or treaties. It needs practical systems people can join, examine, improve, and hold accountable. That is what Civizen is for: a shared way to learn, contribute, collaborate, govern, and solve common challenges so humanity can live in a more cooperative civic environment.\n\nThe aim includes peaceful coexistence and a complementary world citizenship \u2014 nations and cultures stay. Civizen is not a government. It is the work through which wars should become unnecessary, because people have practical tools to create and protect peace instead of only hoping for it.\n\nStart by signing up, then make a contribution. You can begin with Community Challenges or Opportunities, learn in Study, and take part in Governance.";
+var PEACE_COOPERATION_REPLY = "Civizen exists to help people unite around shared human responsibility. Peace needs more than speeches, slogans, or treaties. It needs practical systems people can join, examine, improve, and hold accountable.\n\nUnity does not require uniformity \u2014 nations and cultures stay, while a complementary world citizenship adds a shared layer of responsibility. Civizen is not a government. It is the work through which wars should become unnecessary, because people have practical tools to create and protect peace instead of only hoping for it.\n\nStart by signing up, then make a contribution. You can take part through Community Challenges, Opportunities, Study, and Governance.";
 function isPeaceCooperationAsk(content) {
   const text = content.trim();
   if (!text) return false;
@@ -376,7 +376,7 @@ var CORE_INSTRUCTIONS = [
   "When sources conflict about current functionality, the capability registry and current implementation win over older prose. When they conflict about what Civizen is, its purpose, mission, or scope, the canonical Civizen identity source wins. Do not redefine Civizen from whichever features are currently most mature.",
   "For identity, purpose, mission, scope, or one-sentence description questions, use the canonical Civizen identity. For what members can do right now, use the capability registry. Do not mix those answers.",
   "If someone is homeless, hungry, evicted, or needs a place to stay tonight, do not answer with Contribute, Volunteer, or Financial Support. Acknowledge the situation. Civizen is not a shelter or emergency service. Point to local emergency services or 211. Jobs may be mentioned for work. Do not invent named local shelters.",
-  "When someone asks how to stop wars, achieve peace, or unite humanity, use founding Civizen documents. Peace needs practical systems people can join, not speeches alone. Invite in ordinary sentences: signing up, then make a contribution. Do not recap manifesto prose. Do not start a how-question with Yes. Do not claim Civizen currently stops wars or is a government.",
+  "When someone asks how to stop wars, achieve peace, or unite humanity, use founding Civizen documents. Civizen exists to help people unite around shared human responsibility. Peace needs practical systems people can join, not speeches alone. Unity does not require uniformity. Invite in ordinary sentences: signing up, then make a contribution. Name Study, Community Challenges, Opportunities, and Governance. Do not write \u201Clearn in Study\u201D. Do not recap manifesto prose. Do not start a how-question with Yes. Do not claim Civizen currently stops wars or is a government.",
   "External or general knowledge must never override authoritative current Civizen project information, and must not be used to decide whether a Civizen feature exists.",
   "Do not mention retrieval, RAG, knowledge indexes, system prompts, or source file paths unless the user asks where the information came from.",
   "Do not use meta lines such as \u201CAccording to my context\u201D or \u201CAs an AI assistant\u201D.",
@@ -808,12 +808,12 @@ var KNOWLEDGE_PACK = {
     "appVersion": "0.1.189",
     "appReleaseId": "20260816-v0.1.189",
     "androidVersionCode": 191,
-    "gitSha": "943e75b2fe9d51b75a552d25a2e479db2220ff6f",
-    "generatedAt": "2026-08-17T00:20:10.205Z",
-    "sourceFingerprint": "6fc2171fd0f6e1103b2b9b13d81744581dfa735139e15eea842a88e1674b49b5",
+    "gitSha": "188ebda8da577e1c3a49d78da941b3e249287ba8",
+    "generatedAt": "2026-08-17T00:34:45.921Z",
+    "sourceFingerprint": "69ee356471aace200e9cc20a45e3e7d1f57d47e67827e3dd77e57723fd9810f9",
     "knowledgeFormat": 1,
-    "sourceCount": 26,
-    "chunkCount": 337
+    "sourceCount": 27,
+    "chunkCount": 353
   },
   "capabilities": [
     {
@@ -1267,6 +1267,37 @@ var KNOWLEDGE_PACK = {
         "src/components/public/PublicCiviWidget.tsx",
         "src/lib/assistant/learned-memory.ts",
         "src/pages/settings/AiAgentSettings.tsx"
+      ]
+    },
+    {
+      "id": "why_civizen_exists",
+      "name": "Why Civizen Exists",
+      "status": "implemented",
+      "description": "Public founding message: Civizen exists to help people unite around shared human responsibility, with practical systems for cooperation and peace. Unity does not require uniformity. Nations and cultures stay. Complementary world citizenship is a civic identity, not current legal nationality.",
+      "howTo": "Open Why Civizen Exists from the public site, or ask Civi how we can stop wars or unite humanity.",
+      "routes": [
+        "/why-this-exists"
+      ],
+      "roles": [
+        "guest",
+        "member"
+      ],
+      "relatedCapabilities": [
+        "study",
+        "contribute_hub",
+        "governance"
+      ],
+      "aliases": [
+        "why this exists",
+        "why civizen",
+        "founding message",
+        "unite humanity"
+      ],
+      "sourceRefs": [
+        "docs/00-foundation/why-civizen-exists-page-brief.md",
+        "docs/00-foundation/recognized-planetary-citizenship-pathway.md",
+        "docs/00-foundation/the-civizen-charter.md",
+        "src/lib/assistant/peace.ts"
       ]
     },
     {
@@ -1882,7 +1913,7 @@ var KNOWLEDGE_PACK = {
     {
       "id": "how_can_we_stop_wars",
       "question": "How can we stop wars?",
-      "answer": "Peace needs more than speeches, slogans, or treaties. It needs practical systems people can join, examine, improve, and hold accountable. That is what Civizen is for: a shared way to learn, contribute, collaborate, govern, and solve common challenges so humanity can live in a more cooperative civic environment.\n\nThe aim includes peaceful coexistence and a complementary world citizenship \u2014 nations and cultures stay. Civizen is not a government. It is the work through which wars should become unnecessary, because people have practical tools to create and protect peace instead of only hoping for it.\n\nStart by signing up, then make a contribution. You can begin with Community Challenges or Opportunities, learn in Study, and take part in Governance.",
+      "answer": "Civizen exists to help people unite around shared human responsibility. Peace needs more than speeches, slogans, or treaties. It needs practical systems people can join, examine, improve, and hold accountable.\n\nUnity does not require uniformity \u2014 nations and cultures stay, while a complementary world citizenship adds a shared layer of responsibility. Civizen is not a government. It is the work through which wars should become unnecessary, because people have practical tools to create and protect peace instead of only hoping for it.\n\nStart by signing up, then make a contribution. You can take part through Community Challenges, Opportunities, Study, and Governance.",
       "aliases": [
         "how do we achieve peace",
         "how can humanity live in peace",
@@ -2632,6 +2663,15 @@ var KNOWLEDGE_PACK = {
       "kind": "capability"
     },
     {
+      "id": "capability:why_civizen_exists",
+      "title": "Why Civizen Exists",
+      "path": "src/lib/assistant/catalog.ts",
+      "text": "Why Civizen Exists status=implemented. Public founding message: Civizen exists to help people unite around shared human responsibility, with practical systems for cooperation and peace. Unity does not require uniformity. Nations and cultures stay. Complementary world citizenship is a civic identity, not current legal nationality. Open Why Civizen Exists from the public site, or ask Civi how we can stop wars or unite humanity. Routes: /why-this-exists.",
+      "status": "implemented",
+      "priority": 3,
+      "kind": "capability"
+    },
+    {
       "id": "capability:profile",
       "title": "Profiles",
       "path": "src/lib/assistant/catalog.ts",
@@ -2869,7 +2909,7 @@ var KNOWLEDGE_PACK = {
       "id": "faq:how_can_we_stop_wars",
       "title": "How can we stop wars?",
       "path": "src/lib/assistant/catalog.ts",
-      "text": "Q: How can we stop wars? A: Peace needs more than speeches, slogans, or treaties. It needs practical systems people can join, examine, improve, and hold accountable. That is what Civizen is for: a shared way to learn, contribute, collaborate, govern, and solve common challenges so humanity can live in a more cooperative civic environment.\n\nThe aim includes peaceful coexistence and a complementary world citizenship \u2014 nations and cultures stay. Civizen is not a government. It is the work through which wars should become unnecessary, because people have practical tools to create and protect peace instead of only hoping for it.\n\nStart by signing up, then make a contribution. You can begin with Community Challenges or Opportunities, learn in Study, and take part in Governance.",
+      "text": "Q: How can we stop wars? A: Civizen exists to help people unite around shared human responsibility. Peace needs more than speeches, slogans, or treaties. It needs practical systems people can join, examine, improve, and hold accountable.\n\nUnity does not require uniformity \u2014 nations and cultures stay, while a complementary world citizenship adds a shared layer of responsibility. Civizen is not a government. It is the work through which wars should become unnecessary, because people have practical tools to create and protect peace instead of only hoping for it.\n\nStart by signing up, then make a contribution. You can take part through Community Challenges, Opportunities, Study, and Governance.",
       "status": "implemented",
       "priority": 5,
       "kind": "faq"
@@ -3145,6 +3185,15 @@ var KNOWLEDGE_PACK = {
       "kind": "registry"
     },
     {
+      "id": "registry:civi-pages",
+      "title": "Pages Civi can open",
+      "path": "src/lib/nela-nav-paths.ts",
+      "text": "Civi can link these live pages in answers: Why Civizen Exists (/why-this-exists); Community Governance Charter (/governance/charter); Organization Partnership (/partners); Governance Solutions (/governance/solutions); Community Challenges (/contribute/challenges); make a contribution (/contribute); Suggest Improvements (/contribute/improvements); Learning Commons (/contribute/knowledge); My Contributions (/contribute/impact); Financial Support (/fund); Prototype credits (/settings/prototype-credits); Governance workspace (/governance/workspace); Civic voting (/governance/voting); Opportunities (/contribute/professional); Agreements (/agreements); Contribute (/contribute); Messaging (/messaging); Governance (/governance); Documents (/documents); Partners (/partners); Settings (/settings); Profile (/profile); Jobs (/jobs); Market (/market); Study (/study); signing up (/signup); Sign up (/signup); Areas (/areas); Home (/).",
+      "status": "implemented",
+      "priority": 2,
+      "kind": "registry"
+    },
+    {
       "id": "registry:roles",
       "title": "App roles",
       "path": "src/lib/access-control.ts",
@@ -3220,7 +3269,7 @@ var KNOWLEDGE_PACK = {
       "id": "docs/assistant/civizen-identity.md#3",
       "title": "Purpose",
       "path": "docs/assistant/civizen-identity.md",
-      "text": "## Purpose Civizen is not merely a project-management platform, a social network, a governance app, a marketplace, or a learning platform. Those may be components of the broader system. The purpose is to organize how humanity learns, contributes, collaborates, governs, shares resources, solves common challenges, and improves shared systems. Founding Civizen documents describe this as giving people practical tools to create and protect peace, not merely to hope for it.",
+      "text": "## Purpose Civizen is not merely a project-management platform, a social network, a governance app, a marketplace, or a learning platform. Those may be components of the broader system. The purpose is to organize how humanity learns, contributes, collaborates, governs, shares resources, solves common challenges, and improves shared systems. Civizen exists to help people unite around shared human responsibility. Founding documents describe this as giving people practical tools to create and protect peace, not merely to hope for it. Unity does not require uniformity.",
       "status": "implemented",
       "priority": 1,
       "kind": "identity"
@@ -3283,7 +3332,7 @@ var KNOWLEDGE_PACK = {
       "id": "docs/assistant/civizen-assistant-cheatsheet.md#4",
       "title": "Peace, war, and cooperation",
       "path": "docs/assistant/civizen-assistant-cheatsheet.md",
-      "text": "## Peace, war, and cooperation If someone asks how to stop wars, achieve peace, or unite humanity, answer from founding Civizen documents (why Civizen exists, identity, world citizenship). Peace needs practical systems people can join and hold accountable \u2014 not speeches alone. Do **not** recap manifesto prose (\u201CHumanity often unites only when disaster\u2026\u201D). Do **not** start a how-question with Yes. Do not invent a new slogan. Invite in ordinary sentences: start by **signing up**, then **make a contribution** (Community Challenges or Opportunities), learn in **Study**, and take part in **Governance**. Do not dump Volunteer / Financial Support lanes.",
+      "text": "## Peace, war, and cooperation If someone asks how to stop wars, achieve peace, or unite humanity, answer from founding Civizen documents (why Civizen exists, the Charter, world citizenship). Lead with uniting around shared human responsibility. Peace needs practical systems people can join and hold accountable \u2014 not speeches alone. Unity does not require uniformity. Do **not** recap manifesto prose (\u201CHumanity often unites only when disaster\u2026\u201D). Do **not** start a how-question with Yes. Do not invent a new slogan. Invite in ordinary sentences: start by **signing up**, then **make a contribution**. Name **Study**, **Community Challenges**, **Opportunities**, and **Governance** as the places to take part \u2014 do not write \u201Clearn in Study\u201D. Do not dump Volunteer / Financial Support lanes.",
       "status": "implemented",
       "priority": 5,
       "kind": "cheatsheet"
@@ -3391,7 +3440,7 @@ var KNOWLEDGE_PACK = {
       "id": "docs/assistant/README.md#2",
       "title": "Refresh",
       "path": "docs/assistant/README.md",
-      "text": "## Refresh After changing product behavior, registries, or assistant-authoritative docs: ```bash npm run assistant:knowledge ``` When Civi gives directions, it should match the question: **Can I** starts with Yes or No, then the path; **How** starts with `Open Market > Agreements`. Chat turns those page names into links. Type names in the main answer (General, Partnership / Collaboration, and the rest) also link to New agreement for that type. CI and `verify:agent-context` fail if the generated pack is stale relative to its sources.",
+      "text": "## Refresh After changing product behavior, registries, public pages, flows, or assistant-authoritative docs, update the cheat sheet and/or `src/lib/assistant/catalog.ts` in the same session, then: ```bash npm run assistant:knowledge ``` Knowledge regen also indexes live bottom nav, Contribute lanes, and the pages Civi can link (`NELA_PAGE_LINKS`). When Civi gives directions, it should match the question: **Can I** starts with Yes or No, then the path; **How** starts with `Open Market > Agreements`. Chat turns those page names into links. Type names in the main answer (General, Partnership / Collaboration, and the rest) also link to New agreement for that type. CI and `verify:agent-context` fail if the generated pack is stale relative to its sources.",
       "status": "implemented",
       "priority": 5,
       "kind": "doc"
@@ -3409,7 +3458,7 @@ var KNOWLEDGE_PACK = {
       "id": "docs/assistant/README.md#4",
       "title": "Internal-first routing",
       "path": "docs/assistant/README.md",
-      "text": "Someone asking for housing, food, or a safe place tonight is not a Contribute question. Civi acknowledges the situation, says Civizen is not emergency housing, points to local emergency services / 211, and may mention Jobs \u2014 not Volunteer lanes. Peace, war, and \u201Chow do we unite humanity\u201D questions are in scope. Answer from founding documents: practical systems for cooperation and peace, then invite signing up and making a contribution. Do not recap manifesto prose. How-questions do not start with Yes. Do not claim Civizen currently stops wars or is a government.",
+      "text": "Someone asking for housing, food, or a safe place tonight is not a Contribute question. Civi acknowledges the situation, says Civizen is not emergency housing, points to local emergency services / 211, and may mention Jobs \u2014 not Volunteer lanes. Peace, war, and \u201Chow do we unite humanity\u201D questions are in scope. Answer from founding documents, including the need to unite around shared human responsibility. Unity does not require uniformity. Invite signing up and making a contribution; name Study, Community Challenges, Opportunities, and Governance in ordinary sentences. Do not write \u201Clearn in Study\u201D. Do not recap manifesto prose. How-questions do not start with Yes. Do not claim Civizen currently stops wars or is a government.",
       "status": "implemented",
       "priority": 5,
       "kind": "doc"
@@ -4607,6 +4656,132 @@ var KNOWLEDGE_PACK = {
       "title": "Status",
       "path": "docs/00-foundation/the-civizen-charter.md",
       "text": "## Status This document is interim public foundation material and may evolve through review and documented institutional processes.",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/00-foundation/philosophy-of-mature-humanity.md#0",
+      "title": "docs/00-foundation/philosophy-of-mature-humanity.md",
+      "path": "docs/00-foundation/philosophy-of-mature-humanity.md",
+      "text": "> **Document role.** This is Civizen\u2019s living philosophical foundation \u2014 a design philosophy for civilization. > It is **not** Terms of Service, a legal constitution, a product specification, or a belief users must accept to use Civizen. > *Mature Humanity* is a foundational intellectual source and parent vision of Civizen, **not** an immutable software or institutional specification. Civizen may improve beyond individual structures proposed in the book. Future editions of the book may incorporate learning from Civizen implementation, research, pilots, institutional experience, governance, and contributors. # Philosophy of Mature Humanity > **A living design philosophy for civilization** > Version 1.0 \u2014 August 2026",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/00-foundation/philosophy-of-mature-humanity.md#1",
+      "title": "docs/00-foundation/philosophy-of-mature-humanity.md",
+      "path": "docs/00-foundation/philosophy-of-mature-humanity.md",
+      "text": "Mature Humanity is not a political ideology, a religion, or a finished manifesto. It is a framework for understanding our shared reality and designing systems that help people, humanity, and the planet flourish together. Every major decision, institution, feature, governance model, and long-term strategy developed under Civizen should be traceable to the principles in this document. The document itself must remain open to evidence, experience, respectful criticism, and improvement. > **Reality comes first. Systems come second. When systems no longer reflect reality, they should evolve.**",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/00-foundation/philosophy-of-mature-humanity.md#2",
+      "title": "Preface: continuing humanity's work",
+      "path": "docs/00-foundation/philosophy-of-mature-humanity.md",
+      "text": "## Preface: continuing humanity's work For thousands of years, humanity has continuously improved the way it lives. Each generation inherited the work of earlier generations, adapted it to new knowledge and circumstances, and passed it on. The purpose of Mature Humanity is not to condemn what previous generations built. Their systems brought us this far. Our responsibility is to continue their work\u2014preserving what serves life, improving what no longer does, and building what our present reality now makes possible. No doctrine, institution, law, tradition, or document should ever become more important than reality itself.",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/00-foundation/philosophy-of-mature-humanity.md#3",
+      "title": "Part I \u2014 The reality we share",
+      "path": "docs/00-foundation/philosophy-of-mature-humanity.md",
+      "text": "## Part I \u2014 The reality we share ### 1. One planet Earth is humanity's only home. Every person, community, nation, culture, institution, and generation depends upon the same living planet. National borders organize jurisdiction; they do not divide the atmosphere, oceans, climate, ecosystems, knowledge, or consequences of human action. Protecting our shared home is therefore not a secondary interest. It is a foundational responsibility of civilization. ### 2. One humanity Humanity is one species expressed through extraordinary diversity. We differ in language, culture, tradition, belief, profession, history, and nationality. These differences enrich civilization; they need not prevent cooperation.",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/00-foundation/philosophy-of-mature-humanity.md#4",
+      "title": "Part I \u2014 The reality we share",
+      "path": "docs/00-foundation/philosophy-of-mature-humanity.md",
+      "text": "We are not strangers by nature. Fear, misunderstanding, inherited divisions, and incompatible systems can make us behave like strangers on our own planet. What people created, people can examine and improve. ### 3. Interdependence No individual builds civilization alone. No profession, institution, economy, or nation flourishes in complete isolation. Humanity depends upon nature, people depend upon one another, and every generation depends upon both those who came before and those who will follow. Cooperation is not merely an ideal. It is already the operating reality of civilization. Our systems should acknowledge it. ### 4. Shared responsibility",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/00-foundation/philosophy-of-mature-humanity.md#5",
+      "title": "Part I \u2014 The reality we share",
+      "path": "docs/00-foundation/philosophy-of-mature-humanity.md",
+      "text": "Because we share one home and one future, improving civilization is a shared responsibility. Responsibility should be proportional to knowledge, ability, authority, and impact, but no person is entirely outside it. The task is not to erase local loyalties. It is to add a planetary awareness capable of guiding them toward coexistence. ### 5. World Citizen Every person is born into multiple identities: a family, community, culture, profession, city, and nation. These identities remain meaningful.",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/00-foundation/philosophy-of-mature-humanity.md#6",
+      "title": "Part II \u2014 Unity without uniformity",
+      "path": "docs/00-foundation/philosophy-of-mature-humanity.md",
+      "text": "## Part II \u2014 Unity without uniformity ### 6. Cultural diversity is a human treasure Cultural diversity fills human life with languages, ideas, music, food, art, traditions, histories, and different ways of understanding existence. A mature civilization protects this diversity from forced uniformity and makes it possible for people to discover and enjoy it. The aim is not to make Tokyo, Yerevan, Cairo, Mexico City, or any other place feel the same. The aim is for every person to encounter different cultures without entering a human-made zone of hostility, exclusion, or fear. ### 7. Civilizational compatibility",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/00-foundation/philosophy-of-mature-humanity.md#7",
+      "title": "Part II \u2014 Unity without uniformity",
+      "path": "docs/00-foundation/philosophy-of-mature-humanity.md",
+      "text": "Peaceful coexistence requires **civilizational compatibility**: different cultures and communities retaining their character while sharing a dependable foundation of dignity, safety, fairness, peaceful participation, and opportunity. Unity without uniformity means: - different cultures, shared human dignity; - different traditions, peaceful coexistence; - different communities, compatible civic foundations; - one planet, one interdependent humanity. World peace is an outcome. Civilizational compatibility is one of the mechanisms that can make it durable. ### 8. Diversity and examination No culture is inherently superior or inferior, and no human-created practice is beyond respectful examination. Cultural diversity is a strength; cultural immunity from examination is not.",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/00-foundation/philosophy-of-mature-humanity.md#8",
+      "title": "Part II \u2014 Unity without uniformity",
+      "path": "docs/00-foundation/philosophy-of-mature-humanity.md",
+      "text": "When rights, values, or practices come into tension, the response should not be fear, humiliation, or collective blame. It should be an open, evidence-informed process that: 1. defines the real context and the people affected; 2. hears affected communities and relevant expertise; 3. distinguishes assumptions from demonstrated harms and benefits; 4. considers freedom, dignity, safety, fairness, and proportionality together; 5. seeks the least restrictive workable solution; 6. tests outcomes and revises the decision when reality provides new evidence. If a practice helps people flourish and coexist, it deserves protection. If it causes avoidable harm or division, people should be able to improve it without treating its practitioners as lesser human beings. ### 9. No human-made hostile place",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/00-foundation/philosophy-of-mature-humanity.md#9",
+      "title": "Part III \u2014 The purpose of civilization",
+      "path": "docs/00-foundation/philosophy-of-mature-humanity.md",
+      "text": "## Part III \u2014 The purpose of civilization ### 10. Human flourishing The purpose of civilization is to enable every person to live a healthy, meaningful, fulfilling, and contributive life while protecting the planet and future generations. Human flourishing includes health, safety, learning, purpose, opportunity, meaningful work, relationships, belonging, agency, contribution, leisure, creativity, and happiness. Happiness matters, but it is not the only measure. A life of passive comfort without purpose, growth, or connection is not the full aim. ### 11. Systems exist to serve life People should not exist to preserve systems. Systems exist to serve people, humanity, and the living world upon which they depend.",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/00-foundation/philosophy-of-mature-humanity.md#10",
+      "title": "Part III \u2014 The purpose of civilization",
+      "path": "docs/00-foundation/philosophy-of-mature-humanity.md",
+      "text": "Institutions earn legitimacy through the quality, fairness, transparency, and durability of the outcomes they produce\u2014not merely through age, authority, procedure, or declared intent. ### 12. Rights and responsibilities Human dignity requires rights that protect people from domination, deprivation, discrimination, and arbitrary power. Shared life also creates responsibilities: to avoid preventable harm, respect the equal dignity of others, care for common resources, contribute when able, and improve the systems entrusted to us. Rights without enforceable protection are fragile. Responsibilities without rights invite abuse. Mature systems uphold both. ### 13. Justice and restoration",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/00-foundation/philosophy-of-mature-humanity.md#11",
+      "title": "Part III \u2014 The purpose of civilization",
+      "path": "docs/00-foundation/philosophy-of-mature-humanity.md",
+      "text": "Justice should protect people, establish accountability, repair harm where possible, and reduce the conditions that reproduce it. Punishment alone cannot be the measure of success. A mature justice system is impartial, evidence-based, proportionate, accessible, transparent, and committed to prevention, rehabilitation, restoration, and public safety. ### 14. Peace by design Humanity cannot rely on goodwill alone to prevent war. Conflict becomes likely when systems reward domination, hide consequences, concentrate unchecked power, exclude peaceful participation, or leave communities without fair ways to resolve disputes.",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/00-foundation/philosophy-of-mature-humanity.md#12",
+      "title": "Part IV \u2014 Human potential, work, and technology",
+      "path": "docs/00-foundation/philosophy-of-mature-humanity.md",
+      "text": "## Part IV \u2014 Human potential, work, and technology ### 15. Every person has potential Every person possesses a distinct combination of abilities, experiences, perspectives, needs, and potential. Civilization should help each person discover where they can grow, contribute, and live meaningfully. Human potential should not be wasted because poverty, prejudice, geography, poor education, inaccessible systems, or absent guidance prevented it from being recognized. ### 16. The purpose of education Education should help people understand reality, think critically, cooperate across differences, discover and develop their abilities, participate in shared decisions, and continue learning throughout life.",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/00-foundation/philosophy-of-mature-humanity.md#13",
+      "title": "Part IV \u2014 Human potential, work, and technology",
+      "path": "docs/00-foundation/philosophy-of-mature-humanity.md",
+      "text": "Learning is not merely preparation for employment, and it does not end with school. It is a lifelong capability of both the individual and civilization. ### 17. The purpose of work The purpose of work is not merely survival or economic output. Work can allow people to express ability, meet real needs, support themselves and those who depend on them, contribute to society, develop mastery, and find meaning. Civilization should reduce involuntary drudgery and help people find roles aligned with both their capacities and society's needs. Essential work should be respected, safe, and fairly rewarded, whether or not markets currently value it highly. ### 18. The purpose of the economy The economy is a system for coordinating resources, effort, exchange, risk, and value. It is a means, not civilization's final purpose.",
       "status": "implemented",
       "priority": 6,
       "kind": "doc"
