@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Live + Testing v0.1.191 (2026-08-16):** Build 193 (`20260816-v0.1.191`) published to Testing and Live. Public Civi chat tails sit on the top outer corner (top-left for Civi, top-right for the visitor), only on the first message in a same-sender run.
+
 **Live + Testing v0.1.190 build 192 with WhatsApp Web side-hook tails.**
 
 **Public Civi peace aim (2026-08-16):** “How can we stop wars?” is in scope. The reply leads with uniting around shared human responsibility (founding docs), then ordinary linked sentences: signing up, make a contribution, Study, Community Challenges, Opportunities, Governance. Not “learn in Study”. How-questions do not start with Yes. Canonical reply: `src/lib/assistant/peace.ts`.
