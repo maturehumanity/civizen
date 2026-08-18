@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Home Repost + sharing flow (2026-08-17):** Action bar is Like · Comment · Repost · Publish to…. Repost menu offers plain repost and Repost with thoughts (commentary post + embedded original). Schema `post_reposts` stores relationships (no content copy). Gate: `verify:post-reposts`.
+
 **Post likes RLS fix (2026-08-17):** “Could not save like” was RLS, not a missing permission. Live policies bound unqualified `user_id` to `profiles.user_id` → `profiles.id = profiles.user_id`. Fixed migration `20260818010000_fix_post_likes_rls_user_id_binding.sql` (applied remote). Gate: `verify:post-likes-rls` in `verify:post-dev`. Home rolls back optimistic Liked state on failure.
 
 **Live + Testing v0.1.194 (2026-08-16):** Build 196 (`20260816-v0.1.194`) published to Testing and Live. Employer Jobs sentences look for a person (no arrangement word “job”). The place token country flag sits on the text line.

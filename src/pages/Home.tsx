@@ -56,6 +56,26 @@ import {
   recordPostView,
   type PostViewStats,
 } from '@/lib/post-views';
+import {
+  buildHomeFeedItems,
+  createPlainRepost,
+  createRepostWithThoughts,
+  deleteRepost,
+  fetchRecentPostReposts,
+  fetchRepostCounts,
+  fetchViewerRepostMap,
+  type PostPreview,
+  type PostRepostRow,
+} from '@/lib/post-reposts';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { HomePostEmbeddedOriginal, HomeFullOriginalBody } from '@/components/home/HomePostEmbeddedOriginal';
+import { HomeRepostMenu } from '@/components/home/HomeRepostMenu';
+import { HomeRepostThoughtsDialog } from '@/components/home/HomeRepostThoughtsDialog';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { SlowRunningText } from '@/components/ui/slow-running-text';
@@ -170,6 +190,12 @@ export default function Home() {
   const [socialConnections, setSocialConnections] = useState<SocialConnectionStatus[]>([]);
   const [socialCrossposts, setSocialCrossposts] = useState<Record<string, SocialCrosspostStatus[]>>({});
   const [publishingKey, setPublishingKey] = useState<string | null>(null);
+  const [postReposts, setPostReposts] = useState<PostRepostRow[]>([]);
+  const [repostCounts, setRepostCounts] = useState<Record<string, number>>({});
+  const [viewerRepostByOriginal, setViewerRepostByOriginal] = useState<Record<string, string>>({});
+  const [repostBusyPostId, setRepostBusyPostId] = useState<string | null>(null);
+  const [thoughtsOriginal, setThoughtsOriginal] = useState<PostPreview | null>(null);
+  const [fullOriginal, setFullOriginal] = useState<PostPreview | null>(null);
   const [homeTab, setHomeTab] = useState<'all' | 'favourite' | 'stories'>('all');
   const [storyGroupTab, setStoryGroupTab] = useState<'development' | 'suggestions'>('development');
   const [storySectionFilter, setStorySectionFilter] = useState<string>('all');
@@ -708,6 +734,32 @@ export default function Home() {
             setFeedBackendUnavailable(false);
           }
         });
+        void (async () => {
+          try {
+            const [reposts, counts, viewerMap] = await Promise.all([
+              fetchRecentPostReposts(50),
+              fetchRepostCounts(normalizedPosts.map((post) => post.id)),
+              profile?.id
+                ? fetchViewerRepostMap(
+                    profile.id,
+                    normalizedPosts.map((post) => post.id),
+                  )
+                : Promise.resolve({} as Record<string, string>),
+            ]);
+            setPostReposts(reposts);
+            setRepostCounts(counts);
+            setViewerRepostByOriginal(viewerMap);
+            const extraIds = [
+              ...reposts.map((row) => row.commentary_post_id),
+              ...reposts.map((row) => row.original_post_id),
+            ].filter((id): id is string => Boolean(id));
+            if (extraIds.length > 0) {
+              void fetchPostInteractions(Array.from(new Set(extraIds)));
+            }
+          } catch (error) {
+            console.error('Error fetching post reposts:', error);
+          }
+        })();
         hydrateLocalFallbackData();
       }
     } finally {
@@ -1083,6 +1135,111 @@ export default function Home() {
     }
 
     setLikingPostId(null);
+  };
+
+  const activeIdentityLabel =
+    profile?.full_name?.trim() ||
+    (profile?.username ? `@${profile.username}` : '') ||
+    t('home.someone');
+
+  const feedItems = useMemo(
+    () => buildHomeFeedItems(posts as PostPreview[], postReposts),
+    [posts, postReposts],
+  );
+
+  const refreshRepostState = async (postIds: string[]) => {
+    if (!profile?.id) return;
+    try {
+      const [reposts, counts, viewerMap] = await Promise.all([
+        fetchRecentPostReposts(50),
+        fetchRepostCounts(postIds),
+        fetchViewerRepostMap(profile.id, postIds),
+      ]);
+      setPostReposts(reposts);
+      setRepostCounts(counts);
+      setViewerRepostByOriginal(viewerMap);
+    } catch (error) {
+      console.error('Error refreshing reposts:', error);
+    }
+  };
+
+  const handlePlainRepost = async (original: Post) => {
+    if (!profile?.id || feedBackendUnavailable || !isRecordablePostId(original.id)) {
+      toast.error(t('home.couldNotRepost'));
+      return;
+    }
+    if (viewerRepostByOriginal[original.id]) {
+      toast.message(t('home.alreadyReposted'));
+      return;
+    }
+    setRepostBusyPostId(original.id);
+    try {
+      await createPlainRepost({
+        originalPostId: original.id,
+        reposterProfileId: profile.id,
+      });
+      toast.success(t('home.repostedToFeed'));
+      await refreshRepostState([
+        original.id,
+        ...posts.map((post) => post.id),
+      ]);
+    } catch (error) {
+      console.error('Error creating plain repost:', error);
+      toast.error(t('home.couldNotRepost'), {
+        description: t('common.tryAgainMoment'),
+      });
+    } finally {
+      setRepostBusyPostId(null);
+    }
+  };
+
+  const handleRepostWithThoughts = async (commentary: string) => {
+    if (!profile?.id || !thoughtsOriginal?.id) return;
+    const result = await createRepostWithThoughts({
+      originalPostId: thoughtsOriginal.id,
+      reposterProfileId: profile.id,
+      commentary,
+    });
+    const commentaryAsPost: Post = {
+      id: result.commentaryPost.id,
+      content: result.commentaryPost.content,
+      created_at: result.commentaryPost.created_at,
+      author_id: result.commentaryPost.author_id,
+      is_edited: false,
+      edited_at: null,
+      syncStatus: 'remote',
+      author: {
+        id: profile.id,
+        username: profile.username,
+        full_name: profile.full_name,
+        avatar_url: profile.avatar_url,
+      },
+    };
+    setPosts((prev) => mergePostsById(prev, [commentaryAsPost]));
+    toast.success(t('home.repostedWithThoughts'));
+    await refreshRepostState([
+      thoughtsOriginal.id,
+      commentaryAsPost.id,
+      ...posts.map((post) => post.id),
+    ]);
+  };
+
+  const handleUndoRepost = async (originalPostId: string) => {
+    const repostId = viewerRepostByOriginal[originalPostId];
+    if (!repostId) return;
+    setRepostBusyPostId(originalPostId);
+    try {
+      await deleteRepost(repostId);
+      toast.message(t('home.repostRemoved'));
+      await refreshRepostState([originalPostId, ...posts.map((post) => post.id)]);
+    } catch (error) {
+      console.error('Error removing repost:', error);
+      toast.error(t('home.couldNotRemoveRepost'), {
+        description: t('common.tryAgainMoment'),
+      });
+    } finally {
+      setRepostBusyPostId(null);
+    }
   };
 
   const toggleComments = (postId: string) => {
@@ -1576,7 +1733,7 @@ export default function Home() {
             </Card>
           )}
 
-          {posts.length === 0 ? (
+          {feedItems.length === 0 ? (
             <Card className="mb-4 border-2 border-dashed border-border/70 bg-card/70 p-6 shadow-sm">
               {loading ? (
                 <div className="space-y-3" aria-busy="true" aria-label={t('common.loading')}>
@@ -1592,30 +1749,51 @@ export default function Home() {
             </Card>
           ) : (
             <div className="space-y-3">
-              {posts.map((post, index) => {
-                const likes = postLikes[post.id] || [];
-                const comments = postComments[post.id] || [];
-                const viewStats = postViewStats[post.id] || { uniqueVisitors: 0, totalViews: 0 };
+              {feedItems.map((item, index) => {
+                const post = item.post as Post;
+                const interactionPostId = item.interactionPostId;
+                const repostTargetPostId = item.repostTargetPostId;
+                const likes = postLikes[interactionPostId] || [];
+                const comments = postComments[interactionPostId] || [];
+                const viewStats = postViewStats[interactionPostId] || { uniqueVisitors: 0, totalViews: 0 };
                 const serverHasLiked = profile?.id ? likes.includes(profile.id) : false;
-                const hasLiked = optimisticLikeStates[post.id] ?? serverHasLiked;
+                const hasLiked = optimisticLikeStates[interactionPostId] ?? serverHasLiked;
                 const likeCountDelta = hasLiked === serverHasLiked ? 0 : hasLiked ? 1 : -1;
                 const likeCount = Math.max(0, likes.length + likeCountDelta);
-                const isCommentsOpen = !!expandedComments[post.id];
-                const draftComment = commentDrafts[post.id] || '';
-                const isSubmittingComment = submittingCommentPostId === post.id;
+                const isCommentsOpen = !!expandedComments[interactionPostId];
+                const draftComment = commentDrafts[interactionPostId] || '';
+                const isSubmittingComment = submittingCommentPostId === interactionPostId;
+                const repostCount = repostCounts[repostTargetPostId] || 0;
+                const alreadyReposted = Boolean(viewerRepostByOriginal[repostTargetPostId]);
+                const showPublish = canShowPublishToSocial({
+                  isOfficialOrg: isCivizenOrgAccount,
+                  viewerProfileId: profile?.id,
+                  postAuthorId: post.author_id,
+                });
 
                 return (
                   <motion.div
-                    key={post.id}
+                    key={item.key}
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 + index * 0.04 }}
                   >
                     <Card
-                      data-home-post-id={post.id}
+                      data-home-post-id={interactionPostId}
                       className="border-border/70 bg-card/95 p-4 shadow-sm transition-all duration-200 hover:border-border hover:shadow-md"
                     >
                       <div className="min-w-0 space-y-2">
+                        {item.kind === 'plain_repost' ? (
+                          <p className="text-xs font-medium text-muted-foreground">
+                            {t('home.repostedThis', {
+                              person:
+                                item.repost?.reposter?.full_name ||
+                                item.repost?.reposter?.username ||
+                                activeIdentityLabel,
+                            })}
+                          </p>
+                        ) : null}
+
                         <div className="flex items-start gap-3">
                           <Avatar className="h-10 w-10 shrink-0">
                             <AvatarImage src={post.author?.avatar_url || undefined} />
@@ -1628,7 +1806,7 @@ export default function Home() {
                               {getDisplayName(post.author)}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              {formatRelativeTime(post.created_at)}
+                              {formatRelativeTime(item.sortAt)}
                             </p>
                           </div>
                           <Tooltip delayDuration={200}>
@@ -1656,18 +1834,49 @@ export default function Home() {
                           </Tooltip>
                         </div>
 
-                        <p className="whitespace-pre-wrap break-words text-sm text-foreground">
-                          {post.content}
-                        </p>
+                        {item.kind === 'plain_repost' ? null : (
+                          <p className="whitespace-pre-wrap break-words text-sm text-foreground">
+                            {post.content}
+                          </p>
+                        )}
+
+                        {item.kind === 'quote_repost' ? (
+                          <div className="space-y-2">
+                            <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                              {t('home.repostedFrom')}
+                            </p>
+                            <HomePostEmbeddedOriginal
+                              original={item.embeddedOriginal}
+                              unavailableLabel={t('home.originalPostUnavailable')}
+                              originalBadgeLabel={t('home.originalPost')}
+                              seeFullLabel={t('home.seeFullPost')}
+                              onOpenFull={() =>
+                                setFullOriginal(item.embeddedOriginal as PostPreview | null)
+                              }
+                            />
+                          </div>
+                        ) : null}
+
+                        {item.kind === 'plain_repost' ? (
+                          <HomePostEmbeddedOriginal
+                            original={item.embeddedOriginal}
+                            unavailableLabel={t('home.originalPostUnavailable')}
+                            originalBadgeLabel={t('home.originalPost')}
+                            seeFullLabel={t('home.seeFullPost')}
+                            onOpenFull={() =>
+                              setFullOriginal(item.embeddedOriginal as PostPreview | null)
+                            }
+                          />
+                        ) : null}
 
                         <div className="border-t border-border/60 pt-2.5">
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-1 sm:gap-2">
                             <Button
                               size="sm"
                               variant="ghost"
-                              className={`gap-2 rounded-xl px-3 ${hasLiked ? 'bg-primary/10 text-primary hover:bg-primary/15' : 'text-muted-foreground hover:bg-muted/70 hover:text-foreground'}`}
-                              onClick={() => toggleLike(post.id)}
-                              disabled={likingPostId === post.id}
+                              className={`gap-1.5 rounded-xl px-2.5 sm:gap-2 sm:px-3 ${hasLiked ? 'bg-primary/10 text-primary hover:bg-primary/15' : 'text-muted-foreground hover:bg-muted/70 hover:text-foreground'}`}
+                              onClick={() => toggleLike(interactionPostId)}
+                              disabled={likingPostId === interactionPostId}
                             >
                               <ThumbsUp className={`h-4 w-4 ${hasLiked ? 'fill-primary' : ''}`} />
                               {hasLiked ? t('home.liked') : t('home.like')}
@@ -1677,25 +1886,53 @@ export default function Home() {
                             <Button
                               size="sm"
                               variant="ghost"
-                              className="gap-2 rounded-xl px-3 text-muted-foreground hover:bg-muted/70 hover:text-foreground"
-                              onClick={() => toggleComments(post.id)}
+                              className="gap-1.5 rounded-xl px-2.5 text-muted-foreground hover:bg-muted/70 hover:text-foreground sm:gap-2 sm:px-3"
+                              onClick={() => toggleComments(interactionPostId)}
                             >
                               <MessageCircle className="h-4 w-4" />
                               {t('home.comment')}
                               {comments.length > 0 ? ` (${comments.length})` : ''}
                             </Button>
 
-                            {canShowPublishToSocial({
-                              isOfficialOrg: isCivizenOrgAccount,
-                              viewerProfileId: profile?.id,
-                              postAuthorId: post.author_id,
-                            }) ? (
+                            <HomeRepostMenu
+                              activeIdentityLabel={activeIdentityLabel}
+                              repostLabel={t('home.repost')}
+                              repostWithThoughtsLabel={t('home.repostWithThoughts')}
+                              plainRepostDescription={t('home.repostPlainDescription')}
+                              thoughtsDescription={t('home.repostThoughtsDescription')}
+                              postingAsLabel={t('home.postingAs')}
+                              alreadyRepostedLabel={t('home.alreadyReposted')}
+                              undoRepostLabel={t('home.undoRepost')}
+                              count={repostCount}
+                              alreadyReposted={alreadyReposted}
+                              busy={repostBusyPostId === repostTargetPostId}
+                              disabled={feedBackendUnavailable || !isRecordablePostId(repostTargetPostId)}
+                              onPlainRepost={() => {
+                                const target =
+                                  item.kind === 'plain_repost'
+                                    ? item.embeddedOriginal
+                                    : item.kind === 'quote_repost'
+                                      ? item.embeddedOriginal
+                                      : post;
+                                if (target) void handlePlainRepost(target as Post);
+                              }}
+                              onRepostWithThoughts={() => {
+                                const target =
+                                  item.kind === 'original'
+                                    ? post
+                                    : item.embeddedOriginal;
+                                if (target) setThoughtsOriginal(target);
+                              }}
+                              onUndoRepost={() => void handleUndoRepost(repostTargetPostId)}
+                            />
+
+                            {showPublish ? (
                               <Popover>
                                 <PopoverTrigger asChild>
                                   <Button
                                     size="sm"
                                     variant="ghost"
-                                    className="gap-2 rounded-xl px-3 text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+                                    className="gap-1.5 rounded-xl px-2.5 text-muted-foreground hover:bg-muted/70 hover:text-foreground sm:gap-2 sm:px-3"
                                   >
                                     <Share2 className="h-4 w-4" />
                                     {t('home.publishTo')}
@@ -1705,10 +1942,10 @@ export default function Home() {
                                   <div className="space-y-1">
                                     {SOCIAL_PROVIDERS.map((provider) => {
                                       const connection = socialConnections.find((row) => row.provider === provider);
-                                      const published = (socialCrossposts[post.id] || []).some(
+                                      const published = (socialCrossposts[interactionPostId] || []).some(
                                         (row) => row.provider === provider && row.status === 'published',
                                       );
-                                      const busy = publishingKey === `${post.id}:${provider}`;
+                                      const busy = publishingKey === `${interactionPostId}:${provider}`;
                                       const labelKey =
                                         provider === 'linkedin'
                                           ? 'home.publishToLinkedIn'
@@ -1756,7 +1993,7 @@ export default function Home() {
                                           size="sm"
                                           className="w-full justify-start gap-2"
                                           disabled={busy}
-                                          onClick={() => void handlePublishToSocial(post.id, provider)}
+                                          onClick={() => void handlePublishToSocial(interactionPostId, provider)}
                                         >
                                           {busy ? (
                                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -1803,7 +2040,7 @@ export default function Home() {
                                 onChange={(event) =>
                                   setCommentDrafts((prev) => ({
                                     ...prev,
-                                    [post.id]: event.target.value,
+                                    [interactionPostId]: event.target.value,
                                   }))
                                 }
                               />
@@ -1812,7 +2049,7 @@ export default function Home() {
                               <Button
                                 size="sm"
                                 className="rounded-xl px-4"
-                                onClick={() => submitComment(post.id)}
+                                onClick={() => submitComment(interactionPostId)}
                                 disabled={isSubmittingComment || !draftComment.trim()}
                               >
                                 {isSubmittingComment ? t('home.posting') : t('home.postComment')}
@@ -2154,6 +2391,53 @@ export default function Home() {
           </motion.div>
         ) : null}
       </div>
+
+      <HomeRepostThoughtsDialog
+        open={Boolean(thoughtsOriginal)}
+        onOpenChange={(open) => {
+          if (!open) setThoughtsOriginal(null);
+        }}
+        activeName={activeIdentityLabel}
+        activeAvatarUrl={profile?.avatar_url}
+        postingAsLabel={t('home.postingAs')}
+        title={t('home.repostWithThoughts')}
+        placeholder={t('home.repostThoughtsPlaceholder')}
+        cancelLabel={t('common.cancel')}
+        postLabel={t('home.post')}
+        postingLabel={t('home.posting')}
+        originalBadgeLabel={t('home.originalPost')}
+        unavailableLabel={t('home.originalPostUnavailable')}
+        seeFullLabel={t('home.seeFullPost')}
+        original={thoughtsOriginal}
+        onSubmit={async (commentary) => {
+          try {
+            await handleRepostWithThoughts(commentary);
+          } catch (error) {
+            console.error('Error creating repost with thoughts:', error);
+            toast.error(t('home.couldNotRepost'), {
+              description: t('common.tryAgainMoment'),
+            });
+            throw error;
+          }
+        }}
+        onOpenOriginal={() => {
+          if (thoughtsOriginal) setFullOriginal(thoughtsOriginal);
+        }}
+      />
+
+      <Dialog
+        open={Boolean(fullOriginal)}
+        onOpenChange={(open) => {
+          if (!open) setFullOriginal(null);
+        }}
+      >
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{t('home.originalPost')}</DialogTitle>
+          </DialogHeader>
+          {fullOriginal ? <HomeFullOriginalBody original={fullOriginal} /> : null}
+        </DialogContent>
+      </Dialog>
 
     </AppLayout>
   );

@@ -5390,6 +5390,52 @@ export type Database = {
           },
         ]
       }
+      post_reposts: {
+        Row: {
+          id: string
+          original_post_id: string | null
+          reposter_profile_id: string
+          commentary_post_id: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          original_post_id?: string | null
+          reposter_profile_id: string
+          commentary_post_id?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          original_post_id?: string | null
+          reposter_profile_id?: string
+          commentary_post_id?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_reposts_original_post_id_fkey"
+            columns: ["original_post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_reposts_commentary_post_id_fkey"
+            columns: ["commentary_post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_reposts_reposter_profile_id_fkey"
+            columns: ["reposter_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       development_stories: {
         Row: {
           area: string

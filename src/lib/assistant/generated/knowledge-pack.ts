@@ -3,12 +3,12 @@ import type { KnowledgePack } from '../types';
 
 export const KNOWLEDGE_PACK: KnowledgePack = {
   "meta": {
-    "appVersion": "0.1.195",
-    "appReleaseId": "20260817-v0.1.195",
-    "androidVersionCode": 197,
-    "gitSha": "a2b176b95b0cf488b69b4dfb552ea292be3438b2",
-    "generatedAt": "2026-08-17T23:13:00.726Z",
-    "sourceFingerprint": "f2b34820758ec4a9d3f1d439e3e05fa5b0682a4df49185588a583c83512cf24a",
+    "appVersion": "0.1.196",
+    "appReleaseId": "20260817-v0.1.196",
+    "androidVersionCode": 198,
+    "gitSha": "057e83cb2dead08604fa9ae1172670ef733ecb11",
+    "generatedAt": "2026-08-18T04:23:23.607Z",
+    "sourceFingerprint": "373b4acf2a5d9b964bb4d899c1ff7a20d49c7093db3931604ccf489b79d3bf07",
     "knowledgeFormat": 1,
     "sourceCount": 27,
     "chunkCount": 353
@@ -18,7 +18,8 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "id": "home",
       "name": "Home",
       "status": "implemented",
-      "description": "Signed-in home feed with Score snapshot, Governance shortcut, and post composer.",
+      "description": "Signed-in home feed with Score snapshot, Governance shortcut, post composer, and post actions Like · Comment · Repost · Publish to….",
+      "howTo": "Open Home from the bottom nav. Share a post from the composer. On any post: Like, Comment (discussion under the post), Repost (plain or with thoughts into your own feed), or Publish to… (external networks when you are the author on the official Civizen org account). Repost keeps a link to the original — it does not copy the text.",
       "routes": [
         "/"
       ],
@@ -1720,7 +1721,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "id": "capability:home",
       "title": "Home",
       "path": "src/lib/assistant/catalog.ts",
-      "text": "Home status=implemented. Signed-in home feed with Score snapshot, Governance shortcut, and post composer.  Routes: /.",
+      "text": "Home status=implemented. Signed-in home feed with Score snapshot, Governance shortcut, post composer, and post actions Like · Comment · Repost · Publish to…. Open Home from the bottom nav. Share a post from the composer. On any post: Like, Comment (discussion under the post), Repost (plain or with thoughts into your own feed), or Publish to… (external networks when you are the author on the official Civizen org account). Repost keeps a link to the original — it does not copy the text. Routes: /.",
       "status": "implemented",
       "priority": 3,
       "kind": "capability"
@@ -2557,7 +2558,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "id": "docs/assistant/civizen-assistant-cheatsheet.md#7",
       "title": "Current navigation / systems",
       "path": "docs/assistant/civizen-assistant-cheatsheet.md",
-      "text": "| Surface | Open | Status | | --- | --- | --- | | Home | Home | implemented | | Study | Study | implemented | | Contribute hub | Contribute | implemented | | Opportunities | Contribute > Opportunities | implemented | | Community Challenges | Contribute > Community Challenges | implemented | | Learning Commons | Contribute > Learning Commons | implemented | | My Contributions | Contribute > My Contributions | implemented | | Suggest Improvements | Contribute > Suggest Improvements | in_development (placeholder) | | Market | Market | implemented | | Agreements | Market > Agreements | implemented | | Messaging | Messaging | implemented | | Profile / Score | Profile | implemented | | Happiness & Fulfillment | Profile menu, or the Happiness icon on the Home Score card | implemented (private; five levels, not a numeric score; Fulfillment Plans under Improve; optional group insights off by default) | | Work Fulfillment | Happiness & Fulfillment > Work Fulfillment | implemented (current work, Work Joy, Fit, improve-current-work first; Contribute to try; Market > Jobs for employment) | | Wellbeing Insights | Happiness Privacy (quiet link) or `/wellbeing-insights` | implemented (authorized v",
+      "text": "| Surface | Open | Status | | --- | --- | --- | | Home | Home | implemented (feed actions: Like · Comment · Repost · Publish to…; Repost keeps a link to the original) | | Study | Study | implemented | | Contribute hub | Contribute | implemented | | Opportunities | Contribute > Opportunities | implemented | | Community Challenges | Contribute > Community Challenges | implemented | | Learning Commons | Contribute > Learning Commons | implemented | | My Contributions | Contribute > My Contributions | implemented | | Suggest Improvements | Contribute > Suggest Improvements | in_development (placeholder) | | Market | Market | implemented | | Agreements | Market > Agreements | implemented | | Messaging | Messaging | implemented | | Profile / Score | Profile | implemented | | Happiness & Fulfillment | Profile menu, or the Happiness icon on the Home Score card | implemented (private; five levels, not a numeric score; Fulfillment Plans under Improve; optional group insights off by default) | | Work Fulfillment | Happiness & Fulfillment > Work Fulfillment | implemented (current work, Work Joy, Fit, improve-current-work first; Contribute to try; Market > Jobs for employment) | | Wellbeing Ins",
       "status": "implemented",
       "priority": 5,
       "kind": "cheatsheet"

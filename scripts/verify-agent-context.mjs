@@ -118,6 +118,12 @@ if (!existsSync('scripts/verify-post-likes-rls.mjs')) {
 if (!agents.includes('verify:post-likes-rls')) {
   fail('AGENTS.md must reference verify:post-likes-rls');
 }
+if (!existsSync('scripts/verify-post-reposts.mjs')) {
+  fail('missing scripts/verify-post-reposts.mjs');
+}
+if (!agents.includes('verify:post-reposts')) {
+  fail('AGENTS.md must reference verify:post-reposts');
+}
 if (!existsSync('scripts/verify-home-happiness-shortcut.mjs')) {
   fail('missing scripts/verify-home-happiness-shortcut.mjs');
 }
