@@ -6,6 +6,7 @@ import {
   Handshake,
   Landmark,
   Lightbulb,
+  MessageSquareWarning,
   Target,
   TrendingUp,
 } from 'lucide-react';
@@ -31,7 +32,7 @@ export type ContributeLane = {
 };
 
 /** Placeholder lane path segments (excludes live contribution surfaces). */
-export const CONTRIBUTE_PLACEHOLDER_IDS = ['improvements'] as const;
+export const CONTRIBUTE_PLACEHOLDER_IDS = [] as const;
 
 export type ContributePlaceholderId = (typeof CONTRIBUTE_PLACEHOLDER_IDS)[number];
 
@@ -90,6 +91,16 @@ export const CONTRIBUTE_LANES: readonly ContributeLane[] = [
     placeholder: false,
   },
   {
+    id: 'matters',
+    section: 'community',
+    path: '/contribute/matters',
+    icon: MessageSquareWarning,
+    iconClassName: 'text-primary',
+    titleKey: 'contribute.lanes.matters.title',
+    descriptionKey: 'contribute.lanes.matters.description',
+    placeholder: false,
+  },
+  {
     id: 'knowledge',
     section: 'knowledge',
     path: '/contribute/knowledge',
@@ -110,7 +121,7 @@ export const CONTRIBUTE_LANES: readonly ContributeLane[] = [
     iconClassName: 'text-accent',
     titleKey: 'contribute.lanes.improvements.title',
     descriptionKey: 'contribute.lanes.improvements.description',
-    placeholder: true,
+    placeholder: false,
     relatedLinks: [
       { path: '/governance/solutions', labelKey: 'contribute.related.solutions' },
       { path: '/governance', labelKey: 'contribute.related.governance' },

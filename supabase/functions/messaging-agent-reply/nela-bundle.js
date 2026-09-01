@@ -808,12 +808,12 @@ var KNOWLEDGE_PACK = {
     "appVersion": "0.1.196",
     "appReleaseId": "20260817-v0.1.196",
     "androidVersionCode": 198,
-    "gitSha": "057e83cb2dead08604fa9ae1172670ef733ecb11",
-    "generatedAt": "2026-08-18T04:23:23.607Z",
-    "sourceFingerprint": "373b4acf2a5d9b964bb4d899c1ff7a20d49c7093db3931604ccf489b79d3bf07",
+    "gitSha": "8754def5ce4fe5a141e19a7d9a40b69b06d6f289",
+    "generatedAt": "2026-09-01T15:46:16.104Z",
+    "sourceFingerprint": "837bc2d0fbe5f973a618dd8e43e91b30277db9f571061b6c5a7387d03a9a6b6b",
     "knowledgeFormat": 1,
-    "sourceCount": 27,
-    "chunkCount": 353
+    "sourceCount": 28,
+    "chunkCount": 368
   },
   "capabilities": [
     {
@@ -892,7 +892,8 @@ var KNOWLEDGE_PACK = {
         "opportunities",
         "community_challenges",
         "knowledge_spaces",
-        "my_contributions"
+        "my_contributions",
+        "matters"
       ],
       "aliases": [
         "contribution hub",
@@ -964,6 +965,38 @@ var KNOWLEDGE_PACK = {
         "src/pages/contribute/CommunityChallenges.tsx",
         "docs/04-operations/dev/contribute-page.md",
         "docs/04-operations/dev/phase-1-pilot-operating-model.md"
+      ]
+    },
+    {
+      "id": "matters",
+      "name": "Questions, Issues & Ideas",
+      "status": "implemented",
+      "description": "Generic Matter collaboration under Contribute. Ask a question, raise an issue, suggest an improvement, or work with others toward an outcome. Every active Matter shows who must act next, what is expected, when it is due, and what happens if nobody acts. Comments are not formal actions.",
+      "howTo": "Open Contribute > Questions, Issues & Ideas. Create a Matter, choose the intended person or organization, then follow the Current Action panel.",
+      "routes": [
+        "/contribute/matters",
+        "/contribute/matters/new"
+      ],
+      "roles": [
+        "member"
+      ],
+      "relatedCapabilities": [
+        "contribute_hub"
+      ],
+      "aliases": [
+        "matters",
+        "questions",
+        "issues",
+        "ideas",
+        "suggestions",
+        "requests",
+        "discussions"
+      ],
+      "sourceRefs": [
+        "src/lib/matters.ts",
+        "src/pages/contribute/Matters.tsx",
+        "docs/04-operations/dev/matter-collaboration.md",
+        "docs/04-operations/dev/contribute-page.md"
       ]
     },
     {
@@ -1119,24 +1152,27 @@ var KNOWLEDGE_PACK = {
     {
       "id": "contribute_improvements",
       "name": "Suggest Improvements",
-      "status": "in_development",
-      "description": "Placeholder lane for ideas about Civizen itself. Not open yet. Not a second place for Opportunities, Challenges, or shared knowledge.",
+      "status": "implemented",
+      "description": "Shortcut into Matter create as a Suggestion addressed to Civizen. Not a separate suggestion backend, and not a second place for Opportunities, Challenges, or shared knowledge.",
+      "howTo": "Open Contribute > Suggest Improvements. It opens a new Matter already set as a Suggestion to Civizen. You can edit the type, recipient, and Area before submitting.",
       "routes": [
-        "/contribute/improvements"
+        "/contribute/improvements",
+        "/contribute/matters/new"
       ],
       "roles": [
         "member"
       ],
       "relatedCapabilities": [
         "contribute_hub",
-        "governance_solutions"
+        "matters"
       ],
       "aliases": [
         "product suggestions"
       ],
       "sourceRefs": [
         "src/lib/contribute-lanes.ts",
-        "docs/04-operations/dev/contribute-page.md"
+        "docs/04-operations/dev/contribute-page.md",
+        "docs/04-operations/dev/matter-collaboration.md"
       ]
     },
     {
@@ -1856,7 +1892,7 @@ var KNOWLEDGE_PACK = {
     {
       "id": "what_can_i_do_in_civizen_now",
       "question": "What can I do in Civizen right now?",
-      "answer": "In this build you can use Home, Study, Contribute (Opportunities, Community Challenges, Learning Commons, My Contributions), Market, Agreements, Messaging, Profile and Score, Happiness & Fulfillment, Areas, and Governance tools such as Civic voting and Governance Solutions. Suggest Improvements is still a placeholder. This is what is implemented today, not a full description of what Civizen is.",
+      "answer": "In this build you can use Home, Study, Contribute (Opportunities, Community Challenges, Questions, Issues & Ideas, Suggest Improvements, Learning Commons, My Contributions), Market, Agreements, Messaging, Profile and Score, Happiness & Fulfillment, Areas, and Governance tools such as Civic voting and Governance Solutions. This is what is implemented today, not a full description of what Civizen is.",
       "aliases": [
         "what can I currently do in civizen",
         "what can I do in civizen",
@@ -1878,7 +1914,7 @@ var KNOWLEDGE_PACK = {
     {
       "id": "how_can_i_contribute",
       "question": "How can I contribute?",
-      "answer": "Open Contribute and choose how you want to help: Volunteer, Opportunities, Financial Support, Organization Partnership, Community Challenges, Learning Commons, or My Contributions. Suggest Improvements is not open yet.",
+      "answer": "Open Contribute and choose how you want to help: Volunteer, Opportunities, Financial Support, Organization Partnership, Community Challenges, Questions, Issues & Ideas, Suggest Improvements, Learning Commons, or My Contributions.",
       "aliases": [
         "how do I contribute",
         "ways to contribute",
@@ -1890,6 +1926,25 @@ var KNOWLEDGE_PACK = {
       "sourceRefs": [
         "src/lib/contribute-lanes.ts",
         "docs/04-operations/dev/contribute-page.md"
+      ]
+    },
+    {
+      "id": "how_do_i_raise_a_question_or_issue",
+      "question": "How do I ask a question or raise an issue?",
+      "answer": "Open Contribute > Questions, Issues & Ideas. Create a Matter, choose the person or organization it is for, and submit. The Current Action panel shows who must respond and when. Comments are discussion only; only Provide final answer starts the review timer. Suggest Improvements opens a Suggestion to Civizen.",
+      "aliases": [
+        "how do I raise an issue",
+        "how do I ask a question in civizen",
+        "questions issues and ideas",
+        "where do I send a suggestion"
+      ],
+      "capabilityIds": [
+        "matters",
+        "contribute_hub"
+      ],
+      "sourceRefs": [
+        "docs/04-operations/dev/matter-collaboration.md",
+        "src/lib/contribute-lanes.ts"
       ]
     },
     {
@@ -2565,6 +2620,15 @@ var KNOWLEDGE_PACK = {
       "kind": "capability"
     },
     {
+      "id": "capability:matters",
+      "title": "Questions, Issues & Ideas",
+      "path": "src/lib/assistant/catalog.ts",
+      "text": "Questions, Issues & Ideas status=implemented. Generic Matter collaboration under Contribute. Ask a question, raise an issue, suggest an improvement, or work with others toward an outcome. Every active Matter shows who must act next, what is expected, when it is due, and what happens if nobody acts. Comments are not formal actions. Open Contribute > Questions, Issues & Ideas. Create a Matter, choose the intended person or organization, then follow the Current Action panel. Routes: /contribute/matters, /contribute/matters/new.",
+      "status": "implemented",
+      "priority": 3,
+      "kind": "capability"
+    },
+    {
       "id": "capability:projects",
       "title": "Projects",
       "path": "src/lib/assistant/catalog.ts",
@@ -2622,8 +2686,8 @@ var KNOWLEDGE_PACK = {
       "id": "capability:contribute_improvements",
       "title": "Suggest Improvements",
       "path": "src/lib/assistant/catalog.ts",
-      "text": "Suggest Improvements status=in_development. Placeholder lane for ideas about Civizen itself. Not open yet. Not a second place for Opportunities, Challenges, or shared knowledge.  Routes: /contribute/improvements.",
-      "status": "in_development",
+      "text": "Suggest Improvements status=implemented. Shortcut into Matter create as a Suggestion addressed to Civizen. Not a separate suggestion backend, and not a second place for Opportunities, Challenges, or shared knowledge. Open Contribute > Suggest Improvements. It opens a new Matter already set as a Suggestion to Civizen. You can edit the type, recipient, and Area before submitting. Routes: /contribute/improvements, /contribute/matters/new.",
+      "status": "implemented",
       "priority": 3,
       "kind": "capability"
     },
@@ -2883,7 +2947,7 @@ var KNOWLEDGE_PACK = {
       "id": "faq:what_can_i_do_in_civizen_now",
       "title": "What can I do in Civizen right now?",
       "path": "src/lib/assistant/catalog.ts",
-      "text": "Q: What can I do in Civizen right now? A: In this build you can use Home, Study, Contribute (Opportunities, Community Challenges, Learning Commons, My Contributions), Market, Agreements, Messaging, Profile and Score, Happiness & Fulfillment, Areas, and Governance tools such as Civic voting and Governance Solutions. Suggest Improvements is still a placeholder. This is what is implemented today, not a full description of what Civizen is.",
+      "text": "Q: What can I do in Civizen right now? A: In this build you can use Home, Study, Contribute (Opportunities, Community Challenges, Questions, Issues & Ideas, Suggest Improvements, Learning Commons, My Contributions), Market, Agreements, Messaging, Profile and Score, Happiness & Fulfillment, Areas, and Governance tools such as Civic voting and Governance Solutions. This is what is implemented today, not a full description of what Civizen is.",
       "status": "implemented",
       "priority": 5,
       "kind": "faq"
@@ -2892,7 +2956,16 @@ var KNOWLEDGE_PACK = {
       "id": "faq:how_can_i_contribute",
       "title": "How can I contribute?",
       "path": "src/lib/assistant/catalog.ts",
-      "text": "Q: How can I contribute? A: Open Contribute and choose how you want to help: Volunteer, Opportunities, Financial Support, Organization Partnership, Community Challenges, Learning Commons, or My Contributions. Suggest Improvements is not open yet.",
+      "text": "Q: How can I contribute? A: Open Contribute and choose how you want to help: Volunteer, Opportunities, Financial Support, Organization Partnership, Community Challenges, Questions, Issues & Ideas, Suggest Improvements, Learning Commons, or My Contributions.",
+      "status": "implemented",
+      "priority": 5,
+      "kind": "faq"
+    },
+    {
+      "id": "faq:how_do_i_raise_a_question_or_issue",
+      "title": "How do I ask a question or raise an issue?",
+      "path": "src/lib/assistant/catalog.ts",
+      "text": "Q: How do I ask a question or raise an issue? A: Open Contribute > Questions, Issues & Ideas. Create a Matter, choose the person or organization it is for, and submit. The Current Action panel shows who must respond and when. Comments are discussion only; only Provide final answer starts the review timer. Suggest Improvements opens a Suggestion to Civizen.",
       "status": "implemented",
       "priority": 5,
       "kind": "faq"
@@ -3189,7 +3262,7 @@ var KNOWLEDGE_PACK = {
       "id": "registry:civi-pages",
       "title": "Pages Civi can open",
       "path": "src/lib/nela-nav-paths.ts",
-      "text": "Civi can link these live pages in answers: Why Civizen Exists (/why-this-exists); Community Governance Charter (/governance/charter); Organization Partnership (/partners); Governance Solutions (/governance/solutions); Community Challenges (/contribute/challenges); make a contribution (/contribute); Suggest Improvements (/contribute/improvements); Learning Commons (/contribute/knowledge); My Contributions (/contribute/impact); Financial Support (/fund); Prototype credits (/settings/prototype-credits); Governance workspace (/governance/workspace); Civic voting (/governance/voting); Opportunities (/contribute/professional); Agreements (/agreements); Contribute (/contribute); Messaging (/messaging); Governance (/governance); Documents (/documents); Partners (/partners); Settings (/settings); Profile (/profile); Jobs (/jobs); Market (/market); Study (/study); signing up (/signup); Sign up (/signup); Areas (/areas); Home (/).",
+      "text": "Civi can link these live pages in answers: Why Civizen Exists (/why-this-exists); Community Governance Charter (/governance/charter); Organization Partnership (/partners); Governance Solutions (/governance/solutions); Community Challenges (/contribute/challenges); make a contribution (/contribute); Questions, Issues & Ideas (/contribute/matters); Suggest Improvements (/contribute/improvements); Learning Commons (/contribute/knowledge); My Contributions (/contribute/impact); Financial Support (/fund); Prototype credits (/settings/prototype-credits); Governance workspace (/governance/workspace); Civic voting (/governance/voting); Opportunities (/contribute/professional); Agreements (/agreements); Contribute (/contribute); Messaging (/messaging); Governance (/governance); Documents (/documents); Partners (/partners); Settings (/settings); Profile (/profile); Jobs (/jobs); Market (/market); Study (/study); signing up (/signup); Sign up (/signup); Areas (/areas); Home (/).",
       "status": "implemented",
       "priority": 2,
       "kind": "registry"
@@ -3207,7 +3280,7 @@ var KNOWLEDGE_PACK = {
       "id": "registry:contribute-lanes",
       "title": "Contribute lanes",
       "path": "src/lib/contribute-lanes.ts",
-      "text": "Contribute lanes: volunteer \u2192 /fund/contribute; professional \u2192 /contribute/professional; financial \u2192 /fund; organization \u2192 /partners; challenges \u2192 /contribute/challenges; knowledge \u2192 /contribute/knowledge; improvements \u2192 /contribute/improvements (placeholder); impact \u2192 /contribute/impact.",
+      "text": "Contribute lanes: volunteer \u2192 /fund/contribute; professional \u2192 /contribute/professional; financial \u2192 /fund; organization \u2192 /partners; challenges \u2192 /contribute/challenges; matters \u2192 /contribute/matters; knowledge \u2192 /contribute/knowledge; improvements \u2192 /contribute/improvements; impact \u2192 /contribute/impact.",
       "status": "implemented",
       "priority": 3,
       "kind": "registry"
@@ -3360,7 +3433,7 @@ var KNOWLEDGE_PACK = {
       "id": "docs/assistant/civizen-assistant-cheatsheet.md#7",
       "title": "Current navigation / systems",
       "path": "docs/assistant/civizen-assistant-cheatsheet.md",
-      "text": "| Surface | Open | Status | | --- | --- | --- | | Home | Home | implemented (feed actions: Like \xB7 Comment \xB7 Repost \xB7 Publish to\u2026; Repost keeps a link to the original) | | Study | Study | implemented | | Contribute hub | Contribute | implemented | | Opportunities | Contribute > Opportunities | implemented | | Community Challenges | Contribute > Community Challenges | implemented | | Learning Commons | Contribute > Learning Commons | implemented | | My Contributions | Contribute > My Contributions | implemented | | Suggest Improvements | Contribute > Suggest Improvements | in_development (placeholder) | | Market | Market | implemented | | Agreements | Market > Agreements | implemented | | Messaging | Messaging | implemented | | Profile / Score | Profile | implemented | | Happiness & Fulfillment | Profile menu, or the Happiness icon on the Home Score card | implemented (private; five levels, not a numeric score; Fulfillment Plans under Improve; optional group insights off by default) | | Work Fulfillment | Happiness & Fulfillment > Work Fulfillment | implemented (current work, Work Joy, Fit, improve-current-work first; Contribute to try; Market > Jobs for employment) | | Wellbeing Ins",
+      "text": "| Surface | Open | Status | | --- | --- | --- | | Home | Home | implemented (feed actions: Like \xB7 Comment \xB7 Repost \xB7 Publish to\u2026; Repost keeps a link to the original) | | Study | Study | implemented | | Contribute hub | Contribute | implemented | | Opportunities | Contribute > Opportunities | implemented | | Community Challenges | Contribute > Community Challenges | implemented | | Questions, Issues & Ideas | Contribute > Questions, Issues & Ideas | implemented | | Learning Commons | Contribute > Learning Commons | implemented | | My Contributions | Contribute > My Contributions | implemented | | Suggest Improvements | Contribute > Suggest Improvements | implemented (shortcut: Suggestion Matter to Civizen) | | Market | Market | implemented | | Agreements | Market > Agreements | implemented | | Messaging | Messaging | implemented | | Profile / Score | Profile | implemented | | Happiness & Fulfillment | Profile menu, or the Happiness icon on the Home Score card | implemented (private; five levels, not a numeric score; Fulfillment Plans under Improve; optional group insights off by default) | | Work Fulfillment | Happiness & Fulfillment > Work Fulfillment | implemented (current work, ",
       "status": "implemented",
       "priority": 5,
       "kind": "cheatsheet"
@@ -3396,7 +3469,7 @@ var KNOWLEDGE_PACK = {
       "id": "docs/assistant/civizen-assistant-cheatsheet.md#11",
       "title": "Contribution model",
       "path": "docs/assistant/civizen-assistant-cheatsheet.md",
-      "text": "## Contribution model `/contribute` asks: **How would you like to contribute today?** Ways: Volunteer (`/fund/contribute`) \xB7 Opportunities \xB7 Financial Support (`/fund`) \xB7 Organization Partnership (`/partners`). Community: Community Challenges. Knowledge: Learning Commons \xB7 Suggest Improvements (not open yet). Your Impact: My Contributions. A **Program** (`contribution_programs`) is the container. Publisher is a profile (personal or linked business account). There is no separate organizations table in this phase. An **Opportunity** is the work primitive. A **Contribution** is a participation (`opportunity_participations`). Score events are derived. Phase 1 pilots (live): Education-to-Contribution, Community Problem-Solving Lab, Shared Knowledge / Learning Commons.",
+      "text": "## Contribution model `/contribute` asks: **How would you like to contribute today?** Ways: Volunteer (`/fund/contribute`) \xB7 Opportunities \xB7 Financial Support (`/fund`) \xB7 Organization Partnership (`/partners`). Community: Community Challenges \xB7 Questions, Issues & Ideas. Knowledge: Learning Commons \xB7 Suggest Improvements (opens a Suggestion to Civizen). Your Impact: My Contributions. A **Program** (`contribution_programs`) is the container. Publisher is a profile (personal or linked business account). There is no separate organizations table in this phase. An **Opportunity** is the work primitive. A **Contribution** is a participation (`opportunity_participations`). Score events are derived. Phase 1 pilots (live): Education-to-Contribution, Community Problem-Solving Lab, Shared Knowledge / Learning Commons.",
       "status": "implemented",
       "priority": 5,
       "kind": "cheatsheet"
@@ -3558,7 +3631,7 @@ var KNOWLEDGE_PACK = {
       "id": "docs/04-operations/dev/contribute-page.md#0",
       "title": "Contribute Page",
       "path": "docs/04-operations/dev/contribute-page.md",
-      "text": "# Contribute Page **Project:** Civizen **Route:** `/contribute` **Version:** 2.5 **Status:** Phase 1 hub live. Three pilots: Education-to-Contribution, Community Challenges, Learning Commons. Operating model: [`phase-1-pilot-operating-model.md`](./phase-1-pilot-operating-model.md) Canonical product/UX note for agents. Source draft: `docs/tmp/contribute_page`.",
+      "text": "# Contribute Page **Project:** Civizen **Route:** `/contribute` **Version:** 2.6 **Status:** Phase 1 hub live. Three pilots: Education-to-Contribution, Community Challenges, Learning Commons. Operating model: [`phase-1-pilot-operating-model.md`](./phase-1-pilot-operating-model.md) Canonical product/UX note for agents. Source draft: `docs/tmp/contribute_page`.",
       "status": "implemented",
       "priority": 6,
       "kind": "doc"
@@ -3603,7 +3676,7 @@ var KNOWLEDGE_PACK = {
       "id": "docs/04-operations/dev/contribute-page.md#5",
       "title": "Phase 1 layout",
       "path": "docs/04-operations/dev/contribute-page.md",
-      "text": "### Community | Lane | Destination | |------|-------------| | Community Challenges | `/contribute/challenges` | Implementation **Projects** live inside Challenges. There is no separate community-projects or tasks board. `/contribute/projects` redirects here. `/contribute/tasks` redirects to Opportunities. When a Challenge is linked from a wellbeing pattern, coordinators may open a **Human Outcome Review** after implementation. Operational delivery and later privacy-safe human-outcome evidence stay separate; causality is not inferred. ### Knowledge | Lane | Destination | |------|-------------| | Learning Commons | `/contribute/knowledge` | | Suggest Improvements | `/contribute/improvements` (later path; not Challenges or Knowledge) | ### Your Impact",
+      "text": "### Community | Lane | Destination | |------|-------------| | Community Challenges | `/contribute/challenges` | | Questions, Issues & Ideas | `/contribute/matters` | Implementation **Projects** live inside Challenges. There is no separate community-projects or tasks board. `/contribute/projects` redirects here. `/contribute/tasks` redirects to Opportunities. When a Challenge is linked from a wellbeing pattern, coordinators may open a **Human Outcome Review** after implementation. Operational delivery and later privacy-safe human-outcome evidence stay separate; causality is not inferred. ### Knowledge | Lane | Destination | |------|-------------| | Learning Commons | `/contribute/knowledge` | | Suggest Improvements | `/contribute/improvements` \u2192 Matter create as a Suggestion to Civizen | ### Your Impact",
       "status": "implemented",
       "priority": 6,
       "kind": "doc"
@@ -3612,7 +3685,7 @@ var KNOWLEDGE_PACK = {
       "id": "docs/04-operations/dev/contribute-page.md#6",
       "title": "Implementation map",
       "path": "docs/04-operations/dev/contribute-page.md",
-      "text": "- Hub: `src/pages/Contribute.tsx` - Lane registry: `src/lib/contribute-lanes.ts` - Placeholder page: `src/pages/ContributeLane.tsx` - Slice 1 Education-to-Contribution: `src/pages/contribute/ProfessionalOpportunities.tsx`, `OpportunityDetail.tsx`, `OpportunityForm.tsx` - Slice 3 Community Challenges: `src/pages/contribute/CommunityChallenges.tsx`, `ChallengeDetail.tsx`, `ChallengeForm.tsx` - Slice 4 Learning Commons: `src/pages/contribute/KnowledgeSpaces.tsx`, `KnowledgeSpaceDetail.tsx`, `KnowledgeSpaceForm.tsx`, `KnowledgeResourceDetail.tsx`, `KnowledgeResourceForm.tsx` - My Contributions: `src/pages/contribute/ContributeImpact.tsx` - Domain + RPC wrappers: `src/lib/opportunities.ts`, `src/lib/opportunities-api.ts`, `src/lib/challenges.ts`, `src/lib/challenges-api.ts`, `src/lib/knowledge.ts`, `src/lib/knowledge-api.ts` - Schema: `supabase/migrations/20260813010000_education_to_contribution_opportunities.sql`, `20260813020000_opportunity_applicant_identities.sql`, `20260813030000_opportunity_work_assessments.sql`, `20260813040000_community_problem_solving_lab.sql`, `20260813041000_seed_community_problem_solving_lab.sql`, `20260813042000_solution_record_contributors.sql`, `202608130",
+      "text": "- Hub: `src/pages/Contribute.tsx` - Lane registry: `src/lib/contribute-lanes.ts` - Placeholder page: `src/pages/ContributeLane.tsx` - Slice 1 Education-to-Contribution: `src/pages/contribute/ProfessionalOpportunities.tsx`, `OpportunityDetail.tsx`, `OpportunityForm.tsx` - Slice 3 Community Challenges: `src/pages/contribute/CommunityChallenges.tsx`, `ChallengeDetail.tsx`, `ChallengeForm.tsx` - Slice 4 Learning Commons: `src/pages/contribute/KnowledgeSpaces.tsx`, `KnowledgeSpaceDetail.tsx`, `KnowledgeSpaceForm.tsx`, `KnowledgeResourceDetail.tsx`, `KnowledgeResourceForm.tsx` - Matter Collaboration (Questions, Issues & Ideas): `src/pages/contribute/Matters.tsx`, `MatterForm.tsx`, `MatterDetail.tsx` \xB7 spec: [`matter-collaboration.md`](./matter-collaboration.md) - My Contributions: `src/pages/contribute/ContributeImpact.tsx` - Domain + RPC wrappers: `src/lib/opportunities.ts`, `src/lib/opportunities-api.ts`, `src/lib/challenges.ts`, `src/lib/challenges-api.ts`, `src/lib/knowledge.ts`, `src/lib/knowledge-api.ts`, `src/lib/matters.ts`, `src/lib/matters-api.ts`, `src/lib/matters-workflow.ts` - Schema: `supabase/migrations/20260813010000_education_to_contribution_opportunities.sql`, `20260813",
       "status": "implemented",
       "priority": 6,
       "kind": "doc"
@@ -3681,6 +3754,123 @@ var KNOWLEDGE_PACK = {
       "kind": "doc"
     },
     {
+      "id": "docs/04-operations/dev/matter-collaboration.md#0",
+      "title": "Matter Collaboration System (Phase 1)",
+      "path": "docs/04-operations/dev/matter-collaboration.md",
+      "text": "# Matter Collaboration System (Phase 1) **Project:** Civizen **Routes:** `/contribute/matters`, `/contribute/matters/new`, `/contribute/matters/:matterId` **Status:** Phase 1 implemented **Version:** 1.0 Canonical product/UX note for agents. Contribute hub: [`contribute-page.md`](./contribute-page.md). A **Matter** is something one Civizen actor brings to one or more other actors for attention, response, discussion, consideration, or action. It is a generic collaboration object, not an Issues module and not limited to government/citizen interactions. User-facing Contribute label: **Questions, Issues & Ideas**. Internal model remains `Matter`.",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/04-operations/dev/matter-collaboration.md#1",
+      "title": "Principle",
+      "path": "docs/04-operations/dev/matter-collaboration.md",
+      "text": "## Principle Every **active** Matter must make clear: 1. who is expected to act next, 2. what action is expected, 3. when it is due, 4. what happens if no action is taken. Operational state lives on **Matter Action Requirements**, not on one oversized Matter status enum.",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/04-operations/dev/matter-collaboration.md#2",
+      "title": "Lifecycle vs action state",
+      "path": "docs/04-operations/dev/matter-collaboration.md",
+      "text": "## Lifecycle vs action state Matter lifecycle: `draft` \xB7 `submitted` \xB7 `active` \xB7 `closed`. User-facing status is **derived** (waiting for response, clarification needed, waiting for initiator, response overdue, addressed, automatically closed, reopened, \u2026).",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/04-operations/dev/matter-collaboration.md#3",
+      "title": "Actors",
+      "path": "docs/04-operations/dev/matter-collaboration.md",
+      "text": "## Actors Initiator and recipient are polymorphic: - person (`profiles`) - organization (business-linked `profiles` via `linked_accounts`) - group (reserved; no groups table in this phase) Do not model only `user_id`. Organization representatives use `current_profile_manages_publisher`.",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/04-operations/dev/matter-collaboration.md#4",
+      "title": "Invariants",
+      "path": "docs/04-operations/dev/matter-collaboration.md",
+      "text": "## Invariants 1. A comment is not a formal action. 2. Disputing responsibility does not close or hide the Matter. 3. Auto-close is not initiator confirmation. Silence uses: *Closed automatically after no response from the initiator within the resolution-review period.* 4. Reopening is append-only; prior closure stays on the ledger. 5. Active Matters have a current action requirement or an explicit waiting condition. 6. Deadline and history changes are attributable (human vs system). 7. Simple Matters stay simple: contextual formal actions only.",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/04-operations/dev/matter-collaboration.md#5",
+      "title": "Timing",
+      "path": "docs/04-operations/dev/matter-collaboration.md",
+      "text": "## Timing Reusable `matter_timing_policies` (calendar days now; business days/hours reserved). Defaults for testing only: | Policy | Period | |--------|--------| | Question response | 3 calendar days | | Responsibility response | 2 calendar days | | Clarification response | 5 calendar days | | Resolution confirmation | 3 calendar days | Timeout behaviors are catalogued. Phase 1 **runs** `remind` and `auto_close` (initiator confirmation). Other types are stored for later (escalate, forward, involve, continue without response, return to initiator, mark unresponsive, require manual review). `list_matters` is read-only. Timeouts, reminders, and auto-close run only in `process_matter_action_timeouts`, serialized by a transaction advisory lock and `FOR UPDATE SKIP LOCKED`. Production invocation:",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/04-operations/dev/matter-collaboration.md#6",
+      "title": "Timing",
+      "path": "docs/04-operations/dev/matter-collaboration.md",
+      "text": "1. **pg_cron** job `matter_action_timeout_tick` at minute 15 of every hour, when the `pg_cron` extension is installed. 2. Otherwise (or to run immediately): `scripts/db/run-matter-timeout-tick.sh`, which executes the same function as `postgres` over the remote database SSH path. Page and list reads may **display** overdue from `due_at` without mutating workflow state.",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/04-operations/dev/matter-collaboration.md#7",
+      "title": "Question workflow",
+      "path": "docs/04-operations/dev/matter-collaboration.md",
+      "text": "## Question workflow Comments and other ordinary discussion never start the initiator confirmation timer. Only **Provide final answer** (`respond`) does. The initiator can mark **Answered / satisfied** from discussion, ask for more information after a final answer, or record that the Question revealed an Issue without converting Matter type.",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/04-operations/dev/matter-collaboration.md#8",
+      "title": "Suggest Improvements",
+      "path": "docs/04-operations/dev/matter-collaboration.md",
+      "text": "## Suggest Improvements The Contribute card stays. `/contribute/improvements` is a shortcut into Matter create (`type=Suggestion`, intended recipient = official Civizen org). Area is left unset unless a future mapping is safe.",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/04-operations/dev/matter-collaboration.md#9",
+      "title": "Phase 1 surfaces",
+      "path": "docs/04-operations/dev/matter-collaboration.md",
+      "text": "## Phase 1 surfaces - Contribute lane **Questions, Issues & Ideas** - Queues: Needs Your Action \xB7 My Matters \xB7 Participating \xB7 Organization - Matter create, detail (current action, description, conversation, formal actions, activity) - Formal actions, comments with replies, optional evidence URL/file - Reminders, overdue, auto-close, reopen",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/04-operations/dev/matter-collaboration.md#10",
+      "title": "Deferred",
+      "path": "docs/04-operations/dev/matter-collaboration.md",
+      "text": "## Deferred Tasks, Decisions, Projects, advanced Evidence, AI collaborators/routing, department trees beyond current org profiles, Score consequences, outcome measurement, Challenge/Governance conversion, advanced escalation trees.",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/04-operations/dev/matter-collaboration.md#11",
+      "title": "Implementation map",
+      "path": "docs/04-operations/dev/matter-collaboration.md",
+      "text": "## Implementation map - Domain: `src/lib/matters.ts`, `src/lib/matters-workflow.ts` - API: `src/lib/matters-api.ts` - UI: `src/pages/contribute/Matters.tsx`, `MatterForm.tsx`, `MatterDetail.tsx` - Schema: `supabase/migrations/20260831010000_matter_collaboration_system.sql`, `20260831200000_matter_collaboration_stabilization.sql`",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/04-operations/dev/matter-collaboration.md#12",
+      "title": "Security: `search_path` and schema CREATE (2026-09-01)",
+      "path": "docs/04-operations/dev/matter-collaboration.md",
+      "text": "## Security: `search_path` and schema CREATE (2026-09-01) Matter `SECURITY DEFINER` functions use `SET search_path = public`. That is safe on the deployed database because untrusted roles cannot create objects that would shadow unqualified names those functions resolve. Live check (read-only) on schema `public`: | Role | CREATE | USAGE | |------|--------|-------| | `anon` | no | yes | | `authenticated` | no | yes | | `authenticator` | no | yes | | `service_role` | no | yes | | `PUBLIC` (default ACL `=U/`) | no | yes | `CREATE` remains with privileged owners only (`postgres`, `supabase_admin`, `pg_database_owner`). No Matter function change was required. Repeat with `scripts/db/verify-public-schema-create.sql`.",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
       "id": "docs/04-operations/dev/phase-1-pilot-operating-model.md#0",
       "title": "Phase 1 Pilot Operating Model",
       "path": "docs/04-operations/dev/phase-1-pilot-operating-model.md",
@@ -3693,7 +3883,7 @@ var KNOWLEDGE_PACK = {
       "id": "docs/04-operations/dev/phase-1-pilot-operating-model.md#1",
       "title": "Three pilot models",
       "path": "docs/04-operations/dev/phase-1-pilot-operating-model.md",
-      "text": "## Three pilot models | Model | Hub lane | Program kind | What a person does | |------|----------|--------------|--------------------| | Education-to-Contribution | `/contribute/professional` | `education_to_contribution` | Join a short Opportunity, submit evidence, get it verified, optionally evaluated | | Community Problem-Solving | `/contribute/challenges` | `community_problem_solving` | Name a local problem, propose, implement through a Project, record an outcome, keep a Solution Record | | Shared Knowledge / Learning Commons | `/contribute/knowledge` | `shared_knowledge` | Collect practical Resources, name Knowledge Gaps, turn gaps into work, return results as reusable knowledge | Study, Governance Solutions, Market Jobs, and Score remain separate systems.",
+      "text": "## Three pilot models | Model | Hub lane | Program kind | What a person does | |------|----------|--------------|--------------------| | Education-to-Contribution | `/contribute/professional` | `education_to_contribution` | Join a short Opportunity, submit evidence, get it verified, optionally evaluated | | Community Problem-Solving | `/contribute/challenges` | `community_problem_solving` | Name a local problem, propose, implement through a Project, record an outcome, keep a Solution Record | | Shared Knowledge / Learning Commons | `/contribute/knowledge` | `shared_knowledge` | Collect practical Resources, name Knowledge Gaps, turn gaps into work, return results as reusable knowledge | Study, Governance Solutions, Market Jobs, Score, and Questions, Issues & Ideas (Matter collaboration) remain separate systems.",
       "status": "implemented",
       "priority": 6,
       "kind": "doc"
@@ -3702,7 +3892,7 @@ var KNOWLEDGE_PACK = {
       "id": "docs/04-operations/dev/phase-1-pilot-operating-model.md#2",
       "title": "Shared Program architecture",
       "path": "docs/04-operations/dev/phase-1-pilot-operating-model.md",
-      "text": "## Shared Program architecture A **Program** (`contribution_programs`) is the container. Challenges, Knowledge Spaces, and (where relevant) Opportunities belong to a Program. There is no second pilot container. Publisher is a `profiles` row. Business/organization coordination uses `linked_accounts`. There is no organizations table in this phase.",
+      "text": "## Shared Program architecture A **Program** (`contribution_programs`) is the container. Challenges, Knowledge Spaces, and (where relevant) Opportunities belong to a Program. There is no second pilot container. Publisher is a `profiles` row. Business/organization coordination uses `linked_accounts` (a member may link more than one business account). There is no organizations table in this phase.",
       "status": "implemented",
       "priority": 6,
       "kind": "doc"
@@ -3774,7 +3964,7 @@ var KNOWLEDGE_PACK = {
       "id": "docs/04-operations/dev/phase-1-pilot-operating-model.md#10",
       "title": "Intentional Phase 1 limitations",
       "path": "docs/04-operations/dev/phase-1-pilot-operating-model.md",
-      "text": "## Intentional Phase 1 limitations - No LMS, quizzes, credentials, or peer-review journal - No contributor-share / IP accounting - No automated knowledge synthesis - No separate task board or community-projects board - Suggest Improvements remains a later path (not Challenges, not Learning Commons) - Financial contribution remains inquiry-only - Local RLS harness for opportunities stays skipped without loopback Supabase credentials",
+      "text": "## Intentional Phase 1 limitations - No LMS, quizzes, credentials, or peer-review journal - No contributor-share / IP accounting - No automated knowledge synthesis - No separate task board or community-projects board - Suggest Improvements opens Matter create as a Suggestion to Civizen (not a separate backend) - Financial contribution remains inquiry-only - Local RLS harness for opportunities stays skipped without loopback Supabase credentials",
       "status": "implemented",
       "priority": 6,
       "kind": "doc"

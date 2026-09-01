@@ -32,6 +32,16 @@
 - **Shell:** `MobileNav` renders arc or strip; FAB when `config.fab` set
 - **Pages:** Home (text tabs), Study, Market (icon+label loop)
 
+## Matter collaboration
+
+- **Routes:** `/contribute/matters`, `/contribute/matters/new`, `/contribute/matters/:matterId`
+- **Lane:** Contribute > Questions, Issues & Ideas
+- **Spec:** `docs/04-operations/dev/matter-collaboration.md`
+- **Model:** generic Matter (`src/lib/matters.ts`); Action Requirements carry who/what/when; comments never complete actions
+- **Actors:** person or organization via `profiles` + `linked_accounts` (no separate organizations table)
+- **Timing:** configurable `matter_timing_policies`; timeouts run only in `process_matter_action_timeouts` (pg_cron or `scripts/db/run-matter-timeout-tick.sh`); list reads are display-only
+- **Improvements:** `/contribute/improvements` → Matter create as Suggestion to Civizen
+
 ## Agent workflow
 
 - Project rules: `docs/04-operations/dev/AGENTS.md`

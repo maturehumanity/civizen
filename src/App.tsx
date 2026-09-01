@@ -42,6 +42,9 @@ const KnowledgeSpaceDetail = lazyWithChunkReload(() => import('@/pages/contribut
 const KnowledgeResourceForm = lazyWithChunkReload(() => import('@/pages/contribute/KnowledgeResourceForm'));
 const KnowledgeResourceDetail = lazyWithChunkReload(() => import('@/pages/contribute/KnowledgeResourceDetail'));
 const ContributeImpact = lazyWithChunkReload(() => import('@/pages/contribute/ContributeImpact'));
+const Matters = lazyWithChunkReload(() => import('@/pages/contribute/Matters'));
+const MatterForm = lazyWithChunkReload(() => import('@/pages/contribute/MatterForm'));
+const MatterDetail = lazyWithChunkReload(() => import('@/pages/contribute/MatterDetail'));
 const Messaging = lazyWithChunkReload(() => import('@/pages/Messaging'));
 const DownloadPage = lazyWithChunkReload(() => import('@/pages/Download'));
 const WhyThisExists = lazyWithChunkReload(() => import('@/pages/WhyThisExists'));
@@ -354,6 +357,22 @@ const App = () => (
                   <Route
                     path="/contribute/impact"
                     element={<ProtectedRoute><ContributeImpact /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/contribute/improvements"
+                    element={<ProtectedRoute><Navigate to="/contribute/matters/new?intent=improvement" replace /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/contribute/matters"
+                    element={<ProtectedRoute><Matters /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/contribute/matters/new"
+                    element={<ProtectedRoute><MatterForm /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/contribute/matters/:matterId"
+                    element={<ProtectedRoute><MatterDetail /></ProtectedRoute>}
                   />
                   <Route
                     path="/contribute/tasks"

@@ -2,6 +2,8 @@
 
 ## Current focus
 
+**Matter Collaboration Phase 1 (2026-09-01):** Generic Matter under Contribute > Questions, Issues & Ideas (`/contribute/matters`). Not a separate Issues module. Action Requirements carry operational state; comments are not formal actions; auto-close is not initiator confirmation. Timeouts run only through `process_matter_action_timeouts` (pg_cron `matter_action_timeout_tick` at minute 15, or `scripts/db/run-matter-timeout-tick.sh`). Suggest Improvements is a Suggestion Matter shortcut. Live schema ACL: `anon` / `authenticated` / `PUBLIC` cannot CREATE on `public`, so `SECURITY DEFINER` `search_path = public` does not allow application-user shadowing. Spec: `docs/04-operations/dev/matter-collaboration.md`. SQL: `20260831010000_matter_collaboration_system.sql`, `20260831200000_matter_collaboration_stabilization.sql`.
+
 **Home Repost + sharing flow (2026-08-17):** Action bar is Like · Comment · Repost · Publish to…. Repost menu offers plain repost and Repost with thoughts (commentary post + embedded original). Schema `post_reposts` stores relationships (no content copy). Gate: `verify:post-reposts`.
 
 **Post likes RLS fix (2026-08-17):** “Could not save like” was RLS, not a missing permission. Live policies bound unqualified `user_id` to `profiles.user_id` → `profiles.id = profiles.user_id`. Fixed migration `20260818010000_fix_post_likes_rls_user_id_binding.sql` (applied remote). Gate: `verify:post-likes-rls` in `verify:post-dev`. Home rolls back optimistic Liked state on failure.

@@ -17,13 +17,13 @@ Principle: **Simple by default. Detailed by choice.**
 | Community Problem-Solving | `/contribute/challenges` | `community_problem_solving` | Name a local problem, propose, implement through a Project, record an outcome, keep a Solution Record |
 | Shared Knowledge / Learning Commons | `/contribute/knowledge` | `shared_knowledge` | Collect practical Resources, name Knowledge Gaps, turn gaps into work, return results as reusable knowledge |
 
-Study, Governance Solutions, Market Jobs, and Score remain separate systems.
+Study, Governance Solutions, Market Jobs, Score, and Questions, Issues & Ideas (Matter collaboration) remain separate systems.
 
 ## Shared Program architecture
 
 A **Program** (`contribution_programs`) is the container. Challenges, Knowledge Spaces, and (where relevant) Opportunities belong to a Program. There is no second pilot container.
 
-Publisher is a `profiles` row. Business/organization coordination uses `linked_accounts`. There is no organizations table in this phase.
+Publisher is a `profiles` row. Business/organization coordination uses `linked_accounts` (a member may link more than one business account). There is no organizations table in this phase.
 
 ## Opportunities and Contributions
 
@@ -84,6 +84,6 @@ My Contributions: `/contribute/impact` (participations) and Profile/Score (deriv
 - No contributor-share / IP accounting
 - No automated knowledge synthesis
 - No separate task board or community-projects board
-- Suggest Improvements remains a later path (not Challenges, not Learning Commons)
+- Suggest Improvements opens Matter create as a Suggestion to Civizen (not a separate backend)
 - Financial contribution remains inquiry-only
 - Local RLS harness for opportunities stays skipped without loopback Supabase credentials

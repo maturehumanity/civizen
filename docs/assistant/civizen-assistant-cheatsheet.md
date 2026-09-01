@@ -56,9 +56,10 @@ Public discovery includes `/areas`, `/partners`, `/fund`, `/documents`, `/govern
 | Contribute hub | Contribute | implemented |
 | Opportunities | Contribute > Opportunities | implemented |
 | Community Challenges | Contribute > Community Challenges | implemented |
+| Questions, Issues & Ideas | Contribute > Questions, Issues & Ideas | implemented |
 | Learning Commons | Contribute > Learning Commons | implemented |
 | My Contributions | Contribute > My Contributions | implemented |
-| Suggest Improvements | Contribute > Suggest Improvements | in_development (placeholder) |
+| Suggest Improvements | Contribute > Suggest Improvements | implemented (shortcut: Suggestion Matter to Civizen) |
 | Market | Market | implemented |
 | Agreements | Market > Agreements | implemented |
 | Messaging | Messaging | implemented |
@@ -97,9 +98,9 @@ Public Area pages list curated related **systems** (existing product surfaces) a
 
 Ways: Volunteer (`/fund/contribute`) · Opportunities · Financial Support (`/fund`) · Organization Partnership (`/partners`).
 
-Community: Community Challenges.
+Community: Community Challenges · Questions, Issues & Ideas.
 
-Knowledge: Learning Commons · Suggest Improvements (not open yet).
+Knowledge: Learning Commons · Suggest Improvements (opens a Suggestion to Civizen).
 
 Your Impact: My Contributions.
 
@@ -126,6 +127,10 @@ Live under **Contribute > Community Challenges**. Distinct from Governance Solut
 Flow: Challenge → Proposal → coordinator selection (not public voting) → Implementation Project → Contribution Opportunities → outcome → Solution Record.
 
 Signed-in members can create a challenge from **Create** on Contribute > Community Challenges. Coordinators manage the challenge they publish. Completing requires implementation outcome, not merely a selected proposal.
+
+## Questions, Issues & Ideas
+
+Live under **Contribute > Questions, Issues & Ideas** (`/contribute/matters`). This is a generic **Matter** system, not a separate Issues module. A Matter can start as a Question, Issue, Suggestion, Request, Discussion, or Other / Unsure, and that type does not freeze the workflow. Every active Matter shows who must act next, what is expected, when it is due, and what happens if nobody acts. Comments are discussion only — they are not a final answer and do not start the confirmation timer. **Suggest Improvements** opens Matter create as a Suggestion addressed to Civizen. Silence after a resolution review is auto-closed — it is not recorded as initiator confirmation.
 
 ## Projects
 

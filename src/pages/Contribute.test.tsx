@@ -39,7 +39,8 @@ describe('Contribute hub', () => {
     expect(screen.getByText('contribute.sections.community')).toBeInTheDocument();
     expect(screen.getByText('contribute.sections.knowledge')).toBeInTheDocument();
     expect(screen.getByText('contribute.sections.impact')).toBeInTheDocument();
-    expect(screen.getByText('contribute.lanes.volunteer.title')).toBeInTheDocument();
+    expect(screen.getByText('contribute.lanes.challenges.title')).toBeInTheDocument();
+    expect(screen.getByText('contribute.lanes.matters.title')).toBeInTheDocument();
     expect(screen.getByText('contribute.lanes.professional.title')).toBeInTheDocument();
     expect(screen.getByText('contribute.lanes.financial.title')).toBeInTheDocument();
     expect(screen.queryByText('contribute.actions.endorse.title')).not.toBeInTheDocument();
@@ -51,20 +52,6 @@ describe('Contribute hub', () => {
 });
 
 describe('ContributeLane', () => {
-  it('renders placeholder content for a known lane', () => {
-    render(
-      <MemoryRouter initialEntries={['/contribute/improvements']}>
-        <Routes>
-          <Route path="/contribute/:laneId" element={<ContributeLane />} />
-        </Routes>
-      </MemoryRouter>,
-    );
-
-    expect(screen.getByText('contribute.lanes.improvements.title')).toBeInTheDocument();
-    expect(screen.getByText('contribute.placeholder.comingSoonTitle')).toBeInTheDocument();
-    expect(screen.getByTestId('app-page-header-back')).toBeInTheDocument();
-  });
-
   it('redirects unknown lane ids to the hub', () => {
     render(
       <MemoryRouter initialEntries={['/contribute/unknown-lane']}>

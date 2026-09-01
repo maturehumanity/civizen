@@ -1,0 +1,500 @@
+import { supabase } from '@/integrations/supabase/client';
+import { listOwnedLinkedProfileIds } from '@/lib/opportunities-api';
+import { parseSearchDirectoryPayload } from '@/lib/search-directory';
+import {
+  buildBallIsWithCopy,
+  deriveMatterStatus,
+  isMatterActorKind,
+  isMatterLifecycle,
+  isMatterType,
+  isMatterVisibility,
+  type ActionRequirementStatus,
+  type ActionRequirementType,
+  type CloseKind,
+  type FormalActionType,
+  type Matter,
+  type MatterActionRequirement,
+  type MatterActorKind,
+  type MatterActorRef,
+  type MatterAttachment,
+  type MatterComment,
+  type MatterEvent,
+  type MatterListRow,
+  type MatterParty,
+  type MatterQueue,
+  type MatterType,
+  type MatterVisibility,
+  type ReopenReason,
+  type TimeoutBehavior,
+} from '@/lib/matters';
+
+type DbClient = typeof supabase;
+type QueryError = { message?: string } | null;
+type ProfileQuery = {
+  select: (columns: string) => ProfileQuery;
+  in: (column: string, values: readonly unknown[]) => Promise<{ data: unknown; error: QueryError }>;
+};
+type MattersClient = {
+  from: (table: string) => ProfileQuery;
+  rpc: (name: string, args?: Record<string, unknown>) => Promise<{ data: unknown; error: QueryError }>;
+  storage: {
+    from: (bucket: string) => {
+      upload: (
+        path: string,
+        file: File,
+        options?: { upsert?: boolean; contentType?: string },
+      ) => Promise<{ error: QueryError }>;
+    };
+  };
+};
+
+function db(client: DbClient): MattersClient {
+  return client as unknown as MattersClient;
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    return value as Record<string, unknown>;
+  }
+  return null;
+}
+
+function asRows(value: unknown): Record<string, unknown>[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((row) => {
+    const record = asRecord(row);
+    return record ? [record] : [];
+  });
+}
+
+function str(value: unknown): string {
+  return typeof value === 'string' ? value : '';
+}
+
+function strOrNull(value: unknown): string | null {
+  const text = typeof value === 'string' ? value.trim() : '';
+  return text ? text : null;
+}
+
+function rpcErrorMessage(error: { message?: string } | null): string {
+  const message = error?.message?.trim() || 'request_failed';
+  const marker = message.split('\n')[0]?.trim() || message;
+  return marker.replace(/^.*ERROR:\s*/i, '').split('CONTEXT:')[0].trim();
+}
+
+function actorFrom(
+  kindValue: unknown,
+  profileId: unknown,
+  unitLabel: unknown,
+  displayName: unknown,
+): MatterActorRef {
+  const kind = isMatterActorKind(str(kindValue)) ? (kindValue as MatterActorKind) : 'person';
+  return {
+    kind,
+    profileId: strOrNull(profileId),
+    unitLabel: strOrNull(unitLabel),
+    displayName: strOrNull(displayName),
+  };
+}
+
+function mapMatter(row: Record<string, unknown>): Matter {
+  const matterType = isMatterType(str(row.matter_type)) ? (row.matter_type as MatterType) : 'other';
+  const lifecycle = isMatterLifecycle(str(row.lifecycle_status))
+    ? (row.lifecycle_status as Matter['lifecycleStatus'])
+    : 'draft';
+  const visibility = isMatterVisibility(str(row.visibility))
+    ? (row.visibility as MatterVisibility)
+    : 'participants';
+  return {
+    id: str(row.id),
+    title: str(row.title),
+    description: str(row.description),
+    matterType,
+    lifecycleStatus: lifecycle,
+    visibility,
+    areaNodeId: strOrNull(row.area_node_id),
+    initiator: actorFrom(
+      row.initiator_kind,
+      row.initiator_profile_id,
+      row.initiator_unit_label,
+      row.initiator_display_name,
+    ),
+    addressee: actorFrom(
+      row.addressee_kind,
+      row.addressee_profile_id,
+      row.addressee_unit_label,
+      row.addressee_display_name,
+    ),
+    responsible: actorFrom(
+      row.responsible_kind,
+      row.responsible_profile_id,
+      row.responsible_unit_label,
+      row.responsible_display_name,
+    ),
+    currentActionId: strOrNull(row.current_action_id),
+    waitingCondition: strOrNull(row.waiting_condition),
+    closeKind: strOrNull(row.close_kind) as CloseKind | null,
+    closeReason: strOrNull(row.close_reason),
+    createdByProfileId: str(row.created_by_profile_id),
+    createdAt: str(row.created_at),
+    submittedAt: strOrNull(row.submitted_at),
+    closedAt: strOrNull(row.closed_at),
+    lastReopenedAt: strOrNull(row.last_reopened_at),
+    reopenCount: Number(row.reopen_count) || 0,
+    updatedAt: str(row.updated_at),
+  };
+}
+
+function mapAction(row: Record<string, unknown> | null): MatterActionRequirement | null {
+  if (!row) return null;
+  return {
+    id: str(row.id),
+    matterId: str(row.matter_id),
+    actionType: str(row.action_type) as ActionRequirementType,
+    assignedActor: actorFrom(
+      row.assigned_kind,
+      row.assigned_profile_id,
+      row.assigned_unit_label,
+      row.assigned_display_name,
+    ),
+    createdAt: str(row.created_at),
+    dueAt: str(row.due_at),
+    reminderAt: str(row.reminder_at),
+    timingPolicyId: str(row.timing_policy_id),
+    status: str(row.status) as ActionRequirementStatus,
+    completedAt: strOrNull(row.completed_at),
+    completedBy: row.completed_by_profile_id
+      ? actorFrom(row.completed_by_kind, row.completed_by_profile_id, null, null)
+      : null,
+    completionAction: strOrNull(row.completion_action) as FormalActionType | null,
+    timeoutAction: str(row.timeout_action) as TimeoutBehavior,
+    escalationPolicyId: strOrNull(row.escalation_policy_id),
+  };
+}
+
+function mapListBundle(
+  value: unknown,
+  viewerProfileId: string,
+  managedOrganizationIds: readonly string[],
+): MatterListRow | null {
+  const record = asRecord(value);
+  if (!record) return null;
+  const matterRow = asRecord(record.matter);
+  if (!matterRow) return null;
+  const matter = mapMatter(matterRow);
+  const currentAction = mapAction(asRecord(record.current_action));
+  return {
+    matter,
+    currentAction,
+    derivedStatus: deriveMatterStatus(matter, currentAction),
+    ball: buildBallIsWithCopy({
+      matter,
+      action: currentAction,
+      viewerProfileId,
+      managedOrganizationIds,
+    }),
+  };
+}
+
+export type MatterDetailBundle = {
+  matter: Matter;
+  currentAction: MatterActionRequirement | null;
+  comments: MatterComment[];
+  events: MatterEvent[];
+  parties: MatterParty[];
+  attachments: MatterAttachment[];
+};
+
+function mapComment(row: Record<string, unknown>): MatterComment {
+  const mentioned = Array.isArray(row.mentioned_profile_ids)
+    ? row.mentioned_profile_ids.filter((id): id is string => typeof id === 'string')
+    : [];
+  return {
+    id: str(row.id),
+    matterId: str(row.matter_id),
+    parentId: strOrNull(row.parent_id),
+    author: actorFrom(row.author_kind, row.author_profile_id, null, row.author_display_name),
+    body: str(row.body),
+    mentionedProfileIds: mentioned,
+    visibility: strOrNull(row.visibility) as MatterVisibility | null,
+    createdAt: str(row.created_at),
+  };
+}
+
+function mapEvent(row: Record<string, unknown>): MatterEvent {
+  return {
+    id: str(row.id),
+    matterId: str(row.matter_id),
+    eventType: str(row.event_type),
+    actor: actorFrom(row.actor_kind, row.actor_profile_id, null, row.actor_display_name),
+    isSystem: Boolean(row.is_system) || str(row.actor_kind) === 'system',
+    summary: str(row.summary),
+    payload: asRecord(row.payload) ?? {},
+    createdAt: str(row.created_at),
+  };
+}
+
+function mapParty(row: Record<string, unknown>): MatterParty {
+  return {
+    id: str(row.id),
+    matterId: str(row.matter_id),
+    role: str(row.role) as MatterParty['role'],
+    actor: actorFrom(row.actor_kind, row.actor_profile_id, row.actor_unit_label, row.actor_display_name),
+    addedAt: str(row.added_at),
+  };
+}
+
+function mapAttachment(row: Record<string, unknown>): MatterAttachment {
+  return {
+    id: str(row.id),
+    matterId: str(row.matter_id),
+    commentId: strOrNull(row.comment_id),
+    kind: str(row.kind) === 'url' ? 'url' : 'file',
+    filePath: strOrNull(row.file_path),
+    fileName: strOrNull(row.file_name),
+    url: strOrNull(row.url),
+    label: strOrNull(row.label),
+    visibility: strOrNull(row.visibility) as MatterVisibility | null,
+    uploadedByProfileId: str(row.uploaded_by_profile_id),
+    createdAt: str(row.created_at),
+  };
+}
+
+export type CreateMatterInput = {
+  title: string;
+  description: string;
+  matterType: MatterType;
+  initiatorKind: MatterActorKind;
+  initiatorProfileId: string;
+  initiatorUnitLabel?: string | null;
+  addresseeKind: MatterActorKind;
+  addresseeProfileId: string;
+  addresseeUnitLabel?: string | null;
+  visibility: MatterVisibility;
+  areaNodeId?: string | null;
+  evidenceUrl?: string | null;
+  evidenceLabel?: string | null;
+  submit?: boolean;
+};
+
+export type MatterActorSuggestion = {
+  profileId: string;
+  displayName: string;
+  subtitle?: string;
+  kind: 'person' | 'organization';
+};
+
+export async function resolveOfficialCivizenMatterActor(
+  client: DbClient = supabase,
+): Promise<MatterActorSuggestion | null> {
+  const { data, error } = await db(client).rpc('resolve_civizen_org_profile');
+  if (error || typeof data !== 'string' || !data) return null;
+  const { data: profile } = await db(client)
+    .from('profiles')
+    .select('id, full_name, username')
+    .in('id', [data]);
+  const row = asRows(profile)[0];
+  return {
+    profileId: data,
+    displayName: str(row?.full_name || row?.username) || 'Civizen',
+    kind: 'organization',
+  };
+}
+
+export async function searchMatterActors(
+  query: string,
+  excludeProfileId?: string | null,
+  client: DbClient = supabase,
+): Promise<MatterActorSuggestion[]> {
+  const needle = query.trim();
+  if (needle.length < 2) return [];
+  const { data, error } = await db(client).rpc('search_civizen_directory', {
+    p_query: needle,
+    p_exclude_profile_id: excludeProfileId ?? null,
+    p_limit: 8,
+  });
+  if (error) return [];
+  const parsed = parseSearchDirectoryPayload(data);
+  const companies: MatterActorSuggestion[] = parsed.companies.map((company) => ({
+    profileId: company.profile_id,
+    displayName: company.profile.full_name || company.business_name_normalized || company.profile.username || 'Organization',
+    subtitle: company.profile.username || undefined,
+    kind: 'organization',
+  }));
+  const people: MatterActorSuggestion[] = parsed.people.map((person) => ({
+    profileId: person.id,
+    displayName: person.full_name || person.username || 'Member',
+    subtitle: person.username || undefined,
+    kind: 'person',
+  }));
+  return [...companies, ...people].slice(0, 8);
+}
+
+export async function listManagedMatterActors(
+  ownerProfileId: string,
+  client: DbClient = supabase,
+): Promise<MatterActorSuggestion[]> {
+  const ids = await listOwnedLinkedProfileIds(ownerProfileId, client);
+  if (ids.length === 0) return [];
+  const { data, error } = await db(client)
+    .from('profiles')
+    .select('id, full_name, username')
+    .in('id', ids);
+  if (error) {
+    return ids.map((id) => ({ profileId: id, displayName: 'Organization', kind: 'organization' as const }));
+  }
+  return asRows(data).map((row) => ({
+    profileId: str(row.id),
+    displayName: str(row.full_name || row.username) || 'Organization',
+    kind: 'organization' as const,
+  }));
+}
+
+export async function createMatterRecord(
+  input: CreateMatterInput,
+  client: DbClient = supabase,
+): Promise<string> {
+  const { data, error } = await db(client).rpc('create_matter', {
+    payload: {
+      title: input.title,
+      description: input.description,
+      matter_type: input.matterType,
+      initiator_kind: input.initiatorKind,
+      initiator_profile_id: input.initiatorProfileId,
+      initiator_unit_label: input.initiatorUnitLabel ?? null,
+      addressee_kind: input.addresseeKind,
+      addressee_profile_id: input.addresseeProfileId,
+      addressee_unit_label: input.addresseeUnitLabel ?? null,
+      visibility: input.visibility,
+      area_node_id: input.areaNodeId ?? null,
+      evidence_url: input.evidenceUrl ?? null,
+      evidence_label: input.evidenceLabel ?? null,
+      submit: input.submit !== false,
+    },
+  });
+  if (error) throw new Error(rpcErrorMessage(error));
+  if (typeof data !== 'string' || !data) throw new Error('Could not create the Matter.');
+  return data;
+}
+
+export async function listMatters(
+  queue: MatterQueue,
+  viewerProfileId: string,
+  managedOrganizationIds: readonly string[] = [],
+  client: DbClient = supabase,
+): Promise<MatterListRow[]> {
+  const { data, error } = await db(client).rpc('list_matters', { p_queue: queue });
+  if (error) throw new Error(rpcErrorMessage(error));
+  return asRows(data)
+    .map((row) => mapListBundle(row, viewerProfileId, managedOrganizationIds))
+    .filter((row): row is MatterListRow => Boolean(row));
+}
+
+export async function getMatterDetail(
+  matterId: string,
+  client: DbClient = supabase,
+): Promise<MatterDetailBundle | null> {
+  const { data, error } = await db(client).rpc('get_matter', { p_matter_id: matterId });
+  if (error) throw new Error(rpcErrorMessage(error));
+  const record = asRecord(data);
+  const matterRow = asRecord(record?.matter);
+  if (!matterRow) return null;
+  return {
+    matter: mapMatter(matterRow),
+    currentAction: mapAction(asRecord(record?.current_action)),
+    comments: asRows(record?.comments).map(mapComment),
+    events: asRows(record?.events).map(mapEvent),
+    parties: asRows(record?.parties).map(mapParty),
+    attachments: asRows(record?.attachments).map(mapAttachment),
+  };
+}
+
+export async function addMatterComment(
+  matterId: string,
+  body: string,
+  options?: { parentId?: string | null; authorKind?: MatterActorKind; mentionedProfileIds?: string[] },
+  client: DbClient = supabase,
+): Promise<void> {
+  const { error } = await db(client).rpc('add_matter_comment', {
+    p_matter_id: matterId,
+    p_body: body,
+    p_parent_id: options?.parentId ?? null,
+    p_author_kind: options?.authorKind ?? 'person',
+    p_mentioned_profile_ids: options?.mentionedProfileIds ?? [],
+  });
+  if (error) throw new Error(rpcErrorMessage(error));
+}
+
+export async function performMatterFormalAction(
+  matterId: string,
+  action: FormalActionType,
+  options?: {
+    message?: string;
+    targetKind?: MatterActorKind;
+    targetProfileId?: string;
+    targetUnitLabel?: string | null;
+    reopenReason?: ReopenReason;
+    actorKind?: MatterActorKind;
+  },
+  client: DbClient = supabase,
+): Promise<void> {
+  const { error } = await db(client).rpc('perform_matter_formal_action', {
+    p_matter_id: matterId,
+    p_action: action,
+    p_message: options?.message ?? null,
+    p_target_kind: options?.targetKind ?? null,
+    p_target_profile_id: options?.targetProfileId ?? null,
+    p_target_unit_label: options?.targetUnitLabel ?? null,
+    p_reopen_reason: options?.reopenReason ?? null,
+    p_actor_kind: options?.actorKind ?? 'person',
+  });
+  if (error) throw new Error(rpcErrorMessage(error));
+}
+
+export async function addMatterAttachmentRecord(
+  matterId: string,
+  params: {
+    kind: 'file' | 'url';
+    filePath?: string | null;
+    fileName?: string | null;
+    contentType?: string | null;
+    byteSize?: number | null;
+    url?: string | null;
+    label?: string | null;
+  },
+  client: DbClient = supabase,
+): Promise<void> {
+  const { error } = await db(client).rpc('add_matter_attachment', {
+    p_matter_id: matterId,
+    p_kind: params.kind,
+    p_file_path: params.filePath ?? null,
+    p_file_name: params.fileName ?? null,
+    p_content_type: params.contentType ?? null,
+    p_byte_size: params.byteSize ?? null,
+    p_url: params.url ?? null,
+    p_label: params.label ?? null,
+  });
+  if (error) throw new Error(rpcErrorMessage(error));
+}
+
+export async function uploadMatterFile(
+  matterId: string,
+  file: File,
+  client: DbClient = supabase,
+): Promise<{ path: string; name: string }> {
+  const safeName = file.name.replace(/[^\w.-]+/g, '_');
+  const path = `${matterId}/${Date.now()}-${safeName}`;
+  const { error } = await db(client).storage.from('matter-files').upload(path, file, {
+    upsert: false,
+    contentType: file.type || undefined,
+  });
+  if (error) throw new Error(error.message || 'Could not upload the file.');
+  await addMatterAttachmentRecord(matterId, {
+    kind: 'file',
+    filePath: path,
+    fileName: file.name,
+    contentType: file.type || null,
+    byteSize: file.size,
+  }, client);
+  return { path, name: file.name };
+}

@@ -18,7 +18,11 @@ describe('contribute-lanes', () => {
       'financial',
       'organization',
     ]);
-    expect(CONTRIBUTE_LANES).toHaveLength(8);
+    expect(getContributeLanesBySection('community').map((lane) => lane.id)).toEqual([
+      'challenges',
+      'matters',
+    ]);
+    expect(CONTRIBUTE_LANES).toHaveLength(9);
   });
 
   it('wires existing surfaces for volunteer, funding, partners, and professional opportunities', () => {
@@ -29,21 +33,22 @@ describe('contribute-lanes', () => {
     expect(CONTRIBUTE_LANES.find((lane) => lane.id === 'professional')?.placeholder).toBe(false);
     expect(CONTRIBUTE_LANES.find((lane) => lane.id === 'challenges')?.path).toBe('/contribute/challenges');
     expect(CONTRIBUTE_LANES.find((lane) => lane.id === 'challenges')?.placeholder).toBe(false);
+    expect(CONTRIBUTE_LANES.find((lane) => lane.id === 'matters')?.path).toBe('/contribute/matters');
+    expect(CONTRIBUTE_LANES.find((lane) => lane.id === 'matters')?.placeholder).toBe(false);
     expect(CONTRIBUTE_LANES.find((lane) => lane.id === 'knowledge')?.path).toBe('/contribute/knowledge');
     expect(CONTRIBUTE_LANES.find((lane) => lane.id === 'knowledge')?.placeholder).toBe(false);
+    expect(CONTRIBUTE_LANES.find((lane) => lane.id === 'improvements')?.path).toBe('/contribute/improvements');
+    expect(CONTRIBUTE_LANES.find((lane) => lane.id === 'improvements')?.placeholder).toBe(false);
     expect(CONTRIBUTE_LANES.find((lane) => lane.id === 'impact')?.path).toBe('/contribute/impact');
     expect(CONTRIBUTE_LANES.find((lane) => lane.id === 'impact')?.placeholder).toBe(false);
     expect(CONTRIBUTE_LANES.find((lane) => lane.id === 'tasks')).toBeUndefined();
     expect(CONTRIBUTE_LANES.find((lane) => lane.id === 'projects')).toBeUndefined();
   });
 
-  it('exposes placeholder lanes under /contribute/*', () => {
-    for (const id of CONTRIBUTE_PLACEHOLDER_IDS) {
-      expect(isContributePlaceholderId(id)).toBe(true);
-      const lane = getContributePlaceholderLane(id);
-      expect(lane?.placeholder).toBe(true);
-      expect(lane?.path).toBe(`/contribute/${id}`);
-    }
+  it('has no remaining Contribute placeholder lanes', () => {
+    expect(CONTRIBUTE_PLACEHOLDER_IDS).toEqual([]);
+    expect(isContributePlaceholderId('improvements')).toBe(false);
+    expect(getContributePlaceholderLane('improvements')).toBeUndefined();
     expect(isContributePlaceholderId('policy')).toBe(false);
     expect(getContributePlaceholderLane('policy')).toBeUndefined();
   });

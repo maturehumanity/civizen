@@ -1,0 +1,479 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useParams } from 'react-router-dom';
+
+import { AppLayout } from '@/components/layout/AppLayout';
+import { AppPageHeader } from '@/components/layout/AppPageHeader';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { OutlinedField } from '@/components/ui/outlined-field';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { listCurrentAreas } from '@/lib/classification';
+import {
+  REOPEN_REASONS,
+  actorLabel,
+  buildBallIsWithCopy,
+  deriveMatterStatus,
+  formalActionsForContext,
+  viewerRepresents,
+  type FormalActionType,
+  type MatterActorKind,
+  type ReopenReason,
+} from '@/lib/matters';
+import {
+  addMatterComment,
+  getMatterDetail,
+  performMatterFormalAction,
+  searchMatterActors,
+  uploadMatterFile,
+  type MatterActorSuggestion,
+  type MatterDetailBundle,
+} from '@/lib/matters-api';
+import { listOwnedLinkedProfileIds } from '@/lib/opportunities-api';
+import { toast } from 'sonner';
+
+function formatWhen(value: string | null): string {
+  if (!value) return '';
+  return new Date(value).toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
+export default function MatterDetail() {
+  const { matterId } = useParams<{ matterId: string }>();
+  const { t } = useLanguage();
+  const tRef = useRef(t);
+  tRef.current = t;
+  const { profile } = useAuth();
+  const profileId = profile?.id ?? '';
+  const areas = useMemo(() => listCurrentAreas(), []);
+
+  const [bundle, setBundle] = useState<MatterDetailBundle | null>(null);
+  const [linkedIds, setLinkedIds] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [comment, setComment] = useState('');
+  const [replyTo, setReplyTo] = useState<string | null>(null);
+  const [mentionQuery, setMentionQuery] = useState('');
+  const [mentions, setMentions] = useState<MatterActorSuggestion[]>([]);
+  const [mentionHits, setMentionHits] = useState<MatterActorSuggestion[]>([]);
+  const [selectedAction, setSelectedAction] = useState<FormalActionType | ''>('');
+  const [actionMessage, setActionMessage] = useState('');
+  const [reopenReason, setReopenReason] = useState<ReopenReason>('issue_returned');
+  const [targetQuery, setTargetQuery] = useState('');
+  const [target, setTarget] = useState<MatterActorSuggestion | null>(null);
+  const [targetHits, setTargetHits] = useState<MatterActorSuggestion[]>([]);
+  const [file, setFile] = useState<File | null>(null);
+
+  const load = useCallback(async () => {
+    if (!matterId) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    try {
+      const linked = profileId ? await listOwnedLinkedProfileIds(profileId) : [];
+      setLinkedIds(linked);
+      const row = await getMatterDetail(matterId);
+      setBundle(row);
+    } catch {
+      setBundle(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [matterId, profileId]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  useEffect(() => {
+    const needle = mentionQuery.trim();
+    if (needle.length < 2) {
+      setMentionHits([]);
+      return;
+    }
+    const handle = window.setTimeout(() => {
+      void searchMatterActors(needle, profileId).then(setMentionHits);
+    }, 200);
+    return () => window.clearTimeout(handle);
+  }, [mentionQuery, profileId]);
+
+  useEffect(() => {
+    const needle = targetQuery.trim();
+    if (needle.length < 2) {
+      setTargetHits([]);
+      return;
+    }
+    const handle = window.setTimeout(() => {
+      void searchMatterActors(needle, profileId).then(setTargetHits);
+    }, 200);
+    return () => window.clearTimeout(handle);
+  }, [targetQuery, profileId]);
+
+  const matter = bundle?.matter ?? null;
+  const action = bundle?.currentAction ?? null;
+  const derived = matter ? deriveMatterStatus(matter, action) : null;
+  const ball = matter
+    ? buildBallIsWithCopy({
+        matter,
+        action,
+        viewerProfileId: profileId,
+        managedOrganizationIds: linkedIds,
+      })
+    : null;
+  const viewerIsInitiator = matter
+    ? viewerRepresents(profileId, matter.initiator, linkedIds)
+    : false;
+  const options = matter
+    ? formalActionsForContext({
+        lifecycleStatus: matter.lifecycleStatus,
+        currentAction: action,
+        viewerProfileId: profileId,
+        managedOrganizationIds: linkedIds,
+        viewerIsInitiator,
+        matterType: matter.matterType,
+      })
+    : [];
+  const selectedOption = options.find((item) => item.action === selectedAction) ?? null;
+  const areaName = matter?.areaNodeId
+    ? areas.find((node) => node.id === matter.areaNodeId)?.displayName
+    : null;
+  const rootComments = (bundle?.comments ?? []).filter((item) => !item.parentId);
+
+  const actorKindForViewer: MatterActorKind =
+    matter && viewerRepresents(profileId, matter.responsible, linkedIds) && matter.responsible.kind === 'organization'
+      ? 'organization'
+      : 'person';
+
+  const postComment = async () => {
+    if (!matterId || comment.trim().length < 1) return;
+    setBusy(true);
+    try {
+      await addMatterComment(matterId, comment.trim(), {
+        parentId: replyTo,
+        authorKind: actorKindForViewer,
+        mentionedProfileIds: mentions.map((item) => item.profileId),
+      });
+      if (file) await uploadMatterFile(matterId, file);
+      setComment('');
+      setReplyTo(null);
+      setMentions([]);
+      setFile(null);
+      toast.success(tRef.current('contribute.matters.commentPosted'));
+      await load();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : tRef.current('contribute.matters.actionFailed'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const runAction = async () => {
+    if (!matterId || !selectedOption) return;
+    if (selectedOption.needsTarget && !target) {
+      toast.error(tRef.current('contribute.matters.recipientRequired'));
+      return;
+    }
+    if (selectedOption.action === 'reopen' && !actionMessage.trim() && !reopenReason) {
+      toast.error(tRef.current('contribute.matters.reopenReasonRequired'));
+      return;
+    }
+    setBusy(true);
+    try {
+      await performMatterFormalAction(matterId, selectedOption.action, {
+        message: actionMessage.trim() || undefined,
+        targetKind: target?.kind,
+        targetProfileId: target?.profileId,
+        reopenReason: selectedOption.action === 'reopen' ? reopenReason : undefined,
+        actorKind: actorKindForViewer,
+      });
+      setSelectedAction('');
+      setActionMessage('');
+      setTarget(null);
+      toast.success(tRef.current('contribute.matters.actionSaved'));
+      await load();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : tRef.current('contribute.matters.actionFailed'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <AppLayout>
+        <div className="px-4 py-6 text-sm text-muted-foreground">{t('common.loading')}</div>
+      </AppLayout>
+    );
+  }
+
+  if (!matter) {
+    return (
+      <AppLayout>
+        <div className="space-y-3 px-4 py-6">
+          <AppPageHeader title={t('contribute.matters.missingTitle')} fallbackPath="/contribute/matters" />
+          <p className="text-sm text-muted-foreground">{t('contribute.matters.missingBody')}</p>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  return (
+    <AppLayout>
+      <div className="space-y-5 px-4 py-6">
+        <AppPageHeader
+          title={matter.title}
+          subtitle={t(`contribute.matters.types.${matter.matterType}`)}
+          fallbackPath="/contribute/matters"
+        />
+
+        <div className="flex flex-wrap gap-2">
+          <Badge variant="outline" className="rounded-full">
+            {t(`contribute.matters.status.${derived}`)}
+          </Badge>
+          <Badge variant="outline" className="rounded-full">
+            {t(`contribute.matters.visibility.${matter.visibility}`)}
+          </Badge>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          {t('contribute.matters.fromLabel')} {actorLabel(matter.initiator)} · {t('contribute.matters.toLabel')}{' '}
+          {actorLabel(matter.responsible)} · {formatWhen(matter.createdAt)}
+          {areaName ? ` · ${areaName}` : ''}
+        </p>
+
+        {ball ? (
+          <Card className="border-primary/40 bg-primary/5 p-4 shadow-sm">
+            <p className="text-xs font-medium uppercase tracking-wide text-primary">
+              {t('contribute.matters.currentAction')}
+            </p>
+            <p className="mt-1 text-lg font-semibold text-foreground">{ball.headline}</p>
+            <p className="mt-1 text-sm text-foreground">{ball.detail}</p>
+            {ball.dueLine ? <p className="mt-2 text-sm text-muted-foreground">{ball.dueLine}</p> : null}
+          </Card>
+        ) : null}
+
+        <section className="space-y-2">
+          <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+            {t('contribute.matters.descriptionHeading')}
+          </h2>
+          <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{matter.description}</p>
+          {(bundle?.attachments.length ?? 0) > 0 ? (
+            <ul className="space-y-1 text-sm">
+              {bundle?.attachments.map((item) => (
+                <li key={item.id} className="text-muted-foreground">
+                  {item.label || item.fileName || item.url || t('contribute.matters.attachment')}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </section>
+
+        {options.length > 0 ? (
+          <section className="space-y-3">
+            <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+              {t('contribute.matters.formalActions')}
+            </h2>
+            <p className="text-xs text-muted-foreground">{t('contribute.matters.formalActionsHint')}</p>
+            <div className="flex flex-wrap gap-2">
+              {options.map((option) => (
+                <Button
+                  key={option.action}
+                  type="button"
+                  size="sm"
+                  variant={selectedAction === option.action ? 'default' : 'outline'}
+                  onClick={() => setSelectedAction(option.action)}
+                >
+                  {option.action === 'confirm_resolved' && matter.matterType === 'question'
+                    ? t('contribute.matters.actions.confirm_resolved_question')
+                    : t(`contribute.matters.actions.${option.action}`)}
+                </Button>
+              ))}
+            </div>
+            {selectedOption ? (
+              <Card className="space-y-3 border-primary/30 bg-card p-4">
+                {selectedOption.action === 'reopen' ? (
+                  <OutlinedField label={t('contribute.matters.reopenReasonLabel')}>
+                    <Select value={reopenReason} onValueChange={(value) => setReopenReason(value as ReopenReason)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {REOPEN_REASONS.map((reason) => (
+                          <SelectItem key={reason} value={reason}>
+                            {t(`contribute.matters.reopenReasons.${reason}`)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </OutlinedField>
+                ) : null}
+                {selectedOption.needsMessage || selectedOption.action === 'reopen' ? (
+                  <OutlinedField label={t('contribute.matters.actionNoteLabel')} htmlFor="matter-action-note">
+                    <Textarea
+                      id="matter-action-note"
+                      value={actionMessage}
+                      onChange={(event) => setActionMessage(event.target.value)}
+                      rows={3}
+                    />
+                  </OutlinedField>
+                ) : null}
+                {selectedOption.needsTarget ? (
+                  <OutlinedField label={t('contribute.matters.targetLabel')} htmlFor="matter-target">
+                    {target ? (
+                      <div className="flex items-center justify-between gap-2 py-1">
+                        <p className="text-sm">{target.displayName}</p>
+                        <Button type="button" variant="ghost" size="sm" onClick={() => setTarget(null)}>
+                          {t('common.edit')}
+                        </Button>
+                      </div>
+                    ) : (
+                      <div>
+                        <Input
+                          id="matter-target"
+                          value={targetQuery}
+                          onChange={(event) => setTargetQuery(event.target.value)}
+                          placeholder={t('contribute.matters.recipientHint')}
+                        />
+                        {targetHits.map((hit) => (
+                          <button
+                            key={hit.profileId}
+                            type="button"
+                            className="mt-1 block w-full rounded-md px-2 py-1.5 text-left text-sm hover:bg-muted"
+                            onClick={() => {
+                              setTarget(hit);
+                              setTargetQuery('');
+                              setTargetHits([]);
+                            }}
+                          >
+                            {hit.displayName}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </OutlinedField>
+                ) : null}
+                <Button type="button" onClick={() => void runAction()} disabled={busy}>
+                  {t('contribute.matters.confirmAction')}
+                </Button>
+              </Card>
+            ) : null}
+          </section>
+        ) : null}
+
+        <section className="space-y-3">
+          <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+            {t('contribute.matters.conversation')}
+          </h2>
+          <p className="text-xs text-muted-foreground">{t('contribute.matters.conversationHint')}</p>
+          {rootComments.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{t('contribute.matters.noComments')}</p>
+          ) : (
+            <div className="space-y-3">
+              {rootComments.map((item) => (
+                <Card key={item.id} className="space-y-2 border-dashed border-border/80 bg-muted/30 p-4">
+                  <p className="text-xs text-muted-foreground">
+                    {actorLabel(item.author)} · {formatWhen(item.createdAt)}
+                  </p>
+                  <p className="whitespace-pre-wrap text-sm text-foreground">{item.body}</p>
+                  {matter.lifecycleStatus !== 'closed' ? (
+                  <Button type="button" variant="ghost" size="sm" onClick={() => setReplyTo(item.id)}>
+                    {t('contribute.matters.reply')}
+                  </Button>
+                  ) : null}
+                  {(bundle?.comments ?? [])
+                    .filter((child) => child.parentId === item.id)
+                    .map((child) => (
+                      <div key={child.id} className="ml-4 border-l border-border/70 pl-3">
+                        <p className="text-xs text-muted-foreground">
+                          {actorLabel(child.author)} · {formatWhen(child.createdAt)}
+                        </p>
+                        <p className="whitespace-pre-wrap text-sm">{child.body}</p>
+                      </div>
+                    ))}
+                </Card>
+              ))}
+            </div>
+          )}
+          {matter.lifecycleStatus === 'closed' ? (
+            <p className="text-sm text-muted-foreground">{t('contribute.matters.closedNoComments')}</p>
+          ) : (
+          <Card className="space-y-3 border-dashed border-border/80 bg-muted/20 p-4">
+            {replyTo ? (
+              <p className="text-xs text-muted-foreground">{t('contribute.matters.replying')}</p>
+            ) : null}
+            <OutlinedField label={t('contribute.matters.commentLabel')} htmlFor="matter-comment">
+              <Textarea
+                id="matter-comment"
+                value={comment}
+                onChange={(event) => setComment(event.target.value)}
+                rows={3}
+              />
+            </OutlinedField>
+            <OutlinedField label={t('contribute.matters.mentionLabel')} htmlFor="matter-mention">
+              <Input
+                id="matter-mention"
+                value={mentionQuery}
+                onChange={(event) => setMentionQuery(event.target.value)}
+                placeholder={t('contribute.matters.mentionHint')}
+              />
+            </OutlinedField>
+            {mentionHits.map((hit) => (
+              <button
+                key={hit.profileId}
+                type="button"
+                className="block w-full rounded-md px-2 py-1.5 text-left text-sm hover:bg-muted"
+                onClick={() => {
+                  setMentions((current) =>
+                    current.some((item) => item.profileId === hit.profileId) ? current : [...current, hit],
+                  );
+                  setMentionQuery('');
+                  setMentionHits([]);
+                }}
+              >
+                {hit.displayName}
+              </button>
+            ))}
+            {mentions.length > 0 ? (
+              <p className="text-xs text-muted-foreground">
+                {mentions.map((item) => item.displayName).join(', ')}
+              </p>
+            ) : null}
+            <Input type="file" onChange={(event) => setFile(event.target.files?.[0] ?? null)} />
+            <p className="text-xs text-muted-foreground">{t('contribute.matters.commentNotAction')}</p>
+            <Button type="button" variant="outline" onClick={() => void postComment()} disabled={busy}>
+              {t('contribute.matters.postComment')}
+            </Button>
+          </Card>
+          )}
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+            {t('contribute.matters.activity')}
+          </h2>
+          <ol className="space-y-3">
+            {(bundle?.events ?? []).map((event) => (
+              <li
+                key={event.id}
+                className={event.isSystem ? 'border-l-2 border-primary/40 pl-3' : 'border-l-2 border-border/70 pl-3'}
+              >
+                <p className="text-sm text-foreground">{event.summary}</p>
+                <p className="text-xs text-muted-foreground">
+                  {event.isSystem ? t('contribute.matters.systemActor') : actorLabel(event.actor)} ·{' '}
+                  {formatWhen(event.createdAt)}
+                </p>
+              </li>
+            ))}
+          </ol>
+        </section>
+      </div>
+    </AppLayout>
+  );
+}

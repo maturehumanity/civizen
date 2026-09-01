@@ -25,6 +25,7 @@ export const INDEXED_SOURCES: IndexedSource[] = [
   { path: 'docs/assistant/README.md', priority: SOURCE_PRIORITY.cheatSheet, status: 'implemented' },
   { path: 'docs/04-operations/dev/agreements.md', priority: SOURCE_PRIORITY.canonicalDocs, status: 'implemented' },
   { path: 'docs/04-operations/dev/contribute-page.md', priority: SOURCE_PRIORITY.canonicalDocs, status: 'implemented' },
+  { path: 'docs/04-operations/dev/matter-collaboration.md', priority: SOURCE_PRIORITY.canonicalDocs, status: 'implemented' },
   { path: 'docs/04-operations/dev/phase-1-pilot-operating-model.md', priority: SOURCE_PRIORITY.canonicalDocs, status: 'implemented' },
   { path: 'docs/03-platform/areas-and-initiatives/public-areas-initiatives-v1.md', priority: SOURCE_PRIORITY.canonicalDocs, status: 'implemented' },
   { path: 'docs/03-platform/happiness-and-fulfillment/happiness-human-fulfillment-v1.md', priority: SOURCE_PRIORITY.canonicalDocs, status: 'implemented' },

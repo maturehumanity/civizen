@@ -47,7 +47,7 @@ export const ASSISTANT_CAPABILITIES: AssistantCapability[] = [
     howTo: 'Open Contribute from the bottom navigation.',
     routes: ['/contribute'],
     roles: ['member'],
-    relatedCapabilities: ['opportunities', 'community_challenges', 'knowledge_spaces', 'my_contributions'],
+    relatedCapabilities: ['opportunities', 'community_challenges', 'knowledge_spaces', 'my_contributions', 'matters'],
     aliases: ['contribution hub', 'how can I contribute'],
     sourceRefs: [
       'src/lib/contribute-lanes.ts',
@@ -90,6 +90,25 @@ export const ASSISTANT_CAPABILITIES: AssistantCapability[] = [
       'src/pages/contribute/CommunityChallenges.tsx',
       'docs/04-operations/dev/contribute-page.md',
       'docs/04-operations/dev/phase-1-pilot-operating-model.md',
+    ],
+  },
+  {
+    id: 'matters',
+    name: 'Questions, Issues & Ideas',
+    status: 'implemented',
+    description:
+      'Generic Matter collaboration under Contribute. Ask a question, raise an issue, suggest an improvement, or work with others toward an outcome. Every active Matter shows who must act next, what is expected, when it is due, and what happens if nobody acts. Comments are not formal actions.',
+    howTo:
+      'Open Contribute > Questions, Issues & Ideas. Create a Matter, choose the intended person or organization, then follow the Current Action panel.',
+    routes: ['/contribute/matters', '/contribute/matters/new'],
+    roles: ['member'],
+    relatedCapabilities: ['contribute_hub'],
+    aliases: ['matters', 'questions', 'issues', 'ideas', 'suggestions', 'requests', 'discussions'],
+    sourceRefs: [
+      'src/lib/matters.ts',
+      'src/pages/contribute/Matters.tsx',
+      'docs/04-operations/dev/matter-collaboration.md',
+      'docs/04-operations/dev/contribute-page.md',
     ],
   },
   {
@@ -172,14 +191,15 @@ export const ASSISTANT_CAPABILITIES: AssistantCapability[] = [
   {
     id: 'contribute_improvements',
     name: 'Suggest Improvements',
-    status: 'in_development',
+    status: 'implemented',
     description:
-      'Placeholder lane for ideas about Civizen itself. Not open yet. Not a second place for Opportunities, Challenges, or shared knowledge.',
-    routes: ['/contribute/improvements'],
+      'Shortcut into Matter create as a Suggestion addressed to Civizen. Not a separate suggestion backend, and not a second place for Opportunities, Challenges, or shared knowledge.',
+    howTo: 'Open Contribute > Suggest Improvements. It opens a new Matter already set as a Suggestion to Civizen. You can edit the type, recipient, and Area before submitting.',
+    routes: ['/contribute/improvements', '/contribute/matters/new'],
     roles: ['member'],
-    relatedCapabilities: ['contribute_hub', 'governance_solutions'],
+    relatedCapabilities: ['contribute_hub', 'matters'],
     aliases: ['product suggestions'],
-    sourceRefs: ['src/lib/contribute-lanes.ts', 'docs/04-operations/dev/contribute-page.md'],
+    sourceRefs: ['src/lib/contribute-lanes.ts', 'docs/04-operations/dev/contribute-page.md', 'docs/04-operations/dev/matter-collaboration.md'],
   },
   {
     id: 'market',
@@ -589,7 +609,7 @@ export const ASSISTANT_FAQ: AssistantFaqItem[] = [
     id: 'what_can_i_do_in_civizen_now',
     question: 'What can I do in Civizen right now?',
     answer:
-      'In this build you can use Home, Study, Contribute (Opportunities, Community Challenges, Learning Commons, My Contributions), Market, Agreements, Messaging, Profile and Score, Happiness & Fulfillment, Areas, and Governance tools such as Civic voting and Governance Solutions. Suggest Improvements is still a placeholder. This is what is implemented today, not a full description of what Civizen is.',
+      'In this build you can use Home, Study, Contribute (Opportunities, Community Challenges, Questions, Issues & Ideas, Suggest Improvements, Learning Commons, My Contributions), Market, Agreements, Messaging, Profile and Score, Happiness & Fulfillment, Areas, and Governance tools such as Civic voting and Governance Solutions. This is what is implemented today, not a full description of what Civizen is.',
     aliases: [
       'what can I currently do in civizen',
       'what can I do in civizen',
@@ -603,10 +623,24 @@ export const ASSISTANT_FAQ: AssistantFaqItem[] = [
     id: 'how_can_i_contribute',
     question: 'How can I contribute?',
     answer:
-      'Open Contribute and choose how you want to help: Volunteer, Opportunities, Financial Support, Organization Partnership, Community Challenges, Learning Commons, or My Contributions. Suggest Improvements is not open yet.',
+      'Open Contribute and choose how you want to help: Volunteer, Opportunities, Financial Support, Organization Partnership, Community Challenges, Questions, Issues & Ideas, Suggest Improvements, Learning Commons, or My Contributions.',
     aliases: ['how do I contribute', 'ways to contribute', 'how can I volunteer'],
     capabilityIds: ['contribute_hub'],
     sourceRefs: ['src/lib/contribute-lanes.ts', 'docs/04-operations/dev/contribute-page.md'],
+  },
+  {
+    id: 'how_do_i_raise_a_question_or_issue',
+    question: 'How do I ask a question or raise an issue?',
+    answer:
+      'Open Contribute > Questions, Issues & Ideas. Create a Matter, choose the person or organization it is for, and submit. The Current Action panel shows who must respond and when. Comments are discussion only; only Provide final answer starts the review timer. Suggest Improvements opens a Suggestion to Civizen.',
+    aliases: [
+      'how do I raise an issue',
+      'how do I ask a question in civizen',
+      'questions issues and ideas',
+      'where do I send a suggestion',
+    ],
+    capabilityIds: ['matters', 'contribute_hub'],
+    sourceRefs: ['docs/04-operations/dev/matter-collaboration.md', 'src/lib/contribute-lanes.ts'],
   },
   {
     id: PERSONAL_HARDSHIP_FAQ_ID,

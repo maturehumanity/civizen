@@ -2,7 +2,7 @@
 
 **Project:** Civizen  
 **Route:** `/contribute`  
-**Version:** 2.5  
+**Version:** 2.6  
 **Status:** Phase 1 hub live. Three pilots: Education-to-Contribution, Community Challenges, Learning Commons. Operating model: [`phase-1-pilot-operating-model.md`](./phase-1-pilot-operating-model.md)
 
 Canonical product/UX note for agents. Source draft: `docs/tmp/contribute_page`.
@@ -35,6 +35,7 @@ Organization Partnership currently opens the public **International Partnerships
 | Lane | Destination |
 |------|-------------|
 | Community Challenges | `/contribute/challenges` |
+| Questions, Issues & Ideas | `/contribute/matters` |
 
 Implementation **Projects** live inside Challenges. There is no separate community-projects or tasks board. `/contribute/projects` redirects here. `/contribute/tasks` redirects to Opportunities. When a Challenge is linked from a wellbeing pattern, coordinators may open a **Human Outcome Review** after implementation. Operational delivery and later privacy-safe human-outcome evidence stay separate; causality is not inferred.
 
@@ -43,7 +44,7 @@ Implementation **Projects** live inside Challenges. There is no separate communi
 | Lane | Destination |
 |------|-------------|
 | Learning Commons | `/contribute/knowledge` |
-| Suggest Improvements | `/contribute/improvements` (later path; not Challenges or Knowledge) |
+| Suggest Improvements | `/contribute/improvements` → Matter create as a Suggestion to Civizen |
 
 ### Your Impact
 
@@ -61,9 +62,10 @@ Financial copy remains inquiry-only (no checkout, tax-deductibility, or fixed re
 - Slice 1 Education-to-Contribution: `src/pages/contribute/ProfessionalOpportunities.tsx`, `OpportunityDetail.tsx`, `OpportunityForm.tsx`
 - Slice 3 Community Challenges: `src/pages/contribute/CommunityChallenges.tsx`, `ChallengeDetail.tsx`, `ChallengeForm.tsx`
 - Slice 4 Learning Commons: `src/pages/contribute/KnowledgeSpaces.tsx`, `KnowledgeSpaceDetail.tsx`, `KnowledgeSpaceForm.tsx`, `KnowledgeResourceDetail.tsx`, `KnowledgeResourceForm.tsx`
+- Matter Collaboration (Questions, Issues & Ideas): `src/pages/contribute/Matters.tsx`, `MatterForm.tsx`, `MatterDetail.tsx` · spec: [`matter-collaboration.md`](./matter-collaboration.md)
 - My Contributions: `src/pages/contribute/ContributeImpact.tsx`
-- Domain + RPC wrappers: `src/lib/opportunities.ts`, `src/lib/opportunities-api.ts`, `src/lib/challenges.ts`, `src/lib/challenges-api.ts`, `src/lib/knowledge.ts`, `src/lib/knowledge-api.ts`
-- Schema: `supabase/migrations/20260813010000_education_to_contribution_opportunities.sql`, `20260813020000_opportunity_applicant_identities.sql`, `20260813030000_opportunity_work_assessments.sql`, `20260813040000_community_problem_solving_lab.sql`, `20260813041000_seed_community_problem_solving_lab.sql`, `20260813042000_solution_record_contributors.sql`, `20260813050000_shared_knowledge_learning_commons.sql`, `20260813051000_seed_shared_knowledge_learning_commons.sql`, `20260813052000_seed_education_to_contribution_program.sql`
+- Domain + RPC wrappers: `src/lib/opportunities.ts`, `src/lib/opportunities-api.ts`, `src/lib/challenges.ts`, `src/lib/challenges-api.ts`, `src/lib/knowledge.ts`, `src/lib/knowledge-api.ts`, `src/lib/matters.ts`, `src/lib/matters-api.ts`, `src/lib/matters-workflow.ts`
+- Schema: `supabase/migrations/20260813010000_education_to_contribution_opportunities.sql`, `20260813020000_opportunity_applicant_identities.sql`, `20260813030000_opportunity_work_assessments.sql`, `20260813040000_community_problem_solving_lab.sql`, `20260813041000_seed_community_problem_solving_lab.sql`, `20260813042000_solution_record_contributors.sql`, `20260813050000_shared_knowledge_learning_commons.sql`, `20260813051000_seed_shared_knowledge_learning_commons.sql`, `20260813052000_seed_education_to_contribution_program.sql`, `20260831010000_matter_collaboration_system.sql`, `20260831200000_matter_collaboration_stabilization.sql`
 - Copy: `contribute.*` in `src/lib/i18n.base.ts`
 
 ## Slice 1 (Education-to-Contribution)
@@ -117,7 +119,8 @@ Ordinary users browse spaces and resources, see attribution, see open gaps, and 
 - **Slice 2 (current):** Optional contribution evaluation after verification
 - **Slice 3 (current):** Community Problem-Solving Lab at `/contribute/challenges`
 - **Slice 4 (current):** Shared Knowledge / Learning Commons at `/contribute/knowledge`
-- **Later slices:** product-suggestion intake — do not broaden this slice here
+- **Matter Collaboration (current):** Questions, Issues & Ideas at `/contribute/matters` — generic Matter foundation, not a separate Issues module. Spec: [`matter-collaboration.md`](./matter-collaboration.md)
+- **Later slices:** additional suggestion routing and Area mapping — Suggest Improvements already opens Matter create
 - **Phase 3:** Funding portal, org dashboard, grants, scholarships, global initiatives
 - **Phase 4:** Deep Trust Profile / Contribution Score / achievements / governance integration
 

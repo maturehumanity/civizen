@@ -8,6 +8,7 @@ export const NELA_PAGE_LINKS: readonly { label: string; href: string }[] = [
   { label: 'Governance Solutions', href: '/governance/solutions' },
   { label: 'Community Challenges', href: '/contribute/challenges' },
   { label: 'make a contribution', href: '/contribute' },
+  { label: 'Questions, Issues & Ideas', href: '/contribute/matters' },
   { label: 'Suggest Improvements', href: '/contribute/improvements' },
   { label: 'Learning Commons', href: '/contribute/knowledge' },
   { label: 'My Contributions', href: '/contribute/impact' },

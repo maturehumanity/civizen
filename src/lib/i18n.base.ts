@@ -3232,13 +3232,17 @@ export const baseTranslations = {
         "title": "Community Challenges",
         "description": "Name a local problem, choose one practical solution, and carry it through."
       },
+      "matters": {
+        "title": "Questions, Issues & Ideas",
+        "description": "Ask a question, raise an issue, suggest an improvement, or work with others toward an outcome."
+      },
       "knowledge": {
         "title": "Learning Commons",
         "description": "Share practical knowledge, see what is missing, and help fill the gaps."
       },
       "improvements": {
         "title": "Suggest Improvements",
-        "description": "A later path for ideas about Civizen itself — not neighborhood problems or shared knowledge."
+        "description": "Suggest an improvement to Civizen itself. Opens a Suggestion addressed to Civizen."
       },
       "impact": {
         "title": "My Contributions",
@@ -3264,6 +3268,139 @@ export const baseTranslations = {
       "subtitle": "Your applications and completed work across Opportunities and Challenges.",
       "empty": "You have not joined a contribution yet. Start from Opportunities, Challenges, or the Learning Commons.",
       "loadFailed": "Could not load your contributions."
+    },
+    "matters": {
+      "create": "New Matter",
+      "newTitle": "New Matter",
+      "formHint": "Say what needs attention and who should respond. Timing starts when you submit.",
+      "improvementHint": "This starts a Suggestion to Civizen. You can edit the type, recipient, and Area before submitting.",
+      "conversationHint": "Discussion only. Posting here does not complete a required action or start the final-answer review timer.",
+      "formalActionsHint": "These complete a required workflow step. They are separate from conversation comments.",
+      "closedNoComments": "This Matter is closed. Reopen it to continue.",
+      "loadFailed": "Could not load Matters.",
+      "actionFailed": "Could not complete that action.",
+      "created": "Matter submitted.",
+      "titleLabel": "Title",
+      "descriptionLabel": "Description",
+      "typeLabel": "Type",
+      "initiatorLabel": "On behalf of",
+      "initiatorSelf": "You",
+      "initiatorOrg": "Organization you represent",
+      "recipientLabel": "Intended party",
+      "recipientHint": "Search for a person or organization",
+      "recipientRequired": "Choose who this Matter is for.",
+      "unitLabel": "Team or unit (optional)",
+      "unitHint": "If this should go to a department or team",
+      "areaLabel": "Area",
+      "areaNone": "No area selected",
+      "visibilityLabel": "Visibility",
+      "evidenceUrlLabel": "Evidence link (optional)",
+      "evidenceLabelLabel": "Evidence label",
+      "fileLabel": "Attachment (optional)",
+      "submit": "Submit Matter",
+      "titleRequired": "Add a short title.",
+      "descriptionRequired": "Describe the Matter.",
+      "queues": {
+        "needs_action": "Needs your action",
+        "mine": "My Matters",
+        "participating": "Participating",
+        "organization": "Organization"
+      },
+      "empty": {
+        "needs_action": "Nothing needs your action right now.",
+        "mine": "You have not started or received a Matter yet.",
+        "participating": "You are not following other Matters yet.",
+        "organization": "No Matters are waiting on the organizations you represent."
+      },
+      "types": {
+        "question": "Question",
+        "issue": "Issue",
+        "suggestion": "Suggestion",
+        "request": "Request",
+        "discussion": "Discussion",
+        "other": "Other / Unsure"
+      },
+      "status": {
+        "draft": "Draft",
+        "waiting_for_response": "Waiting for response",
+        "clarification_needed": "Clarification needed",
+        "waiting_for_initiator": "Waiting for initiator",
+        "choose_next_party": "Choose next party",
+        "response_overdue": "Response overdue",
+        "addressed": "Addressed",
+        "partially_resolved": "Partially resolved",
+        "automatically_closed": "Automatically closed",
+        "closed": "Closed",
+        "reopened": "Reopened",
+        "no_action_required": "No action required"
+      },
+      "visibility": {
+        "private": "Private",
+        "participants": "Participants",
+        "organization": "Organization",
+        "group": "Group",
+        "public": "Public"
+      },
+      "actorKind": {
+        "person": "Person",
+        "organization": "Organization"
+      },
+      "currentAction": "Current action",
+      "descriptionHeading": "Description",
+      "fromLabel": "From",
+      "toLabel": "To",
+      "formalActions": "Formal actions",
+      "conversation": "Conversation",
+      "activity": "Activity",
+      "noComments": "No comments yet.",
+      "commentLabel": "Comment",
+      "postComment": "Post comment",
+      "commentPosted": "Comment posted.",
+      "commentNotAction": "A comment does not complete the required action.",
+      "reply": "Reply",
+      "replying": "Replying to a comment",
+      "mentionLabel": "Mention someone (optional)",
+      "mentionHint": "Search to notify another participant",
+      "attachment": "Attachment",
+      "actions": {
+        "respond": "Provide final answer",
+        "request_clarification": "Request clarification",
+        "forward": "Forward",
+        "invite_party": "Invite another party",
+        "redirect": "Redirect",
+        "accept_responsibility": "Accept responsibility",
+        "accept_jointly": "Accept jointly",
+        "partially_accept": "Partially accept",
+        "dispute_responsibility": "Dispute responsibility",
+        "mark_no_action_required": "Mark no action required",
+        "mark_addressed": "Mark addressed",
+        "confirm_resolved": "Resolved / satisfied",
+        "confirm_partially_resolved": "Partially resolved",
+        "confirm_not_resolved": "Not resolved",
+        "need_clarification": "Need more information",
+        "revealed_issue": "This revealed an Issue",
+        "confirm_resolved_question": "Answered / satisfied",
+        "close": "Close",
+        "reopen": "Reopen"
+      },
+      "actionNoteLabel": "Note",
+      "targetLabel": "Next party",
+      "confirmAction": "Complete action",
+      "actionSaved": "Action recorded.",
+      "reopenReasonLabel": "Reason for reopening",
+      "reopenReasonRequired": "Say why this Matter is being reopened.",
+      "reopenReasons": {
+        "not_actually_resolved": "Issue not actually resolved",
+        "issue_returned": "Issue returned",
+        "new_facts": "New facts",
+        "new_evidence": "New evidence",
+        "resolution_failed": "Resolution failed",
+        "related_problem_emerged": "Related problem emerged",
+        "other": "Other"
+      },
+      "missingTitle": "Matter not found",
+      "missingBody": "This Matter is unavailable or you do not have access.",
+      "systemActor": "Civizen"
     },
     "opportunities": {
       "subtitle": "Find a short contribution, apply, and submit what you completed.",
