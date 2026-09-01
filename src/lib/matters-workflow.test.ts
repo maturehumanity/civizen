@@ -71,7 +71,7 @@ describe('Scenario A — simple Question', () => {
       action: 'respond',
       message: 'Areas are where help is needed.',
     });
-    expect(state.currentAction?.actionType).toBe('confirm_resolution');
+    expect(state.currentAction?.actionType).toBe('review_resolution');
     expect(state.currentAction?.assignedActor.profileId).toBe('a');
 
     state = addMatterComment(state, ctx, { author: personA, body: 'Thanks — that helps.' });
@@ -146,9 +146,9 @@ describe('Scenario C — Issue accepted and addressed', () => {
       action: 'mark_addressed',
       message: 'Fixed the wait-for-profile spinner.',
     });
-    expect(state.currentAction?.actionType).toBe('confirm_resolution');
+    expect(state.currentAction?.actionType).toBe('review_resolution');
     expect(state.currentAction?.timeoutAction).toBe('auto_close');
-    expect(deriveMatterStatus(state.matter, state.currentAction)).toBe('waiting_for_initiator');
+    expect(deriveMatterStatus(state.matter, state.currentAction)).toBe('resolution_proposed');
 
     const ballA = buildBallIsWithCopy({
       matter: state.matter,
@@ -157,7 +157,7 @@ describe('Scenario C — Issue accepted and addressed', () => {
       now: ctx.now,
     });
     expect(ballA?.headline).toBe('Action required from you');
-    expect(ballA?.detail).toMatch(/Confirm whether/);
+    expect(ballA?.detail).toMatch(/Review the proposed Resolution/);
 
     state = performFormalAction(state, ctx, { actor: personA, action: 'confirm_resolved' });
     expect(state.matter.closeKind).toBe('confirmed_resolution');
@@ -404,7 +404,7 @@ describe('Question workflow — comments are not a final answer', () => {
       action: 'respond',
       message: 'Areas are where help is needed.',
     });
-    expect(state.currentAction?.actionType).toBe('confirm_resolution');
+    expect(state.currentAction?.actionType).toBe('review_resolution');
     expect(state.currentAction?.timeoutAction).toBe('auto_close');
     expect(eventSummaries(state).some((row) => /final answer/i.test(row))).toBe(true);
   });

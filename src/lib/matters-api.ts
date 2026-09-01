@@ -28,6 +28,12 @@ import {
   type TimeoutBehavior,
 } from '@/lib/matters';
 import type {
+  MatterEvaluation,
+  MatterOutcomeFollowup,
+  MatterPatternCounts,
+  MatterResolution,
+} from '@/lib/matters-resolution';
+import type {
   CollaborationTask,
   MatterDecision,
   MatterResponsibility,
@@ -157,6 +163,8 @@ function mapMatter(row: Record<string, unknown>): Matter {
         : str(row.collaborative_work_completion_kind) === 'normal' ? 'normal'
           : null,
     collaborativeWorkCompletionReason: strOrNull(row.collaborative_work_completion_reason),
+    latestResolutionId: strOrNull(row.latest_resolution_id),
+    resolutionAttemptCount: Number(row.resolution_attempt_count) || 0,
   };
 }
 
@@ -186,10 +194,12 @@ function mapAction(row: Record<string, unknown> | null): MatterActionRequirement
     escalationPolicyId: strOrNull(row.escalation_policy_id),
     contextKind:
       str(row.context_kind) === 'task' || str(row.context_kind) === 'decision' || str(row.context_kind) === 'responsibility'
-        ? (str(row.context_kind) as 'task' | 'decision' | 'responsibility')
+        || str(row.context_kind) === 'resolution' || str(row.context_kind) === 'outcome'
+        ? (str(row.context_kind) as MatterActionRequirement['contextKind'])
         : 'matter',
     contextId: strOrNull(row.context_id),
     taskTitle: strOrNull(row.task_title),
+    resolutionId: strOrNull(row.resolution_id),
   };
 }
 
@@ -253,6 +263,10 @@ export type MatterDetailBundle = {
   decisions: MatterDecision[];
   responsibilities: MatterResponsibility[];
   workSummary: MatterListRow['workSummary'];
+  resolutions: MatterResolution[];
+  evaluations: MatterEvaluation[];
+  outcomeFollowups: MatterOutcomeFollowup[];
+  patternCounts: MatterPatternCounts | null;
 };
 
 function mapComment(row: Record<string, unknown>): MatterComment {
@@ -401,6 +415,74 @@ function mapResponsibility(row: Record<string, unknown>): MatterResponsibility {
     suggestedActor: row.suggested_actor_profile_id
       ? actorFrom(row.suggested_actor_kind, row.suggested_actor_profile_id, null, row.suggested_actor_display_name)
       : null,
+  };
+}
+
+function mapResolution(row: Record<string, unknown>): MatterResolution {
+  return {
+    id: str(row.id),
+    matterId: str(row.matter_id),
+    attemptNumber: Number(row.attempt_number) || 0,
+    resolutionKind: str(row.resolution_kind) as MatterResolution['resolutionKind'],
+    summary: str(row.summary),
+    actionsTaken: strOrNull(row.actions_taken),
+    outstandingItems: strOrNull(row.outstanding_items),
+    limitations: strOrNull(row.limitations),
+    resolutionStatus: str(row.resolution_status) as MatterResolution['resolutionStatus'],
+    responsiblePartyPosition: str(row.responsible_party_position),
+    initiatorPosition: strOrNull(row.initiator_position),
+    evaluatorPosition: strOrNull(row.evaluator_position),
+    proposedBy: actorFrom(row.proposed_by_kind, row.proposed_by_profile_id, null, row.proposed_by_display_name),
+    proposedAt: str(row.proposed_at),
+    closedAt: strOrNull(row.closed_at),
+    closureKind: strOrNull(row.closure_kind) as MatterResolution['closureKind'],
+    createdAt: str(row.created_at),
+    updatedAt: str(row.updated_at),
+  };
+}
+
+function mapEvaluation(row: Record<string, unknown>): MatterEvaluation {
+  return {
+    id: str(row.id),
+    matterId: str(row.matter_id),
+    resolutionId: strOrNull(row.resolution_id),
+    evaluatorRole: str(row.evaluator_role) as MatterEvaluation['evaluatorRole'],
+    evaluator: actorFrom(row.evaluator_kind, row.evaluator_profile_id, null, row.evaluator_display_name),
+    dimension: str(row.dimension) as MatterEvaluation['dimension'],
+    rating: str(row.rating) as MatterEvaluation['rating'],
+    comment: strOrNull(row.comment),
+    visibility: str(row.visibility) as MatterEvaluation['visibility'],
+    createdAt: str(row.created_at),
+  };
+}
+
+function mapOutcomeFollowup(row: Record<string, unknown>): MatterOutcomeFollowup {
+  return {
+    id: str(row.id),
+    matterId: str(row.matter_id),
+    resolutionId: strOrNull(row.resolution_id),
+    reviewDueAt: str(row.review_due_at),
+    outcomeQuestion: str(row.outcome_question),
+    targetIndicator: strOrNull(row.target_indicator),
+    reviewer: actorFrom(row.reviewer_kind, row.reviewer_profile_id, null, row.reviewer_display_name),
+    status: str(row.status) as MatterOutcomeFollowup['status'],
+    result: strOrNull(row.result) as MatterOutcomeFollowup['result'],
+    notes: strOrNull(row.notes),
+    actionId: strOrNull(row.action_id),
+    humanOutcomeReviewId: strOrNull(row.human_outcome_review_id),
+    createdAt: str(row.created_at),
+    completedAt: strOrNull(row.completed_at),
+  };
+}
+
+function mapPatternCounts(value: unknown): MatterPatternCounts | null {
+  const row = asRecord(value);
+  if (!row) return null;
+  return {
+    redirectCount: Number(row.redirectCount) || 0,
+    reopenCount: Number(row.reopenCount) || 0,
+    resolutionRejectionCount: Number(row.resolutionRejectionCount) || 0,
+    resolutionAttemptCount: Number(row.resolutionAttemptCount) || 0,
   };
 }
 
@@ -556,6 +638,10 @@ export async function getMatterDetail(
     decisions: asRows(record?.decisions).map(mapDecision),
     responsibilities: asRows(record?.responsibilities).map(mapResponsibility),
     workSummary: listed?.workSummary ?? null,
+    resolutions: asRows(record?.resolutions).map(mapResolution),
+    evaluations: asRows(record?.evaluations).map(mapEvaluation),
+    outcomeFollowups: asRows(record?.outcome_followups).map(mapOutcomeFollowup),
+    patternCounts: mapPatternCounts(record?.pattern_counts),
   };
 }
 
@@ -764,6 +850,119 @@ export async function addTaskEvidence(
     p_file_path: params.filePath ?? null,
     p_file_name: params.fileName ?? null,
     p_task_id: taskId,
+  });
+  if (error) throw new Error(rpcErrorMessage(error));
+}
+
+export async function proposeMatterResolution(
+  input: {
+    matterId: string;
+    resolutionKind: string;
+    summary: string;
+    actionsTaken?: string;
+    limitations?: string;
+    responsiblePartyPosition?: string;
+  },
+  client: DbClient = supabase,
+): Promise<string> {
+  const { data, error } = await db(client).rpc('propose_matter_resolution', {
+    payload: {
+      matter_id: input.matterId,
+      resolution_kind: input.resolutionKind,
+      summary: input.summary,
+      actions_taken: input.actionsTaken ?? null,
+      limitations: input.limitations ?? null,
+      responsible_party_position: input.responsiblePartyPosition ?? null,
+    },
+  });
+  if (error || typeof data !== 'string') throw new Error(rpcErrorMessage(error));
+  return data;
+}
+
+export async function performResolutionReview(
+  actionId: string,
+  action: string,
+  options?: {
+    message?: string;
+    followUpChoice?: 'continue' | 'follow_up';
+    followUpTitle?: string;
+    followUpDescription?: string;
+  },
+  client: DbClient = supabase,
+): Promise<void> {
+  const { error } = await db(client).rpc('perform_resolution_review', {
+    p_action_id: actionId,
+    p_action: action,
+    p_message: options?.message ?? null,
+    p_follow_up_choice: options?.followUpChoice ?? null,
+    p_follow_up_title: options?.followUpTitle ?? null,
+    p_follow_up_description: options?.followUpDescription ?? null,
+  });
+  if (error) throw new Error(rpcErrorMessage(error));
+}
+
+export async function submitMatterEvaluation(
+  input: {
+    matterId: string;
+    resolutionId?: string | null;
+    evaluatorRole: string;
+    dimension: string;
+    rating: string;
+    comment?: string;
+    visibility?: string;
+  },
+  client: DbClient = supabase,
+): Promise<void> {
+  const { error } = await db(client).rpc('submit_matter_evaluation', {
+    payload: {
+      matter_id: input.matterId,
+      resolution_id: input.resolutionId ?? null,
+      evaluator_role: input.evaluatorRole,
+      dimension: input.dimension,
+      rating: input.rating,
+      comment: input.comment ?? null,
+      visibility: input.visibility ?? 'participants',
+    },
+  });
+  if (error) throw new Error(rpcErrorMessage(error));
+}
+
+export async function scheduleMatterOutcomeFollowup(
+  input: {
+    matterId: string;
+    resolutionId?: string | null;
+    daysUntilReview?: number;
+    outcomeQuestion?: string;
+    targetIndicator?: string;
+    reviewerKind?: string;
+    reviewerProfileId?: string;
+  },
+  client: DbClient = supabase,
+): Promise<void> {
+  const { error } = await db(client).rpc('schedule_matter_outcome_followup', {
+    payload: {
+      matter_id: input.matterId,
+      resolution_id: input.resolutionId ?? null,
+      days_until_review: input.daysUntilReview ?? 30,
+      outcome_question: input.outcomeQuestion ?? null,
+      target_indicator: input.targetIndicator ?? null,
+      reviewer_kind: input.reviewerKind ?? 'person',
+      reviewer_profile_id: input.reviewerProfileId ?? null,
+    },
+  });
+  if (error) throw new Error(rpcErrorMessage(error));
+}
+
+export async function performOutcomeFollowup(
+  actionId: string,
+  result: string,
+  notes?: string,
+  client: DbClient = supabase,
+): Promise<void> {
+  const { error } = await db(client).rpc('perform_outcome_followup', {
+    p_action_id: actionId,
+    p_result: result,
+    p_notes: notes ?? null,
   });
   if (error) throw new Error(rpcErrorMessage(error));
 }

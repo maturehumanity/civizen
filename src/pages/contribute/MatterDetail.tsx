@@ -41,6 +41,7 @@ import {
 import { listOwnedLinkedProfileIds } from '@/lib/opportunities-api';
 import { toast } from 'sonner';
 import { MatterWorkPanel } from '@/pages/contribute/MatterWorkPanel';
+import { MatterResolutionPanel } from '@/pages/contribute/MatterResolutionPanel';
 
 function formatWhen(value: string | null): string {
   if (!value) return '';
@@ -76,7 +77,7 @@ export default function MatterDetail() {
   const [target, setTarget] = useState<MatterActorSuggestion | null>(null);
   const [targetHits, setTargetHits] = useState<MatterActorSuggestion[]>([]);
   const [file, setFile] = useState<File | null>(null);
-  const [section, setSection] = useState<'overview' | 'discussion' | 'work' | 'decisions' | 'activity'>('overview');
+  const [section, setSection] = useState<'overview' | 'discussion' | 'work' | 'decisions' | 'resolution' | 'outcome' | 'activity'>('overview');
   const [outstandingReason, setOutstandingReason] = useState('');
 
   const load = useCallback(async () => {
@@ -150,6 +151,11 @@ export default function MatterDetail() {
   );
   const progress = workProgressLine(workSummary);
   const pendingActions = bundle?.pendingActions ?? [];
+  const hasResolution = (bundle?.resolutions?.length ?? 0) > 0
+    || pendingActions.some((item) => ['review_resolution', 'propose_resolution'].includes(item.actionType));
+  const hasOutcome = (bundle?.outcomeFollowups?.length ?? 0) > 0
+    || pendingActions.some((item) => item.actionType === 'outcome_followup');
+  const sectionItems = (['overview', 'discussion', ...(hasWork ? ['work', 'decisions'] as const : []), ...(hasResolution ? ['resolution'] as const : []), ...(hasOutcome ? ['outcome'] as const : []), 'activity'] as const);
   const options = matter
     ? formalActionsForContext({
         lifecycleStatus: matter.lifecycleStatus,
@@ -510,15 +516,13 @@ export default function MatterDetail() {
           </Button>
         ) : null}
 
-        {hasWork ? (
-          <div className="flex flex-wrap gap-2">
-            {(['overview', 'discussion', 'work', 'decisions', 'activity'] as const).map((item) => (
-              <Button key={item} type="button" size="sm" variant={section === item ? 'default' : 'outline'} onClick={() => setSection(item)}>
-                {t(`contribute.matters.sections.${item}`)}
-              </Button>
-            ))}
-          </div>
-        ) : null}
+        <div className="flex flex-wrap gap-2">
+          {sectionItems.map((item) => (
+            <Button key={item} type="button" size="sm" variant={section === item ? 'default' : 'outline'} onClick={() => setSection(item)}>
+              {t(`contribute.matters.sections.${item}`)}
+            </Button>
+          ))}
+        </div>
 
         {(!hasWork || section === 'overview') ? (
         <section className="space-y-2">
@@ -802,6 +806,30 @@ export default function MatterDetail() {
               })
             )}
           </section>
+        ) : null}
+
+        {(hasResolution && (section === 'resolution' || section === 'overview')) && bundle ? (
+          <MatterResolutionPanel
+            bundle={bundle}
+            profileId={profileId}
+            linkedIds={linkedIds}
+            busy={busy}
+            onBusy={setBusy}
+            onReload={load}
+            t={t}
+          />
+        ) : null}
+
+        {(hasOutcome && section === 'outcome' && bundle) ? (
+          <MatterResolutionPanel
+            bundle={bundle}
+            profileId={profileId}
+            linkedIds={linkedIds}
+            busy={busy}
+            onBusy={setBusy}
+            onReload={load}
+            t={t}
+          />
         ) : null}
 
         {(!hasWork || section === 'activity') ? (

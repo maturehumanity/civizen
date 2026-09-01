@@ -27,6 +27,7 @@ import {
   type ReopenReason,
   type TimeoutBehavior,
   DEFAULT_TIMING_POLICIES,
+  resolveEscalationPolicyId,
 } from '@/lib/matters';
 
 export type MatterEngineState = {
@@ -144,12 +145,20 @@ function assignAction(
   assignedActor: MatterActorRef,
   timingPolicyId: string,
   timeoutAction: TimeoutBehavior,
+  options?: {
+    contextKind?: MatterActionRequirement['contextKind'];
+    contextId?: string | null;
+    escalationPolicyId?: string | null;
+  },
 ): MatterActionRequirement {
   if (state.currentAction && (state.currentAction.status === 'pending' || state.currentAction.status === 'overdue')) {
     supersedeCurrent(state, ctx);
   }
   const policy = getTimingPolicy(timingPolicyId, ctx.policies);
   const { dueAt, reminderAt } = computeDueAt(ctx.now, policy);
+  const escalationPolicyId =
+    options?.escalationPolicyId
+    ?? resolveEscalationPolicyId({ matterType: state.matter.matterType, actionType });
   const action: MatterActionRequirement = {
     id: nextId(ctx, 'act'),
     matterId: state.matter.id,
@@ -164,9 +173,9 @@ function assignAction(
     completedBy: null,
     completionAction: null,
     timeoutAction,
-    escalationPolicyId: null,
-    contextKind: 'matter',
-    contextId: null,
+    escalationPolicyId,
+    contextKind: options?.contextKind ?? 'matter',
+    contextId: options?.contextId ?? null,
   };
   state.actions.push(action);
   state.currentAction = action;
@@ -360,9 +369,9 @@ function assignConfirmation(state: MatterEngineState, ctx: MatterEngineContext):
   assignAction(
     state,
     ctx,
-    'confirm_resolution',
+    'review_resolution',
     state.matter.initiator,
-    'resolution_confirmation',
+    'resolution_review',
     'auto_close',
   );
 }
@@ -587,7 +596,18 @@ export function performFormalAction(
     }
     case 'confirm_partially_resolved': {
       completeCurrent(next, ctx, input.actor, 'confirm_partially_resolved');
-      closeMatter(next, ctx, input.actor, 'partially_resolved', input.message?.trim() || 'Initiator marked this as partially resolved.', false);
+      logEvent(
+        next,
+        ctx,
+        'resolution_partially_accepted',
+        input.message?.trim() || 'Initiator marked this as partially resolved.',
+        input.actor,
+        false,
+      );
+      assignAction(next, ctx, 'address', next.matter.responsible, 'resolution_followup', 'remind', {
+        contextKind: 'resolution',
+        contextId: next.matter.latestResolutionId,
+      });
       break;
     }
     case 'confirm_not_resolved': {

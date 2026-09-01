@@ -2,8 +2,8 @@
 
 **Project:** Civizen  
 **Routes:** `/contribute/matters`, `/contribute/matters/new`, `/contribute/matters/:matterId`  
-**Status:** Phase 1 + Phase 2 (Collaborative Work) implemented; Phase 2 stabilization (work-completion gates + shared-responsibility acceptance) applied  
-**Version:** 2.1
+**Status:** Phase 1 + Phase 2 + Phase 3 (Resolution, Evaluation, Escalation & Accountability) shipped  
+**Version:** 3.0
 
 Canonical product/UX note for agents. Contribute hub: [`contribute-page.md`](./contribute-page.md).
 
@@ -65,7 +65,7 @@ Reusable `matter_timing_policies` (calendar days now; business days/hours reserv
 | Decision confirmation | 2 calendar days |
 | Final work response | 3 calendar days |
 
-Timeout behaviors are catalogued. Phase 1 **runs** `remind` and `auto_close` (initiator confirmation). Other types are stored for later (escalate, forward, involve, continue without response, return to initiator, mark unresponsive, require manual review).
+Timeout behaviors are catalogued. Phase 1 **runs** `remind` and `auto_close` (initiator confirmation). Phase 3 **also runs** configurable escalation steps (`matter_escalation_steps`) for overdue `respond` / `responsibility_response` actions, marks actors unresponsive, notifies Responsible Lead, and can require manual review. Other catalogued types remain for later policy wiring.
 
 `list_matters` is read-only. Timeouts, reminders, and auto-close run only in `process_matter_action_timeouts`, serialized by a transaction advisory lock and `FOR UPDATE SKIP LOCKED`. Production invocation:
 
@@ -117,16 +117,61 @@ Asking someone to become a **Responsible Collaborator** is a **shared-responsibi
 
 When a Responsible Lead proposes a Decision on a Matter where that Lead currently has decision authority, the Decision may be accepted in the same step. That is the **current default** for these Matters. It is not an architectural assumption that every future Decision is unilaterally decidable by the Responsible Lead. Later rules may require multi-party approval, organizational approval, voting, governance rules, or external authority. No advanced approval engine is implemented in this phase.
 
+## Phase 3 — Resolution, evaluation, escalation, outcome
+
+Formal **Resolution** records (`matter_resolutions`) are append-only cycles linked to a Matter. Responsible party position and initiator position are stored separately; disagreement is valid and visible.
+
+Flow after work or final response:
+
+1. Responsible Lead **proposes Resolution** (`propose_matter_resolution`) — outstanding Tasks are surfaced automatically in `outstanding_items`.
+2. Initiator receives timed **`review_resolution`** action (3-day `resolution_review` policy; auto-close is **not** confirmation).
+3. Initiator may confirm, partially accept, reject, need clarification, or cannot verify (`perform_resolution_review`).
+4. Rejected / partial cycles preserve history; Lead gets `resolution_followup` work action. Partial resolution may **continue this Matter** or **create follow-up Matter** (`FOLLOW_UP_TO` relationship).
+5. Optional **evaluations** (`matter_evaluations`) — qualitative 5-level dimensions; no Score effect.
+6. Optional **outcome follow-up** (`matter_outcome_followups`) — separate from Resolution; qualitative outcome states only.
+7. **Escalation** via `matter_escalation_steps` + idempotent `matter_escalation_executions`. Each Action Requirement stores the authoritative `escalation_policy_id` (selected at assignment from `matter_escalation_policy_defaults` or an explicit override). `process_matter_action_timeouts` executes steps for the **bound** policy only — not by re-deriving from `action_type`.
+8. **Stalled Matter diagnostic**: `matter_find_stalled()` — active Matter with no pending action and no waiting condition. Operational use: monitoring / manual review queue; does not auto-repair or invent responsibility in Phase 3.
+
+### Canonical terminology (do not collapse layers)
+
+| Layer | Field | Example values |
+|-------|--------|----------------|
+| Matter lifecycle | `lifecycle_status` | `draft`, `submitted`, `active`, `closed` |
+| Matter closure | `close_kind` | `confirmed_resolution`, `partially_resolved`, `auto_no_initiator_response` |
+| Resolution record | `resolution_status` | `proposed`, `confirmed`, `partially_accepted`, `rejected`, `auto_closed` |
+| Resolution closure | `closure_kind` | `confirmed_resolution`, `auto_closed_no_response`, `partial_resolution_accepted` |
+| Positions | `responsible_party_position`, `initiator_position` | separate text; not lifecycle status |
+| Outcome follow-up | `result` | `improved`, `partly_improved`, `no_change`, `worsened`, `unable_to_determine` |
+
+`auto_no_initiator_response` (Matter) and `auto_closed_no_response` (Resolution record) are **different layers** — auto-close must never read as confirmed resolution.
+
+### Partial resolution
+
+`confirm_partially_resolved` on **`review_resolution`** is the Phase 3 path. **Continue this Matter** keeps the Matter active and assigns `resolution_followup`. **Create follow-up Matter** closes with `partially_resolved` and links via `FOLLOW_UP_TO`. Legacy `confirm_resolution` + `confirm_partially_resolved` remains for Phase 1 history but no longer auto-closes; it assigns follow-up work instead.
+
+### Legacy `confirm_resolution` boundary
+
+New Resolution proposals use `propose_matter_resolution` → `review_resolution`. Initiator review actions route through `perform_resolution_review`. Legacy `confirm_resolution` timed actions may still exist on older Matters; `perform_matter_formal_action` delegates compatible review verbs to `perform_resolution_review` when the pending action is `review_resolution`.
+
+### Factual timeliness (no dashboards in Phase 3)
+
+Events already emitted for later analytics: `action_assigned`, `timer_started`, `reminder_sent`, `action_overdue`, `action_completed`, `responsibility_accepted`, `resolution_proposed`, `resolution_confirmed`, `resolution_rejected`, `resolution_partially_accepted`, `matter_closed`, `matter_reopened`, `escalation_step_executed`, `outcome_followup_scheduled`, `outcome_followup_completed`. Action Requirements store `created_at`, `due_at`, `reminder_at`, `completed_at`. No additional analytics endpoint is required for Phase 3.
+
+Closure kinds include `confirmed_resolution`, `auto_no_initiator_response`, `partially_resolved`, `unable_to_resolve`, `referred`, `administrative_close`. Auto-close copy: *Closed automatically after no response from the initiator within the resolution-review period.*
+
+Human Outcome Review (`/wellbeing-insights/outcome`) remains separate; `human_outcome_review_id` on outcome follow-ups is reserved for optional linkage — not forced on generic Matters.
+
 ## Deferred
 
 AI participants and routing, Projects as a separate collaboration layer, Community Challenge / Governance conversion, department trees and auto-assignment, Score/reputation/capability consequences, analytics dashboards, Gantt/Kanban, advanced evidence certification.
 
 ## Implementation map
 
-- Domain: `src/lib/matters.ts`, `src/lib/matters-workflow.ts`, `src/lib/matters-work.ts`, `src/lib/matters-work-workflow.ts`
+- Domain: `src/lib/matters.ts`, `src/lib/matters-workflow.ts`, `src/lib/matters-work.ts`, `src/lib/matters-work-workflow.ts`, `src/lib/matters-resolution.ts`, `src/lib/matters-resolution-workflow.ts`
 - API: `src/lib/matters-api.ts`
-- UI: `src/pages/contribute/Matters.tsx`, `MatterForm.tsx`, `MatterDetail.tsx`, `MatterWorkPanel.tsx`
-- Schema: `supabase/migrations/20260831010000_matter_collaboration_system.sql`, `20260831200000_matter_collaboration_stabilization.sql`, `20260901120000_matter_collaborative_work.sql`, `20260901140000_matter_collaborative_work_stabilization.sql`
+- UI: `src/pages/contribute/Matters.tsx`, `MatterForm.tsx`, `MatterDetail.tsx`, `MatterWorkPanel.tsx`, `MatterResolutionPanel.tsx`
+- Schema: `supabase/migrations/20260831010000_matter_collaboration_system.sql`, `20260831200000_matter_collaboration_stabilization.sql`, `20260901120000_matter_collaborative_work.sql`, `20260901140000_matter_collaborative_work_stabilization.sql`, `20260901160000_matter_resolution_phase3.sql`, `20260901170000_matter_resolution_phase3_stabilization.sql`
+- Gates: `verify:matters-resolution-detail` (Phase 3 — 13 dedicated Resolution/Outcome states @ 390px + 1280px)
 
 ## Security: `search_path` and schema CREATE (2026-09-01)
 

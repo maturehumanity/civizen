@@ -5,6 +5,8 @@ const original = readFileSync('supabase/migrations/20260831010000_matter_collabo
 const stabilization = readFileSync('supabase/migrations/20260831200000_matter_collaboration_stabilization.sql', 'utf8');
 const collaborative = readFileSync('supabase/migrations/20260901120000_matter_collaborative_work.sql', 'utf8');
 const workStab = readFileSync('supabase/migrations/20260901140000_matter_collaborative_work_stabilization.sql', 'utf8');
+const phase3 = readFileSync('supabase/migrations/20260901160000_matter_resolution_phase3.sql', 'utf8');
+const phase3Stab = readFileSync('supabase/migrations/20260901170000_matter_resolution_phase3_stabilization.sql', 'utf8');
 
 describe('Matter SQL security and timeout isolation', () => {
   it('keeps SECURITY DEFINER Matter functions on a controlled search_path', () => {
@@ -118,5 +120,65 @@ describe('Matter SQL security and timeout isolation', () => {
     ]) {
       expect(workStab).toMatch(new RegExp(`REVOKE ALL ON FUNCTION public.${name}`));
     }
+  });
+});
+
+describe('Matter Phase 3 resolution security', () => {
+  it('keeps resolution helpers revoked from authenticated callers', () => {
+    for (const name of [
+      'matter_internal_propose_resolution',
+      'matter_execute_escalation_step',
+      'matter_activate_due_outcome_followups',
+      'matter_find_stalled',
+    ]) {
+      expect(phase3).toMatch(new RegExp(`REVOKE ALL ON FUNCTION public.${name}`));
+    }
+  });
+
+  it('routes initiator review through perform_resolution_review and preserves resolution history', () => {
+    expect(phase3).toMatch(/matter_resolutions/);
+    expect(phase3).toMatch(/UNIQUE \(matter_id, attempt_number\)/);
+    expect(phase3).toMatch(/perform_resolution_review/);
+    expect(phase3).toMatch(/auto_closed_no_response/);
+    expect(phase3).toMatch(/Closed automatically after no response from the initiator/);
+  });
+
+  it('implements idempotent escalation execution', () => {
+    expect(phase3).toMatch(/matter_escalation_executions/);
+    expect(phase3).toMatch(/PRIMARY KEY \(action_id, step_order\)/);
+    expect(phase3).toMatch(/matter_execute_escalation_step/);
+  });
+});
+
+describe('Matter Phase 3 stabilization', () => {
+  it('binds escalation policy on matter_assign_action and executes by bound policy id', () => {
+    expect(phase3Stab).toMatch(/matter_escalation_policy_defaults/);
+    expect(phase3Stab).toMatch(/matter_resolve_escalation_policy/);
+    expect(phase3Stab).toMatch(/p_escalation_policy_id text DEFAULT NULL/);
+    expect(phase3Stab).toMatch(/context_kind, context_id, escalation_policy_id/);
+    expect(phase3Stab).toMatch(/v_locked\.escalation_policy_id IS NOT NULL/);
+    expect(phase3Stab).toMatch(/WHERE s\.policy_id = v_locked\.escalation_policy_id/);
+    expect(phase3Stab).not.toMatch(/WHERE s\.policy_id[\s\S]{0,80}trigger_action_type = v_locked\.action_type/);
+  });
+
+  it('does not auto-close on legacy confirm_partially_resolved', () => {
+    expect(phase3Stab).toMatch(/WHEN 'confirm_partially_resolved'/);
+    expect(phase3Stab).toMatch(/resolution_followup/);
+    expect(phase3Stab).not.toMatch(/WHEN 'confirm_partially_resolved'[\s\S]{0,400}matter_close\(/);
+  });
+
+  it('keeps continue vs follow-up partial-resolution closure_kind distinct', () => {
+    expect(phase3Stab).toMatch(/follow_up_choice, 'continue'\) = 'follow_up' THEN 'partial_resolution_accepted'/);
+    expect(phase3Stab).toMatch(/ELSE NULL/);
+  });
+
+  it('rejects unassignable evaluation roles in Phase 3', () => {
+    expect(phase3Stab).toMatch(/IF v_role IN \('responsible_collaborator', 'assigned_evaluator', 'affected_participant'\)/);
+    expect(phase3Stab).toMatch(/not yet assignable in Phase 3/);
+  });
+
+  it('documents stalled-matter diagnostic operational use', () => {
+    expect(phase3Stab).toMatch(/COMMENT ON FUNCTION public\.matter_find_stalled/);
+    expect(phase3Stab).toMatch(/manual review/);
   });
 });

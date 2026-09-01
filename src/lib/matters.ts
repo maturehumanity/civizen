@@ -34,6 +34,7 @@ export const ACTION_REQUIREMENT_TYPES = [
   'clarify',
   'address',
   'confirm_resolution',
+  'review_resolution',
   'choose_next_party',
   'accept_task',
   'complete_task',
@@ -41,6 +42,9 @@ export const ACTION_REQUIREMENT_TYPES = [
   'reconsider_task',
   'confirm_decision',
   'shared_responsibility_response',
+  'propose_resolution',
+  'outcome_followup',
+  'manual_review',
 ] as const;
 export type ActionRequirementType = (typeof ACTION_REQUIREMENT_TYPES)[number];
 
@@ -84,6 +88,7 @@ export const FORMAL_ACTIONS = [
   'confirm_partially_resolved',
   'confirm_not_resolved',
   'need_clarification',
+  'cannot_verify',
   'revealed_issue',
   'close',
   'reopen',
@@ -108,6 +113,9 @@ export const CLOSE_KINDS = [
   'no_action_required',
   'withdrawn',
   'manual',
+  'unable_to_resolve',
+  'referred',
+  'administrative_close',
 ] as const;
 export type CloseKind = (typeof CLOSE_KINDS)[number];
 
@@ -128,6 +136,9 @@ export const TIMING_POLICY_IDS = [
   'task_review',
   'decision_confirmation',
   'final_work_response',
+  'resolution_review',
+  'resolution_followup',
+  'outcome_followup',
 ] as const;
 export type TimingPolicyId = (typeof TIMING_POLICY_IDS)[number];
 
@@ -255,6 +266,30 @@ export const DEFAULT_TIMING_POLICIES: readonly MatterTimingPolicy[] = [
     reminderValue: 1,
     reminderUnit: 'calendar_days',
   },
+  {
+    id: 'resolution_review',
+    displayName: 'Resolution review',
+    durationValue: 3,
+    durationUnit: 'calendar_days',
+    reminderValue: 1,
+    reminderUnit: 'calendar_days',
+  },
+  {
+    id: 'resolution_followup',
+    displayName: 'Resolution follow-up work',
+    durationValue: 5,
+    durationUnit: 'calendar_days',
+    reminderValue: 1,
+    reminderUnit: 'calendar_days',
+  },
+  {
+    id: 'outcome_followup',
+    displayName: 'Outcome follow-up',
+    durationValue: 30,
+    durationUnit: 'calendar_days',
+    reminderValue: 7,
+    reminderUnit: 'calendar_days',
+  },
 ];
 
 export type MatterTypeDefault = {
@@ -329,6 +364,8 @@ export type Matter = {
   collaborativeWorkCompletedAt: string | null;
   collaborativeWorkCompletionKind: 'normal' | 'with_outstanding_work' | null;
   collaborativeWorkCompletionReason: string | null;
+  latestResolutionId?: string | null;
+  resolutionAttemptCount?: number;
 };
 
 export type MatterActionRequirement = {
@@ -346,9 +383,10 @@ export type MatterActionRequirement = {
   completionAction: FormalActionType | null;
   timeoutAction: TimeoutBehavior;
   escalationPolicyId: string | null;
-  contextKind: 'matter' | 'task' | 'decision' | 'responsibility';
+  contextKind: 'matter' | 'task' | 'decision' | 'responsibility' | 'resolution' | 'outcome';
   contextId: string | null;
   taskTitle?: string | null;
+  resolutionId?: string | null;
 };
 
 export type MatterComment = {
@@ -410,6 +448,7 @@ export type MatterAttachment = {
   createdAt: string;
   taskId: string | null;
   decisionId: string | null;
+  resolutionId?: string | null;
 };
 
 export type DerivedMatterStatus =
@@ -425,7 +464,11 @@ export type DerivedMatterStatus =
   | 'closed'
   | 'reopened'
   | 'no_action_required'
-  | 'work_in_progress';
+  | 'work_in_progress'
+  | 'resolution_proposed'
+  | 'partial_resolution'
+  | 'resolved_confirmed'
+  | 'outcome_followup';
 
 export type BallIsWithCopy = {
   headline: string;
@@ -528,21 +571,33 @@ export function deriveMatterStatus(
   if (matter.lifecycleStatus === 'draft') return 'draft';
   if (matter.lifecycleStatus === 'closed') {
     if (matter.closeKind === 'auto_no_initiator_response') return 'automatically_closed';
-    if (matter.closeKind === 'confirmed_resolution') return 'addressed';
+    if (matter.closeKind === 'confirmed_resolution') return 'resolved_confirmed';
     if (matter.closeKind === 'partially_resolved') return 'partially_resolved';
     if (matter.closeKind === 'no_action_required') return 'no_action_required';
     return 'closed';
   }
   if (matter.reopenCount > 0 && (!action || action.status === 'pending')) {
-    if (action?.actionType === 'confirm_resolution') return 'waiting_for_initiator';
+    if (action?.actionType === 'confirm_resolution' || action?.actionType === 'review_resolution') {
+      return 'waiting_for_initiator';
+    }
   }
   if (actionIsDisplayOverdue(action, now)) {
     return 'response_overdue';
   }
   if (action?.actionType === 'clarify') return 'clarification_needed';
-  if (action?.actionType === 'confirm_resolution') return 'waiting_for_initiator';
+  if (action?.actionType === 'review_resolution' || action?.actionType === 'confirm_resolution') {
+    return 'resolution_proposed';
+  }
+  if (action?.actionType === 'propose_resolution') return 'waiting_for_response';
+  if (action?.actionType === 'outcome_followup') return 'outcome_followup';
   if (action?.actionType === 'choose_next_party') return 'choose_next_party';
   if (matter.reopenCount > 0 && action?.status === 'pending') return 'reopened';
+  if (
+    action?.actionType === 'address'
+    && (action.contextKind === 'resolution' || ('resolutionAttemptCount' in matter && (matter.resolutionAttemptCount ?? 0) > 0))
+  ) {
+    return 'partial_resolution';
+  }
   if (
     'collaborativeWorkStartedAt' in matter
     && matter.collaborativeWorkStartedAt
@@ -604,6 +659,14 @@ export function actionExpectedCopy(actionType: ActionRequirementType): string {
       return 'Address this Matter and provide a final response.';
     case 'confirm_resolution':
       return 'Confirm whether the proposed response addressed the Matter.';
+    case 'review_resolution':
+      return 'Review the proposed Resolution and confirm, partially accept, or reject it.';
+    case 'propose_resolution':
+      return 'Propose Resolution — describe what was done, the outcome claimed, and any limitations.';
+    case 'outcome_followup':
+      return 'Record whether the situation improved after resolution.';
+    case 'manual_review':
+      return 'Manual review is required after escalation.';
     case 'choose_next_party':
       return 'Choose who should take this Matter next.';
     case 'accept_task':
@@ -620,6 +683,84 @@ export function actionExpectedCopy(actionType: ActionRequirementType): string {
       return 'Respond to this shared responsibility request.';
     default:
       return 'A response is required.';
+  }
+}
+
+export const ESCALATION_POLICY_IDS = [
+  'response_escalation',
+  'responsibility_escalation',
+  'responsibility_escalation_urgent',
+] as const;
+export type EscalationPolicyId = (typeof ESCALATION_POLICY_IDS)[number];
+
+export function resolveEscalationPolicyId(params: {
+  matterType: MatterType;
+  actionType: ActionRequirementType;
+  explicitPolicyId?: string | null;
+}): string | null {
+  if (params.explicitPolicyId) return params.explicitPolicyId;
+  const defaults: Partial<Record<MatterType, Partial<Record<ActionRequirementType, string>>>> = {
+    question: { respond: 'response_escalation' },
+    suggestion: { respond: 'response_escalation' },
+    discussion: { respond: 'response_escalation' },
+    other: { respond: 'response_escalation', responsibility_response: 'responsibility_escalation' },
+    issue: { responsibility_response: 'responsibility_escalation' },
+    request: { responsibility_response: 'responsibility_escalation' },
+  };
+  return defaults[params.matterType]?.[params.actionType] ?? null;
+}
+
+export type ActionContextKind = 'matter' | 'task' | 'decision' | 'resolution' | 'outcome';
+
+export function actionContextKind(
+  action: Pick<MatterActionRequirement, 'actionType' | 'contextKind'> | null,
+): ActionContextKind {
+  if (!action) return 'matter';
+  if (action.actionType === 'outcome_followup' || action.contextKind === 'outcome') return 'outcome';
+  if (
+    action.actionType === 'review_resolution'
+    || action.actionType === 'propose_resolution'
+    || action.contextKind === 'resolution'
+  ) {
+    return 'resolution';
+  }
+  if (
+    action.actionType === 'confirm_decision'
+    || action.contextKind === 'decision'
+  ) {
+    return 'decision';
+  }
+  if (
+    action.actionType === 'accept_task'
+    || action.actionType === 'complete_task'
+    || action.actionType === 'review_task'
+    || action.actionType === 'reconsider_task'
+    || action.contextKind === 'task'
+  ) {
+    return 'task';
+  }
+  return 'matter';
+}
+
+export function actionContextHeadline(
+  action: Pick<MatterActionRequirement, 'actionType' | 'contextKind'> | null,
+): string {
+  const kind = actionContextKind(action);
+  switch (kind) {
+    case 'resolution':
+      if (action?.actionType === 'propose_resolution') return 'Propose Resolution';
+      if (action?.actionType === 'review_resolution') return 'Review proposed resolution';
+      return 'Resolution';
+    case 'outcome':
+      return 'Record outcome follow-up';
+    case 'decision':
+      return 'Confirm Decision';
+    case 'task':
+      if (action?.actionType === 'review_task') return 'Review Task';
+      if (action?.actionType === 'accept_task') return 'Accept Task';
+      return 'Task';
+    default:
+      return 'Matter';
   }
 }
 
@@ -660,7 +801,9 @@ export function buildBallIsWithCopy(params: {
   }
   const waitingOn = actorLabel(action.assignedActor, 'the other party');
   const headline =
-    action.actionType === 'confirm_resolution' || action.actionType === 'clarify'
+    action.actionType === 'confirm_resolution'
+    || action.actionType === 'review_resolution'
+    || action.actionType === 'clarify'
       ? `Waiting for ${waitingOn}`
       : `Waiting on ${waitingOn}`;
   return {
@@ -710,6 +853,14 @@ const ACTION_SETS: Record<ActionRequirementType, FormalActionType[]> = {
     'confirm_not_resolved',
     'need_clarification',
     'revealed_issue',
+    'cannot_verify',
+  ],
+  review_resolution: [
+    'confirm_resolved',
+    'confirm_partially_resolved',
+    'confirm_not_resolved',
+    'need_clarification',
+    'cannot_verify',
   ],
   choose_next_party: ['redirect', 'invite_party'],
   accept_task: [],
@@ -718,6 +869,9 @@ const ACTION_SETS: Record<ActionRequirementType, FormalActionType[]> = {
   reconsider_task: [],
   confirm_decision: [],
   shared_responsibility_response: [],
+  propose_resolution: [],
+  outcome_followup: [],
+  manual_review: [],
 };
 
 const TARGET_ACTIONS = new Set<FormalActionType>(['forward', 'invite_party', 'redirect']);
@@ -731,6 +885,7 @@ const MESSAGE_ACTIONS = new Set<FormalActionType>([
   'confirm_not_resolved',
   'need_clarification',
   'confirm_partially_resolved',
+  'cannot_verify',
   'revealed_issue',
 ]);
 
@@ -761,7 +916,10 @@ export function formalActionsForContext(params: {
   }
   const assigned = viewerRepresents(viewerProfileId, currentAction.assignedActor, managedOrganizationIds);
   const options: FormalActionOption[] = [];
-  const matterClock = currentAction.contextKind === 'matter';
+  const matterClock =
+    currentAction.contextKind === 'matter'
+    || currentAction.contextKind === 'resolution'
+    || currentAction.actionType === 'review_resolution';
   if (assigned && matterClock && (currentAction.status === 'pending' || currentAction.status === 'overdue')) {
     for (const action of ACTION_SETS[currentAction.actionType]) {
       if (action === 'revealed_issue' && params.matterType !== 'question') continue;

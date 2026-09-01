@@ -14,6 +14,11 @@ import {
   startCollaborativeWork,
 } from '@/lib/matters-work-workflow';
 import { createMatter, createMatterEngineContext, performFormalAction } from '@/lib/matters-workflow';
+import {
+  createResolutionEngineState,
+  performResolutionReview,
+  proposeResolution,
+} from '@/lib/matters-resolution-workflow';
 
 const initiator = { kind: 'person' as const, profileId: 'init', displayName: 'Initiator' };
 const product = { kind: 'organization' as const, profileId: 'product', displayName: 'Civizen Product' };
@@ -123,10 +128,18 @@ describe('Phase 2 primary collaborative work scenario', () => {
     expect(state.tasks.find((row) => row.id === taskD.id)?.status).toBe('completed');
 
     state = completeCollaborativeWork(state, ctx, product);
-    expect(state.currentAction?.actionType).toBe('address');
-    state = performFormalAction(state, ctx, { actor: product, action: 'mark_addressed', message: 'The assessment flow is clearer.' });
-    expect(state.currentAction?.actionType).toBe('confirm_resolution');
-    state = performFormalAction(state, ctx, { actor: initiator, action: 'confirm_resolved' });
+    expect(state.currentAction?.actionType).toBe('propose_resolution');
+    state = proposeResolution(createResolutionEngineState(state), ctx, {
+      actor: product,
+      resolutionKind: 'resolved',
+      summary: 'The assessment flow is clearer.',
+    });
+    expect(state.currentAction?.actionType).toBe('review_resolution');
+    state = performResolutionReview(state, ctx, {
+      actor: initiator,
+      actionId: pendingFor(state, initiator)[0].id,
+      action: 'confirm_resolved',
+    });
     expect(state.matter.lifecycleStatus).toBe('closed');
     expect(state.tasks.every((row) => row.status === 'completed' || row.status === 'declined')).toBe(true);
     const types = state.events.map((row) => row.eventType);
@@ -241,8 +254,16 @@ describe('Phase 2 additional scenarios', () => {
       actorIsLead: true,
     });
     state = completeCollaborativeWork(state, ctx, product);
-    state = performFormalAction(state, ctx, { actor: product, action: 'mark_addressed', message: 'Addressed.' });
-    state = performFormalAction(state, ctx, { actor: initiator, action: 'confirm_resolved' });
+    state = proposeResolution(createResolutionEngineState(state), ctx, {
+      actor: product,
+      resolutionKind: 'resolved',
+      summary: 'Addressed.',
+    });
+    state = performResolutionReview(state, ctx, {
+      actor: initiator,
+      actionId: pendingFor(state, initiator)[0].id,
+      action: 'confirm_resolved',
+    });
     expect(state.matter.lifecycleStatus).toBe('closed');
     const completedId = state.tasks[0].id;
     const decisionId = state.decisions[0].id;
@@ -318,7 +339,7 @@ describe('Phase 2 stabilization: work completion and shared responsibility', () 
     expect(state.tasks.every((task) => task.status === 'completed' || task.status === 'cancelled')).toBe(true);
     state = completeCollaborativeWork(state, ctx, product);
     expect(state.matter.collaborativeWorkCompletionKind).toBe('normal');
-    expect(state.currentAction?.actionType).toBe('address');
+    expect(state.currentAction?.actionType).toBe('propose_resolution');
   });
 
   it('records exceptional completion with outstanding Tasks and leaves Task history unchanged', () => {
@@ -335,7 +356,7 @@ describe('Phase 2 stabilization: work completion and shared responsibility', () 
     expect(state.events.some((row) => row.eventType === 'collaborative_work_completed_with_outstanding')).toBe(true);
     expect(state.tasks[0].status).toBe(before.status);
     expect(state.tasks[0].completedAt).toBe(before.completedAt);
-    expect(state.currentAction?.actionType).toBe('address');
+    expect(state.currentAction?.actionType).toBe('propose_resolution');
   });
 
   it('stores Task decline reasons on the assignment and in event payload', () => {

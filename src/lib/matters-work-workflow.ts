@@ -7,6 +7,7 @@ import {
   actorsEqual,
   computeDueAt,
   getTimingPolicy,
+  resolveEscalationPolicyId,
   type MatterActionRequirement,
   type MatterActorRef,
 } from '@/lib/matters';
@@ -44,7 +45,7 @@ function systemActor(): MatterActorRef {
   return { kind: 'system', profileId: null, displayName: 'Civizen' };
 }
 
-function clone(state: WorkEngineState): WorkEngineState {
+export function cloneWorkState(state: WorkEngineState): WorkEngineState {
   return {
     ...state,
     matter: { ...state.matter },
@@ -84,7 +85,7 @@ function log(
   });
 }
 
-function assignScoped(
+export function assignScoped(
   state: WorkEngineState,
   ctx: MatterEngineContext,
   actionType: MatterActionRequirement['actionType'],
@@ -119,7 +120,10 @@ function assignScoped(
     completedBy: null,
     completionAction: null,
     timeoutAction: 'remind',
-    escalationPolicyId: null,
+    escalationPolicyId: resolveEscalationPolicyId({
+      matterType: state.matter.matterType,
+      actionType,
+    }),
     contextKind,
     contextId,
     taskTitle: taskTitle ?? null,
@@ -138,7 +142,7 @@ function assignScoped(
   return action;
 }
 
-function completeAction(
+export function completeAction(
   state: WorkEngineState,
   ctx: MatterEngineContext,
   actionId: string,
@@ -225,7 +229,7 @@ export function startCollaborativeWork(
   ctx: MatterEngineContext,
   actor: MatterActorRef,
 ): WorkEngineState {
-  const next = clone(asWorkState(state));
+  const next = cloneWorkState(asWorkState(state));
   if (next.matter.lifecycleStatus === 'closed') throw new Error('This Matter is closed.');
   if (next.matter.collaborativeWorkStartedAt) return next;
   next.matter.collaborativeWorkStartedAt = iso(ctx.now);
@@ -269,7 +273,7 @@ export function createTask(
 ): WorkEngineState {
   const next = !state.matter.collaborativeWorkStartedAt
     ? startCollaborativeWork(state, ctx, input.actor)
-    : clone(asWorkState(state));
+    : cloneWorkState(asWorkState(state));
   if (next.matter.lifecycleStatus === 'closed') throw new Error('This Matter is closed.');
   const deps: TaskDependency[] = (input.dependsOn ?? []).map((id) => {
     const other = next.tasks.find((row) => row.id === id);
@@ -355,7 +359,7 @@ export function performTaskAction(
   ctx: MatterEngineContext,
   input: { actor: MatterActorRef; actionId: string; action: string; message?: string; target?: MatterActorRef },
 ): WorkEngineState {
-  const next = clone(state);
+  const next = cloneWorkState(state);
   const action = next.actions.find((row) => row.id === input.actionId);
   if (!action || (action.status !== 'pending' && action.status !== 'overdue')) {
     throw new Error('No pending action.');
@@ -571,7 +575,7 @@ export function proposeDecision(
     actorIsLead?: boolean;
   },
 ): WorkEngineState {
-  const next = clone(state);
+  const next = cloneWorkState(state);
   const decision: MatterDecision = {
     id: nextId(ctx, 'dec'),
     matterId: next.matter.id,
@@ -603,7 +607,7 @@ export function requestSharedResponsibility(
   ctx: MatterEngineContext,
   input: { actor: MatterActorRef; target: MatterActorRef },
 ): WorkEngineState {
-  const next = clone(state);
+  const next = cloneWorkState(state);
   const existing = next.responsibilities.find(
     (row) => row.kind === 'collaborator' && actorsEqual(row.actor, input.target),
   );
@@ -715,7 +719,7 @@ export function completeCollaborativeWork(
   actor: MatterActorRef,
   options?: { allowOutstanding?: boolean; reason?: string },
 ): WorkEngineState {
-  const next = clone(state);
+  const next = cloneWorkState(state);
   const outstanding = outstandingWorkTasks(next.tasks);
   if (outstanding.length > 0 && !options?.allowOutstanding) {
     throw new Error('Collaborative work still has outstanding Tasks. Cancel, reassign, replace, or waive them, or complete with outstanding work.');
@@ -748,7 +752,7 @@ export function completeCollaborativeWork(
       actor,
     );
   }
-  assignScoped(next, ctx, 'address', actor, 'final_work_response', 'matter', null);
+  assignScoped(next, ctx, 'propose_resolution', actor, 'final_work_response', 'matter', null);
   return next;
 }
 

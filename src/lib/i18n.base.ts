@@ -3333,7 +3333,11 @@ export const baseTranslations = {
         "closed": "Closed",
         "reopened": "Reopened",
         "no_action_required": "No action required",
-        "work_in_progress": "Work in progress"
+        "work_in_progress": "Work in progress",
+        "resolution_proposed": "Resolution proposed — awaiting initiator",
+        "partial_resolution": "Partially resolved — further action required",
+        "resolved_confirmed": "Resolved and confirmed",
+        "outcome_followup": "Outcome follow-up due"
       },
       "visibility": {
         "private": "Private",
@@ -3407,7 +3411,52 @@ export const baseTranslations = {
         "discussion": "Discussion",
         "work": "Work",
         "decisions": "Decisions",
+        "resolution": "Resolution",
+        "outcome": "Outcome",
         "activity": "Activity"
+      },
+      "resolution": {
+        "noneYet": "No formal Resolution has been proposed yet.",
+        "attempt": "Resolution attempt",
+        "proposeTitle": "Propose Resolution",
+        "proposeAction": "Propose Resolution",
+        "proposed": "Resolution proposed.",
+        "kind": "Outcome claimed",
+        "summary": "What was done / response provided",
+        "actionsTaken": "Actions taken",
+        "limitations": "Limitations or outstanding items",
+        "outstandingWork": "Outstanding work surfaced automatically",
+        "reviewTitle": "Review proposed Resolution",
+        "reviewMessage": "Your response",
+        "reviewSaved": "Resolution review recorded.",
+        "reasonRequired": "Please explain your response.",
+        "cannotVerify": "Cannot verify",
+        "continueMatter": "Continue this Matter",
+        "createFollowUp": "Create follow-up Matter",
+        "followUpTitle": "Follow-up title",
+        "followUpDescription": "Follow-up description"
+      },
+      "outcome": {
+        "scheduleTitle": "Schedule outcome follow-up",
+        "scheduleAction": "Schedule in 30 days",
+        "scheduled": "Outcome follow-up scheduled.",
+        "recordTitle": "Record outcome after resolution",
+        "recordAction": "Save outcome",
+        "recorded": "Outcome recorded.",
+        "notes": "Notes (optional)"
+      },
+        "evaluation": {
+        "title": "Your evaluation",
+        "comment": "Comment (optional)",
+        "save": "Save evaluation",
+        "saved": "Evaluation saved."
+      },
+      "actionContext": {
+        "matter": "Matter",
+        "task": "Task",
+        "decision": "Decision",
+        "resolution": "Resolution",
+        "outcome": "Outcome"
       },
       "work": {
         "start": "Start collaborative work",

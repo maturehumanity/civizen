@@ -11,6 +11,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
   MATTER_QUEUES,
+  actionContextHeadline,
+  actionContextKind,
   workProgressLine,
   type MatterListRow,
   type MatterQueue,
@@ -30,14 +32,18 @@ function MatterCard({
   typeLabel,
   statusLabel,
   taskLabel,
+  t,
 }: {
   row: MatterListRow;
   typeLabel: string;
   statusLabel: string;
   taskLabel: string;
+  t: (key: string) => string;
 }) {
   const progress = workProgressLine(row.workSummary);
   const taskTitle = row.currentAction?.taskTitle;
+  const contextKind = actionContextKind(row.currentAction);
+  const contextHeadline = row.currentAction ? actionContextHeadline(row.currentAction) : null;
   return (
     <Card className="border-border/70 bg-card/95 p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:shadow-md">
       <div className="flex items-start justify-between gap-3">
@@ -47,6 +53,14 @@ function MatterCard({
         </Badge>
       </div>
       <p className="mt-1 text-sm text-muted-foreground">{typeLabel}</p>
+      {row.currentAction ? (
+        <div className="mt-2">
+          <Badge variant="secondary" className="rounded-full text-xs uppercase tracking-wide">
+            {t(`contribute.matters.actionContext.${contextKind}`)}
+          </Badge>
+          <p className="mt-1 text-sm font-medium text-foreground">{contextHeadline}</p>
+        </div>
+      ) : null}
       {taskTitle ? (
         <p className="mt-1 text-sm text-foreground">
           {taskLabel}: {taskTitle}
@@ -168,6 +182,7 @@ export default function Matters() {
                   typeLabel={t(`contribute.matters.types.${row.matter.matterType}`)}
                   statusLabel={t(`contribute.matters.status.${row.derivedStatus}`)}
                   taskLabel={t('contribute.matters.work.taskLabel')}
+                  t={t}
                 />
               </Link>
             ))}

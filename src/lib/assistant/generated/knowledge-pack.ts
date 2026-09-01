@@ -6,9 +6,9 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
     "appVersion": "0.1.197",
     "appReleaseId": "20260817-v0.1.197",
     "androidVersionCode": 199,
-    "gitSha": "19eeadc1c58dde1ecbe1eb54a055baf3bafe3246",
-    "generatedAt": "2026-09-01T21:13:36.474Z",
-    "sourceFingerprint": "8c30b070ea94d248c109d27de812a538333675492c6da21be11e62708c171b48",
+    "gitSha": "d6762313b08cd3f4c7c4f5cc78df601034fa4a3e",
+    "generatedAt": "2026-09-01T23:34:31.583Z",
+    "sourceFingerprint": "60d8b07192b18509457336b8d52e24bfd9294509ef58e3d03fd9628e60654a2d",
     "knowledgeFormat": 1,
     "sourceCount": 28,
     "chunkCount": 369
@@ -2956,7 +2956,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "id": "docs/04-operations/dev/matter-collaboration.md#0",
       "title": "Matter Collaboration System",
       "path": "docs/04-operations/dev/matter-collaboration.md",
-      "text": "# Matter Collaboration System **Project:** Civizen **Routes:** `/contribute/matters`, `/contribute/matters/new`, `/contribute/matters/:matterId` **Status:** Phase 1 + Phase 2 (Collaborative Work) implemented; Phase 2 stabilization (work-completion gates + shared-responsibility acceptance) applied **Version:** 2.1 Canonical product/UX note for agents. Contribute hub: [`contribute-page.md`](./contribute-page.md). A **Matter** is something one Civizen actor brings to one or more other actors for attention, response, discussion, consideration, or action. It is a generic collaboration object, not an Issues module and not limited to government/citizen interactions. User-facing Contribute label: **Questions, Issues & Ideas**. Internal model remains `Matter`.",
+      "text": "# Matter Collaboration System **Project:** Civizen **Routes:** `/contribute/matters`, `/contribute/matters/new`, `/contribute/matters/:matterId` **Status:** Phase 1 + Phase 2 + Phase 3 (Resolution, Evaluation, Escalation & Accountability) shipped **Version:** 3.0 Canonical product/UX note for agents. Contribute hub: [`contribute-page.md`](./contribute-page.md). A **Matter** is something one Civizen actor brings to one or more other actors for attention, response, discussion, consideration, or action. It is a generic collaboration object, not an Issues module and not limited to government/citizen interactions. User-facing Contribute label: **Questions, Issues & Ideas**. Internal model remains `Matter`.",
       "status": "implemented",
       "priority": 6,
       "kind": "doc"
@@ -3001,7 +3001,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "id": "docs/04-operations/dev/matter-collaboration.md#5",
       "title": "Timing",
       "path": "docs/04-operations/dev/matter-collaboration.md",
-      "text": "## Timing Reusable `matter_timing_policies` (calendar days now; business days/hours reserved). Defaults for testing only: | Policy | Period | |--------|--------| | Question response | 3 calendar days | | Responsibility response | 2 calendar days | | Clarification response | 5 calendar days | | Resolution confirmation | 3 calendar days | | Task acceptance | 1 calendar day | | Task execution | 5 calendar days | | Task review | 2 calendar days | | Decision confirmation | 2 calendar days | | Final work response | 3 calendar days | Timeout behaviors are catalogued. Phase 1 **runs** `remind` and `auto_close` (initiator confirmation). Other types are stored for later (escalate, forward, involve, continue without response, return to initiator, mark unresponsive, require manual review).",
+      "text": "## Timing Reusable `matter_timing_policies` (calendar days now; business days/hours reserved). Defaults for testing only: | Policy | Period | |--------|--------| | Question response | 3 calendar days | | Responsibility response | 2 calendar days | | Clarification response | 5 calendar days | | Resolution confirmation | 3 calendar days | | Task acceptance | 1 calendar day | | Task execution | 5 calendar days | | Task review | 2 calendar days | | Decision confirmation | 2 calendar days | | Final work response | 3 calendar days |",
       "status": "implemented",
       "priority": 6,
       "kind": "doc"
@@ -3010,13 +3010,22 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "id": "docs/04-operations/dev/matter-collaboration.md#6",
       "title": "Timing",
       "path": "docs/04-operations/dev/matter-collaboration.md",
-      "text": "`list_matters` is read-only. Timeouts, reminders, and auto-close run only in `process_matter_action_timeouts`, serialized by a transaction advisory lock and `FOR UPDATE SKIP LOCKED`. Production invocation: 1. **pg_cron** job `matter_action_timeout_tick` at minute 15 of every hour, when the `pg_cron` extension is installed. 2. Otherwise (or to run immediately): `scripts/db/run-matter-timeout-tick.sh`, which executes the same function as `postgres` over the remote database SSH path. Page and list reads may **display** overdue from `due_at` without mutating workflow state.",
+      "text": "Timeout behaviors are catalogued. Phase 1 **runs** `remind` and `auto_close` (initiator confirmation). Phase 3 **also runs** configurable escalation steps (`matter_escalation_steps`) for overdue `respond` / `responsibility_response` actions, marks actors unresponsive, notifies Responsible Lead, and can require manual review. Other catalogued types remain for later policy wiring. `list_matters` is read-only. Timeouts, reminders, and auto-close run only in `process_matter_action_timeouts`, serialized by a transaction advisory lock and `FOR UPDATE SKIP LOCKED`. Production invocation:",
       "status": "implemented",
       "priority": 6,
       "kind": "doc"
     },
     {
       "id": "docs/04-operations/dev/matter-collaboration.md#7",
+      "title": "Timing",
+      "path": "docs/04-operations/dev/matter-collaboration.md",
+      "text": "1. **pg_cron** job `matter_action_timeout_tick` at minute 15 of every hour, when the `pg_cron` extension is installed. 2. Otherwise (or to run immediately): `scripts/db/run-matter-timeout-tick.sh`, which executes the same function as `postgres` over the remote database SSH path. Page and list reads may **display** overdue from `due_at` without mutating workflow state.",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/04-operations/dev/matter-collaboration.md#8",
       "title": "Question workflow",
       "path": "docs/04-operations/dev/matter-collaboration.md",
       "text": "## Question workflow Comments and other ordinary discussion never start the initiator confirmation timer. Only **Provide final answer** (`respond`) does. The initiator can mark **Answered / satisfied** from discussion, ask for more information after a final answer, or record that the Question revealed an Issue without converting Matter type.",
@@ -3025,7 +3034,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "kind": "doc"
     },
     {
-      "id": "docs/04-operations/dev/matter-collaboration.md#8",
+      "id": "docs/04-operations/dev/matter-collaboration.md#9",
       "title": "Suggest Improvements",
       "path": "docs/04-operations/dev/matter-collaboration.md",
       "text": "## Suggest Improvements The Contribute card stays. `/contribute/improvements` is a shortcut into Matter create (`type=Suggestion`, intended recipient = official Civizen org). Area is left unset unless a future mapping is safe.",
@@ -3034,7 +3043,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "kind": "doc"
     },
     {
-      "id": "docs/04-operations/dev/matter-collaboration.md#9",
+      "id": "docs/04-operations/dev/matter-collaboration.md#10",
       "title": "Phase 1 surfaces",
       "path": "docs/04-operations/dev/matter-collaboration.md",
       "text": "## Phase 1 surfaces - Contribute lane **Questions, Issues & Ideas** - Queues: Needs Your Action · My Matters · Participating · Organization - Matter create, detail (current action, description, conversation, formal actions, activity) - Formal actions, comments with replies, optional evidence URL/file - Reminders, overdue, auto-close, reopen - **Phase 2 Work:** optional **Start collaborative work**; Work / Decisions sections; Tasks with acceptance, execution, review, dependencies, subtasks; Decision records; Task comments and completion evidence; Contribute queue includes Task and Decision actions",
@@ -3043,7 +3052,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "kind": "doc"
     },
     {
-      "id": "docs/04-operations/dev/matter-collaboration.md#10",
+      "id": "docs/04-operations/dev/matter-collaboration.md#11",
       "title": "Distinct objects (Phase 2)",
       "path": "docs/04-operations/dev/matter-collaboration.md",
       "text": "## Distinct objects (Phase 2) Keep these separate: **Matter** · **Matter Responsibility** · **Task** (`collaboration_tasks`) · **Task Assignment** · **Decision** · **Evidence** (matter attachments). `matter_action_requirements` remains the only action clock. Task and Decision actions use `context_kind` + `context_id` so several pending clocks can exist at once. Timeout still runs only in `process_matter_action_timeouts`. Task overdue reminds; it does not auto-close the Matter. Auto-close remains initiator `confirm_resolution` only. Responsible Lead is explicit (`matter_responsibilities`). A Task assignee is not automatically responsible for the Matter. Organizations can hold responsibility or Task assignment through the existing actor model. AI actors are reserved and not activated.",
@@ -3052,7 +3061,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "kind": "doc"
     },
     {
-      "id": "docs/04-operations/dev/matter-collaboration.md#11",
+      "id": "docs/04-operations/dev/matter-collaboration.md#12",
       "title": "Distinct objects (Phase 2)",
       "path": "docs/04-operations/dev/matter-collaboration.md",
       "text": "When work is finished, Responsible Lead calls **Review completed work and provide final response**, which assigns the existing Phase 1 `address` / `mark_addressed` flow, then initiator confirmation. No second resolution system. Ordinary completion is allowed only when every required Task is in a **terminal** state: **Completed** or **Cancelled**. These are unfinished and block ordinary completion: Proposed, Assigned, Awaiting Acceptance, Accepted, In Progress, Blocked, Waiting, Submitted, Under Review. **Declined is not silently terminal.** The Responsible Lead must reassign, cancel, replace, or waive that assignment before ordinary completion.",
@@ -3061,19 +3070,10 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "kind": "doc"
     },
     {
-      "id": "docs/04-operations/dev/matter-collaboration.md#12",
+      "id": "docs/04-operations/dev/matter-collaboration.md#13",
       "title": "Distinct objects (Phase 2)",
       "path": "docs/04-operations/dev/matter-collaboration.md",
       "text": "**Complete with outstanding work** is an explicit exceptional path. It requires a reason, identifies the outstanding Tasks, is attributed to the Responsible Lead, and writes `collaborative_work_completed_with_outstanding` (not `collaborative_work_completed`). Outstanding Task statuses are not changed to Completed. The Matter waiting condition and final-response copy must be able to say that some work remained outstanding. Reopening keeps completed Tasks, Decisions, and evidence. New work is additive; old Tasks are not silently reset. ### Shared responsibility vs participation Inviting a Contributor, Specialist, Contractor, Observer, or Evaluator is **participation**. It does not create an accepted Responsible Collaborator.",
-      "status": "implemented",
-      "priority": 6,
-      "kind": "doc"
-    },
-    {
-      "id": "docs/04-operations/dev/matter-collaboration.md#13",
-      "title": "Deferred",
-      "path": "docs/04-operations/dev/matter-collaboration.md",
-      "text": "## Deferred AI participants and routing, Projects as a separate collaboration layer, Community Challenge / Governance conversion, department trees and auto-assignment, Score/reputation/capability consequences, analytics dashboards, Gantt/Kanban, advanced evidence certification.",
       "status": "implemented",
       "priority": 6,
       "kind": "doc"
