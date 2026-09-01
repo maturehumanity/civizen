@@ -38,7 +38,8 @@
 - **Lane:** Contribute > Questions, Issues & Ideas
 - **Spec:** `docs/04-operations/dev/matter-collaboration.md`
 - **Model:** generic Matter (`src/lib/matters.ts`); Action Requirements carry who/what/when; comments never complete actions
-- **Actors:** person or organization via `profiles` + `linked_accounts` (no separate organizations table)
+- **Phase 2 work:** optional collaborative workspace (`collaboration_tasks`, `task_assignments`, `task_dependencies`, `matter_responsibilities`, `matter_decisions`). Completing a Task does not resolve the Matter. Concurrent clocks use `context_kind` + `context_id`.
+- **Actors:** person or organization via `profiles` + `linked_accounts` (no separate organizations table). AI_AGENT reserved, not activated.
 - **Timing:** configurable `matter_timing_policies`; timeouts run only in `process_matter_action_timeouts` (pg_cron or `scripts/db/run-matter-timeout-tick.sh`); list reads are display-only
 - **Improvements:** `/contribute/improvements` → Matter create as Suggestion to Civizen
 

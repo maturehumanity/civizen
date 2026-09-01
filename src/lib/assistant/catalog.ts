@@ -97,9 +97,9 @@ export const ASSISTANT_CAPABILITIES: AssistantCapability[] = [
     name: 'Questions, Issues & Ideas',
     status: 'implemented',
     description:
-      'Generic Matter collaboration under Contribute. Ask a question, raise an issue, suggest an improvement, or work with others toward an outcome. Every active Matter shows who must act next, what is expected, when it is due, and what happens if nobody acts. Comments are not formal actions.',
+      'Generic Matter collaboration under Contribute. Ask a question, raise an issue, suggest an improvement, or work with others toward an outcome. Every active Matter shows who must act next, what is expected, when it is due, and what happens if nobody acts. Comments are not formal actions. When work is needed, the responsible party can start collaborative work, assign Tasks, record Decisions, and return to the same resolution confirmation flow. Completing a Task does not resolve the Matter. Ordinary collaborative-work completion requires required Tasks to be Completed or Cancelled; inviting someone to collaborate is not the same as asking them to accept shared responsibility.',
     howTo:
-      'Open Contribute > Questions, Issues & Ideas. Create a Matter, choose the intended person or organization, then follow the Current Action panel.',
+      'Open Contribute > Questions, Issues & Ideas. Create a Matter, choose the intended person or organization, then follow the Current Action panel. For work that needs several people, use Start collaborative work. Needs Your Action also lists assigned Tasks.',
     routes: ['/contribute/matters', '/contribute/matters/new'],
     roles: ['member'],
     relatedCapabilities: ['contribute_hub'],
@@ -107,6 +107,7 @@ export const ASSISTANT_CAPABILITIES: AssistantCapability[] = [
     sourceRefs: [
       'src/lib/matters.ts',
       'src/pages/contribute/Matters.tsx',
+      'src/pages/contribute/MatterWorkPanel.tsx',
       'docs/04-operations/dev/matter-collaboration.md',
       'docs/04-operations/dev/contribute-page.md',
     ],
@@ -632,7 +633,7 @@ export const ASSISTANT_FAQ: AssistantFaqItem[] = [
     id: 'how_do_i_raise_a_question_or_issue',
     question: 'How do I ask a question or raise an issue?',
     answer:
-      'Open Contribute > Questions, Issues & Ideas. Create a Matter, choose the person or organization it is for, and submit. The Current Action panel shows who must respond and when. Comments are discussion only; only Provide final answer starts the review timer. Suggest Improvements opens a Suggestion to Civizen.',
+      'Open Contribute > Questions, Issues & Ideas. Create a Matter, choose the person or organization it is for, and submit. The Current Action panel shows who must respond and when. Comments are discussion only; only Provide final answer starts the review timer. If the Matter needs actual work, the responsible party can start collaborative work and assign Tasks. Completing a Task does not close the Matter. Ordinary work completion waits until required Tasks are Completed or Cancelled. Suggest Improvements opens a Suggestion to Civizen.',
     aliases: [
       'how do I raise an issue',
       'how do I ask a question in civizen',
@@ -854,7 +855,7 @@ export const ASSISTANT_FAQ: AssistantFaqItem[] = [
     id: 'what_is_a_linked_organization',
     question: 'What is a publisher or linked organization account?',
     answer:
-      'Phase 1 has no separate organizations table. A publisher is a profile. Business or organization coordination uses linked accounts on that profile.',
+      'Phase 1 has no separate organizations table. A publisher is a profile. Business or organization coordination uses linked accounts on that profile. A member may link more than one business account from the profile menu Accounts +. Those organizations stay listed while you are signed into any of them. Swipe or scroll the account cards and tap one to switch. If the company already exists, Add business offers Connect instead of Register.',
     aliases: ['linked accounts', 'business account', 'publisher'],
     capabilityIds: ['profile', 'programs'],
     sourceRefs: ['docs/04-operations/dev/phase-1-pilot-operating-model.md'],

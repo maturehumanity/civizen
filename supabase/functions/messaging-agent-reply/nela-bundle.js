@@ -805,15 +805,15 @@ function retrievalConfidence(retrieval) {
 // src/lib/assistant/generated/knowledge-pack.ts
 var KNOWLEDGE_PACK = {
   "meta": {
-    "appVersion": "0.1.196",
-    "appReleaseId": "20260817-v0.1.196",
-    "androidVersionCode": 198,
-    "gitSha": "8754def5ce4fe5a141e19a7d9a40b69b06d6f289",
-    "generatedAt": "2026-09-01T15:46:16.104Z",
-    "sourceFingerprint": "837bc2d0fbe5f973a618dd8e43e91b30277db9f571061b6c5a7387d03a9a6b6b",
+    "appVersion": "0.1.197",
+    "appReleaseId": "20260817-v0.1.197",
+    "androidVersionCode": 199,
+    "gitSha": "920cb6f22a8cae7271511b827e3a68bf0b40ccd4",
+    "generatedAt": "2026-09-01T17:34:43.524Z",
+    "sourceFingerprint": "8c30b070ea94d248c109d27de812a538333675492c6da21be11e62708c171b48",
     "knowledgeFormat": 1,
     "sourceCount": 28,
-    "chunkCount": 368
+    "chunkCount": 369
   },
   "capabilities": [
     {
@@ -971,8 +971,8 @@ var KNOWLEDGE_PACK = {
       "id": "matters",
       "name": "Questions, Issues & Ideas",
       "status": "implemented",
-      "description": "Generic Matter collaboration under Contribute. Ask a question, raise an issue, suggest an improvement, or work with others toward an outcome. Every active Matter shows who must act next, what is expected, when it is due, and what happens if nobody acts. Comments are not formal actions.",
-      "howTo": "Open Contribute > Questions, Issues & Ideas. Create a Matter, choose the intended person or organization, then follow the Current Action panel.",
+      "description": "Generic Matter collaboration under Contribute. Ask a question, raise an issue, suggest an improvement, or work with others toward an outcome. Every active Matter shows who must act next, what is expected, when it is due, and what happens if nobody acts. Comments are not formal actions. When work is needed, the responsible party can start collaborative work, assign Tasks, record Decisions, and return to the same resolution confirmation flow. Completing a Task does not resolve the Matter. Ordinary collaborative-work completion requires required Tasks to be Completed or Cancelled; inviting someone to collaborate is not the same as asking them to accept shared responsibility.",
+      "howTo": "Open Contribute > Questions, Issues & Ideas. Create a Matter, choose the intended person or organization, then follow the Current Action panel. For work that needs several people, use Start collaborative work. Needs Your Action also lists assigned Tasks.",
       "routes": [
         "/contribute/matters",
         "/contribute/matters/new"
@@ -995,6 +995,7 @@ var KNOWLEDGE_PACK = {
       "sourceRefs": [
         "src/lib/matters.ts",
         "src/pages/contribute/Matters.tsx",
+        "src/pages/contribute/MatterWorkPanel.tsx",
         "docs/04-operations/dev/matter-collaboration.md",
         "docs/04-operations/dev/contribute-page.md"
       ]
@@ -1931,7 +1932,7 @@ var KNOWLEDGE_PACK = {
     {
       "id": "how_do_i_raise_a_question_or_issue",
       "question": "How do I ask a question or raise an issue?",
-      "answer": "Open Contribute > Questions, Issues & Ideas. Create a Matter, choose the person or organization it is for, and submit. The Current Action panel shows who must respond and when. Comments are discussion only; only Provide final answer starts the review timer. Suggest Improvements opens a Suggestion to Civizen.",
+      "answer": "Open Contribute > Questions, Issues & Ideas. Create a Matter, choose the person or organization it is for, and submit. The Current Action panel shows who must respond and when. Comments are discussion only; only Provide final answer starts the review timer. If the Matter needs actual work, the responsible party can start collaborative work and assign Tasks. Completing a Task does not close the Matter. Ordinary work completion waits until required Tasks are Completed or Cancelled. Suggest Improvements opens a Suggestion to Civizen.",
       "aliases": [
         "how do I raise an issue",
         "how do I ask a question in civizen",
@@ -2263,7 +2264,7 @@ var KNOWLEDGE_PACK = {
     {
       "id": "what_is_a_linked_organization",
       "question": "What is a publisher or linked organization account?",
-      "answer": "Phase 1 has no separate organizations table. A publisher is a profile. Business or organization coordination uses linked accounts on that profile.",
+      "answer": "Phase 1 has no separate organizations table. A publisher is a profile. Business or organization coordination uses linked accounts on that profile. A member may link more than one business account from the profile menu Accounts +. Those organizations stay listed while you are signed into any of them. Swipe or scroll the account cards and tap one to switch. If the company already exists, Add business offers Connect instead of Register.",
       "aliases": [
         "linked accounts",
         "business account",
@@ -2623,7 +2624,7 @@ var KNOWLEDGE_PACK = {
       "id": "capability:matters",
       "title": "Questions, Issues & Ideas",
       "path": "src/lib/assistant/catalog.ts",
-      "text": "Questions, Issues & Ideas status=implemented. Generic Matter collaboration under Contribute. Ask a question, raise an issue, suggest an improvement, or work with others toward an outcome. Every active Matter shows who must act next, what is expected, when it is due, and what happens if nobody acts. Comments are not formal actions. Open Contribute > Questions, Issues & Ideas. Create a Matter, choose the intended person or organization, then follow the Current Action panel. Routes: /contribute/matters, /contribute/matters/new.",
+      "text": "Questions, Issues & Ideas status=implemented. Generic Matter collaboration under Contribute. Ask a question, raise an issue, suggest an improvement, or work with others toward an outcome. Every active Matter shows who must act next, what is expected, when it is due, and what happens if nobody acts. Comments are not formal actions. When work is needed, the responsible party can start collaborative work, assign Tasks, record Decisions, and return to the same resolution confirmation flow. Completing a Task does not resolve the Matter. Ordinary collaborative-work completion requires required Tasks to be Completed or Cancelled; inviting someone to collaborate is not the same as asking them to accept shared responsibility. Open Contribute > Questions, Issues & Ideas. Create a Matter, choose the intended person or organization, then follow the Current Action panel. For work that needs several people, use Start collaborative work. Needs Your Action also lists assigned Tasks. Routes: /contribute/matters, /contribute/matters/new.",
       "status": "implemented",
       "priority": 3,
       "kind": "capability"
@@ -2965,7 +2966,7 @@ var KNOWLEDGE_PACK = {
       "id": "faq:how_do_i_raise_a_question_or_issue",
       "title": "How do I ask a question or raise an issue?",
       "path": "src/lib/assistant/catalog.ts",
-      "text": "Q: How do I ask a question or raise an issue? A: Open Contribute > Questions, Issues & Ideas. Create a Matter, choose the person or organization it is for, and submit. The Current Action panel shows who must respond and when. Comments are discussion only; only Provide final answer starts the review timer. Suggest Improvements opens a Suggestion to Civizen.",
+      "text": "Q: How do I ask a question or raise an issue? A: Open Contribute > Questions, Issues & Ideas. Create a Matter, choose the person or organization it is for, and submit. The Current Action panel shows who must respond and when. Comments are discussion only; only Provide final answer starts the review timer. If the Matter needs actual work, the responsible party can start collaborative work and assign Tasks. Completing a Task does not close the Matter. Ordinary work completion waits until required Tasks are Completed or Cancelled. Suggest Improvements opens a Suggestion to Civizen.",
       "status": "implemented",
       "priority": 5,
       "kind": "faq"
@@ -3145,7 +3146,7 @@ var KNOWLEDGE_PACK = {
       "id": "faq:what_is_a_linked_organization",
       "title": "What is a publisher or linked organization account?",
       "path": "src/lib/assistant/catalog.ts",
-      "text": "Q: What is a publisher or linked organization account? A: Phase 1 has no separate organizations table. A publisher is a profile. Business or organization coordination uses linked accounts on that profile.",
+      "text": "Q: What is a publisher or linked organization account? A: Phase 1 has no separate organizations table. A publisher is a profile. Business or organization coordination uses linked accounts on that profile. A member may link more than one business account from the profile menu Accounts +. Those organizations stay listed while you are signed into any of them. Swipe or scroll the account cards and tap one to switch. If the company already exists, Add business offers Connect instead of Register.",
       "status": "implemented",
       "priority": 5,
       "kind": "faq"
@@ -3469,7 +3470,7 @@ var KNOWLEDGE_PACK = {
       "id": "docs/assistant/civizen-assistant-cheatsheet.md#11",
       "title": "Contribution model",
       "path": "docs/assistant/civizen-assistant-cheatsheet.md",
-      "text": "## Contribution model `/contribute` asks: **How would you like to contribute today?** Ways: Volunteer (`/fund/contribute`) \xB7 Opportunities \xB7 Financial Support (`/fund`) \xB7 Organization Partnership (`/partners`). Community: Community Challenges \xB7 Questions, Issues & Ideas. Knowledge: Learning Commons \xB7 Suggest Improvements (opens a Suggestion to Civizen). Your Impact: My Contributions. A **Program** (`contribution_programs`) is the container. Publisher is a profile (personal or linked business account). There is no separate organizations table in this phase. An **Opportunity** is the work primitive. A **Contribution** is a participation (`opportunity_participations`). Score events are derived. Phase 1 pilots (live): Education-to-Contribution, Community Problem-Solving Lab, Shared Knowledge / Learning Commons.",
+      "text": "## Contribution model `/contribute` asks: **How would you like to contribute today?** Ways: Volunteer (`/fund/contribute`) \xB7 Opportunities \xB7 Financial Support (`/fund`) \xB7 Organization Partnership (`/partners`). Community: Community Challenges. Knowledge: Learning Commons \xB7 Suggest Improvements (opens a Suggestion to Civizen). Your Impact: My Contributions. A **Program** (`contribution_programs`) is the container. Publisher is a profile (personal or linked business account). There is no separate organizations table in this phase. An **Opportunity** is the work primitive. A **Contribution** is a participation (`opportunity_participations`). Score events are derived. Phase 1 pilots (live): Education-to-Contribution, Community Problem-Solving Lab, Shared Knowledge / Learning Commons.",
       "status": "implemented",
       "priority": 5,
       "kind": "cheatsheet"
@@ -3685,7 +3686,7 @@ var KNOWLEDGE_PACK = {
       "id": "docs/04-operations/dev/contribute-page.md#6",
       "title": "Implementation map",
       "path": "docs/04-operations/dev/contribute-page.md",
-      "text": "- Hub: `src/pages/Contribute.tsx` - Lane registry: `src/lib/contribute-lanes.ts` - Placeholder page: `src/pages/ContributeLane.tsx` - Slice 1 Education-to-Contribution: `src/pages/contribute/ProfessionalOpportunities.tsx`, `OpportunityDetail.tsx`, `OpportunityForm.tsx` - Slice 3 Community Challenges: `src/pages/contribute/CommunityChallenges.tsx`, `ChallengeDetail.tsx`, `ChallengeForm.tsx` - Slice 4 Learning Commons: `src/pages/contribute/KnowledgeSpaces.tsx`, `KnowledgeSpaceDetail.tsx`, `KnowledgeSpaceForm.tsx`, `KnowledgeResourceDetail.tsx`, `KnowledgeResourceForm.tsx` - Matter Collaboration (Questions, Issues & Ideas): `src/pages/contribute/Matters.tsx`, `MatterForm.tsx`, `MatterDetail.tsx` \xB7 spec: [`matter-collaboration.md`](./matter-collaboration.md) - My Contributions: `src/pages/contribute/ContributeImpact.tsx` - Domain + RPC wrappers: `src/lib/opportunities.ts`, `src/lib/opportunities-api.ts`, `src/lib/challenges.ts`, `src/lib/challenges-api.ts`, `src/lib/knowledge.ts`, `src/lib/knowledge-api.ts`, `src/lib/matters.ts`, `src/lib/matters-api.ts`, `src/lib/matters-workflow.ts` - Schema: `supabase/migrations/20260813010000_education_to_contribution_opportunities.sql`, `20260813",
+      "text": "- Hub: `src/pages/Contribute.tsx` - Lane registry: `src/lib/contribute-lanes.ts` - Placeholder page: `src/pages/ContributeLane.tsx` - Slice 1 Education-to-Contribution: `src/pages/contribute/ProfessionalOpportunities.tsx`, `OpportunityDetail.tsx`, `OpportunityForm.tsx` - Slice 3 Community Challenges: `src/pages/contribute/CommunityChallenges.tsx`, `ChallengeDetail.tsx`, `ChallengeForm.tsx` - Slice 4 Learning Commons: `src/pages/contribute/KnowledgeSpaces.tsx`, `KnowledgeSpaceDetail.tsx`, `KnowledgeSpaceForm.tsx`, `KnowledgeResourceDetail.tsx`, `KnowledgeResourceForm.tsx` - Matter Collaboration (Questions, Issues & Ideas): `src/pages/contribute/Matters.tsx`, `MatterForm.tsx`, `MatterDetail.tsx`, `MatterWorkPanel.tsx` \xB7 spec: [`matter-collaboration.md`](./matter-collaboration.md) - My Contributions: `src/pages/contribute/ContributeImpact.tsx` - Domain + RPC wrappers: `src/lib/opportunities.ts`, `src/lib/opportunities-api.ts`, `src/lib/challenges.ts`, `src/lib/challenges-api.ts`, `src/lib/knowledge.ts`, `src/lib/knowledge-api.ts`, `src/lib/matters.ts`, `src/lib/matters-api.ts`, `src/lib/matters-workflow.ts`, `src/lib/matters-work.ts` - Schema: `supabase/migrations/20260813010000_educa",
       "status": "implemented",
       "priority": 6,
       "kind": "doc"
@@ -3755,9 +3756,9 @@ var KNOWLEDGE_PACK = {
     },
     {
       "id": "docs/04-operations/dev/matter-collaboration.md#0",
-      "title": "Matter Collaboration System (Phase 1)",
+      "title": "Matter Collaboration System",
       "path": "docs/04-operations/dev/matter-collaboration.md",
-      "text": "# Matter Collaboration System (Phase 1) **Project:** Civizen **Routes:** `/contribute/matters`, `/contribute/matters/new`, `/contribute/matters/:matterId` **Status:** Phase 1 implemented **Version:** 1.0 Canonical product/UX note for agents. Contribute hub: [`contribute-page.md`](./contribute-page.md). A **Matter** is something one Civizen actor brings to one or more other actors for attention, response, discussion, consideration, or action. It is a generic collaboration object, not an Issues module and not limited to government/citizen interactions. User-facing Contribute label: **Questions, Issues & Ideas**. Internal model remains `Matter`.",
+      "text": "# Matter Collaboration System **Project:** Civizen **Routes:** `/contribute/matters`, `/contribute/matters/new`, `/contribute/matters/:matterId` **Status:** Phase 1 + Phase 2 (Collaborative Work) implemented; Phase 2 stabilization (work-completion gates + shared-responsibility acceptance) applied **Version:** 2.1 Canonical product/UX note for agents. Contribute hub: [`contribute-page.md`](./contribute-page.md). A **Matter** is something one Civizen actor brings to one or more other actors for attention, response, discussion, consideration, or action. It is a generic collaboration object, not an Issues module and not limited to government/citizen interactions. User-facing Contribute label: **Questions, Issues & Ideas**. Internal model remains `Matter`.",
       "status": "implemented",
       "priority": 6,
       "kind": "doc"
@@ -3793,7 +3794,7 @@ var KNOWLEDGE_PACK = {
       "id": "docs/04-operations/dev/matter-collaboration.md#4",
       "title": "Invariants",
       "path": "docs/04-operations/dev/matter-collaboration.md",
-      "text": "## Invariants 1. A comment is not a formal action. 2. Disputing responsibility does not close or hide the Matter. 3. Auto-close is not initiator confirmation. Silence uses: *Closed automatically after no response from the initiator within the resolution-review period.* 4. Reopening is append-only; prior closure stays on the ledger. 5. Active Matters have a current action requirement or an explicit waiting condition. 6. Deadline and history changes are attributable (human vs system). 7. Simple Matters stay simple: contextual formal actions only.",
+      "text": "## Invariants 1. A comment is not a formal action. 2. Disputing responsibility does not close or hide the Matter. 3. Auto-close is not initiator confirmation. Silence uses: *Closed automatically after no response from the initiator within the resolution-review period.* 4. Reopening is append-only; prior closure stays on the ledger. 5. Active Matters have a current action requirement, one or more pending actions, or an explicit waiting condition. 6. Deadline and history changes are attributable (human vs system). 7. Simple Matters stay simple: contextual formal actions only. Collaborative work is opt-in. 8. Completing a Task never marks the Matter resolved.",
       "status": "implemented",
       "priority": 6,
       "kind": "doc"
@@ -3802,7 +3803,7 @@ var KNOWLEDGE_PACK = {
       "id": "docs/04-operations/dev/matter-collaboration.md#5",
       "title": "Timing",
       "path": "docs/04-operations/dev/matter-collaboration.md",
-      "text": "## Timing Reusable `matter_timing_policies` (calendar days now; business days/hours reserved). Defaults for testing only: | Policy | Period | |--------|--------| | Question response | 3 calendar days | | Responsibility response | 2 calendar days | | Clarification response | 5 calendar days | | Resolution confirmation | 3 calendar days | Timeout behaviors are catalogued. Phase 1 **runs** `remind` and `auto_close` (initiator confirmation). Other types are stored for later (escalate, forward, involve, continue without response, return to initiator, mark unresponsive, require manual review). `list_matters` is read-only. Timeouts, reminders, and auto-close run only in `process_matter_action_timeouts`, serialized by a transaction advisory lock and `FOR UPDATE SKIP LOCKED`. Production invocation:",
+      "text": "## Timing Reusable `matter_timing_policies` (calendar days now; business days/hours reserved). Defaults for testing only: | Policy | Period | |--------|--------| | Question response | 3 calendar days | | Responsibility response | 2 calendar days | | Clarification response | 5 calendar days | | Resolution confirmation | 3 calendar days | | Task acceptance | 1 calendar day | | Task execution | 5 calendar days | | Task review | 2 calendar days | | Decision confirmation | 2 calendar days | | Final work response | 3 calendar days | Timeout behaviors are catalogued. Phase 1 **runs** `remind` and `auto_close` (initiator confirmation). Other types are stored for later (escalate, forward, involve, continue without response, return to initiator, mark unresponsive, require manual review).",
       "status": "implemented",
       "priority": 6,
       "kind": "doc"
@@ -3811,7 +3812,7 @@ var KNOWLEDGE_PACK = {
       "id": "docs/04-operations/dev/matter-collaboration.md#6",
       "title": "Timing",
       "path": "docs/04-operations/dev/matter-collaboration.md",
-      "text": "1. **pg_cron** job `matter_action_timeout_tick` at minute 15 of every hour, when the `pg_cron` extension is installed. 2. Otherwise (or to run immediately): `scripts/db/run-matter-timeout-tick.sh`, which executes the same function as `postgres` over the remote database SSH path. Page and list reads may **display** overdue from `due_at` without mutating workflow state.",
+      "text": "`list_matters` is read-only. Timeouts, reminders, and auto-close run only in `process_matter_action_timeouts`, serialized by a transaction advisory lock and `FOR UPDATE SKIP LOCKED`. Production invocation: 1. **pg_cron** job `matter_action_timeout_tick` at minute 15 of every hour, when the `pg_cron` extension is installed. 2. Otherwise (or to run immediately): `scripts/db/run-matter-timeout-tick.sh`, which executes the same function as `postgres` over the remote database SSH path. Page and list reads may **display** overdue from `due_at` without mutating workflow state.",
       "status": "implemented",
       "priority": 6,
       "kind": "doc"
@@ -3838,34 +3839,43 @@ var KNOWLEDGE_PACK = {
       "id": "docs/04-operations/dev/matter-collaboration.md#9",
       "title": "Phase 1 surfaces",
       "path": "docs/04-operations/dev/matter-collaboration.md",
-      "text": "## Phase 1 surfaces - Contribute lane **Questions, Issues & Ideas** - Queues: Needs Your Action \xB7 My Matters \xB7 Participating \xB7 Organization - Matter create, detail (current action, description, conversation, formal actions, activity) - Formal actions, comments with replies, optional evidence URL/file - Reminders, overdue, auto-close, reopen",
+      "text": "## Phase 1 surfaces - Contribute lane **Questions, Issues & Ideas** - Queues: Needs Your Action \xB7 My Matters \xB7 Participating \xB7 Organization - Matter create, detail (current action, description, conversation, formal actions, activity) - Formal actions, comments with replies, optional evidence URL/file - Reminders, overdue, auto-close, reopen - **Phase 2 Work:** optional **Start collaborative work**; Work / Decisions sections; Tasks with acceptance, execution, review, dependencies, subtasks; Decision records; Task comments and completion evidence; Contribute queue includes Task and Decision actions",
       "status": "implemented",
       "priority": 6,
       "kind": "doc"
     },
     {
       "id": "docs/04-operations/dev/matter-collaboration.md#10",
-      "title": "Deferred",
+      "title": "Distinct objects (Phase 2)",
       "path": "docs/04-operations/dev/matter-collaboration.md",
-      "text": "## Deferred Tasks, Decisions, Projects, advanced Evidence, AI collaborators/routing, department trees beyond current org profiles, Score consequences, outcome measurement, Challenge/Governance conversion, advanced escalation trees.",
+      "text": "## Distinct objects (Phase 2) Keep these separate: **Matter** \xB7 **Matter Responsibility** \xB7 **Task** (`collaboration_tasks`) \xB7 **Task Assignment** \xB7 **Decision** \xB7 **Evidence** (matter attachments). `matter_action_requirements` remains the only action clock. Task and Decision actions use `context_kind` + `context_id` so several pending clocks can exist at once. Timeout still runs only in `process_matter_action_timeouts`. Task overdue reminds; it does not auto-close the Matter. Auto-close remains initiator `confirm_resolution` only. Responsible Lead is explicit (`matter_responsibilities`). A Task assignee is not automatically responsible for the Matter. Organizations can hold responsibility or Task assignment through the existing actor model. AI actors are reserved and not activated.",
       "status": "implemented",
       "priority": 6,
       "kind": "doc"
     },
     {
       "id": "docs/04-operations/dev/matter-collaboration.md#11",
-      "title": "Implementation map",
+      "title": "Distinct objects (Phase 2)",
       "path": "docs/04-operations/dev/matter-collaboration.md",
-      "text": "## Implementation map - Domain: `src/lib/matters.ts`, `src/lib/matters-workflow.ts` - API: `src/lib/matters-api.ts` - UI: `src/pages/contribute/Matters.tsx`, `MatterForm.tsx`, `MatterDetail.tsx` - Schema: `supabase/migrations/20260831010000_matter_collaboration_system.sql`, `20260831200000_matter_collaboration_stabilization.sql`",
+      "text": "When work is finished, Responsible Lead calls **Review completed work and provide final response**, which assigns the existing Phase 1 `address` / `mark_addressed` flow, then initiator confirmation. No second resolution system. Ordinary completion is allowed only when every required Task is in a **terminal** state: **Completed** or **Cancelled**. These are unfinished and block ordinary completion: Proposed, Assigned, Awaiting Acceptance, Accepted, In Progress, Blocked, Waiting, Submitted, Under Review. **Declined is not silently terminal.** The Responsible Lead must reassign, cancel, replace, or waive that assignment before ordinary completion.",
       "status": "implemented",
       "priority": 6,
       "kind": "doc"
     },
     {
       "id": "docs/04-operations/dev/matter-collaboration.md#12",
-      "title": "Security: `search_path` and schema CREATE (2026-09-01)",
+      "title": "Distinct objects (Phase 2)",
       "path": "docs/04-operations/dev/matter-collaboration.md",
-      "text": "## Security: `search_path` and schema CREATE (2026-09-01) Matter `SECURITY DEFINER` functions use `SET search_path = public`. That is safe on the deployed database because untrusted roles cannot create objects that would shadow unqualified names those functions resolve. Live check (read-only) on schema `public`: | Role | CREATE | USAGE | |------|--------|-------| | `anon` | no | yes | | `authenticated` | no | yes | | `authenticator` | no | yes | | `service_role` | no | yes | | `PUBLIC` (default ACL `=U/`) | no | yes | `CREATE` remains with privileged owners only (`postgres`, `supabase_admin`, `pg_database_owner`). No Matter function change was required. Repeat with `scripts/db/verify-public-schema-create.sql`.",
+      "text": "**Complete with outstanding work** is an explicit exceptional path. It requires a reason, identifies the outstanding Tasks, is attributed to the Responsible Lead, and writes `collaborative_work_completed_with_outstanding` (not `collaborative_work_completed`). Outstanding Task statuses are not changed to Completed. The Matter waiting condition and final-response copy must be able to say that some work remained outstanding. Reopening keeps completed Tasks, Decisions, and evidence. New work is additive; old Tasks are not silently reset. ### Shared responsibility vs participation Inviting a Contributor, Specialist, Contractor, Observer, or Evaluator is **participation**. It does not create an accepted Responsible Collaborator.",
+      "status": "implemented",
+      "priority": 6,
+      "kind": "doc"
+    },
+    {
+      "id": "docs/04-operations/dev/matter-collaboration.md#13",
+      "title": "Deferred",
+      "path": "docs/04-operations/dev/matter-collaboration.md",
+      "text": "## Deferred AI participants and routing, Projects as a separate collaboration layer, Community Challenge / Governance conversion, department trees and auto-assignment, Score/reputation/capability consequences, analytics dashboards, Gantt/Kanban, advanced evidence certification.",
       "status": "implemented",
       "priority": 6,
       "kind": "doc"

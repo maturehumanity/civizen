@@ -62,9 +62,9 @@ Financial copy remains inquiry-only (no checkout, tax-deductibility, or fixed re
 - Slice 1 Education-to-Contribution: `src/pages/contribute/ProfessionalOpportunities.tsx`, `OpportunityDetail.tsx`, `OpportunityForm.tsx`
 - Slice 3 Community Challenges: `src/pages/contribute/CommunityChallenges.tsx`, `ChallengeDetail.tsx`, `ChallengeForm.tsx`
 - Slice 4 Learning Commons: `src/pages/contribute/KnowledgeSpaces.tsx`, `KnowledgeSpaceDetail.tsx`, `KnowledgeSpaceForm.tsx`, `KnowledgeResourceDetail.tsx`, `KnowledgeResourceForm.tsx`
-- Matter Collaboration (Questions, Issues & Ideas): `src/pages/contribute/Matters.tsx`, `MatterForm.tsx`, `MatterDetail.tsx` · spec: [`matter-collaboration.md`](./matter-collaboration.md)
+- Matter Collaboration (Questions, Issues & Ideas): `src/pages/contribute/Matters.tsx`, `MatterForm.tsx`, `MatterDetail.tsx`, `MatterWorkPanel.tsx` · spec: [`matter-collaboration.md`](./matter-collaboration.md)
 - My Contributions: `src/pages/contribute/ContributeImpact.tsx`
-- Domain + RPC wrappers: `src/lib/opportunities.ts`, `src/lib/opportunities-api.ts`, `src/lib/challenges.ts`, `src/lib/challenges-api.ts`, `src/lib/knowledge.ts`, `src/lib/knowledge-api.ts`, `src/lib/matters.ts`, `src/lib/matters-api.ts`, `src/lib/matters-workflow.ts`
+- Domain + RPC wrappers: `src/lib/opportunities.ts`, `src/lib/opportunities-api.ts`, `src/lib/challenges.ts`, `src/lib/challenges-api.ts`, `src/lib/knowledge.ts`, `src/lib/knowledge-api.ts`, `src/lib/matters.ts`, `src/lib/matters-api.ts`, `src/lib/matters-workflow.ts`, `src/lib/matters-work.ts`
 - Schema: `supabase/migrations/20260813010000_education_to_contribution_opportunities.sql`, `20260813020000_opportunity_applicant_identities.sql`, `20260813030000_opportunity_work_assessments.sql`, `20260813040000_community_problem_solving_lab.sql`, `20260813041000_seed_community_problem_solving_lab.sql`, `20260813042000_solution_record_contributors.sql`, `20260813050000_shared_knowledge_learning_commons.sql`, `20260813051000_seed_shared_knowledge_learning_commons.sql`, `20260813052000_seed_education_to_contribution_program.sql`, `20260831010000_matter_collaboration_system.sql`, `20260831200000_matter_collaboration_stabilization.sql`
 - Copy: `contribute.*` in `src/lib/i18n.base.ts`
 
@@ -119,7 +119,7 @@ Ordinary users browse spaces and resources, see attribution, see open gaps, and 
 - **Slice 2 (current):** Optional contribution evaluation after verification
 - **Slice 3 (current):** Community Problem-Solving Lab at `/contribute/challenges`
 - **Slice 4 (current):** Shared Knowledge / Learning Commons at `/contribute/knowledge`
-- **Matter Collaboration (current):** Questions, Issues & Ideas at `/contribute/matters` — generic Matter foundation, not a separate Issues module. Spec: [`matter-collaboration.md`](./matter-collaboration.md)
+- **Matter Collaboration (current):** Questions, Issues & Ideas at `/contribute/matters` — generic Matter foundation plus optional collaborative work (Tasks, Decisions). Completing a Task does not resolve the Matter. Spec: [`matter-collaboration.md`](./matter-collaboration.md)
 - **Later slices:** additional suggestion routing and Area mapping — Suggest Improvements already opens Matter create
 - **Phase 3:** Funding portal, org dashboard, grants, scholarships, global initiatives
 - **Phase 4:** Deep Trust Profile / Contribution Score / achievements / governance integration

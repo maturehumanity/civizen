@@ -165,6 +165,8 @@ function assignAction(
     completionAction: null,
     timeoutAction,
     escalationPolicyId: null,
+    contextKind: 'matter',
+    contextId: null,
   };
   state.actions.push(action);
   state.currentAction = action;
@@ -238,6 +240,10 @@ export function createMatter(input: CreateMatterInput, ctx: MatterEngineContext)
     lastReopenedAt: null,
     reopenCount: 0,
     updatedAt: createdAt,
+    collaborativeWorkStartedAt: null,
+    collaborativeWorkCompletedAt: null,
+    collaborativeWorkCompletionKind: null,
+    collaborativeWorkCompletionReason: null,
   };
   const state: MatterEngineState = {
     matter,
@@ -263,9 +269,12 @@ export function createMatter(input: CreateMatterInput, ctx: MatterEngineContext)
       fileName: null,
       url: input.evidenceUrl.trim(),
       label: input.evidenceLabel?.trim() || null,
+      bodyText: null,
       visibility: null,
       uploadedByProfileId: input.createdByProfileId,
       createdAt,
+      taskId: null,
+      decisionId: null,
     });
   }
   if (submit) {
@@ -301,6 +310,7 @@ export function addMatterComment(
     mentionedProfileIds: input.mentionedProfileIds ?? [],
     visibility: null,
     createdAt: iso(ctx.now),
+    taskId: null,
   });
   logEvent(next, ctx, 'comment_added', 'Comment posted. This did not complete the required action.', input.author, false);
   return next;

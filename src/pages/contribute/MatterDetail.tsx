@@ -18,23 +18,29 @@ import {
   actorLabel,
   buildBallIsWithCopy,
   deriveMatterStatus,
+  formatDueDate,
   formalActionsForContext,
   viewerRepresents,
+  workProgressLine,
   type FormalActionType,
   type MatterActorKind,
   type ReopenReason,
 } from '@/lib/matters';
 import {
   addMatterComment,
+  completeMatterCollaborativeWork,
   getMatterDetail,
+  performCollaborationAction,
   performMatterFormalAction,
   searchMatterActors,
+  startMatterCollaborativeWork,
   uploadMatterFile,
   type MatterActorSuggestion,
   type MatterDetailBundle,
 } from '@/lib/matters-api';
 import { listOwnedLinkedProfileIds } from '@/lib/opportunities-api';
 import { toast } from 'sonner';
+import { MatterWorkPanel } from '@/pages/contribute/MatterWorkPanel';
 
 function formatWhen(value: string | null): string {
   if (!value) return '';
@@ -70,6 +76,8 @@ export default function MatterDetail() {
   const [target, setTarget] = useState<MatterActorSuggestion | null>(null);
   const [targetHits, setTargetHits] = useState<MatterActorSuggestion[]>([]);
   const [file, setFile] = useState<File | null>(null);
+  const [section, setSection] = useState<'overview' | 'discussion' | 'work' | 'decisions' | 'activity'>('overview');
+  const [outstandingReason, setOutstandingReason] = useState('');
 
   const load = useCallback(async () => {
     if (!matterId) {
@@ -131,6 +139,17 @@ export default function MatterDetail() {
   const viewerIsInitiator = matter
     ? viewerRepresents(profileId, matter.initiator, linkedIds)
     : false;
+  const viewerIsResponsible = matter
+    ? viewerRepresents(profileId, matter.responsible, linkedIds)
+    : false;
+  const hasWork = Boolean(matter?.collaborativeWorkStartedAt);
+  const workSummary = bundle?.workSummary ?? null;
+  const outstandingTasks = workSummary?.outstandingTasks ?? [];
+  const hasOutstanding = Boolean(
+    hasWork && !matter?.collaborativeWorkCompletedAt && (workSummary?.outstanding ?? 0) > 0,
+  );
+  const progress = workProgressLine(workSummary);
+  const pendingActions = bundle?.pendingActions ?? [];
   const options = matter
     ? formalActionsForContext({
         lifecycleStatus: matter.lifecycleStatus,
@@ -145,7 +164,7 @@ export default function MatterDetail() {
   const areaName = matter?.areaNodeId
     ? areas.find((node) => node.id === matter.areaNodeId)?.displayName
     : null;
-  const rootComments = (bundle?.comments ?? []).filter((item) => !item.parentId);
+  const rootComments = (bundle?.comments ?? []).filter((item) => !item.parentId && !item.taskId);
 
   const actorKindForViewer: MatterActorKind =
     matter && viewerRepresents(profileId, matter.responsible, linkedIds) && matter.responsible.kind === 'organization'
@@ -206,6 +225,26 @@ export default function MatterDetail() {
     }
   };
 
+  const runCollabAction = async (
+    actionId: string,
+    verb: string,
+    extras?: { message?: string; targetKind?: MatterActorKind; targetProfileId?: string },
+  ) => {
+    setBusy(true);
+    try {
+      await performCollaborationAction(actionId, verb, extras);
+      setActionMessage('');
+      setTarget(null);
+      setTargetQuery('');
+      toast.success(tRef.current('contribute.matters.actionSaved'));
+      await load();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : tRef.current('contribute.matters.actionFailed'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   if (loading) {
     return (
       <AppLayout>
@@ -256,17 +295,242 @@ export default function MatterDetail() {
             <p className="mt-1 text-lg font-semibold text-foreground">{ball.headline}</p>
             <p className="mt-1 text-sm text-foreground">{ball.detail}</p>
             {ball.dueLine ? <p className="mt-2 text-sm text-muted-foreground">{ball.dueLine}</p> : null}
+            {action?.taskTitle ? (
+              <p className="mt-2 text-sm text-foreground">
+                {t('contribute.matters.work.taskLabel')}: {action.taskTitle}
+              </p>
+            ) : null}
+            {pendingActions.length > 1 ? (
+              <ul className="mt-3 space-y-1 text-sm text-muted-foreground">
+                {pendingActions.map((item) => (
+                  <li key={item.id}>
+                    {actorLabel(item.assignedActor)} — {item.taskTitle || t(`contribute.matters.work.actionTypes.${item.actionType}`)}
+                    {item.dueAt ? ` · ${formatDueDate(item.dueAt)}` : ''}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            {action
+              && viewerRepresents(profileId, action.assignedActor, linkedIds)
+              && (action.actionType === 'shared_responsibility_response'
+                || (action.actionType === 'clarify' && action.contextKind === 'responsibility')) ? (
+              <div className="mt-4 space-y-3">
+                <OutlinedField label={t('contribute.matters.actionNoteLabel')}>
+                  <Textarea value={actionMessage} onChange={(event) => setActionMessage(event.target.value)} rows={2} />
+                </OutlinedField>
+                {action.actionType === 'clarify' ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={busy}
+                    onClick={() => void runCollabAction(action.id, 'respond', { message: actionMessage || undefined })}
+                  >
+                    {t('contribute.matters.work.respondClarification')}
+                  </Button>
+                ) : (
+                  <>
+                    <div className="flex flex-wrap gap-2">
+                      <Button type="button" size="sm" disabled={busy} onClick={() => void runCollabAction(action.id, 'accept', { message: actionMessage || undefined })}>
+                        {t('contribute.matters.work.acceptResponsibility')}
+                      </Button>
+                      <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => void runCollabAction(action.id, 'accept_partially', { message: actionMessage || undefined })}>
+                        {t('contribute.matters.work.acceptPartially')}
+                      </Button>
+                      <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => void runCollabAction(action.id, 'request_clarification', { message: actionMessage || undefined })}>
+                        {t('contribute.matters.work.askClarification')}
+                      </Button>
+                      <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => void runCollabAction(action.id, 'decline', { message: actionMessage || undefined })}>
+                        {t('contribute.matters.work.declineResponsibility')}
+                      </Button>
+                    </div>
+                    <OutlinedField label={t('contribute.matters.work.suggestAnother')}>
+                      {target ? (
+                        <div className="flex items-center justify-between gap-2 py-1">
+                          <p className="text-sm">{target.displayName}</p>
+                          <Button type="button" variant="ghost" size="sm" onClick={() => setTarget(null)}>
+                            {t('common.edit')}
+                          </Button>
+                        </div>
+                      ) : (
+                        <Input
+                          value={targetQuery}
+                          onChange={(event) => setTargetQuery(event.target.value)}
+                          placeholder={t('contribute.matters.recipientHint')}
+                        />
+                      )}
+                    </OutlinedField>
+                    {targetHits.map((hit) => (
+                      <button
+                        key={hit.profileId}
+                        type="button"
+                        className="block w-full rounded-md px-2 py-1.5 text-left text-sm hover:bg-muted"
+                        onClick={() => {
+                          setTarget(hit);
+                          setTargetQuery('');
+                          setTargetHits([]);
+                        }}
+                      >
+                        {hit.displayName}
+                      </button>
+                    ))}
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      disabled={busy || !target}
+                      onClick={() =>
+                        void runCollabAction(action.id, 'suggest_actor', {
+                          message: actionMessage || undefined,
+                          targetKind: target?.kind,
+                          targetProfileId: target?.profileId,
+                        })
+                      }
+                    >
+                      {t('contribute.matters.work.suggestAnother')}
+                    </Button>
+                  </>
+                )}
+              </div>
+            ) : null}
           </Card>
         ) : null}
 
+        {progress ? <p className="text-sm text-muted-foreground">{progress}</p> : null}
+
+        {matter.collaborativeWorkCompletionKind === 'with_outstanding_work' ? (
+          <Card className="space-y-2 border-amber-500/40 bg-amber-500/5 p-4">
+            <p className="text-sm font-medium text-foreground">{t('contribute.matters.work.outstandingCompleteTitle')}</p>
+            {matter.collaborativeWorkCompletionReason ? (
+              <p className="text-sm text-muted-foreground">{matter.collaborativeWorkCompletionReason}</p>
+            ) : null}
+            {outstandingTasks.length > 0 ? (
+              <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+                {outstandingTasks.map((task) => (
+                  <li key={task.id}>
+                    {task.title} · {t(`contribute.matters.work.status.${task.status}`)}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </Card>
+        ) : null}
+
+        {matter.lifecycleStatus !== 'closed' && viewerIsResponsible && !hasWork ? (
+          <Button
+            type="button"
+            variant="outline"
+            disabled={busy}
+            onClick={() =>
+              void (async () => {
+                setBusy(true);
+                try {
+                  await startMatterCollaborativeWork(matter.id);
+                  toast.success(tRef.current('contribute.matters.work.started'));
+                  await load();
+                } catch (error) {
+                  toast.error(error instanceof Error ? error.message : tRef.current('contribute.matters.actionFailed'));
+                } finally {
+                  setBusy(false);
+                }
+              })()
+            }
+          >
+            {t('contribute.matters.work.start')}
+          </Button>
+        ) : null}
+
+        {hasWork && viewerIsResponsible && !matter.collaborativeWorkCompletedAt && matter.lifecycleStatus !== 'closed' && hasOutstanding ? (
+          <Card className="space-y-3 border-amber-500/40 bg-amber-500/5 p-4">
+            <p className="text-sm font-medium text-foreground">{t('contribute.matters.work.outstandingTitle')}</p>
+            <p className="text-sm text-muted-foreground">{t('contribute.matters.work.outstandingWhy')}</p>
+            <ul className="list-disc space-y-1 pl-5 text-sm text-foreground">
+              {outstandingTasks.map((task) => (
+                <li key={task.id}>
+                  {task.title} · {t(`contribute.matters.work.status.${task.status}`)}
+                </li>
+              ))}
+            </ul>
+            <OutlinedField label={t('contribute.matters.work.outstandingReason')} htmlFor="outstanding-reason">
+              <Textarea
+                id="outstanding-reason"
+                value={outstandingReason}
+                onChange={(event) => setOutstandingReason(event.target.value)}
+                rows={3}
+              />
+            </OutlinedField>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={busy || outstandingReason.trim().length < 3}
+              onClick={() =>
+                void (async () => {
+                  setBusy(true);
+                  try {
+                    await completeMatterCollaborativeWork(matter.id, {
+                      allowOutstanding: true,
+                      reason: outstandingReason.trim(),
+                    });
+                    toast.success(tRef.current('contribute.matters.work.readyWithOutstanding'));
+                    setOutstandingReason('');
+                    await load();
+                  } catch (error) {
+                    toast.error(error instanceof Error ? error.message : tRef.current('contribute.matters.actionFailed'));
+                  } finally {
+                    setBusy(false);
+                  }
+                })()
+              }
+            >
+              {t('contribute.matters.work.completeWithOutstanding')}
+            </Button>
+          </Card>
+        ) : null}
+
+        {hasWork && viewerIsResponsible && !matter.collaborativeWorkCompletedAt && matter.lifecycleStatus !== 'closed' && !hasOutstanding ? (
+          <Button
+            type="button"
+            variant="outline"
+            disabled={busy}
+            onClick={() =>
+              void (async () => {
+                setBusy(true);
+                try {
+                  await completeMatterCollaborativeWork(matter.id);
+                  toast.success(tRef.current('contribute.matters.work.readyForResponse'));
+                  await load();
+                } catch (error) {
+                  toast.error(error instanceof Error ? error.message : tRef.current('contribute.matters.actionFailed'));
+                } finally {
+                  setBusy(false);
+                }
+              })()
+            }
+          >
+            {t('contribute.matters.work.finish')}
+          </Button>
+        ) : null}
+
+        {hasWork ? (
+          <div className="flex flex-wrap gap-2">
+            {(['overview', 'discussion', 'work', 'decisions', 'activity'] as const).map((item) => (
+              <Button key={item} type="button" size="sm" variant={section === item ? 'default' : 'outline'} onClick={() => setSection(item)}>
+                {t(`contribute.matters.sections.${item}`)}
+              </Button>
+            ))}
+          </div>
+        ) : null}
+
+        {(!hasWork || section === 'overview') ? (
         <section className="space-y-2">
           <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
             {t('contribute.matters.descriptionHeading')}
           </h2>
           <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{matter.description}</p>
-          {(bundle?.attachments.length ?? 0) > 0 ? (
+          {(bundle?.attachments.filter((item) => !item.taskId && !item.decisionId).length ?? 0) > 0 ? (
             <ul className="space-y-1 text-sm">
-              {bundle?.attachments.map((item) => (
+              {bundle?.attachments
+                .filter((item) => !item.taskId && !item.decisionId)
+                .map((item) => (
                 <li key={item.id} className="text-muted-foreground">
                   {item.label || item.fileName || item.url || t('contribute.matters.attachment')}
                 </li>
@@ -274,8 +538,9 @@ export default function MatterDetail() {
             </ul>
           ) : null}
         </section>
+        ) : null}
 
-        {options.length > 0 ? (
+        {options.length > 0 && (!hasWork || section === 'overview') ? (
           <section className="space-y-3">
             <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
               {t('contribute.matters.formalActions')}
@@ -367,6 +632,7 @@ export default function MatterDetail() {
           </section>
         ) : null}
 
+        {(!hasWork || section === 'discussion') ? (
         <section className="space-y-3">
           <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
             {t('contribute.matters.conversation')}
@@ -453,7 +719,92 @@ export default function MatterDetail() {
           </Card>
           )}
         </section>
+        ) : null}
 
+        {hasWork && (section === 'work' || section === 'overview') && bundle ? (
+          <MatterWorkPanel
+            bundle={bundle}
+            profileId={profileId}
+            linkedIds={linkedIds}
+            canManageWork={viewerIsResponsible || (bundle.responsibilities ?? []).some(
+              (row) => row.status === 'accepted' && viewerRepresents(profileId, row.actor, linkedIds),
+            )}
+            busy={busy}
+            onBusy={setBusy}
+            onReload={load}
+            t={t}
+          />
+        ) : null}
+
+        {hasWork && (section === 'decisions' || section === 'overview') ? (
+          <section className="space-y-2">
+            <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+              {t('contribute.matters.sections.decisions')}
+            </h2>
+            {(bundle?.decisions.length ?? 0) === 0 ? (
+              <p className="text-sm text-muted-foreground">{t('contribute.matters.work.noDecisions')}</p>
+            ) : (
+              bundle?.decisions.map((decision) => {
+                const decisionAction = pendingActions.find(
+                  (item) => item.contextKind === 'decision' && item.contextId === decision.id,
+                );
+                return (
+                <Card key={decision.id} className="space-y-1 p-4">
+                  <p className="font-medium">{decision.title}</p>
+                  <p className="text-sm">{decision.statement}</p>
+                  {decision.rationale ? <p className="text-sm text-muted-foreground">{decision.rationale}</p> : null}
+                  <p className="text-xs text-muted-foreground">
+                    {t(`contribute.matters.work.decisionStatus.${decision.status}`)} · {actorLabel(decision.proposedBy)}
+                  </p>
+                  {decisionAction?.actionType === 'confirm_decision' ? (
+                    <div className="flex flex-wrap gap-2 pt-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        disabled={busy}
+                        onClick={() =>
+                          void (async () => {
+                            setBusy(true);
+                            try {
+                              await performCollaborationAction(decisionAction.id, 'accept');
+                              await load();
+                            } finally {
+                              setBusy(false);
+                            }
+                          })()
+                        }
+                      >
+                        {t('contribute.matters.work.acceptDecision')}
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        disabled={busy}
+                        onClick={() =>
+                          void (async () => {
+                            setBusy(true);
+                            try {
+                              await performCollaborationAction(decisionAction.id, 'reject');
+                              await load();
+                            } finally {
+                              setBusy(false);
+                            }
+                          })()
+                        }
+                      >
+                        {t('contribute.matters.work.rejectDecision')}
+                      </Button>
+                    </div>
+                  ) : null}
+                </Card>
+                );
+              })
+            )}
+          </section>
+        ) : null}
+
+        {(!hasWork || section === 'activity') ? (
         <section className="space-y-3">
           <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
             {t('contribute.matters.activity')}
@@ -473,6 +824,7 @@ export default function MatterDetail() {
             ))}
           </ol>
         </section>
+        ) : null}
       </div>
     </AppLayout>
   );

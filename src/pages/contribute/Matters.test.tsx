@@ -69,6 +69,10 @@ describe('Matters list', () => {
           lastReopenedAt: null,
           reopenCount: 0,
           updatedAt: '2026-09-01T12:00:00.000Z',
+          collaborativeWorkStartedAt: null,
+          collaborativeWorkCompletedAt: null,
+          collaborativeWorkCompletionKind: null,
+          collaborativeWorkCompletionReason: null,
         },
         currentAction: {
           id: 'act-1',
@@ -85,7 +89,11 @@ describe('Matters list', () => {
           completionAction: null,
           timeoutAction: 'remind',
           escalationPolicyId: null,
+          contextKind: 'matter',
+          contextId: null,
         },
+        pendingActions: [],
+        workSummary: null,
         derivedStatus: 'waiting_for_response',
         ball: {
           headline: 'Waiting on Civizen Product Team',

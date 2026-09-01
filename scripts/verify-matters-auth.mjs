@@ -118,4 +118,122 @@ if (!current || current.status !== 'pending' || current.completion_action) {
   throw new Error('comment must leave the action requirement pending');
 }
 
-console.log('PASS: Matter authorization negatives (impersonation, access, action, timeout grant)');
+const { data: workId, error: workCreateError } = await member.client.rpc('create_matter', {
+  payload: {
+    title: '[verify-matters-auth] collaborative work',
+    description: 'Authorization fixture for collaborative Tasks.',
+    matter_type: 'issue',
+    initiator_kind: 'person',
+    initiator_profile_id: member.profileId,
+    addressee_kind: 'person',
+    addressee_profile_id: citizen.profileId,
+    visibility: 'participants',
+    submit: true,
+  },
+});
+if (workCreateError || typeof workId !== 'string') {
+  throw new Error(`create collaborative Matter: ${workCreateError?.message || 'missing id'}`);
+}
+
+const { error: acceptResp } = await citizen.client.rpc('perform_matter_formal_action', {
+  p_matter_id: workId,
+  p_action: 'accept_responsibility',
+});
+if (acceptResp) throw new Error(`accept_responsibility: ${acceptResp.message}`);
+
+const { error: startWork } = await citizen.client.rpc('start_matter_collaborative_work', { p_matter_id: workId });
+if (startWork) throw new Error(`start_matter_collaborative_work: ${startWork.message}`);
+
+const { data: taskId, error: taskError } = await citizen.client.rpc('create_collaboration_task', {
+  payload: {
+    matter_id: workId,
+    title: 'UX investigation',
+    assignee_kind: 'person',
+    assignee_profile_id: member.profileId,
+    review_required: true,
+  },
+});
+if (taskError || typeof taskId !== 'string') {
+  throw new Error(`create_collaboration_task: ${taskError?.message || 'missing id'}`);
+}
+
+expectError(
+  (await stranger.client.rpc('start_matter_collaborative_work', { p_matter_id: workId })).error,
+  'stranger start work',
+);
+expectError(
+  (await stranger.client.rpc('create_collaboration_task', {
+    payload: { matter_id: workId, title: 'Unauthorized task' },
+  })).error,
+  'stranger create task',
+);
+expectError(
+  (await stranger.client.rpc('propose_matter_decision', {
+    payload: { matter_id: workId, title: 'Unauthorized decision', statement: 'Should not be recorded.' },
+  })).error,
+  'stranger propose decision',
+);
+expectError(
+  (await stranger.client.rpc('complete_matter_collaborative_work', { p_matter_id: workId })).error,
+  'stranger complete work',
+);
+expectError(
+  (await stranger.client.rpc('invite_matter_participant', {
+    p_matter_id: workId,
+    p_role: 'contributor',
+    p_kind: 'person',
+    p_profile_id: stranger.profileId,
+  })).error,
+  'stranger invite',
+);
+
+const { error: requestShared } = await citizen.client.rpc('invite_matter_participant', {
+  p_matter_id: workId,
+  p_role: 'responsible_collaborator',
+  p_kind: 'person',
+  p_profile_id: member.profileId,
+});
+if (requestShared) throw new Error(`request shared responsibility: ${requestShared.message}`);
+const { data: afterShared } = await citizen.client.rpc('get_matter', { p_matter_id: workId });
+const sharedRow = (afterShared?.responsibilities ?? []).find(
+  (row) => row.kind === 'collaborator' && row.actor_profile_id === member.profileId,
+);
+if (!sharedRow || sharedRow.status !== 'proposed') {
+  throw new Error('requested collaborator must not yet be formally responsible');
+}
+const sharedAction = (afterShared?.pending_actions ?? []).find(
+  (row) => row.action_type === 'shared_responsibility_response' && row.assigned_profile_id === member.profileId,
+);
+if (!sharedAction?.id) throw new Error('expected shared responsibility action');
+expectError(
+  (await stranger.client.rpc('perform_collaboration_action', {
+    p_action_id: sharedAction.id,
+    p_action: 'accept',
+  })).error,
+  'stranger accept shared responsibility',
+);
+
+const { data: workRow } = await citizen.client.rpc('get_matter', { p_matter_id: workId });
+const acceptAction = (workRow?.pending_actions ?? []).find((row) => row.action_type === 'accept_task');
+if (!acceptAction?.id) throw new Error('expected Task acceptance action');
+expectError(
+  (await stranger.client.rpc('perform_collaboration_action', {
+    p_action_id: acceptAction.id,
+    p_action: 'accept',
+  })).error,
+  'stranger accept task',
+);
+
+const { error: taskCommentOk } = await member.client.rpc('add_matter_comment', {
+  p_matter_id: workId,
+  p_body: 'Task discussion only.',
+  p_task_id: taskId,
+});
+if (taskCommentOk) throw new Error(`assignee should be able to comment on a Task: ${taskCommentOk.message}`);
+const { data: afterTaskComment } = await citizen.client.rpc('get_matter', { p_matter_id: workId });
+const stillPending = (afterTaskComment?.pending_actions ?? []).find((row) => row.id === acceptAction.id);
+if (!stillPending || stillPending.status !== 'pending') {
+  throw new Error('Task comment must leave the acceptance action pending');
+}
+
+console.log('PASS: Matter authorization negatives (impersonation, access, action, timeout grant, collaborative work)');

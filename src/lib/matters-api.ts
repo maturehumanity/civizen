@@ -27,6 +27,14 @@ import {
   type ReopenReason,
   type TimeoutBehavior,
 } from '@/lib/matters';
+import type {
+  CollaborationTask,
+  MatterDecision,
+  MatterResponsibility,
+  TaskAssignment,
+  TaskDependency,
+  TaskStatus,
+} from '@/lib/matters-work';
 
 type DbClient = typeof supabase;
 type QueryError = { message?: string } | null;
@@ -142,6 +150,13 @@ function mapMatter(row: Record<string, unknown>): Matter {
     lastReopenedAt: strOrNull(row.last_reopened_at),
     reopenCount: Number(row.reopen_count) || 0,
     updatedAt: str(row.updated_at),
+    collaborativeWorkStartedAt: strOrNull(row.collaborative_work_started_at),
+    collaborativeWorkCompletedAt: strOrNull(row.collaborative_work_completed_at),
+    collaborativeWorkCompletionKind:
+      str(row.collaborative_work_completion_kind) === 'with_outstanding_work' ? 'with_outstanding_work'
+        : str(row.collaborative_work_completion_kind) === 'normal' ? 'normal'
+          : null,
+    collaborativeWorkCompletionReason: strOrNull(row.collaborative_work_completion_reason),
   };
 }
 
@@ -169,6 +184,12 @@ function mapAction(row: Record<string, unknown> | null): MatterActionRequirement
     completionAction: strOrNull(row.completion_action) as FormalActionType | null,
     timeoutAction: str(row.timeout_action) as TimeoutBehavior,
     escalationPolicyId: strOrNull(row.escalation_policy_id),
+    contextKind:
+      str(row.context_kind) === 'task' || str(row.context_kind) === 'decision' || str(row.context_kind) === 'responsibility'
+        ? (str(row.context_kind) as 'task' | 'decision' | 'responsibility')
+        : 'matter',
+    contextId: strOrNull(row.context_id),
+    taskTitle: strOrNull(row.task_title),
   };
 }
 
@@ -183,9 +204,32 @@ function mapListBundle(
   if (!matterRow) return null;
   const matter = mapMatter(matterRow);
   const currentAction = mapAction(asRecord(record.current_action));
+  const pendingActions = asRows(record.pending_actions).map((row) => mapAction(row)).filter((row): row is NonNullable<typeof row> => Boolean(row));
+  const workRow = asRecord(record.work_summary);
+  const workSummary = workRow
+    ? {
+        started: Boolean(workRow.started),
+        completed: Boolean(workRow.completed),
+        completionKind:
+          str(workRow.completion_kind) === 'with_outstanding_work' ? 'with_outstanding_work'
+            : str(workRow.completion_kind) === 'normal' ? 'normal'
+              : null,
+        total: Number(workRow.total) || 0,
+        completedTasks: Number(workRow.completed_tasks) || 0,
+        blocked: Number(workRow.blocked) || 0,
+        open: Number(workRow.open) || 0,
+        outstanding: Number(workRow.outstanding) || Number(workRow.open) || 0,
+        outstandingTasks: asRows(workRow.outstanding_tasks).map((row) => ({
+          id: str(row.id),
+          title: str(row.title),
+          status: str(row.status),
+        })),
+      }
+    : null;
   return {
     matter,
     currentAction,
+    pendingActions,
     derivedStatus: deriveMatterStatus(matter, currentAction),
     ball: buildBallIsWithCopy({
       matter,
@@ -193,16 +237,22 @@ function mapListBundle(
       viewerProfileId,
       managedOrganizationIds,
     }),
+    workSummary,
   };
 }
 
 export type MatterDetailBundle = {
   matter: Matter;
   currentAction: MatterActionRequirement | null;
+  pendingActions: MatterActionRequirement[];
   comments: MatterComment[];
   events: MatterEvent[];
   parties: MatterParty[];
   attachments: MatterAttachment[];
+  tasks: CollaborationTask[];
+  decisions: MatterDecision[];
+  responsibilities: MatterResponsibility[];
+  workSummary: MatterListRow['workSummary'];
 };
 
 function mapComment(row: Record<string, unknown>): MatterComment {
@@ -218,6 +268,7 @@ function mapComment(row: Record<string, unknown>): MatterComment {
     mentionedProfileIds: mentioned,
     visibility: strOrNull(row.visibility) as MatterVisibility | null,
     createdAt: str(row.created_at),
+    taskId: strOrNull(row.task_id),
   };
 }
 
@@ -249,14 +300,107 @@ function mapAttachment(row: Record<string, unknown>): MatterAttachment {
     id: str(row.id),
     matterId: str(row.matter_id),
     commentId: strOrNull(row.comment_id),
-    kind: str(row.kind) === 'url' ? 'url' : 'file',
+    kind: str(row.kind) === 'url' ? 'url' : str(row.kind) === 'text' ? 'text' : str(row.kind) === 'image' ? 'image' : str(row.kind) === 'system_record' ? 'system_record' : 'file',
     filePath: strOrNull(row.file_path),
     fileName: strOrNull(row.file_name),
     url: strOrNull(row.url),
     label: strOrNull(row.label),
+    bodyText: strOrNull(row.body_text),
     visibility: strOrNull(row.visibility) as MatterVisibility | null,
     uploadedByProfileId: str(row.uploaded_by_profile_id),
     createdAt: str(row.created_at),
+    taskId: strOrNull(row.task_id),
+    decisionId: strOrNull(row.decision_id),
+  };
+}
+
+function mapAssignment(row: Record<string, unknown>): TaskAssignment {
+  return {
+    id: str(row.id),
+    taskId: str(row.task_id),
+    role: str(row.role) as TaskAssignment['role'],
+    actor: actorFrom(row.actor_kind, row.actor_profile_id, row.actor_unit_label, row.actor_display_name),
+    assignedBy: actorFrom(row.assigned_by_kind, row.assigned_by_profile_id, null, null),
+    assignedAt: str(row.assigned_at),
+    acceptanceStatus: str(row.acceptance_status) as TaskAssignment['acceptanceStatus'],
+    acceptedAt: strOrNull(row.accepted_at),
+    declinedAt: strOrNull(row.declined_at),
+    declineReason: strOrNull(row.decline_reason),
+    suggestionReason: strOrNull(row.suggestion_reason),
+  };
+}
+
+function mapTask(row: Record<string, unknown>): CollaborationTask {
+  return {
+    id: str(row.id),
+    matterId: str(row.matter_id),
+    parentTaskId: strOrNull(row.parent_task_id),
+    title: str(row.title),
+    description: strOrNull(row.description),
+    priority: str(row.priority) === 'high' || str(row.priority) === 'low' ? str(row.priority) as 'high' | 'low' : 'normal',
+    status: str(row.status) as TaskStatus,
+    createdBy: actorFrom(row.created_by_kind, row.created_by_profile_id, null, row.created_by_display_name),
+    lead: row.lead_profile_id ? actorFrom(row.lead_kind, row.lead_profile_id, row.lead_unit_label, row.lead_display_name) : null,
+    expectedOutcome: strOrNull(row.expected_outcome),
+    completionCriteria: strOrNull(row.completion_criteria),
+    reviewRequired: Boolean(row.review_required),
+    currentActionId: strOrNull(row.current_action_id),
+    waitingCondition: strOrNull(row.waiting_condition),
+    startAt: strOrNull(row.start_at),
+    dueAt: strOrNull(row.due_at),
+    submittedAt: strOrNull(row.submitted_at),
+    completedAt: strOrNull(row.completed_at),
+    cancelledAt: strOrNull(row.cancelled_at),
+    createdAt: str(row.created_at),
+    updatedAt: str(row.updated_at),
+    isBlocked: Boolean(row.is_blocked),
+    assignments: asRows(row.assignments).map(mapAssignment),
+    dependencies: asRows(row.dependencies).map((dep) => ({
+      id: str(dep.id),
+      dependsOnTaskId: str(dep.depends_on_task_id),
+      kind: 'blocked_by' as const,
+      dependsOnTitle: str(dep.depends_on_title),
+      dependsOnStatus: str(dep.depends_on_status) as TaskStatus,
+    } satisfies TaskDependency)),
+  };
+}
+
+function mapDecision(row: Record<string, unknown>): MatterDecision {
+  return {
+    id: str(row.id),
+    matterId: str(row.matter_id),
+    title: str(row.title),
+    statement: str(row.statement),
+    rationale: strOrNull(row.rationale),
+    status: str(row.status) as MatterDecision['status'],
+    proposedBy: actorFrom(row.proposed_by_kind, row.proposed_by_profile_id, null, row.proposed_by_display_name),
+    decidedBy: row.decided_by_profile_id
+      ? actorFrom(row.decided_by_kind, row.decided_by_profile_id, null, row.decided_by_display_name)
+      : null,
+    createdAt: str(row.created_at),
+    decidedAt: strOrNull(row.decided_at),
+    taskIds: Array.isArray(row.task_ids) ? row.task_ids.filter((id): id is string => typeof id === 'string') : [],
+  };
+}
+
+function mapResponsibility(row: Record<string, unknown>): MatterResponsibility {
+  return {
+    id: str(row.id),
+    matterId: str(row.matter_id),
+    kind: str(row.kind) === 'collaborator' ? 'collaborator' : 'lead',
+    actor: actorFrom(row.actor_kind, row.actor_profile_id, row.actor_unit_label, row.actor_display_name),
+    status: str(row.status) as MatterResponsibility['status'],
+    assignedAt: str(row.assigned_at),
+    assignedBy: row.assigned_by_profile_id
+      ? actorFrom(row.assigned_by_kind, row.assigned_by_profile_id, null, null)
+      : null,
+    acceptedAt: strOrNull(row.accepted_at),
+    declinedAt: strOrNull(row.declined_at),
+    responseAction: strOrNull(row.response_action),
+    responseReason: strOrNull(row.response_reason),
+    suggestedActor: row.suggested_actor_profile_id
+      ? actorFrom(row.suggested_actor_kind, row.suggested_actor_profile_id, null, row.suggested_actor_display_name)
+      : null,
   };
 }
 
@@ -399,20 +543,26 @@ export async function getMatterDetail(
   const record = asRecord(data);
   const matterRow = asRecord(record?.matter);
   if (!matterRow) return null;
+  const listed = mapListBundle(record, '', []);
   return {
     matter: mapMatter(matterRow),
     currentAction: mapAction(asRecord(record?.current_action)),
+    pendingActions: listed?.pendingActions ?? [],
     comments: asRows(record?.comments).map(mapComment),
     events: asRows(record?.events).map(mapEvent),
     parties: asRows(record?.parties).map(mapParty),
     attachments: asRows(record?.attachments).map(mapAttachment),
+    tasks: asRows(record?.tasks).map(mapTask),
+    decisions: asRows(record?.decisions).map(mapDecision),
+    responsibilities: asRows(record?.responsibilities).map(mapResponsibility),
+    workSummary: listed?.workSummary ?? null,
   };
 }
 
 export async function addMatterComment(
   matterId: string,
   body: string,
-  options?: { parentId?: string | null; authorKind?: MatterActorKind; mentionedProfileIds?: string[] },
+  options?: { parentId?: string | null; authorKind?: MatterActorKind; mentionedProfileIds?: string[]; taskId?: string | null },
   client: DbClient = supabase,
 ): Promise<void> {
   const { error } = await db(client).rpc('add_matter_comment', {
@@ -421,6 +571,7 @@ export async function addMatterComment(
     p_parent_id: options?.parentId ?? null,
     p_author_kind: options?.authorKind ?? 'person',
     p_mentioned_profile_ids: options?.mentionedProfileIds ?? [],
+    p_task_id: options?.taskId ?? null,
   });
   if (error) throw new Error(rpcErrorMessage(error));
 }
@@ -498,3 +649,122 @@ export async function uploadMatterFile(
   }, client);
   return { path, name: file.name };
 }
+
+export async function startMatterCollaborativeWork(matterId: string, client: DbClient = supabase): Promise<void> {
+  const { error } = await db(client).rpc('start_matter_collaborative_work', { p_matter_id: matterId });
+  if (error) throw new Error(rpcErrorMessage(error));
+}
+
+export async function inviteMatterParticipant(
+  matterId: string,
+  input: { role: string; kind: MatterActorKind; profileId: string; unitLabel?: string | null },
+  client: DbClient = supabase,
+): Promise<void> {
+  const { error } = await db(client).rpc('invite_matter_participant', {
+    p_matter_id: matterId,
+    p_role: input.role,
+    p_kind: input.kind,
+    p_profile_id: input.profileId,
+    p_unit_label: input.unitLabel ?? null,
+  });
+  if (error) throw new Error(rpcErrorMessage(error));
+}
+
+export async function createCollaborationTask(
+  input: {
+    matterId: string;
+    title: string;
+    description?: string;
+    assigneeKind?: MatterActorKind;
+    assigneeProfileId?: string;
+    reviewerKind?: MatterActorKind;
+    reviewerProfileId?: string;
+    reviewRequired?: boolean;
+    parentTaskId?: string | null;
+    dependsOn?: string[];
+  },
+  client: DbClient = supabase,
+): Promise<string> {
+  const { data, error } = await db(client).rpc('create_collaboration_task', {
+    payload: {
+      matter_id: input.matterId,
+      title: input.title,
+      description: input.description ?? null,
+      assignee_kind: input.assigneeKind ?? 'person',
+      assignee_profile_id: input.assigneeProfileId ?? null,
+      reviewer_kind: input.reviewerKind ?? 'person',
+      reviewer_profile_id: input.reviewerProfileId ?? null,
+      review_required: input.reviewRequired ?? false,
+      parent_task_id: input.parentTaskId ?? null,
+      depends_on: input.dependsOn ?? [],
+    },
+  });
+  if (error) throw new Error(rpcErrorMessage(error));
+  if (typeof data !== 'string' || !data) throw new Error('Could not create the Task.');
+  return data;
+}
+
+export async function performCollaborationAction(
+  actionId: string,
+  action: string,
+  options?: { message?: string; targetKind?: MatterActorKind; targetProfileId?: string },
+  client: DbClient = supabase,
+): Promise<void> {
+  const { error } = await db(client).rpc('perform_collaboration_action', {
+    p_action_id: actionId,
+    p_action: action,
+    p_message: options?.message ?? null,
+    p_target_kind: options?.targetKind ?? null,
+    p_target_profile_id: options?.targetProfileId ?? null,
+  });
+  if (error) throw new Error(rpcErrorMessage(error));
+}
+
+export async function proposeMatterDecision(
+  input: { matterId: string; title: string; statement: string; rationale?: string; taskIds?: string[] },
+  client: DbClient = supabase,
+): Promise<void> {
+  const { error } = await db(client).rpc('propose_matter_decision', {
+    payload: {
+      matter_id: input.matterId,
+      title: input.title,
+      statement: input.statement,
+      rationale: input.rationale ?? null,
+      task_ids: input.taskIds ?? [],
+    },
+  });
+  if (error) throw new Error(rpcErrorMessage(error));
+}
+
+export async function completeMatterCollaborativeWork(
+  matterId: string,
+  options?: { allowOutstanding?: boolean; reason?: string },
+  client: DbClient = supabase,
+): Promise<void> {
+  const { error } = await db(client).rpc('complete_matter_collaborative_work', {
+    p_matter_id: matterId,
+    p_allow_outstanding: options?.allowOutstanding ?? false,
+    p_reason: options?.reason ?? null,
+  });
+  if (error) throw new Error(rpcErrorMessage(error));
+}
+
+export async function addTaskEvidence(
+  matterId: string,
+  taskId: string,
+  params: { kind?: 'file' | 'url' | 'text'; url?: string; label?: string; bodyText?: string; filePath?: string; fileName?: string },
+  client: DbClient = supabase,
+): Promise<void> {
+  const { error } = await db(client).rpc('add_matter_attachment', {
+    p_matter_id: matterId,
+    p_kind: params.kind ?? (params.url ? 'url' : params.bodyText ? 'text' : 'file'),
+    p_url: params.url ?? null,
+    p_label: params.label ?? null,
+    p_body_text: params.bodyText ?? null,
+    p_file_path: params.filePath ?? null,
+    p_file_name: params.fileName ?? null,
+    p_task_id: taskId,
+  });
+  if (error) throw new Error(rpcErrorMessage(error));
+}
+

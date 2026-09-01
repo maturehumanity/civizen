@@ -35,6 +35,12 @@ export const ACTION_REQUIREMENT_TYPES = [
   'address',
   'confirm_resolution',
   'choose_next_party',
+  'accept_task',
+  'complete_task',
+  'review_task',
+  'reconsider_task',
+  'confirm_decision',
+  'shared_responsibility_response',
 ] as const;
 export type ActionRequirementType = (typeof ACTION_REQUIREMENT_TYPES)[number];
 
@@ -117,6 +123,11 @@ export const TIMING_POLICY_IDS = [
   'request_response',
   'discussion_response',
   'address_work',
+  'task_acceptance',
+  'task_execution',
+  'task_review',
+  'decision_confirmation',
+  'final_work_response',
 ] as const;
 export type TimingPolicyId = (typeof TIMING_POLICY_IDS)[number];
 
@@ -204,6 +215,46 @@ export const DEFAULT_TIMING_POLICIES: readonly MatterTimingPolicy[] = [
     reminderValue: 1,
     reminderUnit: 'calendar_days',
   },
+  {
+    id: 'task_acceptance',
+    displayName: 'Task acceptance',
+    durationValue: 1,
+    durationUnit: 'calendar_days',
+    reminderValue: 8,
+    reminderUnit: 'hours',
+  },
+  {
+    id: 'task_execution',
+    displayName: 'Task execution',
+    durationValue: 5,
+    durationUnit: 'calendar_days',
+    reminderValue: 1,
+    reminderUnit: 'calendar_days',
+  },
+  {
+    id: 'task_review',
+    displayName: 'Task review',
+    durationValue: 2,
+    durationUnit: 'calendar_days',
+    reminderValue: 12,
+    reminderUnit: 'hours',
+  },
+  {
+    id: 'decision_confirmation',
+    displayName: 'Decision confirmation',
+    durationValue: 2,
+    durationUnit: 'calendar_days',
+    reminderValue: 12,
+    reminderUnit: 'hours',
+  },
+  {
+    id: 'final_work_response',
+    displayName: 'Final work response',
+    durationValue: 3,
+    durationUnit: 'calendar_days',
+    reminderValue: 1,
+    reminderUnit: 'calendar_days',
+  },
 ];
 
 export type MatterTypeDefault = {
@@ -274,6 +325,10 @@ export type Matter = {
   lastReopenedAt: string | null;
   reopenCount: number;
   updatedAt: string;
+  collaborativeWorkStartedAt: string | null;
+  collaborativeWorkCompletedAt: string | null;
+  collaborativeWorkCompletionKind: 'normal' | 'with_outstanding_work' | null;
+  collaborativeWorkCompletionReason: string | null;
 };
 
 export type MatterActionRequirement = {
@@ -291,6 +346,9 @@ export type MatterActionRequirement = {
   completionAction: FormalActionType | null;
   timeoutAction: TimeoutBehavior;
   escalationPolicyId: string | null;
+  contextKind: 'matter' | 'task' | 'decision' | 'responsibility';
+  contextId: string | null;
+  taskTitle?: string | null;
 };
 
 export type MatterComment = {
@@ -302,6 +360,7 @@ export type MatterComment = {
   mentionedProfileIds: string[];
   visibility: MatterVisibility | null;
   createdAt: string;
+  taskId: string | null;
 };
 
 export type MatterEvent = {
@@ -318,7 +377,20 @@ export type MatterEvent = {
 export type MatterParty = {
   id: string;
   matterId: string;
-  role: 'initiator' | 'addressee' | 'responsible' | 'invitee' | 'follower' | 'participant';
+  role:
+    | 'initiator'
+    | 'addressee'
+    | 'responsible'
+    | 'responsible_lead'
+    | 'responsible_collaborator'
+    | 'contributor'
+    | 'specialist'
+    | 'contractor'
+    | 'observer'
+    | 'evaluator'
+    | 'invitee'
+    | 'follower'
+    | 'participant';
   actor: MatterActorRef;
   addedAt: string;
 };
@@ -327,14 +399,17 @@ export type MatterAttachment = {
   id: string;
   matterId: string;
   commentId: string | null;
-  kind: 'file' | 'url';
+  kind: 'file' | 'url' | 'text' | 'image' | 'system_record';
   filePath: string | null;
   fileName: string | null;
   url: string | null;
   label: string | null;
+  bodyText: string | null;
   visibility: MatterVisibility | null;
   uploadedByProfileId: string;
   createdAt: string;
+  taskId: string | null;
+  decisionId: string | null;
 };
 
 export type DerivedMatterStatus =
@@ -349,7 +424,8 @@ export type DerivedMatterStatus =
   | 'automatically_closed'
   | 'closed'
   | 'reopened'
-  | 'no_action_required';
+  | 'no_action_required'
+  | 'work_in_progress';
 
 export type BallIsWithCopy = {
   headline: string;
@@ -467,6 +543,14 @@ export function deriveMatterStatus(
   if (action?.actionType === 'confirm_resolution') return 'waiting_for_initiator';
   if (action?.actionType === 'choose_next_party') return 'choose_next_party';
   if (matter.reopenCount > 0 && action?.status === 'pending') return 'reopened';
+  if (
+    'collaborativeWorkStartedAt' in matter
+    && matter.collaborativeWorkStartedAt
+    && !('collaborativeWorkCompletedAt' in matter && matter.collaborativeWorkCompletedAt)
+    && matter.lifecycleStatus === 'active'
+  ) {
+    return 'work_in_progress';
+  }
   return 'waiting_for_response';
 }
 
@@ -522,6 +606,18 @@ export function actionExpectedCopy(actionType: ActionRequirementType): string {
       return 'Confirm whether the proposed response addressed the Matter.';
     case 'choose_next_party':
       return 'Choose who should take this Matter next.';
+    case 'accept_task':
+      return 'Accept or decline this Task.';
+    case 'complete_task':
+      return 'Complete the assigned work, or submit it for review.';
+    case 'review_task':
+      return 'Review the submitted work.';
+    case 'reconsider_task':
+      return 'Reassign this Task or respond to the request.';
+    case 'confirm_decision':
+      return 'Confirm or reject the proposed Decision.';
+    case 'shared_responsibility_response':
+      return 'Respond to this shared responsibility request.';
     default:
       return 'A response is required.';
   }
@@ -546,6 +642,8 @@ export function buildBallIsWithCopy(params: {
   }
   const requiredFromViewer = viewerRepresents(viewerProfileId, action.assignedActor, managedOrganizationIds);
   const pastDue = new Date(action.dueAt).getTime() <= now.getTime();
+  const expected = actionExpectedCopy(action.actionType);
+  const detail = action.taskTitle ? `Task: ${action.taskTitle}. ${expected}` : expected;
   const dueLine =
     action.status === 'overdue' || pastDue
       ? 'Overdue.'
@@ -555,7 +653,7 @@ export function buildBallIsWithCopy(params: {
   if (requiredFromViewer) {
     return {
       headline: 'Action required from you',
-      detail: actionExpectedCopy(action.actionType),
+      detail,
       dueLine,
       requiredFromViewer: true,
     };
@@ -567,7 +665,7 @@ export function buildBallIsWithCopy(params: {
       : `Waiting on ${waitingOn}`;
   return {
     headline,
-    detail: actionExpectedCopy(action.actionType),
+    detail,
     dueLine,
     requiredFromViewer: false,
   };
@@ -614,6 +712,12 @@ const ACTION_SETS: Record<ActionRequirementType, FormalActionType[]> = {
     'revealed_issue',
   ],
   choose_next_party: ['redirect', 'invite_party'],
+  accept_task: [],
+  complete_task: [],
+  review_task: [],
+  reconsider_task: [],
+  confirm_decision: [],
+  shared_responsibility_response: [],
 };
 
 const TARGET_ACTIONS = new Set<FormalActionType>(['forward', 'invite_party', 'redirect']);
@@ -657,7 +761,8 @@ export function formalActionsForContext(params: {
   }
   const assigned = viewerRepresents(viewerProfileId, currentAction.assignedActor, managedOrganizationIds);
   const options: FormalActionOption[] = [];
-  if (assigned && (currentAction.status === 'pending' || currentAction.status === 'overdue')) {
+  const matterClock = currentAction.contextKind === 'matter';
+  if (assigned && matterClock && (currentAction.status === 'pending' || currentAction.status === 'overdue')) {
     for (const action of ACTION_SETS[currentAction.actionType]) {
       if (action === 'revealed_issue' && params.matterType !== 'question') continue;
       options.push({
@@ -693,6 +798,34 @@ export type MatterQueue = (typeof MATTER_QUEUES)[number];
 export type MatterListRow = {
   matter: Matter;
   currentAction: MatterActionRequirement | null;
+  pendingActions: MatterActionRequirement[];
   derivedStatus: DerivedMatterStatus;
   ball: BallIsWithCopy | null;
+  workSummary: MatterWorkSummary | null;
 };
+
+export type MatterWorkSummary = {
+  started: boolean;
+  completed: boolean;
+  completionKind: 'normal' | 'with_outstanding_work' | null;
+  total: number;
+  completedTasks: number;
+  blocked: number;
+  open: number;
+  outstanding: number;
+  outstandingTasks: { id: string; title: string; status: string }[];
+};
+
+export function workProgressLine(summary: MatterWorkSummary | null): string | null {
+  if (!summary?.started) return null;
+  if (summary.completed && summary.completionKind === 'with_outstanding_work') {
+    return 'Work complete with outstanding Tasks — awaiting final response';
+  }
+  if (summary.completed && summary.outstanding === 0) return 'Work complete — awaiting final response';
+  if (!summary.completed && summary.outstanding > 0) {
+    return `Collaborative work has outstanding Tasks · ${summary.outstanding} still open`;
+  }
+  if (summary.total === 0) return 'Work in progress';
+  const blocked = summary.blocked > 0 ? ` · ${summary.blocked} blocked` : '';
+  return `Work in progress · ${summary.completedTasks} of ${summary.total} Tasks completed${blocked}`;
+}
