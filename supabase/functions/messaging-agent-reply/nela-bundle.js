@@ -808,9 +808,9 @@ var KNOWLEDGE_PACK = {
     "appVersion": "0.1.197",
     "appReleaseId": "20260817-v0.1.197",
     "androidVersionCode": 199,
-    "gitSha": "2e9920c8e9de44268a979ac30025febb34efe0fc",
-    "generatedAt": "2026-09-01T23:35:28.994Z",
-    "sourceFingerprint": "60d8b07192b18509457336b8d52e24bfd9294509ef58e3d03fd9628e60654a2d",
+    "gitSha": "6d99e19708cfa9e114dcf3ffe1304ff04d3c3fbd",
+    "generatedAt": "2026-09-02T18:48:26.274Z",
+    "sourceFingerprint": "fb9eb369aa0b3b67fd9e4840846f1522ae075c2c1ef22c862753f275861a2a36",
     "knowledgeFormat": 1,
     "sourceCount": 28,
     "chunkCount": 369
@@ -3758,7 +3758,7 @@ var KNOWLEDGE_PACK = {
       "id": "docs/04-operations/dev/matter-collaboration.md#0",
       "title": "Matter Collaboration System",
       "path": "docs/04-operations/dev/matter-collaboration.md",
-      "text": "# Matter Collaboration System **Project:** Civizen **Routes:** `/contribute/matters`, `/contribute/matters/new`, `/contribute/matters/:matterId` **Status:** Phase 1 + Phase 2 + Phase 3 (Resolution, Evaluation, Escalation & Accountability) shipped **Version:** 3.0 Canonical product/UX note for agents. Contribute hub: [`contribute-page.md`](./contribute-page.md). A **Matter** is something one Civizen actor brings to one or more other actors for attention, response, discussion, consideration, or action. It is a generic collaboration object, not an Issues module and not limited to government/citizen interactions. User-facing Contribute label: **Questions, Issues & Ideas**. Internal model remains `Matter`.",
+      "text": "# Matter Collaboration System **Project:** Civizen **Routes:** `/contribute/matters`, `/contribute/matters/new`, `/contribute/matters/:matterId` **Status:** Phase 1 + Phase 2 + Phase 3 + Phase 4A (Human\u2013AI collaboration foundation) shipped **Version:** 4.0 Canonical product/UX note for agents. Contribute hub: [`contribute-page.md`](./contribute-page.md). A **Matter** is something one Civizen actor brings to one or more other actors for attention, response, discussion, consideration, or action. It is a generic collaboration object, not an Issues module and not limited to government/citizen interactions. User-facing Contribute label: **Questions, Issues & Ideas**. Internal model remains `Matter`.",
       "status": "implemented",
       "priority": 6,
       "kind": "doc"

@@ -2,8 +2,8 @@
 
 **Project:** Civizen  
 **Routes:** `/contribute/matters`, `/contribute/matters/new`, `/contribute/matters/:matterId`  
-**Status:** Phase 1 + Phase 2 + Phase 3 (Resolution, Evaluation, Escalation & Accountability) shipped  
-**Version:** 3.0
+**Status:** Phase 1 + Phase 2 + Phase 3 + Phase 4A (Human–AI collaboration foundation) shipped  
+**Version:** 4.0
 
 Canonical product/UX note for agents. Contribute hub: [`contribute-page.md`](./contribute-page.md).
 
@@ -161,17 +161,60 @@ Closure kinds include `confirmed_resolution`, `auto_no_initiator_response`, `par
 
 Human Outcome Review (`/wellbeing-insights/outcome`) remains separate; `human_outcome_review_id` on outcome follow-ups is reserved for optional linkage — not forced on generic Matters.
 
+## Phase 4A — Human–AI collaboration foundation
+
+AI agents are **first-class Matter participants** (`ai_agent` actor kind) with stable `ai_agents` records — not fake person profiles. They use the same Matter → Participant → Task → Action Requirement → Submission → Review → Decision / Evidence → Resolution architecture as humans.
+
+### AI actor model
+
+- **`ai_agents`**: stable agent identity (slug, display name, role type, capability profile, provider/model references).
+- **`matter_agent_assignments`**: explicit authorization — which agent, why, supervisor, scoped context/capabilities, instructions.
+- **`ai_agent_runs`**: auditable executions; retries create new runs; failed runs are preserved.
+- **`matter_agent_artifacts`**: AI-generated outputs with provenance (`generated_by_agent_id`, `generated_by_run_id`, source references, review state).
+
+Initial roles: **Research**, **Analysis**, **Planning**, **Facilitation**, **Documentation** (Coding Agent deferred).
+
+### Supervision and permissions
+
+Every active assignment requires a **human supervising actor**. AI cannot be Responsible Lead, formal Responsible Collaborator, or final institutional authority. Server-side capability checks (`matter_ai_agent_has_capability`, blocked mutations during agent runs) enforce:
+
+- allowed: read scoped Matter context, comment when permitted, submit Task work, propose Tasks/Decisions (human promotes), add marked AI evidence.
+- forbidden: accept responsibility, assign humans, accept Decisions for accountable actors, close Matters, confirm Resolution, submit human-style evaluations, alter permissions/escalation/Score.
+
+Matter content is **untrusted data** (prompt-injection safe); tool/action authority is enforced outside the model.
+
+### UX
+
+- Matter **Participants** list distinguishes Human · Organization · **AI Agent**.
+- **Add AI assistance** flow on active Matters: role, instructions, context scope, supervisor, confirm.
+- **AI assistance** section shows assignments, artifacts, review states (queued, working, awaiting review, changes requested, failed, completed).
+- **Planning → Task adoption**: proposed Tasks from `proposed_plan` artifacts are selectable; authorized Leads edit title/description/dependencies and create ordinary `collaboration_tasks` via `adopt_matter_agent_plan_task` (provenance: `ai_plan_task_adopted`).
+- **Facilitation → Decision promotion**: suggested Decisions from facilitation artifacts are reviewable; authorized humans promote via `promote_agent_decision_suggestion` into formal Phase 2 Decisions (provenance preserved).
+- AI outputs remain **provisional** until human review (`AI-generated`, `Proposed`, `Awaiting human review` badges).
+
+### Events
+
+`ai_agent_assigned`, `ai_task_accepted`, `ai_run_queued`, `ai_work_submitted`, `ai_comment_added`, `ai_plan_proposed`, `ai_plan_task_adopted`, `ai_decision_promoted`, `ai_changes_requested`, `ai_work_accepted`, `ai_run_failed`, `ai_assignment_cancelled`, …
+
+### Execution and authorization (stabilization)
+
+- Edge function: `supabase/functions/matter-agent-execute` — user-triggered model **A**: caller JWT → `authorize_matter_agent_run` → service-role completion.
+- Deployment: **self-hosted** Supabase on `soc.yeremyan.net` (`https://supabase.yeremyan.net`). Copy `index.ts` into `/home/ubuntu/supabase-stack/supabase/docker/volumes/functions/matter-agent-execute/`, then `docker compose restart functions`. Do **not** use Supabase Cloud `functions deploy` / project refs for this environment.
+- Gemini keys come from the self-hosted Docker `.env` into the Edge Functions container (`GEMINI_API_KEY`, `GEMINI_MODEL`). Without the key, deterministic fallback output is labeled `execution_mode: deterministic_fallback` in run `usage_metadata` — never indistinguishable from provider output.
+- **Analysis** and **Documentation** agents: registered framework capability only in Phase 4A (no dedicated E2E adoption flow).
+
 ## Deferred
 
-AI participants and routing, Projects as a separate collaboration layer, Community Challenge / Governance conversion, department trees and auto-assignment, Score/reputation/capability consequences, analytics dashboards, Gantt/Kanban, advanced evidence certification.
+Autonomous AI routing without human approval, Coding Agent / repository write access, external SaaS writes, financial/legal commitments, organizational AI-policy console, Projects as a separate collaboration layer, Community Challenge / Governance conversion, department trees and auto-assignment, Score/reputation/capability consequences, analytics dashboards, Gantt/Kanban, advanced evidence certification.
 
 ## Implementation map
 
-- Domain: `src/lib/matters.ts`, `src/lib/matters-workflow.ts`, `src/lib/matters-work.ts`, `src/lib/matters-work-workflow.ts`, `src/lib/matters-resolution.ts`, `src/lib/matters-resolution-workflow.ts`
+- Domain: `src/lib/matters.ts`, `src/lib/matters-workflow.ts`, `src/lib/matters-work.ts`, `src/lib/matters-work-workflow.ts`, `src/lib/matters-resolution.ts`, `src/lib/matters-resolution-workflow.ts`, `src/lib/matters-ai.ts`
 - API: `src/lib/matters-api.ts`
-- UI: `src/pages/contribute/Matters.tsx`, `MatterForm.tsx`, `MatterDetail.tsx`, `MatterWorkPanel.tsx`, `MatterResolutionPanel.tsx`
-- Schema: `supabase/migrations/20260831010000_matter_collaboration_system.sql`, `20260831200000_matter_collaboration_stabilization.sql`, `20260901120000_matter_collaborative_work.sql`, `20260901140000_matter_collaborative_work_stabilization.sql`, `20260901160000_matter_resolution_phase3.sql`, `20260901170000_matter_resolution_phase3_stabilization.sql`
-- Gates: `verify:matters-resolution-detail` (Phase 3 — 13 dedicated Resolution/Outcome states @ 390px + 1280px)
+- UI: `src/pages/contribute/Matters.tsx`, `MatterForm.tsx`, `MatterDetail.tsx`, `MatterWorkPanel.tsx`, `MatterResolutionPanel.tsx`, `MatterAgentPanel.tsx`, `MatterAgentArtifactCard.tsx`
+- Schema: `supabase/migrations/20260831010000_matter_collaboration_system.sql`, `20260831200000_matter_collaboration_stabilization.sql`, `20260901120000_matter_collaborative_work.sql`, `20260901140000_matter_collaborative_work_stabilization.sql`, `20260901160000_matter_resolution_phase3.sql`, `20260901170000_matter_resolution_phase3_stabilization.sql`, `20260902160000_matter_ai_collaboration_phase4a.sql`, `20260902160100_matter_ai_collaboration_phase4a_stabilization.sql`, `20260902160200_matter_ai_agent_run_service_fix.sql`, `20260902170000_matter_ai_phase4a_stabilization.sql`
+- Edge: `supabase/functions/matter-agent-execute`
+- Gates: `verify:matters-resolution-detail` (Phase 3 — 13 states @ 390px + 1280px), `verify:matter-agent-auth` (RPC/edge authorization negatives), `verify:matter-agent-activation` (provider-backed deployed E2E), `verify:matters-ai-detail` (Phase 4A — 18 states @ 390px + 1280px)
 
 ## Security: `search_path` and schema CREATE (2026-09-01)
 

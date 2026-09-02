@@ -41,6 +41,7 @@ import {
 import { listOwnedLinkedProfileIds } from '@/lib/opportunities-api';
 import { toast } from 'sonner';
 import { MatterWorkPanel } from '@/pages/contribute/MatterWorkPanel';
+import { MatterAgentPanel } from '@/pages/contribute/MatterAgentPanel';
 import { MatterResolutionPanel } from '@/pages/contribute/MatterResolutionPanel';
 
 function formatWhen(value: string | null): string {
@@ -77,7 +78,7 @@ export default function MatterDetail() {
   const [target, setTarget] = useState<MatterActorSuggestion | null>(null);
   const [targetHits, setTargetHits] = useState<MatterActorSuggestion[]>([]);
   const [file, setFile] = useState<File | null>(null);
-  const [section, setSection] = useState<'overview' | 'discussion' | 'work' | 'decisions' | 'resolution' | 'outcome' | 'activity'>('overview');
+  const [section, setSection] = useState<'overview' | 'discussion' | 'work' | 'decisions' | 'ai' | 'resolution' | 'outcome' | 'activity'>('overview');
   const [outstandingReason, setOutstandingReason] = useState('');
 
   const load = useCallback(async () => {
@@ -155,7 +156,10 @@ export default function MatterDetail() {
     || pendingActions.some((item) => ['review_resolution', 'propose_resolution'].includes(item.actionType));
   const hasOutcome = (bundle?.outcomeFollowups?.length ?? 0) > 0
     || pendingActions.some((item) => item.actionType === 'outcome_followup');
-  const sectionItems = (['overview', 'discussion', ...(hasWork ? ['work', 'decisions'] as const : []), ...(hasResolution ? ['resolution'] as const : []), ...(hasOutcome ? ['outcome'] as const : []), 'activity'] as const);
+  const hasAi = hasWork
+    || (bundle?.agentAssignments?.length ?? 0) > 0
+    || (bundle?.agentArtifacts?.length ?? 0) > 0;
+  const sectionItems = (['overview', 'discussion', ...(hasWork ? ['work', 'decisions'] as const : []), ...(hasAi ? ['ai'] as const : []), ...(hasResolution ? ['resolution'] as const : []), ...(hasOutcome ? ['outcome'] as const : []), 'activity'] as const);
   const options = matter
     ? formalActionsForContext({
         lifecycleStatus: matter.lifecycleStatus,
@@ -544,6 +548,25 @@ export default function MatterDetail() {
         </section>
         ) : null}
 
+        {bundle && bundle.parties.length > 0 && (!hasWork || section === 'overview') ? (
+        <section className="space-y-2">
+          <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+            {t('contribute.matters.participantsHeading')}
+          </h2>
+          <ul className="space-y-1">
+            {bundle.parties.map((party) => (
+              <li key={party.id} className="flex flex-wrap items-center gap-2 text-sm">
+                <span>{actorLabel(party.actor)}</span>
+                {party.actor.kind === 'ai_agent' ? (
+                  <Badge variant="outline" className="text-xs">AI</Badge>
+                ) : null}
+                <span className="text-muted-foreground">· {party.role.replaceAll('_', ' ')}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+        ) : null}
+
         {options.length > 0 && (!hasWork || section === 'overview') ? (
           <section className="space-y-3">
             <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
@@ -806,6 +829,18 @@ export default function MatterDetail() {
               })
             )}
           </section>
+        ) : null}
+
+        {(hasAi && (section === 'ai' || section === 'overview') && bundle) ? (
+          <MatterAgentPanel
+            bundle={bundle}
+            profileId={profileId}
+            linkedIds={linkedIds}
+            busy={busy}
+            onBusy={setBusy}
+            onReload={load}
+            t={t}
+          />
         ) : null}
 
         {(hasResolution && (section === 'resolution' || section === 'overview')) && bundle ? (

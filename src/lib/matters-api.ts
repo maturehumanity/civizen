@@ -28,6 +28,14 @@ import {
   type TimeoutBehavior,
 } from '@/lib/matters';
 import type {
+  AiAgent,
+  AiAgentRun,
+  AiAgentRoleType,
+  AiContextScope,
+  MatterAgentArtifact,
+  MatterAgentAssignment,
+} from '@/lib/matters-ai';
+import type {
   MatterEvaluation,
   MatterOutcomeFollowup,
   MatterPatternCounts,
@@ -101,11 +109,13 @@ function actorFrom(
   profileId: unknown,
   unitLabel: unknown,
   displayName: unknown,
+  agentId?: unknown,
 ): MatterActorRef {
   const kind = isMatterActorKind(str(kindValue)) ? (kindValue as MatterActorKind) : 'person';
   return {
     kind,
-    profileId: strOrNull(profileId),
+    profileId: kind === 'ai_agent' ? null : strOrNull(profileId),
+    agentId: kind === 'ai_agent' ? strOrNull(agentId ?? profileId) : strOrNull(agentId),
     unitLabel: strOrNull(unitLabel),
     displayName: strOrNull(displayName),
   };
@@ -178,7 +188,8 @@ function mapAction(row: Record<string, unknown> | null): MatterActionRequirement
       row.assigned_kind,
       row.assigned_profile_id,
       row.assigned_unit_label,
-      row.assigned_display_name,
+      row.assigned_display_name ?? row.agent_display_name,
+      row.assigned_agent_id,
     ),
     createdAt: str(row.created_at),
     dueAt: str(row.due_at),
@@ -267,6 +278,10 @@ export type MatterDetailBundle = {
   evaluations: MatterEvaluation[];
   outcomeFollowups: MatterOutcomeFollowup[];
   patternCounts: MatterPatternCounts | null;
+  agentAssignments: MatterAgentAssignment[];
+  agentRuns: AiAgentRun[];
+  agentArtifacts: MatterAgentArtifact[];
+  aiAgents: AiAgent[];
 };
 
 function mapComment(row: Record<string, unknown>): MatterComment {
@@ -277,7 +292,13 @@ function mapComment(row: Record<string, unknown>): MatterComment {
     id: str(row.id),
     matterId: str(row.matter_id),
     parentId: strOrNull(row.parent_id),
-    author: actorFrom(row.author_kind, row.author_profile_id, null, row.author_display_name),
+    author: actorFrom(
+      row.author_kind,
+      row.author_profile_id,
+      null,
+      row.author_display_name ?? row.agent_display_name,
+      row.agent_id,
+    ),
     body: str(row.body),
     mentionedProfileIds: mentioned,
     visibility: strOrNull(row.visibility) as MatterVisibility | null,
@@ -291,7 +312,13 @@ function mapEvent(row: Record<string, unknown>): MatterEvent {
     id: str(row.id),
     matterId: str(row.matter_id),
     eventType: str(row.event_type),
-    actor: actorFrom(row.actor_kind, row.actor_profile_id, null, row.actor_display_name),
+    actor: actorFrom(
+      row.actor_kind,
+      row.actor_profile_id,
+      null,
+      row.actor_display_name ?? row.agent_display_name,
+      row.actor_agent_id ?? row.agent_id,
+    ),
     isSystem: Boolean(row.is_system) || str(row.actor_kind) === 'system',
     summary: str(row.summary),
     payload: asRecord(row.payload) ?? {},
@@ -304,7 +331,13 @@ function mapParty(row: Record<string, unknown>): MatterParty {
     id: str(row.id),
     matterId: str(row.matter_id),
     role: str(row.role) as MatterParty['role'],
-    actor: actorFrom(row.actor_kind, row.actor_profile_id, row.actor_unit_label, row.actor_display_name),
+    actor: actorFrom(
+      row.actor_kind,
+      row.actor_profile_id,
+      row.actor_unit_label,
+      row.actor_display_name ?? row.agent_display_name,
+      row.actor_agent_id ?? row.agent_id,
+    ),
     addedAt: str(row.added_at),
   };
 }
@@ -333,7 +366,13 @@ function mapAssignment(row: Record<string, unknown>): TaskAssignment {
     id: str(row.id),
     taskId: str(row.task_id),
     role: str(row.role) as TaskAssignment['role'],
-    actor: actorFrom(row.actor_kind, row.actor_profile_id, row.actor_unit_label, row.actor_display_name),
+    actor: actorFrom(
+      row.actor_kind,
+      row.actor_profile_id,
+      row.actor_unit_label,
+      row.actor_display_name ?? row.agent_display_name,
+      row.actor_agent_id ?? row.agent_id,
+    ),
     assignedBy: actorFrom(row.assigned_by_kind, row.assigned_by_profile_id, null, null),
     assignedAt: str(row.assigned_at),
     acceptanceStatus: str(row.acceptance_status) as TaskAssignment['acceptanceStatus'],
@@ -354,7 +393,11 @@ function mapTask(row: Record<string, unknown>): CollaborationTask {
     priority: str(row.priority) === 'high' || str(row.priority) === 'low' ? str(row.priority) as 'high' | 'low' : 'normal',
     status: str(row.status) as TaskStatus,
     createdBy: actorFrom(row.created_by_kind, row.created_by_profile_id, null, row.created_by_display_name),
-    lead: row.lead_profile_id ? actorFrom(row.lead_kind, row.lead_profile_id, row.lead_unit_label, row.lead_display_name) : null,
+    lead: str(row.lead_kind) === 'ai_agent'
+      ? actorFrom('ai_agent', null, null, row.lead_display_name, row.lead_agent_id)
+      : row.lead_profile_id
+        ? actorFrom(row.lead_kind, row.lead_profile_id, row.lead_unit_label, row.lead_display_name)
+        : null,
     expectedOutcome: strOrNull(row.expected_outcome),
     completionCriteria: strOrNull(row.completion_criteria),
     reviewRequired: Boolean(row.review_required),
@@ -402,7 +445,13 @@ function mapResponsibility(row: Record<string, unknown>): MatterResponsibility {
     id: str(row.id),
     matterId: str(row.matter_id),
     kind: str(row.kind) === 'collaborator' ? 'collaborator' : 'lead',
-    actor: actorFrom(row.actor_kind, row.actor_profile_id, row.actor_unit_label, row.actor_display_name),
+    actor: actorFrom(
+      row.actor_kind,
+      row.actor_profile_id,
+      row.actor_unit_label,
+      row.actor_display_name ?? row.agent_display_name,
+      row.actor_agent_id ?? row.agent_id,
+    ),
     status: str(row.status) as MatterResponsibility['status'],
     assignedAt: str(row.assigned_at),
     assignedBy: row.assigned_by_profile_id
@@ -483,6 +532,90 @@ function mapPatternCounts(value: unknown): MatterPatternCounts | null {
     reopenCount: Number(row.reopenCount) || 0,
     resolutionRejectionCount: Number(row.resolutionRejectionCount) || 0,
     resolutionAttemptCount: Number(row.resolutionAttemptCount) || 0,
+  };
+}
+
+function mapAiAgent(row: Record<string, unknown>): AiAgent {
+  return {
+    id: str(row.id),
+    slug: str(row.slug),
+    displayName: str(row.display_name),
+    description: str(row.description),
+    roleType: str(row.role_type) as AiAgent['roleType'],
+    status: str(row.status) as AiAgent['status'],
+    providerRef: strOrNull(row.provider_ref),
+    modelRef: strOrNull(row.model_ref),
+    capabilityProfile: asRecord(row.capability_profile) ?? {},
+  };
+}
+
+function mapAgentAssignment(row: Record<string, unknown>): MatterAgentAssignment {
+  return {
+    id: str(row.id),
+    matterId: str(row.matter_id),
+    taskId: strOrNull(row.task_id),
+    agentId: str(row.agent_id),
+    agentDisplayName: strOrNull(row.agent_display_name) ?? undefined,
+    agentRoleType: strOrNull(row.agent_role_type) as MatterAgentAssignment['agentRoleType'],
+    assignedBy: {
+      kind: str(row.assigned_by_kind) === 'organization' ? 'organization' : 'person',
+      profileId: str(row.assigned_by_profile_id),
+    },
+    supervisor: {
+      kind: str(row.supervising_kind) === 'organization' ? 'organization' : 'person',
+      profileId: str(row.supervising_profile_id),
+    },
+    rolePurpose: str(row.role_purpose),
+    instructions: str(row.instructions),
+    allowedContext: (Array.isArray(row.allowed_context) ? row.allowed_context : []).map(String) as AiContextScope[],
+    allowedCapabilities: (Array.isArray(row.allowed_capabilities) ? row.allowed_capabilities : []).map(String) as MatterAgentAssignment['allowedCapabilities'],
+    status: str(row.status) as MatterAgentAssignment['status'],
+    maxRunAttempts: Number(row.max_run_attempts) || 3,
+    assignedAt: str(row.assigned_at),
+    startedAt: strOrNull(row.started_at),
+    completedAt: strOrNull(row.completed_at),
+    cancelledAt: strOrNull(row.cancelled_at),
+  };
+}
+
+function mapAgentRun(row: Record<string, unknown>): AiAgentRun {
+  return {
+    id: str(row.id),
+    assignmentId: str(row.assignment_id),
+    taskId: strOrNull(row.task_id),
+    triggeredBy: str(row.triggered_by),
+    status: str(row.status) as AiAgentRun['status'],
+    revisionNumber: Number(row.revision_number) || 1,
+    startedAt: strOrNull(row.started_at),
+    finishedAt: strOrNull(row.finished_at),
+    inputContext: asRecord(row.input_context),
+    outputSummary: strOrNull(row.output_summary),
+    failureReason: strOrNull(row.failure_reason),
+    usageMetadata: asRecord(row.usage_metadata),
+    createdAt: str(row.created_at),
+  };
+}
+
+function mapAgentArtifact(row: Record<string, unknown>): MatterAgentArtifact {
+  return {
+    id: str(row.id),
+    runId: str(row.run_id),
+    assignmentId: str(row.assignment_id),
+    matterId: str(row.matter_id),
+    artifactType: str(row.artifact_type) as MatterAgentArtifact['artifactType'],
+    title: str(row.title),
+    body: str(row.body),
+    sourceReferences: Array.isArray(row.source_references)
+      ? row.source_references.map((item) => {
+          const ref = asRecord(item) ?? {};
+          return { kind: str(ref.kind), label: str(ref.label), ref: strOrNull(ref.ref) ?? undefined };
+        })
+      : [],
+    reviewStatus: str(row.review_status) as MatterAgentArtifact['reviewStatus'],
+    generatedByAgentId: str(row.generated_by_agent_id),
+    agentDisplayName: strOrNull(row.agent_display_name) ?? undefined,
+    verificationState: str(row.verification_state),
+    createdAt: str(row.created_at),
   };
 }
 
@@ -642,6 +775,10 @@ export async function getMatterDetail(
     evaluations: asRows(record?.evaluations).map(mapEvaluation),
     outcomeFollowups: asRows(record?.outcome_followups).map(mapOutcomeFollowup),
     patternCounts: mapPatternCounts(record?.pattern_counts),
+    agentAssignments: asRows(record?.agent_assignments).map(mapAgentAssignment),
+    agentRuns: asRows(record?.agent_runs).map(mapAgentRun),
+    agentArtifacts: asRows(record?.agent_artifacts).map(mapAgentArtifact),
+    aiAgents: asRows(record?.ai_agents).map(mapAiAgent),
   };
 }
 
@@ -965,5 +1102,102 @@ export async function performOutcomeFollowup(
     p_notes: notes ?? null,
   });
   if (error) throw new Error(rpcErrorMessage(error));
+}
+
+export async function listAiAgents(client: DbClient = supabase): Promise<AiAgent[]> {
+  const { data, error } = await db(client).rpc('list_ai_agents');
+  if (error) throw new Error(rpcErrorMessage(error));
+  return asRows(data).map(mapAiAgent);
+}
+
+export async function assignMatterAiAgent(
+  input: {
+    matterId: string;
+    agentRoleType: AiAgentRoleType;
+    instructions: string;
+    supervisingProfileId: string;
+    taskTitle?: string;
+    allowedContext?: AiContextScope[];
+  },
+  client: DbClient = supabase,
+): Promise<string> {
+  const { data, error } = await db(client).rpc('assign_matter_ai_agent', {
+    payload: {
+      matter_id: input.matterId,
+      agent_role_type: input.agentRoleType,
+      instructions: input.instructions,
+      supervising_profile_id: input.supervisingProfileId,
+      task_title: input.taskTitle ?? null,
+      allowed_context: input.allowedContext ?? null,
+    },
+  });
+  if (error) throw new Error(rpcErrorMessage(error));
+  if (typeof data !== 'string') throw new Error('Could not assign AI assistance.');
+  return data;
+}
+
+export async function reviewMatterAgentWork(
+  actionId: string,
+  action: 'accept' | 'request_changes' | 'reject',
+  message?: string,
+  client: DbClient = supabase,
+): Promise<void> {
+  const { error } = await db(client).rpc('review_matter_agent_work', {
+    p_action_id: actionId,
+    p_action: action,
+    p_message: message ?? null,
+  });
+  if (error) throw new Error(rpcErrorMessage(error));
+}
+
+export async function retryMatterAgentRun(assignmentId: string, client: DbClient = supabase): Promise<string> {
+  const { data, error } = await db(client).rpc('retry_matter_agent_run', { p_assignment_id: assignmentId });
+  if (error) throw new Error(rpcErrorMessage(error));
+  if (typeof data !== 'string') throw new Error('Could not retry agent run.');
+  return data;
+}
+
+export async function cancelMatterAgentAssignment(assignmentId: string, client: DbClient = supabase): Promise<void> {
+  const { error } = await db(client).rpc('cancel_matter_agent_assignment', { p_assignment_id: assignmentId });
+  if (error) throw new Error(rpcErrorMessage(error));
+}
+
+export async function adoptMatterAgentPlanTask(
+  artifactId: string,
+  title: string,
+  description?: string,
+  dependsOnTitles?: string[],
+  client: DbClient = supabase,
+): Promise<string> {
+  const { data, error } = await db(client).rpc('adopt_matter_agent_plan_task', {
+    p_artifact_id: artifactId,
+    p_title: title,
+    p_description: description ?? null,
+    p_depends_on_titles: dependsOnTitles ?? [],
+  });
+  if (error) throw new Error(rpcErrorMessage(error));
+  if (typeof data !== 'string') throw new Error('Could not adopt proposed Task.');
+  return data;
+}
+
+export async function promoteAgentDecisionSuggestion(
+  artifactId: string,
+  title: string,
+  statement: string,
+  client: DbClient = supabase,
+): Promise<string> {
+  const { data, error } = await db(client).rpc('promote_agent_decision_suggestion', {
+    p_artifact_id: artifactId,
+    p_title: title,
+    p_statement: statement,
+  });
+  if (error) throw new Error(rpcErrorMessage(error));
+  if (typeof data !== 'string') throw new Error('Could not promote Decision suggestion.');
+  return data;
+}
+
+export async function invokeMatterAgentRun(runId: string, client: DbClient = supabase): Promise<void> {
+  const { error } = await client.functions.invoke('matter-agent-execute', { body: { run_id: runId } });
+  if (error) throw new Error(error.message || 'Agent execution failed.');
 }
 

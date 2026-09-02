@@ -25,7 +25,7 @@ export const MATTER_VISIBILITIES = [
 ] as const;
 export type MatterVisibility = (typeof MATTER_VISIBILITIES)[number];
 
-export const MATTER_ACTOR_KINDS = ['person', 'organization', 'group', 'system'] as const;
+export const MATTER_ACTOR_KINDS = ['person', 'organization', 'group', 'system', 'ai_agent'] as const;
 export type MatterActorKind = (typeof MATTER_ACTOR_KINDS)[number];
 
 export const ACTION_REQUIREMENT_TYPES = [
@@ -148,6 +148,7 @@ export type DurationUnit = (typeof DURATION_UNITS)[number];
 export type MatterActorRef = {
   kind: MatterActorKind;
   profileId: string | null;
+  agentId?: string | null;
   unitLabel?: string | null;
   displayName?: string | null;
 };
@@ -528,10 +529,16 @@ export function computeDueAt(
 }
 
 export function actorsEqual(a: MatterActorRef, b: MatterActorRef): boolean {
-  return a.kind === b.kind && a.profileId === b.profileId;
+  if (a.kind !== b.kind) return false;
+  if (a.kind === 'ai_agent') return a.agentId === b.agentId;
+  return a.profileId === b.profileId;
 }
 
 export function actorLabel(actor: MatterActorRef, fallback = 'Unknown party'): string {
+  if (actor.kind === 'ai_agent') {
+    const name = actor.displayName?.trim() || 'AI Agent';
+    return `${name} · AI`;
+  }
   const name = actor.displayName?.trim();
   if (name) {
     return actor.unitLabel?.trim() ? `${name} (${actor.unitLabel.trim()})` : name;

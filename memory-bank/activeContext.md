@@ -2,6 +2,10 @@
 
 ## Current focus
 
+**Matter Collaboration Phase 4A activation (2026-09-02):** Self-hosted deploy of `matter-agent-execute` to `volumes/functions` on `soc.yeremyan.net`; provider-backed Gemini E2E via `verify:matter-agent-activation`; live auth negatives via `verify:matter-agent-auth`. No Supabase Cloud deploy path.
+
+**Matter Collaboration Phase 4A stabilization (2026-09-02):** Fixed Phase 3 regression in `get_matter()` (restored `resolutions` + Phase 3 bundle fields). Added `authorize_matter_agent_run`, `adopt_matter_agent_plan_task`, plan Task adoption + facilitation Decision promotion UX (`MatterAgentArtifactCard`). Edge function auth model A (user JWT → authorize → service execution). Gates: `verify:matter-agent-auth`, `verify:matters-ai-detail` (18 states).
+
 **CI pre-push gate (2026-09-01):** Today’s red CI runs were stale assistant knowledge (`knowledge-pack.ts` / `nela-bundle.js`) and npm audit advisories — fixed on `27c2f80`, but the pattern was push-first, fix-after. Added `npm run verify:pre-push` (local mirror of GitHub CI) as a mandatory step **before** every push; `verify:ci` remains mandatory **after** push.
 
 **Matter Collaboration Phase 3 — Resolution, Evaluation, Escalation & Accountability (2026-09-01):** Shipped on `main`. Formal Resolution records with multi-cycle history; initiator `review_resolution`; separate responsible vs initiator positions; partial resolution (continue or `FOLLOW_UP_TO`); evaluations; outcome follow-up; escalation policy binding on Action Requirements; idempotent escalation execution; `matter_find_stalled()` diagnostic; Resolution/Outcome UX; action-queue context badges; gate `verify:matters-resolution-detail` (13 states). SQL: `20260901160000_matter_resolution_phase3.sql`, `20260901170000_matter_resolution_phase3_stabilization.sql`.
