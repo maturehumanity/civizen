@@ -103,8 +103,14 @@ if (!agents.includes('verify:agent-context')) {
 if (!agents.includes('verify:ci')) {
   fail('AGENTS.md must reference verify:ci after push');
 }
+if (!agents.includes('verify:pre-push')) {
+  fail('AGENTS.md must reference verify:pre-push before push');
+}
 if (!existsSync('scripts/verify-ci.mjs')) {
   fail('missing scripts/verify-ci.mjs');
+}
+if (!existsSync('scripts/verify-pre-push.mjs')) {
+  fail('missing scripts/verify-pre-push.mjs');
 }
 if (!existsSync('scripts/verify-home-post-composer.mjs')) {
   fail('missing scripts/verify-home-post-composer.mjs');
@@ -140,6 +146,9 @@ if (!agents.includes('verify:profile-score-dial')) {
 const cursorRule = readFileSync('.cursor/rules/civizen-project.mdc', 'utf8');
 if (!cursorRule.includes('verify:ci')) {
   fail('.cursor/rules/civizen-project.mdc must require verify:ci after push');
+}
+if (!cursorRule.includes('verify:pre-push')) {
+  fail('.cursor/rules/civizen-project.mdc must require verify:pre-push before push');
 }
 if (!cursorRule.includes('verify:home-post-composer')) {
   fail('.cursor/rules/civizen-project.mdc must require verify:home-post-composer after UI work');

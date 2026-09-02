@@ -58,6 +58,7 @@
     "verify:matters-work-detail": "node scripts/verify-matters-work-detail.mjs",
     "verify:matters-resolution-detail": "node scripts/verify-matters-resolution-detail.mjs",
     "verify:ci": "node scripts/verify-ci.mjs",
+    "verify:pre-push": "node scripts/verify-pre-push.mjs",
     "verify:post-dev": "npm run verify:agent-context && npm run verify:dev-load && npm run verify:arc-carousel-layout && npm run verify:arc-carousel-visible && npm run verify:home-post-composer && npm run verify:post-likes-rls && npm run verify:post-reposts && npm run verify:home-happiness-shortcut && npm run verify:profile-score-dial && npm run verify:happiness-foundation && npm run verify:work-fulfillment && npm run verify:fulfillment-plans && npm run verify:wellbeing-aggregate-privacy && npm run verify:wellbeing-insights && npm run verify:human-outcome-loop && npm run verify:matters-foundation && npm run verify:matters-auth && npm run verify:matters-detail && npm run verify:matters-work-detail && npm run verify:matters-resolution-detail",
     "release:guard": "node scripts/verify-release-lifecycle.mjs",
     "release:testing": "CIVIZEN_UPDATE_CHANNEL=testing npm run update:application",

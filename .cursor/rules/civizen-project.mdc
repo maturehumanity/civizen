@@ -68,6 +68,16 @@ That sequence includes **`verify:home-post-composer`** (Home empty field click �
 
 Do **not** replace a working `textarea` / `input` with `contentEditable` or custom floated chrome for aesthetics unless the same session adds an automated **click → focus → type** proof and keeps a `verify:post-dev` runtime gate for primary surfaces. See AGENTS.md §3 **Input-control replacement gate** and the 2026-08 Home composer correction (broke on Testing v0.1.128 / `737086f`).
 
+## Before every push to GitHub
+
+Run:
+
+```bash
+npm run verify:pre-push
+```
+
+This mirrors CI (`audit:ci`, `assistant:knowledge:check`, `npm test`, `npm run build`). If assistant sources or product facts changed, run `npm run assistant:knowledge` first and commit the generated pack + `nela-bundle.js`.
+
 ## After every push to GitHub
 
 Run:
@@ -76,7 +86,7 @@ Run:
 npm run verify:ci
 ```
 
-Do not report a push complete until `verify:ci` exits 0 (CI green on `HEAD`). If it fails, fix and push again in the same session.
+Do not report a push complete until both `verify:pre-push` (before) and `verify:ci` (after) exit 0. If either fails, fix and push again in the same session.
 
 ## Arc carousel
 
