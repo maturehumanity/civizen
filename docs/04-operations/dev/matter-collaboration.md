@@ -2,7 +2,7 @@
 
 **Project:** Civizen  
 **Routes:** `/contribute/matters`, `/contribute/matters/new`, `/contribute/matters/:matterId`  
-**Status:** Phase 1 + Phase 2 + Phase 3 + Phase 4A (Human–AI collaboration foundation) shipped  
+**Status:** Phase 1 + Phase 2 + Phase 3 + Phase 4A (Human–AI collaboration) + Phase 4B1 (controlled Coding Agent) shipped  
 **Version:** 4.0
 
 Canonical product/UX note for agents. Contribute hub: [`contribute-page.md`](./contribute-page.md).
@@ -172,7 +172,7 @@ AI agents are **first-class Matter participants** (`ai_agent` actor kind) with s
 - **`ai_agent_runs`**: auditable executions; retries create new runs; failed runs are preserved.
 - **`matter_agent_artifacts`**: AI-generated outputs with provenance (`generated_by_agent_id`, `generated_by_run_id`, source references, review state).
 
-Initial roles: **Research**, **Analysis**, **Planning**, **Facilitation**, **Documentation** (Coding Agent deferred).
+Initial roles: **Research**, **Analysis**, **Planning**, **Facilitation**, **Documentation**, and **Coding** (Phase 4B1).
 
 ### Supervision and permissions
 
@@ -203,18 +203,47 @@ Matter content is **untrusted data** (prompt-injection safe); tool/action author
 - Gemini keys come from the self-hosted Docker `.env` into the Edge Functions container (`GEMINI_API_KEY`, `GEMINI_MODEL`). Without the key, deterministic fallback output is labeled `execution_mode: deterministic_fallback` in run `usage_metadata` — never indistinguishable from provider output.
 - **Analysis** and **Documentation** agents: registered framework capability only in Phase 4A (no dedicated E2E adoption flow).
 
+## Phase 4B1 — Controlled Coding Agent execution
+
+Coding Agent is a Phase 4A `ai_agents` role (`coding`), not a parallel identity. It may inspect/edit authorized files and run allowlisted development commands inside an isolated git worktree. It still cannot accept Matter responsibility, accept Decisions, close Matters, confirm Resolution, commit, push, merge, deploy, apply remote migrations, or restart Edge Runtime.
+
+### Execution boundary
+
+- **Where it runs:** the Civizen development workstation (`CIVIZEN_CODING_REPO_ROOT` or the local checkout). The runner maps allowlisted slug `maturehumanity/civizen` to that checkout.
+- **Where it must not run:** production app host, self-hosted Supabase / Edge Runtime on `soc.yeremyan.net`. `matter-agent-execute` rejects `role_type = coding`.
+- **Workspace:** `git worktree add --detach` from an explicit base SHA under `/tmp/civizen-coding-workspaces`. Unrelated dirty files in the primary tree are not copied. Agent edits stay in the worktree.
+- **Authorization:** `assign_matter_coding_agent` with repository slug + allowed paths. Clients cannot supply `workspace_path` / `host_path` / `repo_root`.
+- **Plan checkpoint:** runner stage `plan` hosts a model-driven inspect/plan loop and writes `implementation_plan`; a human **Approve and run** re-queues the same run; stage `execute` hosts a live model tool loop that mutates only authorized paths through the trusted runner, captures diff/tests, and submits a `code_change` artifact.
+- **Human review:** existing Phase 2 `review_task` (accept / request changes / reject). Acceptance means Task completion — not git commit/push/deploy. `request_changes` queues a new run on the same assignment; the Coding Agent keeps the original path/command authorization unless a human expands it.
+- **Trusted runner:** `npx tsx scripts/matter-coding-agent-execute.ts --run-id <uuid> --stage plan|execute`
+- **Model loop:** Gemini (or a fake adapter in tests) proposes `list_files` / `read_file` / `write_file` / `run_command` / `request_scope_expansion` / `finish`. The deterministic policy/runner executes or denies each call. The model never receives unrestricted host/shell access.
+- **Provenance:** Phase 4B1 SQL migration `20260903010000_matter_coding_agent_phase4b1.sql` was already applied remotely by the operator. Future remote migrations remain prohibited to the Coding Agent. Do not apply it again.
+
+### Policy
+
+Path denials always include `.env`, keys, and `.ssh`. Command allowlist is structured (`git` read-only, `npm test`, `npx tsc --noEmit`, selected `verify:*`). Denied: `git push` / commit / reset / clean, `sudo`, `docker`, `env`/`printenv`, deploy gates, shell metacharacters. Repository file text cannot grant authority. Model output cannot grant authority.
+
+### UX
+
+**Add AI assistance → Code** asks for repository, allowed paths, supervisor, and requested work. Artifacts show implementation plan, diff, test PASS/FAIL/NOT RUN, scope-expansion requests, and command denials. Provenance remains **Coding Agent · AI**.
+
+### Gates
+
+`verify:matters-coding-detail` (14+ states @ 390px + 1280px), plus existing Phase 1–4A Matter gates. Policy/isolation unit tests live in `src/lib/matters-coding-policy.test.ts`. Model-loop tests: `src/lib/matters-coding-agent-loop.test.ts`, `src/lib/matters-coding-agent-security.test.ts`.
+
 ## Deferred
 
-Autonomous AI routing without human approval, Coding Agent / repository write access, external SaaS writes, financial/legal commitments, organizational AI-policy console, Projects as a separate collaboration layer, Community Challenge / Governance conversion, department trees and auto-assignment, Score/reputation/capability consequences, analytics dashboards, Gantt/Kanban, advanced evidence certification.
+Autonomous AI routing without human approval, autonomous Git commit/push or GitHub PR creation, production deployment, remote Supabase migration apply, Edge Runtime restart, external SaaS writes, financial/legal commitments, organizational AI-policy console, Projects as a separate collaboration layer, Community Challenge / Governance conversion, department trees and auto-assignment, Score/reputation/capability consequences, analytics dashboards, Gantt/Kanban, advanced evidence certification.
 
 ## Implementation map
 
-- Domain: `src/lib/matters.ts`, `src/lib/matters-workflow.ts`, `src/lib/matters-work.ts`, `src/lib/matters-work-workflow.ts`, `src/lib/matters-resolution.ts`, `src/lib/matters-resolution-workflow.ts`, `src/lib/matters-ai.ts`
+- Domain: `src/lib/matters.ts`, `src/lib/matters-workflow.ts`, `src/lib/matters-work.ts`, `src/lib/matters-work-workflow.ts`, `src/lib/matters-resolution.ts`, `src/lib/matters-resolution-workflow.ts`, `src/lib/matters-ai.ts`, `src/lib/matters-coding-policy.ts`, `src/lib/matters-coding-runner.ts`, `src/lib/matters-coding-model.ts`, `src/lib/matters-coding-gemini.ts`, `src/lib/matters-coding-agent-loop.ts`
 - API: `src/lib/matters-api.ts`
 - UI: `src/pages/contribute/Matters.tsx`, `MatterForm.tsx`, `MatterDetail.tsx`, `MatterWorkPanel.tsx`, `MatterResolutionPanel.tsx`, `MatterAgentPanel.tsx`, `MatterAgentArtifactCard.tsx`
-- Schema: `supabase/migrations/20260831010000_matter_collaboration_system.sql`, `20260831200000_matter_collaboration_stabilization.sql`, `20260901120000_matter_collaborative_work.sql`, `20260901140000_matter_collaborative_work_stabilization.sql`, `20260901160000_matter_resolution_phase3.sql`, `20260901170000_matter_resolution_phase3_stabilization.sql`, `20260902160000_matter_ai_collaboration_phase4a.sql`, `20260902160100_matter_ai_collaboration_phase4a_stabilization.sql`, `20260902160200_matter_ai_agent_run_service_fix.sql`, `20260902170000_matter_ai_phase4a_stabilization.sql`
-- Edge: `supabase/functions/matter-agent-execute`
-- Gates: `verify:matters-resolution-detail` (Phase 3 — 13 states @ 390px + 1280px), `verify:matter-agent-auth` (RPC/edge authorization negatives), `verify:matter-agent-activation` (provider-backed deployed E2E), `verify:matters-ai-detail` (Phase 4A — 18 states @ 390px + 1280px)
+- Schema: `supabase/migrations/20260831010000_matter_collaboration_system.sql`, `20260831200000_matter_collaboration_stabilization.sql`, `20260901120000_matter_collaborative_work.sql`, `20260901140000_matter_collaborative_work_stabilization.sql`, `20260901160000_matter_resolution_phase3.sql`, `20260901170000_matter_resolution_phase3_stabilization.sql`, `20260902160000_matter_ai_collaboration_phase4a.sql`, `20260902160100_matter_ai_collaboration_phase4a_stabilization.sql`, `20260902160200_matter_ai_agent_run_service_fix.sql`, `20260902170000_matter_ai_phase4a_stabilization.sql`, `20260903010000_matter_coding_agent_phase4b1.sql`
+- Edge: `supabase/functions/matter-agent-execute` (rejects Coding Agent)
+- Runner: `scripts/matter-coding-agent-execute.ts` (development worktree only; model loop + trusted runner)
+- Gates: `verify:matters-resolution-detail` (Phase 3 — 13 states @ 390px + 1280px), `verify:matter-agent-auth` (RPC/edge authorization negatives), `verify:matter-agent-activation` (provider-backed deployed E2E), `verify:matters-ai-detail` (Phase 4A — 18 states @ 390px + 1280px), `verify:matters-coding-detail` (Phase 4B1 — 14 states @ 390px + 1280px)
 
 ## Security: `search_path` and schema CREATE (2026-09-01)
 

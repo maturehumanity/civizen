@@ -282,6 +282,17 @@ export type MatterDetailBundle = {
   agentRuns: AiAgentRun[];
   agentArtifacts: MatterAgentArtifact[];
   aiAgents: AiAgent[];
+  codingWorkspaces: MatterCodingWorkspace[];
+};
+
+export type MatterCodingWorkspace = {
+  id: string;
+  assignmentId: string;
+  runId: string;
+  baseCommitSha: string;
+  workspaceRef: string;
+  primaryDirtySummary: string | null;
+  status: string;
 };
 
 function mapComment(row: Record<string, unknown>): MatterComment {
@@ -575,6 +586,7 @@ function mapAgentAssignment(row: Record<string, unknown>): MatterAgentAssignment
     startedAt: strOrNull(row.started_at),
     completedAt: strOrNull(row.completed_at),
     cancelledAt: strOrNull(row.cancelled_at),
+    codingPolicy: asRecord(row.coding_policy) ?? undefined,
   };
 }
 
@@ -616,6 +628,18 @@ function mapAgentArtifact(row: Record<string, unknown>): MatterAgentArtifact {
     agentDisplayName: strOrNull(row.agent_display_name) ?? undefined,
     verificationState: str(row.verification_state),
     createdAt: str(row.created_at),
+  };
+}
+
+function mapCodingWorkspace(row: Record<string, unknown>): MatterCodingWorkspace {
+  return {
+    id: str(row.id),
+    assignmentId: str(row.assignment_id),
+    runId: str(row.run_id),
+    baseCommitSha: str(row.base_commit_sha),
+    workspaceRef: str(row.workspace_ref),
+    primaryDirtySummary: strOrNull(row.primary_dirty_summary),
+    status: str(row.status),
   };
 }
 
@@ -759,6 +783,10 @@ export async function getMatterDetail(
   const matterRow = asRecord(record?.matter);
   if (!matterRow) return null;
   const listed = mapListBundle(record, '', []);
+  const { data: workspaceRows } = await db(client)
+    .from('matter_coding_workspaces')
+    .select('id, assignment_id, run_id, base_commit_sha, workspace_ref, primary_dirty_summary, status')
+    .eq('matter_id', matterId);
   return {
     matter: mapMatter(matterRow),
     currentAction: mapAction(asRecord(record?.current_action)),
@@ -779,6 +807,7 @@ export async function getMatterDetail(
     agentRuns: asRows(record?.agent_runs).map(mapAgentRun),
     agentArtifacts: asRows(record?.agent_artifacts).map(mapAgentArtifact),
     aiAgents: asRows(record?.ai_agents).map(mapAiAgent),
+    codingWorkspaces: asRows(workspaceRows).map(mapCodingWorkspace),
   };
 }
 
@@ -1134,6 +1163,60 @@ export async function assignMatterAiAgent(
   if (error) throw new Error(rpcErrorMessage(error));
   if (typeof data !== 'string') throw new Error('Could not assign AI assistance.');
   return data;
+}
+
+export async function assignMatterCodingAgent(
+  input: {
+    matterId: string;
+    instructions: string;
+    supervisingProfileId: string;
+    allowedPaths: string[];
+    repositorySlug?: string;
+    taskTitle?: string;
+    requiredGates?: string[];
+  },
+  client: DbClient = supabase,
+): Promise<string> {
+  const { data, error } = await db(client).rpc('assign_matter_coding_agent', {
+    payload: {
+      matter_id: input.matterId,
+      instructions: input.instructions,
+      supervising_profile_id: input.supervisingProfileId,
+      allowed_paths: input.allowedPaths,
+      repository_slug: input.repositorySlug ?? 'maturehumanity/civizen',
+      task_title: input.taskTitle ?? 'Implement authorized code change',
+      required_gates: input.requiredGates ?? [],
+    },
+  });
+  if (error) throw new Error(rpcErrorMessage(error));
+  if (typeof data !== 'string') throw new Error('Could not assign Coding Agent.');
+  return data;
+}
+
+export async function approveMatterCodingPlan(
+  artifactId: string,
+  note?: string,
+  client: DbClient = supabase,
+): Promise<string> {
+  const { data, error } = await db(client).rpc('approve_matter_coding_plan', {
+    p_artifact_id: artifactId,
+    p_note: note ?? null,
+  });
+  if (error) throw new Error(rpcErrorMessage(error));
+  if (typeof data !== 'string') throw new Error('Could not approve coding plan.');
+  return data;
+}
+
+export async function approveMatterCodingScopeExpansion(
+  artifactId: string,
+  path: string,
+  client: DbClient = supabase,
+): Promise<void> {
+  const { error } = await db(client).rpc('approve_matter_coding_scope_expansion', {
+    p_artifact_id: artifactId,
+    p_path: path,
+  });
+  if (error) throw new Error(rpcErrorMessage(error));
 }
 
 export async function reviewMatterAgentWork(

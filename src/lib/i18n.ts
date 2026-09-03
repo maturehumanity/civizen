@@ -18,7 +18,7 @@ export type TranslationTree = BaseTranslations;
 
 const LANGUAGE_PACK_PREFIX = 'civizen-i18n-pack';
 /** Bump when English brand copy changes so stale machine-translated packs are discarded. */
-const LANGUAGE_PACK_VERSION = '76';
+const LANGUAGE_PACK_VERSION = '77';
 const FALLBACK_LANGUAGE: LanguageCode = 'en';
 const inFlightLanguageLoads = new Map<LanguageCode, Promise<TranslationTree>>();
 const cachedLanguagePacks = new Map<LanguageCode, TranslationTree>();

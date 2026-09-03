@@ -97,7 +97,7 @@ export const ASSISTANT_CAPABILITIES: AssistantCapability[] = [
     name: 'Questions, Issues & Ideas',
     status: 'implemented',
     description:
-      'Generic Matter collaboration under Contribute. Ask a question, raise an issue, suggest an improvement, or work with others toward an outcome. Every active Matter shows who must act next, what is expected, when it is due, and what happens if nobody acts. Comments are not formal actions. When work is needed, the responsible party can start collaborative work, assign Tasks, record Decisions, and return to the same resolution confirmation flow. Completing a Task does not resolve the Matter. Ordinary collaborative-work completion requires required Tasks to be Completed or Cancelled; inviting someone to collaborate is not the same as asking them to accept shared responsibility.',
+      'Generic Matter collaboration under Contribute. Ask a question, raise an issue, suggest an improvement, or work with others toward an outcome. Every active Matter shows who must act next, what is expected, when it is due, and what happens if nobody acts. Comments are not formal actions. When work is needed, the responsible party can start collaborative work, assign Tasks, record Decisions, and return to the same resolution confirmation flow. Completing a Task does not resolve the Matter. Ordinary collaborative-work completion requires required Tasks to be Completed or Cancelled; inviting someone to collaborate is not the same as asking them to accept shared responsibility. Authorized leads can add AI assistance, including a Coding Agent that uses a live model to inspect and edit authorized files through a trusted isolated worktree runner for human review — it does not commit, push, or deploy.',
     howTo:
       'Open Contribute > Questions, Issues & Ideas. Create a Matter, choose the intended person or organization, then follow the Current Action panel. For work that needs several people, use Start collaborative work. Needs Your Action also lists assigned Tasks.',
     routes: ['/contribute/matters', '/contribute/matters/new'],
@@ -108,6 +108,7 @@ export const ASSISTANT_CAPABILITIES: AssistantCapability[] = [
       'src/lib/matters.ts',
       'src/pages/contribute/Matters.tsx',
       'src/pages/contribute/MatterWorkPanel.tsx',
+      'src/pages/contribute/MatterAgentPanel.tsx',
       'docs/04-operations/dev/matter-collaboration.md',
       'docs/04-operations/dev/contribute-page.md',
     ],

@@ -8,6 +8,7 @@ export const AI_AGENT_ROLE_TYPES = [
   'planning',
   'facilitation',
   'documentation',
+  'coding',
 ] as const;
 export type AiAgentRoleType = (typeof AI_AGENT_ROLE_TYPES)[number];
 
@@ -48,6 +49,12 @@ export const AI_AGENT_CAPABILITIES = [
   'decision.propose',
   'task.propose',
   'resolution.read',
+  'repository.read',
+  'repository.write',
+  'command.run',
+  'test.run',
+  'diff.read',
+  'artifact.add',
 ] as const;
 export type AiAgentCapability = (typeof AI_AGENT_CAPABILITIES)[number];
 
@@ -80,6 +87,10 @@ export const AGENT_ARTIFACT_TYPES = [
   'facilitation_summary',
   'documentation',
   'submission',
+  'implementation_plan',
+  'code_change',
+  'scope_expansion_request',
+  'command_denial',
 ] as const;
 export type AgentArtifactType = (typeof AGENT_ARTIFACT_TYPES)[number];
 
@@ -118,6 +129,7 @@ export type MatterAgentAssignment = {
   allowedCapabilities: AiAgentCapability[];
   status: MatterAgentAssignmentStatus;
   maxRunAttempts: number;
+  codingPolicy?: Record<string, unknown>;
   assignedAt: string;
   startedAt: string | null;
   completedAt: string | null;
@@ -162,6 +174,7 @@ export const AI_AGENT_IDS = {
   planning: 'b0000000-0000-4000-8000-000000000003',
   facilitation: 'b0000000-0000-4000-8000-000000000004',
   documentation: 'b0000000-0000-4000-8000-000000000005',
+  coding: 'b0000000-0000-4000-8000-000000000006',
 } as const;
 
 export const DEFAULT_CAPABILITIES_BY_ROLE: Record<AiAgentRoleType, AiAgentCapability[]> = {
@@ -170,6 +183,11 @@ export const DEFAULT_CAPABILITIES_BY_ROLE: Record<AiAgentRoleType, AiAgentCapabi
   planning: ['matter.read', 'discussion.read', 'task.read', 'task.propose', 'evidence.read', 'resolution.read'],
   facilitation: ['matter.read', 'discussion.read', 'discussion.comment', 'task.read', 'evidence.read', 'decision.propose', 'resolution.read'],
   documentation: ['matter.read', 'discussion.read', 'task.read', 'task.submit', 'evidence.read', 'evidence.add', 'resolution.read'],
+  coding: [
+    'matter.read', 'discussion.read', 'discussion.comment', 'task.read', 'task.submit',
+    'evidence.read', 'evidence.add', 'repository.read', 'repository.write',
+    'command.run', 'test.run', 'diff.read', 'artifact.add',
+  ],
 };
 
 export const DEFAULT_CONTEXT_BY_ROLE: Record<AiAgentRoleType, AiContextScope[]> = {
@@ -178,6 +196,7 @@ export const DEFAULT_CONTEXT_BY_ROLE: Record<AiAgentRoleType, AiContextScope[]> 
   planning: ['matter_overview', 'discussion', 'tasks', 'decisions', 'evidence', 'activity'],
   facilitation: ['matter_overview', 'discussion', 'tasks', 'decisions', 'activity'],
   documentation: ['matter_overview', 'discussion', 'tasks', 'decisions', 'evidence', 'activity'],
+  coding: ['matter_overview', 'discussion', 'tasks', 'evidence', 'activity'],
 };
 
 export function agentRoleLabel(roleType: AiAgentRoleType): string {
@@ -192,6 +211,8 @@ export function agentRoleLabel(roleType: AiAgentRoleType): string {
       return 'AI Facilitation';
     case 'documentation':
       return 'AI Documentation';
+    case 'coding':
+      return 'Code';
     default:
       return 'AI Agent';
   }
@@ -263,6 +284,9 @@ export function artifactProvisionalLabel(
   if (reviewStatus === 'rejected') return 'Rejected';
   if (artifactType === 'proposed_plan') return 'Proposed — not created as Tasks yet';
   if (artifactType === 'facilitation_summary') return 'Suggested — not a formal Decision';
+  if (artifactType === 'implementation_plan') return 'Proposed implementation — awaiting human approval';
+  if (artifactType === 'code_change') return 'AI code change — not committed or deployed';
+  if (artifactType === 'scope_expansion_request') return 'Scope expansion required';
   return 'Awaiting human review';
 }
 

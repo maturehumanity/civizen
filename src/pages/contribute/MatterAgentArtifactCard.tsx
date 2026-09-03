@@ -13,7 +13,17 @@ import {
   parsePlanProposal,
   type MatterAgentArtifact,
 } from '@/lib/matters-ai';
-import { adoptMatterAgentPlanTask, promoteAgentDecisionSuggestion } from '@/lib/matters-api';
+import {
+  parseCodeChangeArtifact,
+  parseImplementationPlan,
+  parseScopeExpansionRequest,
+} from '@/lib/matters-coding-policy';
+import {
+  adoptMatterAgentPlanTask,
+  approveMatterCodingPlan,
+  approveMatterCodingScopeExpansion,
+  promoteAgentDecisionSuggestion,
+} from '@/lib/matters-api';
 import type { MatterEvent } from '@/lib/matters';
 import { toast } from 'sonner';
 
@@ -47,6 +57,16 @@ export function MatterAgentArtifactCard({
 
   const plan = artifact.artifactType === 'proposed_plan' ? parsePlanProposal(artifact.body) : null;
   const facilitation = artifact.artifactType === 'facilitation_summary' ? facilitationSections(artifact.body) : null;
+  const implementationPlan = artifact.artifactType === 'implementation_plan' ? parseImplementationPlan(artifact.body) : null;
+  const codeChange = artifact.artifactType === 'code_change' ? parseCodeChangeArtifact(artifact.body) : null;
+  const scopeRequest = artifact.artifactType === 'scope_expansion_request' ? parseScopeExpansionRequest(artifact.body) : null;
+  const commandDenial = artifact.artifactType === 'command_denial' ? (() => {
+    try {
+      return JSON.parse(artifact.body) as Record<string, unknown>;
+    } catch {
+      return { reason: artifact.body };
+    }
+  })() : null;
 
   const [editingTaskIndex, setEditingTaskIndex] = useState<number | null>(null);
   const [taskTitle, setTaskTitle] = useState('');
@@ -107,7 +127,7 @@ export function MatterAgentArtifactCard({
   };
 
   return (
-    <Card className="space-y-2 border-dashed p-4">
+    <Card className="min-w-0 space-y-2 overflow-x-hidden border-dashed p-4">
       <div className="flex flex-wrap items-center gap-2">
         <p className="font-medium">{artifact.title}</p>
         <Badge variant="outline">{t('contribute.matters.ai.aiGenerated')}</Badge>
@@ -194,6 +214,105 @@ export function MatterAgentArtifactCard({
               </Card>
             );
           })}
+        </div>
+      ) : implementationPlan ? (
+        <div className="min-w-0 space-y-2 overflow-x-hidden text-sm">
+          <p className="font-medium">{implementationPlan.title}</p>
+          <p className="text-xs text-muted-foreground">{t('contribute.matters.ai.planWaiting')}</p>
+          <ol className="list-decimal space-y-1 pl-5">
+            {implementationPlan.steps.map((step) => (
+              <li key={step}>{step}</li>
+            ))}
+          </ol>
+          {implementationPlan.files.length > 0 ? (
+            <p className="break-all text-xs text-muted-foreground">
+              {t('contribute.matters.ai.allowedPaths')}: {implementationPlan.files.join(', ')}
+            </p>
+          ) : null}
+          {canManage && artifact.reviewStatus === 'pending' ? (
+            <Button
+              type="button"
+              size="sm"
+              disabled={busy}
+              onClick={() => void (async () => {
+                onBusy(true);
+                try {
+                  await approveMatterCodingPlan(artifact.id);
+                  toast.success(t('contribute.matters.ai.planApprove'));
+                  await onReload();
+                } catch (error) {
+                  toast.error(error instanceof Error ? error.message : t('contribute.matters.actionFailed'));
+                } finally {
+                  onBusy(false);
+                }
+              })()}
+            >
+              {t('contribute.matters.ai.planApprove')}
+            </Button>
+          ) : null}
+        </div>
+      ) : codeChange ? (
+        <div className="min-w-0 space-y-2 overflow-x-hidden text-sm">
+          <p className="text-xs text-muted-foreground">
+            {t('contribute.matters.ai.baseCommit')}: {codeChange.baseCommitSha.slice(0, 12)}
+          </p>
+          <p>{t('contribute.matters.ai.filesChanged')}: {codeChange.changedFiles.join(', ') || 'none'}</p>
+          <div>
+            <p className="font-medium">{t('contribute.matters.ai.testResults')}</p>
+            <ul className="list-disc pl-5 text-xs">
+              {codeChange.tests.map((row) => (
+                <li key={row.name}>{row.name}: {row.result}</li>
+              ))}
+            </ul>
+          </div>
+          {codeChange.diff ? (
+            <pre className="max-h-64 overflow-auto whitespace-pre-wrap break-all rounded-md bg-muted p-2 text-xs">
+              {t('contribute.matters.ai.diff')}
+              {'\n'}
+              {codeChange.diff}
+            </pre>
+          ) : null}
+          {codeChange.readyForHumanCommit ? (
+            <Badge variant="secondary">{t('contribute.matters.ai.readyForCommit')}</Badge>
+          ) : null}
+          <p className="text-xs text-muted-foreground">{t('contribute.matters.ai.notPushed')}</p>
+          {codeChange.remainingConcerns.map((item) => (
+            <p key={item} className="text-xs text-muted-foreground">{item}</p>
+          ))}
+        </div>
+      ) : scopeRequest ? (
+        <div className="space-y-2 text-sm">
+          <p className="font-medium">{t('contribute.matters.ai.scopeExpand')}</p>
+          <p className="break-all">{scopeRequest.path}</p>
+          <p className="text-xs text-muted-foreground">{scopeRequest.reason}</p>
+          {scopeRequest.intended ? <p className="text-xs text-muted-foreground">{scopeRequest.intended}</p> : null}
+          {canManage && artifact.reviewStatus === 'pending' ? (
+            <Button
+              type="button"
+              size="sm"
+              disabled={busy}
+              onClick={() => void (async () => {
+                onBusy(true);
+                try {
+                  await approveMatterCodingScopeExpansion(artifact.id, scopeRequest.path);
+                  toast.success(t('contribute.matters.ai.scopeExpand'));
+                  await onReload();
+                } catch (error) {
+                  toast.error(error instanceof Error ? error.message : t('contribute.matters.actionFailed'));
+                } finally {
+                  onBusy(false);
+                }
+              })()}
+            >
+              {t('contribute.matters.ai.scopeExpand')}
+            </Button>
+          ) : null}
+        </div>
+      ) : commandDenial ? (
+        <div className="space-y-1 text-sm">
+          <p className="font-medium">{t('contribute.matters.ai.deniedCommand')}</p>
+          <p className="break-all text-xs">{String(commandDenial.command ?? commandDenial.path ?? '')}</p>
+          <p className="text-xs text-muted-foreground">{String(commandDenial.reason ?? artifact.body)}</p>
         </div>
       ) : facilitation ? (
         <div className="space-y-2 text-sm">

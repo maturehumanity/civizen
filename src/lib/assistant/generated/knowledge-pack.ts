@@ -6,9 +6,9 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
     "appVersion": "0.1.197",
     "appReleaseId": "20260817-v0.1.197",
     "androidVersionCode": 199,
-    "gitSha": "6d99e19708cfa9e114dcf3ffe1304ff04d3c3fbd",
-    "generatedAt": "2026-09-02T18:48:26.274Z",
-    "sourceFingerprint": "fb9eb369aa0b3b67fd9e4840846f1522ae075c2c1ef22c862753f275861a2a36",
+    "gitSha": "9a30d9060d5f3710dbc97dc81d5ddc6f9b07f9c8",
+    "generatedAt": "2026-09-03T02:42:04.189Z",
+    "sourceFingerprint": "30f55bac87099faf32d225f5f80ca853d059185100aca8759562c41c88a1ebbb",
     "knowledgeFormat": 1,
     "sourceCount": 28,
     "chunkCount": 369
@@ -169,7 +169,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "id": "matters",
       "name": "Questions, Issues & Ideas",
       "status": "implemented",
-      "description": "Generic Matter collaboration under Contribute. Ask a question, raise an issue, suggest an improvement, or work with others toward an outcome. Every active Matter shows who must act next, what is expected, when it is due, and what happens if nobody acts. Comments are not formal actions. When work is needed, the responsible party can start collaborative work, assign Tasks, record Decisions, and return to the same resolution confirmation flow. Completing a Task does not resolve the Matter. Ordinary collaborative-work completion requires required Tasks to be Completed or Cancelled; inviting someone to collaborate is not the same as asking them to accept shared responsibility.",
+      "description": "Generic Matter collaboration under Contribute. Ask a question, raise an issue, suggest an improvement, or work with others toward an outcome. Every active Matter shows who must act next, what is expected, when it is due, and what happens if nobody acts. Comments are not formal actions. When work is needed, the responsible party can start collaborative work, assign Tasks, record Decisions, and return to the same resolution confirmation flow. Completing a Task does not resolve the Matter. Ordinary collaborative-work completion requires required Tasks to be Completed or Cancelled; inviting someone to collaborate is not the same as asking them to accept shared responsibility. Authorized leads can add AI assistance, including a Coding Agent that uses a live model to inspect and edit authorized files through a trusted isolated worktree runner for human review — it does not commit, push, or deploy.",
       "howTo": "Open Contribute > Questions, Issues & Ideas. Create a Matter, choose the intended person or organization, then follow the Current Action panel. For work that needs several people, use Start collaborative work. Needs Your Action also lists assigned Tasks.",
       "routes": [
         "/contribute/matters",
@@ -194,6 +194,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
         "src/lib/matters.ts",
         "src/pages/contribute/Matters.tsx",
         "src/pages/contribute/MatterWorkPanel.tsx",
+        "src/pages/contribute/MatterAgentPanel.tsx",
         "docs/04-operations/dev/matter-collaboration.md",
         "docs/04-operations/dev/contribute-page.md"
       ]
@@ -1822,7 +1823,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "id": "capability:matters",
       "title": "Questions, Issues & Ideas",
       "path": "src/lib/assistant/catalog.ts",
-      "text": "Questions, Issues & Ideas status=implemented. Generic Matter collaboration under Contribute. Ask a question, raise an issue, suggest an improvement, or work with others toward an outcome. Every active Matter shows who must act next, what is expected, when it is due, and what happens if nobody acts. Comments are not formal actions. When work is needed, the responsible party can start collaborative work, assign Tasks, record Decisions, and return to the same resolution confirmation flow. Completing a Task does not resolve the Matter. Ordinary collaborative-work completion requires required Tasks to be Completed or Cancelled; inviting someone to collaborate is not the same as asking them to accept shared responsibility. Open Contribute > Questions, Issues & Ideas. Create a Matter, choose the intended person or organization, then follow the Current Action panel. For work that needs several people, use Start collaborative work. Needs Your Action also lists assigned Tasks. Routes: /contribute/matters, /contribute/matters/new.",
+      "text": "Questions, Issues & Ideas status=implemented. Generic Matter collaboration under Contribute. Ask a question, raise an issue, suggest an improvement, or work with others toward an outcome. Every active Matter shows who must act next, what is expected, when it is due, and what happens if nobody acts. Comments are not formal actions. When work is needed, the responsible party can start collaborative work, assign Tasks, record Decisions, and return to the same resolution confirmation flow. Completing a Task does not resolve the Matter. Ordinary collaborative-work completion requires required Tasks to be Completed or Cancelled; inviting someone to collaborate is not the same as asking them to accept shared responsibility. Authorized leads can add AI assistance, including a Coding Agent that uses a live model to inspect and edit authorized files through a trusted isolated worktree runner for human review — it does not commit, push, or deploy. Open Contribute > Questions, Issues & Ideas. Create a Matter, choose the intended person or organization, then follow the Current Action panel. For work that needs several people, use Start collaborative work. Needs Your Action also lists assigned Tasks. Routes: /contribute/matters, /contribute/matters/new.",
       "status": "implemented",
       "priority": 3,
       "kind": "capability"
@@ -2956,7 +2957,7 @@ export const KNOWLEDGE_PACK: KnowledgePack = {
       "id": "docs/04-operations/dev/matter-collaboration.md#0",
       "title": "Matter Collaboration System",
       "path": "docs/04-operations/dev/matter-collaboration.md",
-      "text": "# Matter Collaboration System **Project:** Civizen **Routes:** `/contribute/matters`, `/contribute/matters/new`, `/contribute/matters/:matterId` **Status:** Phase 1 + Phase 2 + Phase 3 + Phase 4A (Human–AI collaboration foundation) shipped **Version:** 4.0 Canonical product/UX note for agents. Contribute hub: [`contribute-page.md`](./contribute-page.md). A **Matter** is something one Civizen actor brings to one or more other actors for attention, response, discussion, consideration, or action. It is a generic collaboration object, not an Issues module and not limited to government/citizen interactions. User-facing Contribute label: **Questions, Issues & Ideas**. Internal model remains `Matter`.",
+      "text": "# Matter Collaboration System **Project:** Civizen **Routes:** `/contribute/matters`, `/contribute/matters/new`, `/contribute/matters/:matterId` **Status:** Phase 1 + Phase 2 + Phase 3 + Phase 4A (Human–AI collaboration) + Phase 4B1 (controlled Coding Agent) shipped **Version:** 4.0 Canonical product/UX note for agents. Contribute hub: [`contribute-page.md`](./contribute-page.md). A **Matter** is something one Civizen actor brings to one or more other actors for attention, response, discussion, consideration, or action. It is a generic collaboration object, not an Issues module and not limited to government/citizen interactions. User-facing Contribute label: **Questions, Issues & Ideas**. Internal model remains `Matter`.",
       "status": "implemented",
       "priority": 6,
       "kind": "doc"

@@ -142,6 +142,11 @@ Deno.serve(async (req) => {
 
     const assignmentId = String(authData.assignment_id);
     const roleType = String(authData.role_type ?? 'research');
+    if (roleType === 'coding') {
+      return new Response(JSON.stringify({
+        error: 'Coding Agent execution runs on the development worktree runner, not this Edge Function.',
+      }), { status: 403, headers: corsHeaders });
+    }
 
     const { data: assignment, error: assignmentError } = await serviceClient
       .from('matter_agent_assignments')
