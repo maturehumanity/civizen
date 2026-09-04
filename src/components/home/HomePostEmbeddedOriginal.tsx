@@ -1,5 +1,6 @@
 import { ExternalLink } from 'lucide-react';
 
+import { PostFormattedBody } from '@/components/posts/PostFormattedBody';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { previewPostContent, type PostPreview } from '@/lib/post-reposts';
@@ -36,7 +37,7 @@ export function HomePostEmbeddedOriginal({
     return (
       <div
         className={cn(
-          'rounded-xl border border-dashed border-border/70 bg-muted/20 px-3 py-3 text-sm text-muted-foreground',
+          'border-l-2 border-dashed border-border/60 pl-3 py-1 text-sm text-muted-foreground',
           className,
         )}
       >
@@ -61,14 +62,14 @@ export function HomePostEmbeddedOriginal({
       type="button"
       onClick={onOpenFull}
       className={cn(
-        'w-full rounded-xl border border-border/70 bg-background/80 px-3 py-3 text-left transition hover:border-border hover:bg-muted/30',
+        'w-full border-l-2 border-primary/25 pl-3 py-1 text-left transition hover:border-primary/45',
         className,
       )}
     >
-      <div className="mb-2 flex items-center gap-2">
-        <Avatar className="h-8 w-8 shrink-0">
+      <div className="mb-1.5 flex items-center gap-2">
+        <Avatar className="h-7 w-7 shrink-0">
           <AvatarImage src={original.author?.avatar_url || undefined} />
-          <AvatarFallback className="bg-secondary text-xs text-secondary-foreground">
+          <AvatarFallback className="bg-secondary text-[10px] text-secondary-foreground">
             {initials(authorName)}
           </AvatarFallback>
         </Avatar>
@@ -81,9 +82,12 @@ export function HomePostEmbeddedOriginal({
         </div>
         <ExternalLink className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
       </div>
-      <p className="whitespace-pre-wrap break-words text-sm text-foreground/90">{preview.text}</p>
+      <PostFormattedBody
+        content={original.content}
+        className="text-foreground/85 leading-snug line-clamp-4"
+      />
       {preview.truncated ? (
-        <span className="mt-2 inline-flex text-xs font-medium text-primary">{seeFullLabel}</span>
+        <span className="mt-1.5 inline-flex text-xs font-medium text-primary">{seeFullLabel}</span>
       ) : null}
     </button>
   );
@@ -111,7 +115,7 @@ export function HomeFullOriginalBody({ original }: HomeFullOriginalDialogBodyPro
           </p>
         </div>
       </div>
-      <p className="whitespace-pre-wrap break-words text-sm text-foreground">{original.content}</p>
+      <PostFormattedBody content={original.content} />
     </div>
   );
 }

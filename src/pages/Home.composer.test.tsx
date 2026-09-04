@@ -242,6 +242,28 @@ describe('Home post composer focus', () => {
     expect(focusChromeMock).toHaveBeenCalled();
     expect(focusChromeMock.mock.calls[0]?.[1]).toBeInstanceOf(HTMLElement);
   }, 15000);
+
+  it('shows a restrained formatting toolbar when the composer is focused', async () => {
+    const Home = (await import('@/pages/Home')).default;
+    render(
+      <MemoryRouter>
+        <Home />
+      </MemoryRouter>,
+    );
+
+    const editor = await screen.findByRole('textbox', {
+      name: 'Share an idea, update, or opportunity...',
+    });
+    const chrome = document.querySelector('[data-home-post-composer]');
+    expect(chrome).toBeTruthy();
+    fireEvent.mouseDown(chrome!);
+
+    const card = document.querySelector('[data-home-post-composer-card]');
+    expect(card).toHaveAttribute('data-home-composer-focused', 'true');
+    expect(document.querySelector('[data-post-format-toolbar]')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Bold' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Font' })).toBeNull();
+  }, 15000);
 });
 
 describe('Home Happiness shortcut on the Score card', () => {

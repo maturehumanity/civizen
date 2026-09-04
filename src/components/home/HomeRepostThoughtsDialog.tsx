@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { HomePostEmbeddedOriginal } from '@/components/home/HomePostEmbeddedOriginal';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -27,6 +27,8 @@ type HomeRepostThoughtsDialogProps = {
   unavailableLabel: string;
   seeFullLabel: string;
   original: PostPreview | null;
+  /** Prepared unpublished draft — applied when the dialog opens; never auto-posted. */
+  initialDraft?: string;
   onSubmit: (commentary: string) => Promise<void>;
   onOpenOriginal: () => void;
 };
@@ -55,11 +57,17 @@ export function HomeRepostThoughtsDialog({
   unavailableLabel,
   seeFullLabel,
   original,
+  initialDraft = '',
   onSubmit,
   onOpenOriginal,
 }: HomeRepostThoughtsDialogProps) {
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    setDraft(initialDraft || '');
+  }, [open, initialDraft, original?.id]);
 
   const close = () => {
     if (busy) return;

@@ -51,7 +51,7 @@ Public discovery includes `/areas`, `/partners`, `/fund`, `/documents`, `/govern
 
 | Surface | Open | Status |
 | --- | --- | --- |
-| Home | Home | implemented (feed actions: Like · Comment · Repost · Publish to…; Repost keeps a link to the original) |
+| Home | Home | implemented (composer formatting including line spacing; author can Edit post; feed actions: Like · Comment · Repost · Publish to…; Repost keeps a link to the original) |
 | Study | Study | implemented |
 | Contribute hub | Contribute | implemented |
 | Opportunities | Contribute > Opportunities | implemented |

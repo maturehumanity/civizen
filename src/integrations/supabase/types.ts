@@ -5436,6 +5436,49 @@ export type Database = {
           },
         ]
       }
+      }
+      post_revisions: {
+        Row: {
+          id: string
+          post_id: string
+          revision_number: number
+          content: string
+          editor_profile_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          post_id: string
+          revision_number: number
+          content: string
+          editor_profile_id: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          post_id?: string
+          revision_number?: number
+          content?: string
+          editor_profile_id?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_revisions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_revisions_editor_profile_id_fkey"
+            columns: ["editor_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       development_stories: {
         Row: {
           area: string
@@ -6002,6 +6045,17 @@ export type Database = {
           title?: string
         }
         Returns: string
+      }
+      edit_published_post: {
+        Args: { p_post_id: string; p_content: string }
+        Returns: {
+          author_id: string
+          content: string
+          created_at: string
+          edited_at: string | null
+          id: string
+          is_edited: boolean | null
+        }
       }
       current_profile_has_governance_domain_role: {
         Args: { domain_keys: string[]; role_keys?: string[] }
@@ -7529,6 +7583,14 @@ export type Database = {
           p_exclude_profile_id?: string | null
           p_limit?: number
           p_query: string
+        }
+        Returns: Json
+      }
+      lookup_business_accounts_for_connect: {
+        Args: {
+          p_email?: string | null
+          p_limit?: number
+          p_name?: string | null
         }
         Returns: Json
       }

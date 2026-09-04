@@ -17,8 +17,8 @@ export const ASSISTANT_CAPABILITIES: AssistantCapability[] = [
     id: 'home',
     name: 'Home',
     status: 'implemented',
-    description: 'Signed-in home feed with Score snapshot, Governance shortcut, post composer, and post actions Like · Comment · Repost · Publish to….',
-    howTo: 'Open Home from the bottom nav. Share a post from the composer. On any post: Like, Comment (discussion under the post), Repost (plain or with thoughts into your own feed), or Publish to… (external networks when you are the author on the official Civizen org account). Repost keeps a link to the original — it does not copy the text.',
+    description: 'Signed-in home feed with Score snapshot, Governance shortcut, post composer with formatting (including line spacing), Edit post for the author, and post actions Like · Comment · Repost · Publish to….',
+    howTo: 'Open Home from the bottom nav. Share a post from the composer; Bold, Italic, Underline, lists, and line spacing are available while the composer is focused. On any post: Like, Comment (discussion under the post), Repost (plain or with thoughts into your own feed), or Publish to… (external networks when you are the author on the official Civizen org account). The author (or the organization account that published it) can Edit post at any time; Edited appears next to the time after a change. Repost keeps a link to the original — it does not copy the text.',
     routes: ['/'],
     roles: ['member', 'citizen', 'verified_member', 'certified', 'moderator', 'admin', 'founder'],
     relatedCapabilities: ['score', 'governance', 'messaging'],
@@ -563,6 +563,20 @@ export const ASSISTANT_FAQ: AssistantFaqItem[] = [
     aliases: ['is civizen social media'],
     capabilityIds: [],
     sourceRefs: ['docs/assistant/civizen-identity.md'],
+  },
+  {
+    id: 'can_i_edit_a_post',
+    question: 'Can I edit a post after I publish it?',
+    answer:
+      'Yes. Open Home, then the post ⋯ menu, and choose Edit post. You can change the text and formatting whenever you like. After you save a change, the post shows Edited next to the time. Comments, likes, and reposts stay in place.',
+    aliases: [
+      'edit post',
+      'how do I edit a post',
+      'can I change a post',
+      'edit old post',
+    ],
+    capabilityIds: ['home'],
+    sourceRefs: ['src/pages/Home.tsx', 'docs/04-operations/dev/home-post-formatting.md'],
   },
   {
     id: 'is_civizen_a_government',

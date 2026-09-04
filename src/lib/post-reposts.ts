@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { postHtmlToPlainText } from '@/lib/posts-html';
 
 export type PostAuthorPreview = {
   id: string;
@@ -38,15 +39,43 @@ const POST_SELECT = `
   author:profiles!posts_author_id_fkey(id, username, full_name, avatar_url)
 `;
 
-export const PREVIEW_CONTENT_CHARS = 220;
+export const PREVIEW_CONTENT_CHARS = 280;
+export const PREVIEW_CONTENT_LINES = 4;
 
-export function previewPostContent(content: string, max = PREVIEW_CONTENT_CHARS): {
+/**
+ * Compact original-post preview for quote/plain repost embeds.
+ * Prefer the first 2–4 meaningful lines so long institutional posts
+ * do not inflate the feed.
+ */
+export function previewPostContent(
+  content: string,
+  maxChars = PREVIEW_CONTENT_CHARS,
+  maxLines = PREVIEW_CONTENT_LINES,
+): {
   text: string;
   truncated: boolean;
 } {
-  const normalized = (content || '').replace(/\s+/g, ' ').trim();
-  if (normalized.length <= max) return { text: normalized, truncated: false };
-  return { text: `${normalized.slice(0, max).trimEnd()}…`, truncated: true };
+  const raw = postHtmlToPlainText(content || '').replace(/\r\n/g, '\n').trim();
+  if (!raw) return { text: '', truncated: false };
+
+  const meaningfulLines = raw
+    .split('\n')
+    .map((line) => line.trimEnd())
+    .filter((line) => line.trim().length > 0);
+
+  const lineCap = Math.max(2, Math.min(maxLines, 4));
+  const selected = meaningfulLines.slice(0, lineCap);
+  let text = selected.join('\n').trim();
+  let truncated = meaningfulLines.length > selected.length;
+
+  if (text.length > maxChars) {
+    text = `${text.slice(0, maxChars).trimEnd()}…`;
+    truncated = true;
+  } else if (truncated) {
+    text = `${text.trimEnd()}…`;
+  }
+
+  return { text, truncated };
 }
 
 export function isCommentaryPostId(
@@ -284,7 +313,8 @@ export function buildHomeFeedItems(
       items.push({
         kind: 'quote_repost',
         key: `repost:${repost.id}`,
-        sortAt: repost.created_at,
+        // Prefer commentary publication time so historical link migrations keep real chronology.
+        sortAt: commentary.created_at || repost.created_at,
         interactionPostId: commentary.id,
         repostTargetPostId: repost.original_post_id || commentary.id,
         post: commentary,

@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi, beforeEach } from 'vitest';
 
 import { UserPageMenu } from '@/components/layout/UserPageMenu';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -10,6 +10,11 @@ vi.mock('framer-motion', () => ({
   motion: {
     div: ({ children, ...props }: React.HTMLAttributes<HTMLElement>) => <div {...props}>{children}</div>,
   },
+}));
+
+const { rpcMock, switchToKnownAccountMock } = vi.hoisted(() => ({
+  rpcMock: vi.fn(async () => ({ data: [], error: null })),
+  switchToKnownAccountMock: vi.fn(async () => ({ error: null })),
 }));
 
 vi.mock('@/integrations/supabase/client', () => ({
@@ -22,6 +27,7 @@ vi.mock('@/integrations/supabase/client', () => ({
     functions: {
       invoke: async () => ({ data: null, error: null }),
     },
+    rpc: rpcMock,
   },
 }));
 
@@ -43,10 +49,18 @@ vi.mock('@/contexts/AuthContext', () => ({
         avatarUrl: null,
         accountType: 'personal',
       },
+      {
+        userId: 'hvm-user',
+        profileId: 'hvm-profile',
+        fullName: 'Healthy Vending Mart LLC',
+        username: null,
+        avatarUrl: null,
+        accountType: 'business',
+      },
     ],
     canSwitchBack: true,
     switchBackToPreviousAccount: async () => ({ error: null }),
-    switchToKnownAccount: async () => ({ error: null }),
+    switchToKnownAccount: switchToKnownAccountMock,
     pruneKnownAccountSessions: () => {},
     signIn: async () => ({ error: null }),
     signInWithOtp: async () => ({ error: null }),
@@ -79,6 +93,13 @@ function renderMenu(size?: 'sm' | 'md') {
 }
 
 describe('UserPageMenu account switcher', () => {
+  beforeEach(() => {
+    rpcMock.mockReset();
+    rpcMock.mockResolvedValue({ data: [], error: null });
+    switchToKnownAccountMock.mockReset();
+    switchToKnownAccountMock.mockResolvedValue({ error: null });
+    Element.prototype.scrollIntoView = vi.fn();
+  });
   it('defaults to md trigger size and supports compact sm for dense headers', () => {
     const { unmount } = renderMenu();
     expect(screen.getByTestId('user-page-menu-trigger')).toHaveAttribute('data-size', 'md');
@@ -88,15 +109,27 @@ describe('UserPageMenu account switcher', () => {
     expect(screen.getByTestId('user-page-menu-trigger')).toHaveAttribute('data-size', 'sm');
   });
 
-  it('keeps per-card Switch and omits the header Switch back control', () => {
+  it('centers the current account and switches by tapping a neighbor card', () => {
     renderMenu();
 
     fireEvent.click(screen.getByTestId('user-page-menu-trigger'));
 
     expect(screen.getByText('Accounts')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /switch back/i })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^switch$/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^switch$/i })).not.toBeInTheDocument();
+    expect(screen.getByTestId('account-switcher-track')).toBeInTheDocument();
+    expect(screen.getByTestId('account-switcher-card-biz-profile')).toHaveAttribute('data-current', 'true');
+    expect(
+      screen.getAllByTestId(/account-switcher-card-/).map((card) => card.getAttribute('data-testid')),
+    ).toEqual([
+      'account-switcher-card-personal-profile',
+      'account-switcher-card-biz-profile',
+      'account-switcher-card-hvm-profile',
+    ]);
     expect(screen.getAllByText('Current').length).toBeGreaterThan(0);
+
+    fireEvent.click(screen.getByRole('button', { name: /switch to armen yeremyan/i }));
+    expect(switchToKnownAccountMock).toHaveBeenCalledWith('personal-user');
   });
 
   it('locks body scroll and makes the profile panel the scroll container while open', () => {
@@ -106,7 +139,9 @@ describe('UserPageMenu account switcher', () => {
 
     const panel = screen.getByTestId('user-page-menu-panel');
     expect(panel.className).toMatch(/overflow-y-auto/);
+    expect(panel.className).toMatch(/overflow-x-hidden/);
     expect(panel.className).toMatch(/overscroll-contain/);
+    expect(panel.className).not.toMatch(/touch-pan-y/);
     expect(document.body.style.position).toBe('fixed');
     expect(document.body.style.overflow).toBe('hidden');
 
@@ -130,6 +165,7 @@ describe('UserPageMenu account switcher', () => {
 
     fireEvent.click(addBusiness);
     expect(screen.getByRole('heading', { name: /add business account/i })).toBeInTheDocument();
+    expect(screen.getByTestId('add-business-submit')).toHaveTextContent('Register');
   });
 
   it('omits main-nav, Search, Download, and Edit Profile list rows', () => {

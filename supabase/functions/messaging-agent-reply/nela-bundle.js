@@ -808,20 +808,20 @@ var KNOWLEDGE_PACK = {
     "appVersion": "0.1.197",
     "appReleaseId": "20260817-v0.1.197",
     "androidVersionCode": 199,
-    "gitSha": "9a30d9060d5f3710dbc97dc81d5ddc6f9b07f9c8",
-    "generatedAt": "2026-09-03T02:42:04.189Z",
-    "sourceFingerprint": "30f55bac87099faf32d225f5f80ca853d059185100aca8759562c41c88a1ebbb",
+    "gitSha": "193da4a6919d23c6710dc0e84543bcd37556b283",
+    "generatedAt": "2026-09-03T04:44:36.764Z",
+    "sourceFingerprint": "5af3e9396cd47faf93b1183a497376f9e8592b8a15eca153bd4985a3a3d83391",
     "knowledgeFormat": 1,
     "sourceCount": 28,
-    "chunkCount": 369
+    "chunkCount": 370
   },
   "capabilities": [
     {
       "id": "home",
       "name": "Home",
       "status": "implemented",
-      "description": "Signed-in home feed with Score snapshot, Governance shortcut, post composer, and post actions Like \xB7 Comment \xB7 Repost \xB7 Publish to\u2026.",
-      "howTo": "Open Home from the bottom nav. Share a post from the composer. On any post: Like, Comment (discussion under the post), Repost (plain or with thoughts into your own feed), or Publish to\u2026 (external networks when you are the author on the official Civizen org account). Repost keeps a link to the original \u2014 it does not copy the text.",
+      "description": "Signed-in home feed with Score snapshot, Governance shortcut, post composer with formatting (including line spacing), Edit post for the author, and post actions Like \xB7 Comment \xB7 Repost \xB7 Publish to\u2026.",
+      "howTo": "Open Home from the bottom nav. Share a post from the composer; Bold, Italic, Underline, lists, and line spacing are available while the composer is focused. On any post: Like, Comment (discussion under the post), Repost (plain or with thoughts into your own feed), or Publish to\u2026 (external networks when you are the author on the official Civizen org account). The author (or the organization account that published it) can Edit post at any time; Edited appears next to the time after a change. Repost keeps a link to the original \u2014 it does not copy the text.",
       "routes": [
         "/"
       ],
@@ -1843,6 +1843,24 @@ var KNOWLEDGE_PACK = {
       ]
     },
     {
+      "id": "can_i_edit_a_post",
+      "question": "Can I edit a post after I publish it?",
+      "answer": "Yes. Open Home, then the post \u22EF menu, and choose Edit post. You can change the text and formatting whenever you like. After you save a change, the post shows Edited next to the time. Comments, likes, and reposts stay in place.",
+      "aliases": [
+        "edit post",
+        "how do I edit a post",
+        "can I change a post",
+        "edit old post"
+      ],
+      "capabilityIds": [
+        "home"
+      ],
+      "sourceRefs": [
+        "src/pages/Home.tsx",
+        "docs/04-operations/dev/home-post-formatting.md"
+      ]
+    },
+    {
       "id": "is_civizen_a_government",
       "question": "Is Civizen a government?",
       "answer": "No. Civizen is not currently a government, nationality, or public-law citizenship. World citizenship in Civizen is a voluntary civic identity. The long-term pathway toward recognized planetary citizenship is described publicly and is not present legal status.",
@@ -2580,7 +2598,7 @@ var KNOWLEDGE_PACK = {
       "id": "capability:home",
       "title": "Home",
       "path": "src/lib/assistant/catalog.ts",
-      "text": "Home status=implemented. Signed-in home feed with Score snapshot, Governance shortcut, post composer, and post actions Like \xB7 Comment \xB7 Repost \xB7 Publish to\u2026. Open Home from the bottom nav. Share a post from the composer. On any post: Like, Comment (discussion under the post), Repost (plain or with thoughts into your own feed), or Publish to\u2026 (external networks when you are the author on the official Civizen org account). Repost keeps a link to the original \u2014 it does not copy the text. Routes: /.",
+      "text": "Home status=implemented. Signed-in home feed with Score snapshot, Governance shortcut, post composer with formatting (including line spacing), Edit post for the author, and post actions Like \xB7 Comment \xB7 Repost \xB7 Publish to\u2026. Open Home from the bottom nav. Share a post from the composer; Bold, Italic, Underline, lists, and line spacing are available while the composer is focused. On any post: Like, Comment (discussion under the post), Repost (plain or with thoughts into your own feed), or Publish to\u2026 (external networks when you are the author on the official Civizen org account). The author (or the organization account that published it) can Edit post at any time; Edited appears next to the time after a change. Repost keeps a link to the original \u2014 it does not copy the text. Routes: /.",
       "status": "implemented",
       "priority": 3,
       "kind": "capability"
@@ -2916,6 +2934,15 @@ var KNOWLEDGE_PACK = {
       "text": "Q: Is Civizen a social network? A: No. Civizen has profiles, posts, and messaging, but those are components of a broader participatory system. Civizen is not merely a social network.",
       "status": "implemented",
       "priority": 1,
+      "kind": "faq"
+    },
+    {
+      "id": "faq:can_i_edit_a_post",
+      "title": "Can I edit a post after I publish it?",
+      "path": "src/lib/assistant/catalog.ts",
+      "text": "Q: Can I edit a post after I publish it? A: Yes. Open Home, then the post \u22EF menu, and choose Edit post. You can change the text and formatting whenever you like. After you save a change, the post shows Edited next to the time. Comments, likes, and reposts stay in place.",
+      "status": "implemented",
+      "priority": 5,
       "kind": "faq"
     },
     {
@@ -3435,7 +3462,7 @@ var KNOWLEDGE_PACK = {
       "id": "docs/assistant/civizen-assistant-cheatsheet.md#7",
       "title": "Current navigation / systems",
       "path": "docs/assistant/civizen-assistant-cheatsheet.md",
-      "text": "| Surface | Open | Status | | --- | --- | --- | | Home | Home | implemented (feed actions: Like \xB7 Comment \xB7 Repost \xB7 Publish to\u2026; Repost keeps a link to the original) | | Study | Study | implemented | | Contribute hub | Contribute | implemented | | Opportunities | Contribute > Opportunities | implemented | | Community Challenges | Contribute > Community Challenges | implemented | | Questions, Issues & Ideas | Contribute > Questions, Issues & Ideas | implemented | | Learning Commons | Contribute > Learning Commons | implemented | | My Contributions | Contribute > My Contributions | implemented | | Suggest Improvements | Contribute > Suggest Improvements | implemented (shortcut: Suggestion Matter to Civizen) | | Market | Market | implemented | | Agreements | Market > Agreements | implemented | | Messaging | Messaging | implemented | | Profile / Score | Profile | implemented | | Happiness & Fulfillment | Profile menu, or the Happiness icon on the Home Score card | implemented (private; five levels, not a numeric score; Fulfillment Plans under Improve; optional group insights off by default) | | Work Fulfillment | Happiness & Fulfillment > Work Fulfillment | implemented (current work, ",
+      "text": "| Surface | Open | Status | | --- | --- | --- | | Home | Home | implemented (composer formatting including line spacing; author can Edit post; feed actions: Like \xB7 Comment \xB7 Repost \xB7 Publish to\u2026; Repost keeps a link to the original) | | Study | Study | implemented | | Contribute hub | Contribute | implemented | | Opportunities | Contribute > Opportunities | implemented | | Community Challenges | Contribute > Community Challenges | implemented | | Questions, Issues & Ideas | Contribute > Questions, Issues & Ideas | implemented | | Learning Commons | Contribute > Learning Commons | implemented | | My Contributions | Contribute > My Contributions | implemented | | Suggest Improvements | Contribute > Suggest Improvements | implemented (shortcut: Suggestion Matter to Civizen) | | Market | Market | implemented | | Agreements | Market > Agreements | implemented | | Messaging | Messaging | implemented | | Profile / Score | Profile | implemented | | Happiness & Fulfillment | Profile menu, or the Happiness icon on the Home Score card | implemented (private; five levels, not a numeric score; Fulfillment Plans under Improve; optional group insights off by default) | | Work Fulfillment | Happin",
       "status": "implemented",
       "priority": 5,
       "kind": "cheatsheet"

@@ -32,6 +32,7 @@ Before planning or editing, read (in order):
    - **`docs/04-operations/dev/phase-1-pilot-operating-model.md`** when touching `/contribute` pilots
    - **`docs/04-operations/dev/agreements.md`** when touching Agreements (`/agreements` is platform-level; Marketplace is an entry point)
    - **`docs/04-operations/dev/market-jobs-public.md`** when touching public Market Jobs, guest `/market` access, or the Jobs listings board
+   - **`docs/04-operations/dev/home-post-formatting.md`** when touching Home post formatting or post editing
 8. If the task touches Civi / the built-in assistant:
    - **`docs/assistant/README.md`**, **`docs/assistant/civizen-identity.md`**, and **`docs/assistant/civizen-assistant-cheatsheet.md`**. Identity questions use the identity source first. After any user-facing surface, flow, or public mission copy change, update the cheat sheet and/or catalog in the same session, then run `npm run assistant:knowledge`. Civi is internal-first; external resources must not override current Civizen project information.
 9. Documentation map: `docs/README.md` (purpose-based IA: foundation · governance · policies · platform · operations · research · proposals · archive · institutional)
@@ -46,7 +47,7 @@ Expose the smallest clear interface for the user's immediate goal. Do not displa
 
 **Form fields:** Use outlined inputs with the label on the **upper-left border** (`OutlinedField`). When a signed-in member already has a value (name, phone, age, email, country), use it silently — do not show that field again unless it is missing. Standing rule: `.cursor/rules/form-fields.mdc` and AGENTS.md §3.
 
-Icons for secondary/common actions (`+`, search, filter, more, edit, download, history) are preferred when recognizable, with accessible labels. Desktop hover may show a name; tap/click must work without hover. Unfamiliar or consequential actions keep visible text. Destructive actions must not rely on icon recognition alone.
+Icons for secondary/common actions (`+`, search, filter, more, edit, delete, download, history) are preferred over visible wording. Desktop hover may show a name; tap/click must work without hover. Unfamiliar actions keep visible text when the icon would not be recognized.
 
 Empty states stay minimal. If create is a compact `+` immediately beside the page title (accessible label; tap/click works without hover), do not duplicate a large Create button in the empty body. **More agreement types…** belongs inside the same `+` menu, not as a separate control.
 
@@ -62,7 +63,7 @@ Run:
 npm run verify:post-dev
 ```
 
-That sequence includes **`verify:home-post-composer`** (Home empty field click → focus → type), **`verify:home-happiness-shortcut`** (Home Score-card Happiness icon → `/happiness` @390px), **`verify:profile-score-dial`** (`/profile` Score dial after login), **`verify:happiness-foundation`** (`/happiness` @390px five-level check-in walk), **`verify:work-fulfillment`** (`/happiness/work` @390px Work Fulfillment walk), **`verify:fulfillment-plans`** (Improve Fulfillment Plan walk @390px), **`verify:wellbeing-aggregate-privacy`** (Happiness Privacy aggregate participation walk @390px), **`verify:wellbeing-insights`** (authorized Wellbeing Insights walk @390px), **`verify:human-outcome-loop`** (Human Outcome Review walk @390px), **`verify:matters-work-detail`** (collaborative Work Matter walks @390px and 1280px), and **`verify:matters-coding-detail`** (Coding Agent walks @390px and 1280px). Do not tell the user a UI fix is done until `verify:post-dev` passes **and** the change matches the relevant spec (not just scripts).
+That sequence includes **`verify:home-post-composer`** (Home empty field click → focus → type), **`verify:home-post-format`** (Home composer Bold · Italic · Underline · lists @390px and @1280px), **`verify:post-edit`** (author post editing, revisions, identity freeze), **`verify:home-happiness-shortcut`** (Home Score-card Happiness icon → `/happiness` @390px), **`verify:profile-score-dial`** (`/profile` Score dial after login), **`verify:happiness-foundation`** (`/happiness` @390px five-level check-in walk), **`verify:work-fulfillment`** (`/happiness/work` @390px Work Fulfillment walk), **`verify:fulfillment-plans`** (Improve Fulfillment Plan walk @390px), **`verify:wellbeing-aggregate-privacy`** (Happiness Privacy aggregate participation walk @390px), **`verify:wellbeing-insights`** (authorized Wellbeing Insights walk @390px), **`verify:human-outcome-loop`** (Human Outcome Review walk @390px), **`verify:matters-work-detail`** (collaborative Work Matter walks @390px and 1280px), and **`verify:matters-coding-detail`** (Coding Agent walks @390px and 1280px). Do not tell the user a UI fix is done until `verify:post-dev` passes **and** the change matches the relevant spec (not just scripts).
 
 ## Input-control replacements
 

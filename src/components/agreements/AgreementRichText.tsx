@@ -12,6 +12,12 @@ import {
   Underline,
 } from 'lucide-react';
 
+import {
+  applyRichTextCommand,
+  FormatFlyout,
+  FormatMenuItem,
+  FormatToolButton,
+} from '@/components/rich-text/format-toolbar';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
   agreementHtmlIsEmpty,
@@ -35,7 +41,6 @@ type AgreementRichTextProps = {
   invalid?: boolean;
 };
 
-type FormatMenuId = 'font' | 'color' | 'size' | 'list' | 'align';
 type AlignCommand = 'justifyLeft' | 'justifyCenter' | 'justifyRight' | 'justifyFull';
 
 const EDITOR_LIST_CLASS = '[&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:m-0';
@@ -71,98 +76,6 @@ const ALIGN_OPTIONS: { command: AlignCommand; icon: typeof AlignLeft; labelKey: 
   { command: 'justifyRight', icon: AlignRight, labelKey: 'agreements.format.alignRight' },
   { command: 'justifyFull', icon: AlignJustify, labelKey: 'agreements.format.alignJustify' },
 ];
-
-function ToolButton({
-  label,
-  pressed,
-  onClick,
-  children,
-}: {
-  label: string;
-  pressed?: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      aria-pressed={pressed}
-      aria-expanded={pressed}
-      className={cn(
-        'inline-flex h-7 w-7 items-center justify-center rounded-full text-xs text-white/90 hover:bg-white/10',
-        pressed ? 'bg-white/15' : '',
-      )}
-      onMouseDown={(event) => event.preventDefault()}
-      onClick={onClick}
-    >
-      {children}
-    </button>
-  );
-}
-
-function FormatFlyout({
-  id,
-  label,
-  menu,
-  setMenu,
-  icon,
-  panelClassName,
-  children,
-}: {
-  id: FormatMenuId;
-  label: string;
-  menu: FormatMenuId | null;
-  setMenu: (id: FormatMenuId | null) => void;
-  icon: React.ReactNode;
-  panelClassName?: string;
-  children: React.ReactNode;
-}) {
-  const open = menu === id;
-  return (
-    <div
-      className="relative"
-      onMouseEnter={() => setMenu(id)}
-      onMouseLeave={() => setMenu(null)}
-    >
-      <ToolButton label={label} pressed={open} onClick={() => setMenu(open ? null : id)}>
-        {icon}
-      </ToolButton>
-      {open ? (
-        <div className="absolute left-0 top-full z-40 pt-1">
-          <div className={cn('min-w-[9.5rem] overflow-hidden rounded-xl bg-zinc-900 py-1 shadow-lg', panelClassName)}>
-            {children}
-          </div>
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-function MenuItem({
-  label,
-  onClick,
-  style,
-  children,
-}: {
-  label: string;
-  onClick: () => void;
-  style?: React.CSSProperties;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[12px] text-white/90 hover:bg-white/10"
-      style={style}
-      onMouseDown={(event) => event.preventDefault()}
-      onClick={onClick}
-    >
-      {children}
-    </button>
-  );
-}
 
 export function AgreementFormattedBody({
   html,
@@ -205,7 +118,7 @@ export function AgreementRichText({
   const editorRef = useRef<HTMLDivElement>(null);
   const [align, setAlign] = useState<AlignCommand>('justifyLeft');
   const [focused, setFocused] = useState(false);
-  const [menu, setMenu] = useState<FormatMenuId | null>(null);
+  const [menu, setMenu] = useState<string | null>(null);
   const empty = agreementHtmlIsEmpty(value);
   const [editorEmpty, setEditorEmpty] = useState(empty);
   const AlignIcon = ALIGN_OPTIONS.find((option) => option.command === align)?.icon || AlignLeft;
@@ -222,8 +135,7 @@ export function AgreementRichText({
   };
 
   const command = (name: string, commandValue?: string) => {
-    editorRef.current?.focus();
-    document.execCommand(name, false, commandValue);
+    applyRichTextCommand(editorRef.current, name, commandValue);
     emit();
   };
 
@@ -292,14 +204,14 @@ export function AgreementRichText({
             {FONT_FAMILIES.map((font) => {
               const label = font.labelKey ? t(font.labelKey) : font.label || font.id;
               return (
-                <MenuItem
+                <FormatMenuItem
                   key={font.id}
                   label={label}
                   style={font.id === 'inherit' ? undefined : { fontFamily: font.stack }}
                   onClick={() => applyFontName(font.id === 'inherit' ? 'sans-serif' : font.id)}
                 >
                   {label}
-                </MenuItem>
+                </FormatMenuItem>
               );
             })}
           </FormatFlyout>
@@ -334,14 +246,14 @@ export function AgreementRichText({
             icon={<span className="text-[11px] font-semibold tracking-tight">Tt</span>}
           >
             {FONT_SIZES.map((item) => (
-              <MenuItem
+              <FormatMenuItem
                 key={item.px}
                 label={t(item.labelKey)}
                 style={{ fontSize: item.px }}
                 onClick={() => applyFontSize(item.px)}
               >
                 {t(item.labelKey)}
-              </MenuItem>
+              </FormatMenuItem>
             ))}
           </FormatFlyout>
           <FormatFlyout
@@ -351,7 +263,7 @@ export function AgreementRichText({
             setMenu={setMenu}
             icon={<List className="h-3.5 w-3.5" />}
           >
-            <MenuItem
+            <FormatMenuItem
               label={t('agreements.format.listBullets')}
               onClick={() => {
                 command('insertUnorderedList');
@@ -360,8 +272,8 @@ export function AgreementRichText({
             >
               <List className="h-3.5 w-3.5 shrink-0" />
               {t('agreements.format.listBullets')}
-            </MenuItem>
-            <MenuItem
+            </FormatMenuItem>
+            <FormatMenuItem
               label={t('agreements.format.listNumbers')}
               onClick={() => {
                 command('insertOrderedList');
@@ -370,17 +282,17 @@ export function AgreementRichText({
             >
               <ListOrdered className="h-3.5 w-3.5 shrink-0" />
               {t('agreements.format.listNumbers')}
-            </MenuItem>
+            </FormatMenuItem>
           </FormatFlyout>
-          <ToolButton label={t('agreements.format.bold')} onClick={() => command('bold')}>
+          <FormatToolButton label={t('agreements.format.bold')} onClick={() => command('bold')}>
             <Bold className="h-3.5 w-3.5" />
-          </ToolButton>
-          <ToolButton label={t('agreements.format.italic')} onClick={() => command('italic')}>
+          </FormatToolButton>
+          <FormatToolButton label={t('agreements.format.italic')} onClick={() => command('italic')}>
             <Italic className="h-3.5 w-3.5" />
-          </ToolButton>
-          <ToolButton label={t('agreements.format.underline')} onClick={() => command('underline')}>
+          </FormatToolButton>
+          <FormatToolButton label={t('agreements.format.underline')} onClick={() => command('underline')}>
             <Underline className="h-3.5 w-3.5" />
-          </ToolButton>
+          </FormatToolButton>
           <FormatFlyout
             id="align"
             label={t('agreements.format.align')}
@@ -391,7 +303,7 @@ export function AgreementRichText({
             {ALIGN_OPTIONS.map((option) => {
               const Icon = option.icon;
               return (
-                <MenuItem
+                <FormatMenuItem
                   key={option.command}
                   label={t(option.labelKey)}
                   onClick={() => {
@@ -402,7 +314,7 @@ export function AgreementRichText({
                 >
                   <Icon className="h-3.5 w-3.5 shrink-0" />
                   {t(option.labelKey)}
-                </MenuItem>
+                </FormatMenuItem>
               );
             })}
           </FormatFlyout>

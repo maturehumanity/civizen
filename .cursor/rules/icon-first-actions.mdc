@@ -1,0 +1,15 @@
+---
+description: Mobile-first icon actions — wording on hover, never hover-only
+alwaysApply: true
+---
+
+# Icon-first actions (standing)
+
+Civizen is **mobile-first**. Prefer a recognizable **icon** over visible wording for secondary/common actions (edit, delete, add, search, filter, more, download, history).
+
+- Desktop **hover** may show the name (tooltip / `title`).
+- **Tap/click must work without hover.** Every icon needs an accessible name (`aria-label` or `sr-only` text).
+- Do not add a visible text label next to an icon just because a desktop menu has room, unless the action is unfamiliar and the icon would not be recognized.
+- Destructive actions stay icon-first when the icon is standard (trash); keep an accessible name and the existing confirm where one already exists. Do not require a visible “Delete …” sentence in compact menus.
+
+Example: post ⋯ menu uses pencil and trash; hover says “Edit post” / “Delete post”; tap still edits or deletes.

@@ -2,15 +2,29 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { createClient } from '@supabase/supabase-js';
+import { AccountSwitcherTrack } from '@/components/layout/AccountSwitcherTrack';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { OutlinedField } from '@/components/ui/outlined-field';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { permissionListHasAny } from '@/lib/access-control';
 import { getProfileMenuPageLinks } from '@/lib/app-pages';
+import {
+  businessConnectDisplayName,
+  buildAccountSwitcherOptions,
+  collectSwitchableProfileIds,
+  orderAccountsAroundCurrent,
+  isOwnerSingleBusinessConstraintError,
+  normalizeBusinessName,
+  parseBusinessConnectMatches,
+  shouldUseConnectAction,
+  toBusinessUsernameCandidate,
+  type BusinessConnectMatch,
+} from '@/lib/linked-business-accounts';
 import {
   isDuplicateLinkError,
   isMissingBusinessAccessRequestsTableError,
@@ -20,7 +34,7 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
-import { Briefcase, LogIn, Pencil, Plus, RefreshCcw } from 'lucide-react';
+import { Briefcase, Link2, Pencil, Plus, RefreshCcw } from 'lucide-react';
 
 type LinkedAccountRow = {
   id: string;
@@ -62,24 +76,6 @@ function getInitials(name?: string | null, username?: string | null) {
     .toUpperCase();
 }
 
-function slugifyUsername(input: string) {
-  const normalized = input
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/_+/g, '_')
-    .replace(/^_+|_+$/g, '');
-  return (normalized || 'business').slice(0, 24);
-}
-
-function normalizeBusinessName(input: string) {
-  return input.trim().toLowerCase().replace(/\s+/g, ' ');
-}
-
-function toBusinessUsernameCandidate(input: string) {
-  return `biz_${slugifyUsername(input)}`.slice(0, 24);
-}
-
 function createEphemeralSupabaseClient() {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
   const supabasePublishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
@@ -100,6 +96,22 @@ function createEphemeralSupabaseClient() {
 function isNetworkFetchError(error: { message?: string | null; details?: string | null } | null | undefined) {
   const message = `${error?.message || ''} ${error?.details || ''}`.toLowerCase();
   return message.includes('failed to fetch') || message.includes('network');
+}
+
+function raceTimeout<T>(promise: Promise<T>, ms: number, label: string) {
+  return new Promise<T>((resolve, reject) => {
+    const timeoutId = window.setTimeout(() => reject(new Error(label)), ms);
+    promise.then(
+      (value) => {
+        window.clearTimeout(timeoutId);
+        resolve(value);
+      },
+      (error) => {
+        window.clearTimeout(timeoutId);
+        reject(error);
+      },
+    );
+  });
 }
 
 export function UserPageMenu({ size = 'md' }: { size?: 'sm' | 'md' } = {}) {
@@ -127,7 +139,11 @@ export function UserPageMenu({ size = 'md' }: { size?: 'sm' | 'md' } = {}) {
   const [businessPassword, setBusinessPassword] = useState('');
   const [creatingBusiness, setCreatingBusiness] = useState(false);
   const [businessError, setBusinessError] = useState<string | null>(null);
+  const [businessMatches, setBusinessMatches] = useState<BusinessConnectMatch[]>([]);
+  const [selectedBusinessMatch, setSelectedBusinessMatch] = useState<BusinessConnectMatch | null>(null);
+  const [lookingUpBusiness, setLookingUpBusiness] = useState(false);
   const [switchingAccountId, setSwitchingAccountId] = useState<string | null>(null);
+  const currentAccountCardRef = useRef<HTMLDivElement | HTMLButtonElement | null>(null);
 
   const triggerSizeClass = size === 'sm' ? 'h-8 w-8' : 'h-10 w-10';
   const avatarSizeClass = size === 'sm' ? 'h-8 w-8 border' : 'h-10 w-10 border-2';
@@ -154,22 +170,7 @@ export function UserPageMenu({ size = 'md' }: { size?: 'sm' | 'md' } = {}) {
 
   const directlyLinkedProfileIds = useMemo(() => {
     if (!profile?.id) return new Set<string>();
-    const ids = new Set<string>();
-
-    linkedAccounts.forEach((row) => {
-      const owner = row.owner;
-      const linked = row.linked;
-      if (!owner || !linked) return;
-      if (owner.deleted_at || linked.deleted_at) return;
-
-      if (row.owner_profile_id === profile.id) {
-        ids.add(row.linked_profile_id);
-      } else if (row.linked_profile_id === profile.id) {
-        ids.add(row.owner_profile_id);
-      }
-    });
-
-    return ids;
+    return collectSwitchableProfileIds(profile.id, linkedAccounts);
   }, [linkedAccounts, profile?.id]);
 
   const accountOptions = useMemo<AccountOption[]>(() => {
@@ -182,57 +183,28 @@ export function UserPageMenu({ size = 'md' }: { size?: 'sm' | 'md' } = {}) {
       }
     };
 
-    const currentBusinessLink = linkedAccounts.find(
-      (row) =>
-        row.relationship_type === 'business'
-        && row.linked_profile_id === profile.id
-        && !row.owner?.deleted_at
-        && !row.linked?.deleted_at,
-    );
-
-    addOption({
-      profileId: profile.id,
-      label: currentBusinessLink ? t('home.accountSwitchBusiness') : t('home.accountSwitchPersonal'),
-      username: profile.username,
-      fullName: profile.full_name,
-      avatarUrl: profile.avatar_url,
-      accountType: currentBusinessLink ? 'business' : 'personal',
-    });
-
-    linkedAccounts.forEach((row) => {
-      const owner = row.owner;
-      const linked = row.linked;
-      if (!owner || !linked) return;
-      if (owner.deleted_at || linked.deleted_at) return;
-
-      if (profile.id === row.owner_profile_id) {
-        addOption({
-          profileId: linked.id,
-          label: t('home.accountSwitchBusiness'),
-          username: linked.username,
-          fullName: linked.full_name,
-          avatarUrl: linked.avatar_url,
-          accountType: 'business',
-        });
-      } else if (profile.id === row.linked_profile_id) {
-        addOption({
-          profileId: owner.id,
-          label: t('home.accountSwitchPersonal'),
-          username: owner.username,
-          fullName: owner.full_name,
-          avatarUrl: owner.avatar_url,
-          accountType: 'personal',
-        });
-      } else {
-        addOption({
-          profileId: linked.id,
-          label: t('home.accountSwitchLinked'),
-          username: linked.username,
-          fullName: linked.full_name,
-          avatarUrl: linked.avatar_url,
-          accountType: 'linked',
-        });
-      }
+    buildAccountSwitcherOptions({
+      currentProfile: {
+        id: profile.id,
+        username: profile.username,
+        full_name: profile.full_name,
+        avatar_url: profile.avatar_url,
+      },
+      linkedAccounts,
+    }).forEach((item) => {
+      addOption({
+        profileId: item.profileId,
+        label:
+          item.accountType === 'business'
+            ? t('home.accountSwitchBusiness')
+            : item.accountType === 'personal'
+              ? t('home.accountSwitchPersonal')
+              : t('home.accountSwitchLinked'),
+        username: item.username,
+        fullName: item.fullName,
+        avatarUrl: item.avatarUrl,
+        accountType: item.accountType,
+      });
     });
 
     knownAccountSessions.forEach((session) => {
@@ -257,6 +229,11 @@ export function UserPageMenu({ size = 'md' }: { size?: 'sm' | 'md' } = {}) {
     profile?.username,
     t,
   ]);
+
+  const orderedAccountOptions = useMemo(
+    () => orderAccountsAroundCurrent(accountOptions, profile?.id),
+    [accountOptions, profile?.id],
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -400,41 +377,120 @@ export function UserPageMenu({ size = 'md' }: { size?: 'sm' | 'md' } = {}) {
     pruneKnownAccountSessions(Array.from(validProfileIds));
   }, [linkedAccounts, linkedAccountsLoadedOnce, open, profile?.id, pruneKnownAccountSessions]);
 
+  useEffect(() => {
+    if (!open || orderedAccountOptions.length < 2) return;
+    currentAccountCardRef.current?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'auto' });
+  }, [linkedLoading, open, orderedAccountOptions]);
+
+  useEffect(() => {
+    if (!createBusinessOpen) {
+      setBusinessMatches([]);
+      setSelectedBusinessMatch(null);
+      setLookingUpBusiness(false);
+      return;
+    }
+
+    const name = businessName.trim();
+    const email = businessEmail.trim().toLowerCase();
+    if (name.length < 2 && !email.includes('@')) {
+      setBusinessMatches([]);
+      setSelectedBusinessMatch(null);
+      setLookingUpBusiness(false);
+      return;
+    }
+
+    let active = true;
+    setLookingUpBusiness(true);
+    const timeoutId = window.setTimeout(() => {
+      void supabase
+        .rpc('lookup_business_accounts_for_connect', {
+          p_name: name || null,
+          p_email: email || null,
+          p_limit: 5,
+        })
+        .then(({ data, error }) => {
+          if (!active) return;
+          if (error) {
+            setBusinessMatches([]);
+            setSelectedBusinessMatch(null);
+            return;
+          }
+          const matches = parseBusinessConnectMatches(data);
+          setBusinessMatches(matches);
+          setSelectedBusinessMatch((current) => {
+            if (current && matches.some((item) => item.profileId === current.profileId)) {
+              return matches.find((item) => item.profileId === current.profileId) ?? current;
+            }
+            return matches.length === 1 ? matches[0] : null;
+          });
+        })
+        .finally(() => {
+          if (active) setLookingUpBusiness(false);
+        });
+    }, 280);
+
+    return () => {
+      active = false;
+      window.clearTimeout(timeoutId);
+    };
+  }, [businessEmail, businessName, createBusinessOpen]);
+
   const switchToLinkedProfile = async (targetProfileId: string) => {
-    const { data, error } = await supabase.functions.invoke('linked-account-switch', {
+    const invoke = supabase.functions.invoke('linked-account-switch', {
       body: { targetProfileId },
     });
+    const { data, error } = await raceTimeout(invoke, 12000, 'linked-account-switch-timeout');
 
     if (error || !data?.email || !data?.token) {
       return { error: new Error(t('home.accountSwitchFailed')) };
     }
 
-    const result = await signInWithOtp(
-      {
-        email: data.email,
-        token: data.token,
-        type: 'magiclink',
-      },
-      { preserveCurrentSession: true },
+    const result = await raceTimeout(
+      signInWithOtp(
+        {
+          email: data.email,
+          token: data.token,
+          type: 'magiclink',
+        },
+        { preserveCurrentSession: true },
+      ),
+      8000,
+      'linked-account-otp-timeout',
     );
 
     return result;
   };
 
   const handleSwitchAccount = async (account: AccountOption) => {
+    if (account.profileId === profile?.id || switchingAccountId) return;
+
     const session = accountSessionByProfileId.get(account.profileId);
-    const directLinked = directlyLinkedProfileIds.has(account.profileId);
+    const linkedTarget = directlyLinkedProfileIds.has(account.profileId);
     const switchTargetKey = session?.userId || account.profileId;
     setSwitchingAccountId(switchTargetKey);
 
     let error: Error | null = null;
     if (session?.userId) {
-      const result = await switchToKnownAccount(session.userId);
-      error = result.error;
-    } else if (directLinked) {
-      const result = await switchToLinkedProfile(account.profileId);
-      error = result.error;
-    } else {
+      try {
+        const stored = await raceTimeout(
+          switchToKnownAccount(session.userId),
+          2500,
+          'stored-session-timeout',
+        );
+        error = stored.error;
+      } catch {
+        error = new Error(t('home.accountSwitchFailed'));
+      }
+    }
+
+    if ((!session?.userId || error) && linkedTarget) {
+      try {
+        const linked = await switchToLinkedProfile(account.profileId);
+        error = linked.error;
+      } catch {
+        error = new Error(t('home.accountSwitchFailed'));
+      }
+    } else if (!session?.userId && !linkedTarget) {
       error = new Error(t('home.accountSwitchFailed'));
     }
 
@@ -516,32 +572,36 @@ export function UserPageMenu({ size = 'md' }: { size?: 'sm' | 'md' } = {}) {
       }
 
       const usernameCandidate = toBusinessUsernameCandidate(businessName);
+      const existingProfileId = selectedBusinessMatch?.profileId ?? null;
 
-      const { data: existingBusinessProfile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('username', usernameCandidate)
-        .maybeSingle();
+      const { data: existingBusinessProfile } = existingProfileId
+        ? { data: { id: existingProfileId } }
+        : await supabase
+            .from('profiles')
+            .select('id')
+            .eq('username', usernameCandidate)
+            .maybeSingle();
 
       if (existingBusinessProfile?.id) {
         const { data: existingOwnerLink } = await supabase
           .from('linked_accounts')
-          .select('id')
-          .eq('owner_profile_id', profile.id)
+          .select('id, owner_profile_id')
           .eq('linked_profile_id', existingBusinessProfile.id)
           .eq('relationship_type', 'business')
           .maybeSingle();
 
         if (existingOwnerLink?.id) {
-          return { error: t('home.accountSwitchAlreadyLinked') } as const;
-        }
+          if (existingOwnerLink.owner_profile_id === profile.id) {
+            return { error: t('home.accountSwitchAlreadyLinked') } as const;
+          }
 
-        const requestMessage = await submitBusinessAccessRequest(existingBusinessProfile.id);
-        return {
-          error: null,
-          accessRequested: true,
-          message: requestMessage,
-        } as const;
+          const requestMessage = await submitBusinessAccessRequest(existingBusinessProfile.id);
+          return {
+            error: null,
+            accessRequested: true,
+            message: requestMessage,
+          } as const;
+        }
       }
 
       const { data: signUpData, error: signUpError } = await ephemeralClient.auth.signUp({
@@ -598,17 +658,20 @@ export function UserPageMenu({ size = 'md' }: { size?: 'sm' | 'md' } = {}) {
 
       if (linkError) {
         if (isDuplicateLinkError(linkError)) {
-          const message = String(linkError.message || '').toLowerCase();
-          if (message.includes('owner') || message.includes('idx_linked_accounts_owner_business_unique')) {
-            return { error: t('home.accountSwitchAlreadyLinked') } as const;
+          if (isOwnerSingleBusinessConstraintError(linkError)) {
+            return { error: t('home.accountSwitchCreateFailed') } as const;
           }
-          return { error: t('home.accountSwitchBusinessExists') } as const;
+          const message = String(linkError.message || '').toLowerCase();
+          if (message.includes('business_name')) {
+            return { error: t('home.accountSwitchBusinessExists') } as const;
+          }
+          return { error: t('home.accountSwitchAlreadyLinked') } as const;
         }
-        console.warn('Could not create linked_accounts row, keeping account creation successful:', linkError);
+        console.warn('Could not create linked_accounts row:', linkError);
         return { error: t('home.accountSwitchCreateFailed') } as const;
       }
 
-      return { error: null } as const;
+      return { error: null, linkedProfileId } as const;
     } catch (error) {
       return {
         error: isNetworkFetchError(error as { message?: string; details?: string })
@@ -618,11 +681,40 @@ export function UserPageMenu({ size = 'md' }: { size?: 'sm' | 'md' } = {}) {
     }
   };
 
+  const connectingExisting = shouldUseConnectAction(selectedBusinessMatch);
+  const connectNeedsPassword = Boolean(
+    selectedBusinessMatch
+    && !selectedBusinessMatch.alreadyLinkedToRequester
+    && (!selectedBusinessMatch.ownerProfileId || selectedBusinessMatch.ownerProfileId === profile?.id),
+  );
+  const connectNeedsAccessRequest = Boolean(
+    selectedBusinessMatch
+    && selectedBusinessMatch.ownerProfileId
+    && selectedBusinessMatch.ownerProfileId !== profile?.id
+    && !selectedBusinessMatch.alreadyLinkedToRequester,
+  );
+
   const handleCreateBusinessAccount = async () => {
-    if (!businessName.trim() || !businessEmail.trim() || !businessPassword.trim()) {
-      setBusinessError(t('home.accountSwitchCreateMissing'));
-      toast.error(t('home.accountSwitchCreateMissing'));
+    if (selectedBusinessMatch?.alreadyLinkedToRequester) {
+      setBusinessError(t('home.accountSwitchAlreadyLinked'));
+      toast.error(t('home.accountSwitchAlreadyLinked'));
       return;
+    }
+
+    if (connectNeedsAccessRequest) {
+      // Selected company is enough to request access.
+    } else if (connectingExisting && connectNeedsPassword) {
+      if (!businessEmail.trim() || !businessPassword.trim()) {
+        setBusinessError(t('home.accountSwitchConnectMissing'));
+        toast.error(t('home.accountSwitchConnectMissing'));
+        return;
+      }
+    } else if (!connectingExisting) {
+      if (!businessName.trim() || !businessEmail.trim() || !businessPassword.trim()) {
+        setBusinessError(t('home.accountSwitchCreateMissing'));
+        toast.error(t('home.accountSwitchCreateMissing'));
+        return;
+      }
     }
 
     setCreatingBusiness(true);
@@ -661,11 +753,20 @@ export function UserPageMenu({ size = 'md' }: { size?: 'sm' | 'md' } = {}) {
       return;
     }
 
-    toast.success(t('home.accountSwitchCreateSuccess'));
+    if (createResult.linkedProfileId) {
+      await supabase
+        .from('profiles')
+        .update({ full_name: businessName.trim() })
+        .eq('id', createResult.linkedProfileId);
+    }
+
+    toast.success(t(connectingExisting ? 'home.accountSwitchConnectSuccess' : 'home.accountSwitchCreateSuccess'));
     setBusinessName('');
     setBusinessEmail('');
     setBusinessPassword('');
     setBusinessError(null);
+    setBusinessMatches([]);
+    setSelectedBusinessMatch(null);
     setCreateBusinessOpen(false);
     setCreatingBusiness(false);
     setOpen(false);
@@ -702,7 +803,7 @@ export function UserPageMenu({ size = 'md' }: { size?: 'sm' | 'md' } = {}) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.98 }}
             transition={{ duration: 0.16, ease: 'easeOut' }}
-            className="absolute right-0 top-[calc(100%+8px)] z-50 w-[min(320px,calc(100vw-1.5rem))] max-h-[calc(100dvh-6.5rem)] overflow-y-auto overscroll-contain touch-pan-y rounded-3xl border border-border/70 bg-card/95 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-card/92 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="absolute right-0 top-[calc(100%+8px)] z-50 w-[min(320px,calc(100vw-1.5rem))] max-h-[calc(100dvh-6.5rem)] overflow-x-hidden overflow-y-auto overscroll-contain rounded-3xl border border-border/70 bg-card/95 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-card/92 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             <div className="space-y-2 p-2 pt-2">
               <div className="rounded-2xl border border-border/60 bg-background/70 px-3 py-2">
@@ -740,85 +841,107 @@ export function UserPageMenu({ size = 'md' }: { size?: 'sm' | 'md' } = {}) {
                     <p className="text-xs text-destructive">{linkedError}</p>
                   ) : (
                     <>
-                      {accountOptions.map((account) => {
-                        const session = accountSessionByProfileId.get(account.profileId);
-                        const isCurrent = account.profileId === profile?.id;
-                        const directLinked = directlyLinkedProfileIds.has(account.profileId);
-                        const canSwitch = Boolean(session?.userId || directLinked);
-                        const switchTargetKey = session?.userId || account.profileId;
-
-                        return (
-                          <div
-                            key={account.profileId}
-                            className={cn(
-                              'flex items-center justify-between gap-2 rounded-2xl border border-border/60 px-3 py-2',
-                              isCurrent && 'bg-primary/10',
-                            )}
-                          >
-                            <div className="min-w-0">
-                              <p className="truncate text-sm font-medium text-foreground">
-                                {account.fullName || t('common.anonymousUser')}
-                              </p>
+                      <AccountSwitcherTrack className="-mx-1 px-1 pb-0.5">
+                        {orderedAccountOptions.map((account) => {
+                          const session = accountSessionByProfileId.get(account.profileId);
+                          const isCurrent = account.profileId === profile?.id;
+                          const canSwitch = Boolean(
+                            session?.userId || directlyLinkedProfileIds.has(account.profileId),
+                          );
+                          const switchTargetKey = session?.userId || account.profileId;
+                          const isSwitching = switchingAccountId === switchTargetKey;
+                          const displayName = account.fullName || t('common.anonymousUser');
+                          const cardClassName = cn(
+                            'relative flex snap-center flex-col rounded-2xl border px-3 py-2.5 text-left',
+                            orderedAccountOptions.length > 1 ? 'w-[62%] min-w-[62%] shrink-0' : 'w-full',
+                            isCurrent
+                              ? 'border-primary/40 bg-primary/10'
+                              : 'border-border/60 bg-background/80',
+                            !isCurrent && canSwitch && 'transition-colors hover:bg-accent/70',
+                            isSwitching && 'opacity-80',
+                          );
+                          const cardBody = (
+                            <>
+                              <div className="flex items-start justify-between gap-1">
+                                {isCurrent ? (
+                                  <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-primary">
+                                    {t('home.accountSwitchCurrent')}
+                                  </span>
+                                ) : isSwitching ? (
+                                  <RefreshCcw className="h-3.5 w-3.5 animate-spin text-muted-foreground" aria-hidden />
+                                ) : (
+                                  <span className="h-4" />
+                                )}
+                                {isCurrent &&
+                                  canEditProfile &&
+                                  (account.accountType === 'personal' || account.accountType === 'business') && (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <span className="inline-flex">
+                                          <button
+                                            type="button"
+                                            className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                            aria-label={t('features.pages.editProfile')}
+                                            data-account-switcher-no-drag=""
+                                            data-testid={`user-page-menu-edit-profile-${account.profileId}`}
+                                            onClick={(event) => {
+                                              event.preventDefault();
+                                              event.stopPropagation();
+                                              navigate('/settings/profile');
+                                              setOpen(false);
+                                            }}
+                                          >
+                                            <Pencil className="h-4 w-4" aria-hidden />
+                                          </button>
+                                        </span>
+                                      </TooltipTrigger>
+                                      <TooltipContent side="left">
+                                        {t('features.pages.editProfile')}
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  )}
+                              </div>
+                              <p className="mt-1 truncate text-sm font-medium text-foreground">{displayName}</p>
                               <p className="truncate text-xs text-muted-foreground">
                                 {account.username ? `@${account.username}` : t('home.profileMenuNoUsername')}
                               </p>
                               <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
                                 {account.label}
                               </p>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              {isCurrent ? (
-                                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-primary">
-                                  {t('home.accountSwitchCurrent')}
-                                </span>
-                              ) : (
-                                <Button
-                                  type="button"
-                                  size="sm"
-                                  variant="outline"
-                                  className="gap-2"
-                                  onClick={() => handleSwitchAccount(account)}
-                                  disabled={!canSwitch || switchingAccountId === switchTargetKey}
-                                >
-                                  {switchingAccountId === switchTargetKey ? (
-                                    <RefreshCcw className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <LogIn className="h-4 w-4" />
-                                  )}
-                                  {t('home.accountSwitchAction')}
-                                </Button>
-                              )}
-                              {canEditProfile &&
-                                (account.accountType === 'personal' || account.accountType === 'business') && (
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <span className="inline-flex">
-                                        <button
-                                          type="button"
-                                          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40"
-                                          aria-label={t('features.pages.editProfile')}
-                                          data-testid={`user-page-menu-edit-profile-${account.profileId}`}
-                                          disabled={!isCurrent}
-                                          onClick={(event) => {
-                                            event.preventDefault();
-                                            event.stopPropagation();
-                                            navigate('/settings/profile');
-                                            setOpen(false);
-                                          }}
-                                        >
-                                          <Pencil className="h-4 w-4" aria-hidden />
-                                        </button>
-                                      </span>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="left">
-                                      {t('features.pages.editProfile')}
-                                    </TooltipContent>
-                                  </Tooltip>
-                                )}
-                            </div>
-                          </div>
-                        );
-                      })}
+                            </>
+                          );
+
+                          if (isCurrent) {
+                            return (
+                              <div
+                                key={account.profileId}
+                                ref={currentAccountCardRef}
+                                data-testid={`account-switcher-card-${account.profileId}`}
+                                data-current="true"
+                                aria-current="true"
+                                className={cardClassName}
+                              >
+                                {cardBody}
+                              </div>
+                            );
+                          }
+
+                          return (
+                            <button
+                              key={account.profileId}
+                              type="button"
+                              data-testid={`account-switcher-card-${account.profileId}`}
+                              data-current="false"
+                              aria-label={t('home.accountSwitchTo', { name: displayName })}
+                              className={cardClassName}
+                              disabled={Boolean(switchingAccountId)}
+                              onClick={() => handleSwitchAccount(account)}
+                            >
+                              {cardBody}
+                            </button>
+                          );
+                        })}
+                      </AccountSwitcherTrack>
                       {linkedLoading && (
                         <p className="text-[11px] text-muted-foreground">Syncing linked accounts...</p>
                       )}
@@ -827,22 +950,12 @@ export function UserPageMenu({ size = 'md' }: { size?: 'sm' | 'md' } = {}) {
                           {t('home.accountSwitchNoLinked')}
                         </p>
                       )}
-                      {accountOptions.length > 0 &&
-                        accountOptions.some(
-                          (account) =>
-                            account.profileId !== profile?.id
-                            && !accountSessionByProfileId.has(account.profileId)
-                            && !directlyLinkedProfileIds.has(account.profileId),
-                        ) && (
-                          <p className="text-xs text-muted-foreground">
-                            {t('home.accountSwitchMissingSession')}
-                          </p>
-                        )}
                     </>
                   )}
                 </div>
               </div>
 
+              <div className="space-y-2 touch-pan-y">
               {pageLinks.map((page) => {
                 const Icon = page.icon;
                 const isCurrent = location.pathname === page.path;
@@ -879,12 +992,23 @@ export function UserPageMenu({ size = 'md' }: { size?: 'sm' | 'md' } = {}) {
                   </button>
                 );
               })}
+              </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <Dialog open={createBusinessOpen} onOpenChange={setCreateBusinessOpen}>
+      <Dialog
+        open={createBusinessOpen}
+        onOpenChange={(nextOpen) => {
+          setCreateBusinessOpen(nextOpen);
+          if (!nextOpen) {
+            setBusinessMatches([]);
+            setSelectedBusinessMatch(null);
+            setBusinessError(null);
+          }
+        }}
+      >
         <DialogContent className="rounded-3xl">
           <DialogHeader>
             <DialogTitle>{t('home.accountSwitchCreateTitle')}</DialogTitle>
@@ -892,32 +1016,90 @@ export function UserPageMenu({ size = 'md' }: { size?: 'sm' | 'md' } = {}) {
           </DialogHeader>
 
           <div className="grid gap-4 py-2">
-            <div className="grid gap-2">
-              <label className="text-sm font-medium text-foreground">{t('home.accountSwitchBusinessNameLabel')}</label>
+            <OutlinedField label={t('home.accountSwitchBusinessNameLabel')} htmlFor="add-business-name">
               <Input
+                id="add-business-name"
                 value={businessName}
                 onChange={(event) => setBusinessName(event.target.value)}
                 placeholder={t('home.accountSwitchBusinessNamePlaceholder')}
+                autoComplete="organization"
               />
-            </div>
-            <div className="grid gap-2">
-              <label className="text-sm font-medium text-foreground">{t('common.email')}</label>
-              <Input
-                type="email"
-                value={businessEmail}
-                onChange={(event) => setBusinessEmail(event.target.value)}
-                placeholder={t('home.accountSwitchBusinessEmailPlaceholder')}
-              />
-            </div>
-            <div className="grid gap-2">
-              <label className="text-sm font-medium text-foreground">{t('common.password')}</label>
-              <Input
-                type="password"
-                value={businessPassword}
-                onChange={(event) => setBusinessPassword(event.target.value)}
-                placeholder={t('auth.passwordPlaceholder')}
-              />
-            </div>
+            </OutlinedField>
+
+            {businessMatches.length > 0 && (
+              <div className="space-y-2" data-testid="add-business-matches">
+                {businessMatches.map((match) => {
+                  const selected = selectedBusinessMatch?.profileId === match.profileId;
+                  return (
+                    <button
+                      key={match.profileId}
+                      type="button"
+                      data-testid={`add-business-match-${match.profileId}`}
+                      onClick={() => setSelectedBusinessMatch(match)}
+                      className={cn(
+                        'flex w-full items-center gap-3 rounded-2xl border px-3 py-2 text-left transition-colors',
+                        selected ? 'border-primary bg-primary/10' : 'border-border/60 hover:bg-accent/60',
+                      )}
+                    >
+                      <Avatar className="h-9 w-9 border border-border">
+                        <AvatarImage src={match.avatarUrl || undefined} />
+                        <AvatarFallback className="bg-primary/10 text-xs text-primary">
+                          {getInitials(businessConnectDisplayName(match, businessName), match.username)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-foreground">
+                          {businessConnectDisplayName(match, businessName)}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {match.alreadyLinkedToRequester
+                            ? t('home.accountSwitchAlreadyLinkedHint')
+                            : match.ownerFullName
+                              ? t('home.accountSwitchOwnedBy', { name: match.ownerFullName })
+                              : t('home.accountSwitchExistingCompany')}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {lookingUpBusiness && businessMatches.length === 0 && (
+              <p className="text-[11px] text-muted-foreground">{t('home.accountSwitchLookingUp')}</p>
+            )}
+
+            {(!connectingExisting || connectNeedsPassword) && (
+              <>
+                <OutlinedField label={t('common.email')} htmlFor="add-business-email">
+                  <Input
+                    id="add-business-email"
+                    type="email"
+                    value={businessEmail}
+                    onChange={(event) => setBusinessEmail(event.target.value)}
+                    placeholder={t('home.accountSwitchBusinessEmailPlaceholder')}
+                    autoComplete="username"
+                  />
+                </OutlinedField>
+                <OutlinedField label={t('common.password')} htmlFor="add-business-password">
+                  <Input
+                    id="add-business-password"
+                    type="password"
+                    value={businessPassword}
+                    onChange={(event) => setBusinessPassword(event.target.value)}
+                    placeholder={t('auth.passwordPlaceholder')}
+                    autoComplete="new-password"
+                  />
+                </OutlinedField>
+              </>
+            )}
+
+            {connectingExisting && connectNeedsPassword && (
+              <p className="text-xs text-muted-foreground">{t('home.accountSwitchConnectHint')}</p>
+            )}
+            {connectNeedsAccessRequest && (
+              <p className="text-xs text-muted-foreground">{t('home.accountSwitchRequestAccessHint')}</p>
+            )}
           </div>
 
           {businessError && (
@@ -928,9 +1110,17 @@ export function UserPageMenu({ size = 'md' }: { size?: 'sm' | 'md' } = {}) {
             <Button type="button" variant="ghost" onClick={() => setCreateBusinessOpen(false)} disabled={creatingBusiness}>
               {t('common.cancel')}
             </Button>
-            <Button type="button" className="gap-2" onClick={handleCreateBusinessAccount} disabled={creatingBusiness}>
-              <Briefcase className="h-4 w-4" />
-              {creatingBusiness ? t('home.accountSwitchCreating') : t('home.accountSwitchCreateAction')}
+            <Button
+              type="button"
+              className="gap-2"
+              onClick={handleCreateBusinessAccount}
+              disabled={creatingBusiness || selectedBusinessMatch?.alreadyLinkedToRequester}
+              data-testid="add-business-submit"
+            >
+              {connectingExisting ? <Link2 className="h-4 w-4" /> : <Briefcase className="h-4 w-4" />}
+              {creatingBusiness
+                ? t(connectingExisting ? 'home.accountSwitchConnecting' : 'home.accountSwitchCreating')
+                : t(connectingExisting ? 'home.accountSwitchConnectAction' : 'home.accountSwitchCreateAction')}
             </Button>
           </DialogFooter>
         </DialogContent>

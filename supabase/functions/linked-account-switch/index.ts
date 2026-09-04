@@ -66,16 +66,25 @@ Deno.serve(async (request) => {
       });
     }
 
-    const { data: relation, error: relationError } = await adminClient
+    const { data: currentAsLinked } = await adminClient
       .from('linked_accounts')
-      .select('id')
-      .or(
-        `and(owner_profile_id.eq.${currentProfile.id},linked_profile_id.eq.${targetProfileId}),and(linked_profile_id.eq.${currentProfile.id},owner_profile_id.eq.${targetProfileId})`,
-      )
-      .limit(1)
-      .maybeSingle();
+      .select('owner_profile_id, linked_profile_id')
+      .or(`owner_profile_id.eq.${currentProfile.id},linked_profile_id.eq.${currentProfile.id},linked_profile_id.eq.${targetProfileId},owner_profile_id.eq.${targetProfileId}`);
 
-    if (relationError || !relation?.id) {
+    const relatedRows = currentAsLinked ?? [];
+    const currentOwners = relatedRows
+      .filter((row) => row.linked_profile_id === currentProfile.id)
+      .map((row) => row.owner_profile_id);
+    const targetOwners = relatedRows
+      .filter((row) => row.linked_profile_id === targetProfileId)
+      .map((row) => row.owner_profile_id);
+    const sibling = currentOwners.some((ownerId) => targetOwners.includes(ownerId));
+    const direct = relatedRows.some((row) => (
+      (row.owner_profile_id === currentProfile.id && row.linked_profile_id === targetProfileId)
+      || (row.linked_profile_id === currentProfile.id && row.owner_profile_id === targetProfileId)
+    ));
+
+    if (!direct && !sibling) {
       return new Response(JSON.stringify({ error: 'Target account is not linked.' }), {
         status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

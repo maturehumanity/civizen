@@ -6,7 +6,7 @@ import { CivizenScore } from '@/components/ui/CivizenScore';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { usePageSecondaryNav } from '@/hooks/usePageSecondaryNav';
 import { supabase } from '@/integrations/supabase/client';
 import { type Endorsement } from '@/lib/scoring';
@@ -67,12 +67,30 @@ import {
   type PostPreview,
   type PostRepostRow,
 } from '@/lib/post-reposts';
+import { getPreparedRepostDraft } from '@/lib/prepared-repost-drafts';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { HomePostOverflowMenu } from '@/components/posts/HomePostOverflowMenu';
+import { HomePostInlineEditor } from '@/components/posts/HomePostInlineEditor';
+import { PostFormattedBody } from '@/components/posts/PostFormattedBody';
+import { SocialPostFormatToolbar } from '@/components/posts/SocialPostFormatToolbar';
+import { type AppPermission } from '@/lib/access-control';
+import { editPublishedPost } from '@/lib/edit-published-post';
+import {
+  canDeletePublishedPost,
+  canEditPublishedPost,
+  postShowsEditedIndicator,
+} from '@/lib/post-edit-policy';
+import {
+  postContentForEditor,
+  postHtmlIsEmpty,
+  postHtmlToPlainText,
+  serializePostContent,
+} from '@/lib/posts-html';
 import { HomePostEmbeddedOriginal, HomeFullOriginalBody } from '@/components/home/HomePostEmbeddedOriginal';
 import { HomeRepostMenu } from '@/components/home/HomeRepostMenu';
 import { HomeRepostThoughtsDialog } from '@/components/home/HomeRepostThoughtsDialog';
@@ -186,6 +204,9 @@ export default function Home() {
   const [feedBackendUnavailable, setFeedBackendUnavailable] = useState(false);
   const [optimisticLikeStates, setOptimisticLikeStates] = useState<Record<string, boolean>>({});
   const [isComposerFocused, setIsComposerFocused] = useState(false);
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const composeDraftBackupRef = useRef('');
   const [isCivizenOrgAccount, setIsCivizenOrgAccount] = useState(false);
   const [socialConnections, setSocialConnections] = useState<SocialConnectionStatus[]>([]);
   const [socialCrossposts, setSocialCrossposts] = useState<Record<string, SocialCrosspostStatus[]>>({});
@@ -208,9 +229,11 @@ export default function Home() {
   const postDraftHydratedRef = useRef(false);
   const postContentRef = useRef(postContent);
   const recordedPostViewsRef = useRef<Set<string>>(new Set());
-  const canPost = postContent.trim().length > 0;
+  const composerPlain = postHtmlToPlainText(postContent);
+  const canPost = composerPlain.trim().length > 0;
   const composerPlaceholder = t('home.whatsOnYourMind');
   postContentRef.current = postContent;
+
   useEffect(() => {
     if (profile?.id) {
       setOptimisticLikeStates({});
@@ -301,16 +324,27 @@ export default function Home() {
     return () => observer.disconnect();
   }, [posts, profile?.id]);
 
-  const readPostEditorText = (el: HTMLDivElement) => {
-    const raw = (el.innerText ?? el.textContent ?? '').replace(/\u00a0/g, ' ');
-    return raw === '\n' ? '' : raw;
-  };
-
   const syncPostEditorDom = (value: string) => {
     const el = postEditorRef.current;
     if (!el) return;
-    if (readPostEditorText(el) === value) return;
-    el.textContent = value;
+    const next = postContentForEditor(value);
+    if (el.innerHTML === next) return;
+    el.innerHTML = next;
+  };
+
+  useLayoutEffect(() => {
+    if (editingPost) {
+      syncPostEditorDom(editingPost.content);
+      const node = postEditorRef.current;
+      node?.focus();
+      node?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      return;
+    }
+    syncPostEditorDom(postContentRef.current);
+  }, [editingPost?.id]);
+
+  const emitPostEditor = (el: HTMLDivElement) => {
+    setPostContent(el.innerHTML || '');
   };
 
   const normalizePost = (raw: RawPostRecord): Post => ({
@@ -368,8 +402,9 @@ export default function Home() {
   };
 
   const persistPostDraft = (content: string) => {
+    if (editingPost) return;
     const key = getPostDraftStorageKey();
-    if (!content.trim()) {
+    if (postHtmlIsEmpty(content)) {
       removeStoredValue(key);
       return;
     }
@@ -377,6 +412,8 @@ export default function Home() {
   };
 
   const clearPostComposerDraft = () => {
+    setEditingPost(null);
+    composeDraftBackupRef.current = '';
     setPostContent('');
     removeStoredValue(getPostDraftStorageKey());
     syncPostEditorDom('');
@@ -928,11 +965,18 @@ export default function Home() {
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: '*',
           schema: 'public',
           table: 'posts',
         },
         (payload) => {
+          if (payload.eventType === 'DELETE') {
+            const deletedId = (payload.old as { id?: string } | null)?.id;
+            if (deletedId) {
+              setPosts((prev) => prev.filter((post) => post.id !== deletedId));
+            }
+            return;
+          }
           supabase
             .from('posts')
             .select(`
@@ -963,10 +1007,13 @@ export default function Home() {
   };
 
   const createPost = async () => {
-    if (!postContent.trim() || !profile?.id || isPosting) return;
+    if (editingPost) {
+      await saveEditedPost();
+      return;
+    }
+    const content = serializePostContent(postEditorRef.current?.innerHTML || postContent);
+    if (!content || !profile?.id || isPosting) return;
     setIsPosting(true);
-
-    const content = postContent.trim();
     const localPost: Post = {
       id: `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       content,
@@ -1054,6 +1101,129 @@ export default function Home() {
     } finally {
       setIsPosting(false);
     }
+  };
+
+  const viewerPermissions = (profile?.effective_permissions || []) as AppPermission[];
+
+  const beginEditPost = (post: Post) => {
+    if (
+      !canEditPublishedPost({
+        postAuthorId: post.author_id,
+        viewerProfileId: profile?.id,
+        permissions: viewerPermissions,
+      })
+    ) {
+      toast.error(t('home.couldNotUpdatePost'));
+      return;
+    }
+    composeDraftBackupRef.current = postHtmlIsEmpty(postContent) ? '' : postContent;
+    setEditingPost(post);
+    setPostContent(post.content);
+    setIsComposerFocused(false);
+  };
+
+  const cancelEditPost = () => {
+    const backup = composeDraftBackupRef.current;
+    setEditingPost(null);
+    composeDraftBackupRef.current = '';
+    setPostContent(backup);
+  };
+
+  const saveEditedPost = async () => {
+    if (!editingPost || !profile?.id || isSavingEdit) return;
+    const content = serializePostContent(postEditorRef.current?.innerHTML || postContent);
+    if (!content) return;
+
+    if (
+      !canEditPublishedPost({
+        postAuthorId: editingPost.author_id,
+        viewerProfileId: profile.id,
+        permissions: viewerPermissions,
+      })
+    ) {
+      toast.error(t('home.couldNotUpdatePost'));
+      return;
+    }
+
+    if (content === serializePostContent(editingPost.content)) {
+      cancelEditPost();
+      return;
+    }
+
+    setIsSavingEdit(true);
+    try {
+      if (feedBackendUnavailable || !isRecordablePostId(editingPost.id)) {
+        const edited: Post = {
+          ...editingPost,
+          content,
+          is_edited: true,
+          edited_at: new Date().toISOString(),
+        };
+        setPosts((prev) => mergePostsById(prev, [edited]));
+        persistLocalPosts(mergePostsById(readStoredValue<Post[]>(getFeedStorageKey('posts'), []), [edited]));
+        toast.success(t('home.postUpdated'));
+        cancelEditPost();
+        return;
+      }
+
+      const row = await editPublishedPost({ postId: editingPost.id, html: content });
+      setPosts((prev) =>
+        mergePostsById(prev, [
+          {
+            ...editingPost,
+            content: row.content,
+            created_at: row.created_at,
+            author_id: row.author_id,
+            is_edited: row.is_edited,
+            edited_at: row.edited_at,
+          },
+        ]),
+      );
+      toast.success(t('home.postUpdated'));
+      cancelEditPost();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '';
+      toast.error(t('home.couldNotUpdatePost'), {
+        description: message || t('common.tryAgainMoment'),
+      });
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
+
+  const deleteOwnPost = async (post: Post) => {
+    if (
+      !canDeletePublishedPost({
+        postAuthorId: post.author_id,
+        viewerProfileId: profile?.id,
+        permissions: viewerPermissions,
+      })
+    ) {
+      return;
+    }
+    const confirmed = window.confirm(t('home.confirmDeletePost'));
+    if (!confirmed) return;
+
+    if (feedBackendUnavailable || !isRecordablePostId(post.id)) {
+      setPosts((prev) => prev.filter((row) => row.id !== post.id));
+      persistLocalPosts(
+        readStoredValue<Post[]>(getFeedStorageKey('posts'), []).filter((row) => row.id !== post.id),
+      );
+      toast.success(t('home.postDeleted'));
+      if (editingPost?.id === post.id) cancelEditPost();
+      return;
+    }
+
+    const { error } = await supabase.from('posts').delete().eq('id', post.id);
+    if (error) {
+      toast.error(t('home.couldNotDeletePost'), {
+        description: t('common.tryAgainMoment'),
+      });
+      return;
+    }
+    setPosts((prev) => prev.filter((row) => row.id !== post.id));
+    toast.success(t('home.postDeleted'));
+    if (editingPost?.id === post.id) cancelEditPost();
   };
 
   const toggleLike = async (postId: string) => {
@@ -1591,13 +1761,16 @@ export default function Home() {
         ) : null}
 
         {/* Create Post / Share an idea block */}
-        {showComposer ? (
+        {showComposer && !editingPost ? (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
           >
             <Card
+              data-home-post-composer-card=""
+              data-home-composer-focused={isComposerFocused || editingPost ? 'true' : 'false'}
+              data-home-composer-editing={editingPost ? 'true' : 'false'}
               className={`p-3 transition-all duration-200 sm:p-4 ${
                 isComposerFocused
                   ? 'border-primary/20 shadow-md shadow-primary/10 -translate-y-0.5'
@@ -1607,7 +1780,7 @@ export default function Home() {
               <div
                 className={cn(
                   'flex min-w-0 gap-2 sm:gap-3',
-                  postContent.trim() ? 'flex-col' : 'items-center',
+                  canPost || editingPost || isComposerFocused ? 'flex-col' : 'items-center',
                 )}
               >
                 <div
@@ -1620,16 +1793,30 @@ export default function Home() {
                     isComposerFocused && 'border-primary/60 ring-2 ring-primary/10',
                   )}
                   onMouseDown={(event) => {
-                    focusHomePostComposerFromChrome(event, postEditorRef.current, {
-                      disabled: isPosting,
+                    const movedFocus = focusHomePostComposerFromChrome(event, postEditorRef.current, {
+                      disabled: isPosting || isSavingEdit,
                     });
+                    if (
+                      movedFocus ||
+                      event.target === postEditorRef.current ||
+                      postEditorRef.current?.contains(event.target as Node)
+                    ) {
+                      setIsComposerFocused(true);
+                    }
                   }}
                   onPointerDown={(event) => {
                     // Touch / pen: same chrome-focus path as mouse.
                     if (event.pointerType === 'mouse') return;
-                    focusHomePostComposerFromChrome(event, postEditorRef.current, {
-                      disabled: isPosting,
+                    const movedFocus = focusHomePostComposerFromChrome(event, postEditorRef.current, {
+                      disabled: isPosting || isSavingEdit,
                     });
+                    if (
+                      movedFocus ||
+                      event.target === postEditorRef.current ||
+                      postEditorRef.current?.contains(event.target as Node)
+                    ) {
+                      setIsComposerFocused(true);
+                    }
                   }}
                 >
                   <Avatar
@@ -1641,7 +1828,7 @@ export default function Home() {
                       {getInitials(profile?.full_name)}
                     </AvatarFallback>
                   </Avatar>
-                  {!postContent ? (
+                  {!composerPlain ? (
                     <div className="pointer-events-none absolute inset-y-0 left-[3.35rem] right-3 z-[1] flex items-center sm:left-[4.15rem] sm:right-4">
                       <SlowRunningText
                         text={composerPlaceholder}
@@ -1655,38 +1842,59 @@ export default function Home() {
                     role="textbox"
                     aria-multiline="true"
                     aria-label={composerPlaceholder}
-                    contentEditable={!isPosting}
-                    tabIndex={isPosting ? -1 : 0}
+                    contentEditable={!(isPosting || isSavingEdit)}
+                    tabIndex={isPosting || isSavingEdit ? -1 : 0}
                     suppressContentEditableWarning
-                    className="min-h-10 w-full whitespace-pre-wrap break-words text-sm leading-6 text-foreground outline-none sm:min-h-12"
+                    className={cn(
+                      'min-h-10 w-full whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground outline-none sm:min-h-12',
+                      '[&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5',
+                    )}
                     onInput={(event) => {
-                      const next = readPostEditorText(event.currentTarget);
-                      setPostContent(next);
+                      emitPostEditor(event.currentTarget);
                     }}
                     onFocus={() => setIsComposerFocused(true)}
+                    onClick={() => {
+                      postEditorRef.current?.focus();
+                      setIsComposerFocused(true);
+                    }}
                     onBlur={() => {
-                      setIsComposerFocused(false);
-                      persistPostDraft(postContentRef.current);
+                      const card = document.querySelector('[data-home-post-composer-card]');
+                      window.requestAnimationFrame(() => {
+                        if (card?.contains(document.activeElement)) return;
+                        setIsComposerFocused(false);
+                        if (!editingPost) persistPostDraft(postContentRef.current);
+                      });
                     }}
                     onPaste={(event) => {
                       event.preventDefault();
                       const text = event.clipboardData.getData('text/plain');
                       document.execCommand('insertText', false, text);
+                      if (postEditorRef.current) emitPostEditor(postEditorRef.current);
                     }}
                     onKeyDown={(event) => {
                       if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
                         event.preventDefault();
-                        createPost();
+                        if (editingPost) void saveEditedPost();
+                        else void createPost();
                       }
                     }}
                   />
                   <div className="clear-both h-0 w-full" aria-hidden />
                 </div>
-                {!postContent.trim() ? (
+                {isComposerFocused || editingPost || canPost ? (
+                  <SocialPostFormatToolbar
+                    editorRef={postEditorRef}
+                    onCommand={() => {
+                      if (postEditorRef.current) emitPostEditor(postEditorRef.current);
+                    }}
+                    className="self-start"
+                  />
+                ) : null}
+                {!canPost && !editingPost ? (
                   <Button
                     size="sm"
                     className="h-11 shrink-0 rounded-2xl px-4 transition-all sm:h-12 sm:px-5 disabled:border disabled:border-border disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
-                    onClick={createPost}
+                    onClick={() => void createPost()}
                     disabled={isPosting || !canPost}
                   >
                     {isPosting ? t('home.posting') : t('home.post')}
@@ -1697,18 +1905,27 @@ export default function Home() {
                       size="sm"
                       variant="outline"
                       className="h-11 shrink-0 rounded-2xl px-3 sm:h-12 sm:px-4"
-                      onClick={clearPostComposerDraft}
-                      disabled={isPosting}
+                      onClick={editingPost ? cancelEditPost : clearPostComposerDraft}
+                      disabled={isPosting || isSavingEdit}
                     >
                       {t('common.cancel')}
                     </Button>
                     <Button
                       size="sm"
                       className="h-11 shrink-0 rounded-2xl bg-primary px-4 text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md sm:h-12 sm:px-5"
-                      onClick={createPost}
-                      disabled={isPosting || !canPost}
+                      onClick={() => {
+                        if (editingPost) void saveEditedPost();
+                        else void createPost();
+                      }}
+                      disabled={isPosting || isSavingEdit || !canPost}
                     >
-                      {isPosting ? t('home.posting') : t('home.post')}
+                      {editingPost
+                        ? isSavingEdit
+                          ? t('home.savingChanges')
+                          : t('home.saveChanges')
+                        : isPosting
+                          ? t('home.posting')
+                          : t('home.post')}
                     </Button>
                   </div>
                 )}
@@ -1780,7 +1997,11 @@ export default function Home() {
                   >
                     <Card
                       data-home-post-id={interactionPostId}
-                      className="border-border/70 bg-card/95 p-4 shadow-sm transition-all duration-200 hover:border-border hover:shadow-md"
+                      data-home-post-editing={editingPost?.id === post.id ? 'true' : 'false'}
+                      className={cn(
+                        'border-border/70 bg-card/95 p-4 shadow-sm transition-all duration-200 hover:border-border hover:shadow-md',
+                        editingPost?.id === post.id && 'border-primary/40 shadow-md shadow-primary/10',
+                      )}
                     >
                       <div className="min-w-0 space-y-2">
                         {item.kind === 'plain_repost' ? (
@@ -1807,8 +2028,27 @@ export default function Home() {
                             </p>
                             <p className="text-xs text-muted-foreground">
                               {formatRelativeTime(item.sortAt)}
+                              {postShowsEditedIndicator(post) ? ` · ${t('home.edited')}` : ''}
                             </p>
                           </div>
+                          <div className="flex shrink-0 items-center gap-0.5">
+                            <HomePostOverflowMenu
+                              moreLabel={t('home.postActions')}
+                              editLabel={t('home.editPost')}
+                              deleteLabel={t('home.deletePost')}
+                              canEdit={canEditPublishedPost({
+                                postAuthorId: post.author_id,
+                                viewerProfileId: profile?.id,
+                                permissions: viewerPermissions,
+                              })}
+                              canDelete={canDeletePublishedPost({
+                                postAuthorId: post.author_id,
+                                viewerProfileId: profile?.id,
+                                permissions: viewerPermissions,
+                              })}
+                              onEdit={() => beginEditPost(post)}
+                              onDelete={() => void deleteOwnPost(post)}
+                            />
                           <Tooltip delayDuration={200}>
                             <TooltipTrigger asChild>
                               <button
@@ -1832,12 +2072,25 @@ export default function Home() {
                               </p>
                             </TooltipContent>
                           </Tooltip>
+                          </div>
                         </div>
 
-                        {item.kind === 'plain_repost' ? null : (
-                          <p className="whitespace-pre-wrap break-words text-sm text-foreground">
-                            {post.content}
-                          </p>
+                        {item.kind === 'plain_repost' ? null : editingPost?.id === post.id ? (
+                          <HomePostInlineEditor
+                            editorRef={postEditorRef}
+                            disabled={isSavingEdit}
+                            ariaLabel={t('home.editPost')}
+                            cancelLabel={t('common.cancel')}
+                            saveLabel={t('home.saveChanges')}
+                            savingLabel={t('home.savingChanges')}
+                            saving={isSavingEdit}
+                            canSave={canPost}
+                            onLiveChange={setPostContent}
+                            onCancel={cancelEditPost}
+                            onSave={() => void saveEditedPost()}
+                          />
+                        ) : (
+                          <PostFormattedBody content={post.content} />
                         )}
 
                         {item.kind === 'quote_repost' ? (
@@ -2409,6 +2662,10 @@ export default function Home() {
         unavailableLabel={t('home.originalPostUnavailable')}
         seeFullLabel={t('home.seeFullPost')}
         original={thoughtsOriginal}
+        initialDraft={getPreparedRepostDraft({
+          activeProfileId: profile?.id,
+          originalPostId: thoughtsOriginal?.id,
+        })}
         onSubmit={async (commentary) => {
           try {
             await handleRepostWithThoughts(commentary);

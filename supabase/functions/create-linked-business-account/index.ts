@@ -27,7 +27,25 @@ function normalizeBusinessName(input: string) {
 }
 
 function toBusinessUsernameCandidate(input: string) {
-  return `biz_${slugifyUsername(input)}`.slice(0, 24);
+  const slug = slugifyUsername(input);
+  const withPrefix = `biz_${slug}`;
+  return withPrefix.length <= 24 ? withPrefix : slug;
+}
+
+function isEmailTakenError(error: { message?: string } | null | undefined) {
+  const message = (error?.message || '').toLowerCase();
+  return message.includes('already') && (message.includes('registered') || message.includes('exists') || message.includes('been taken'));
+}
+
+async function findAuthUserIdByEmail(
+  adminClient: ReturnType<typeof createClient>,
+  email: string,
+): Promise<string | null> {
+  const { data } = await adminClient.auth.admin.generateLink({
+    type: 'magiclink',
+    email,
+  });
+  return data?.user?.id ?? null;
 }
 
 Deno.serve(async (request) => {
@@ -86,21 +104,6 @@ Deno.serve(async (request) => {
       });
     }
 
-    const { data: existingLink } = await userClient
-      .from('linked_accounts')
-      .select('id')
-      .eq('owner_profile_id', ownerProfile.id)
-      .eq('relationship_type', 'business')
-      .limit(1)
-      .maybeSingle();
-
-    if (existingLink?.id) {
-      return new Response(JSON.stringify({ error: 'Business account already linked.' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
     const adminClient = createClient(supabaseUrl, supabaseServiceRoleKey);
     const businessNameNormalized = normalizeBusinessName(businessName);
     const usernameCandidate = toBusinessUsernameCandidate(businessName);
@@ -153,7 +156,13 @@ Deno.serve(async (request) => {
       },
     });
 
-    if (createError || !createdUser.user) {
+    let createdUserId: string | null = createdUser?.user?.id ?? null;
+
+    if (!createdUserId && isEmailTakenError(createError)) {
+      createdUserId = await findAuthUserIdByEmail(adminClient, email);
+    }
+
+    if (!createdUserId) {
       return new Response(JSON.stringify({ error: createError?.message || 'Could not create business account.' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -165,12 +174,22 @@ Deno.serve(async (request) => {
     for (let attempt = 0; attempt < 10; attempt += 1) {
       const { data, error } = await adminClient
         .from('profiles')
-        .select('id')
-        .eq('user_id', createdUser.user.id)
+        .select('id, username, full_name')
+        .eq('user_id', createdUserId)
         .maybeSingle();
 
       if (!error && data?.id) {
         linkedProfileId = data.id;
+        const nextUsername = data.username?.trim() ? data.username : usernameCandidate;
+        if (data.full_name !== businessName || nextUsername !== data.username) {
+          await adminClient
+            .from('profiles')
+            .update({
+              full_name: businessName,
+              username: nextUsername,
+            })
+            .eq('id', data.id);
+        }
         break;
       }
 

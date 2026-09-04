@@ -29,6 +29,7 @@ Before planning or editing, agents **must read**:
    Phase 1 operating model: **`docs/04-operations/dev/phase-1-pilot-operating-model.md`**
    Agreements workspace: **`docs/04-operations/dev/agreements.md`** (`/agreements` is platform-level; Market is an entry point)
    Public Market Jobs: **`docs/04-operations/dev/market-jobs-public.md`** when touching public Jobs posting, the listings board, or `/market` guest access
+   Home post formatting and author editing: **`docs/04-operations/dev/home-post-formatting.md`**
 8. When work touches Civi / the built-in assistant:
    **`docs/assistant/README.md`**, **`docs/assistant/civizen-identity.md`**, and **`docs/assistant/civizen-assistant-cheatsheet.md`**. Identity, purpose, mission, and one-sentence description come from the identity source, not from feature docs. After changing product facts Civi should know, run **`npm run assistant:knowledge`**. After adding or changing a user-facing surface, flow, public page, or mission copy, update the cheat sheet and/or `src/lib/assistant/catalog.ts` in the **same session**, then regenerate knowledge. Civi is internal-first: Civizen evidence before general AI knowledge. External resources must never override current Civizen project information.
 9. Documentation map: `docs/README.md`
@@ -90,19 +91,20 @@ Examples include:
 - filter;
 - more/options;
 - edit;
+- delete;
 - download;
 - history.
 
 However:
 
 - never make hover the only way to discover or use functionality;
-- icons should have accessible labels;
+- icons should have accessible labels (`aria-label` or visually hidden text);
 - desktop hover may show a concise tooltip/name;
 - tap/click must work independently on touch/mobile devices;
-- unfamiliar or consequential actions should retain visible text where clarity is more important than compactness;
-- destructive actions must not rely on icon recognition alone.
+- unfamiliar actions should retain visible text only when the icon would not be recognized;
+- destructive actions may be a standard trash icon in compact menus, with an accessible name and the existing confirm where one already exists.
 
-Civizen is mobile-first, so every interaction must work without hover.
+Civizen is mobile-first, so every interaction must work without hover. Prefer icons over visible wording for these actions; do not add a text label beside an icon merely because desktop has space.
 
 ### Progressive disclosure example: Agreements
 
@@ -349,24 +351,26 @@ That runs:
 2. **`verify:arc-carousel-layout`** — arc geometry at 360–480px: no stacked slots; ≥4 visible offsets on 390px Market layout; flank rotation in approved band; horizontal clearance.
 3. **`verify:arc-carousel-visible`** — Playwright on `/market?section=for-you`: **Sell**, **For you**, **Local**, and **Jobs** visible (opacity &gt; 0.4); no bounding-box overlap; flank rotation checks.
 4. **`verify:home-post-composer`** — Playwright on Home @390px: empty post-field **chrome click → focus → type** (guards the 2026-08-03 wraparound `contentEditable` regression).
-5. **`verify:post-likes-rls`** — member session can **insert + delete** `post_likes` (guards the ambiguous `user_id` RLS binding that caused “Could not save like”).
-6. **`verify:post-reposts`** — member session can **plain-repost + delete** without deleting the original (guards Home Repost relationship storage). Editorial pattern (Civizen source vs personal Repost with thoughts): **`docs/04-operations/dev/home-repost-editorial.md`**.
-7. **`verify:home-happiness-shortcut`** — Playwright on Home @390px after login: Score-card Happiness icon visible and tappable to `/happiness` without extra wording; desktop hover tooltip.
-8. **`verify:profile-score-dial`** — Playwright on `/profile` @390px after login: Score dial group visible, five categories present, no startup/`CONTENT_RADIUS` crash (guards the 2026-08-13 geometry-extract miss).
-9. **`verify:happiness-foundation`** — Playwright on `/happiness` @390px after login: five-level language (no numeric Happiness Score), check-in click→type→save, Work Fulfillment entry, Work domain delegates to Work Fulfillment + Marketplace Jobs, Time plan start→complete→follow-up, privacy page.
-10. **`verify:work-fulfillment`** — Playwright on `/happiness/work` @390px after login: two work contexts and primary switch, assessment, Work Joy (insufficient history then cautious pattern), Fit axes, planned→complete action + follow-up, Contribute/Study/Jobs handoff, human-readable alignment labels, no Work Fulfillment score.
-11. **`verify:fulfillment-plans`** — Playwright on Happiness Improve @390px after login: start a Fulfillment Plan, explainable recommendations, persist Not relevant, action lifecycle, Did this help?, support + Civi brief, Work domain does not duplicate Work Fulfillment, private plan data stays off Profile.
-12. **`verify:wellbeing-aggregate-privacy`** — Playwright on Happiness Privacy @390px after login: privacy-protected group insights setting is separate from optional sharing; enable/disable; individual remains private; Profile/Home do not publish Happiness level or aggregate participation.
-13. **`verify:wellbeing-insights`** — Playwright on `/wellbeing-insights` @390px after login, using uniquely scoped synthetic aggregate snapshots: authorized organization Overview/Patterns/Action walk, community pattern, suppression/empty state, deliberate Challenge draft handoff (no auto-publish, no member identities), Profile/Home/Jobs isolation.
-14. **`verify:human-outcome-loop`** — Playwright on Human Outcome Review @390px after login: Challenge → Project operational outcome → Human Outcome Review (baseline/follow-up, non-causal copy, confounding factor, public-safe lesson), Governance implementation review, null result, insufficient/suppressed follow-up, Profile/Home/Jobs/Search isolation.
-15. **`verify:matters-foundation`** — Playwright after login: Contribute hub shows **Questions, Issues & Ideas** and **Suggest Improvements** as a Matter shortcut; `/contribute/matters` queues and create `+`; `/contribute/matters/new` title, description, and intended-party fields; `/contribute/improvements` lands on Suggestion create; 390px and 1280px.
-16. **`verify:matters-auth`** — Member/citizen/stranger RPCs: no initiator impersonation, no unauthorized get/comment/action, comments do not complete actions, authenticated callers cannot run `process_matter_action_timeouts`. Stranger cannot start work, assign, complete, review, invite, or confirm collaborative work.
-17. **`verify:matters-detail`** — Seeded Matter detail walks at 390px and 1280px for waiting Question, interim discussion, clarification, Issue waiting, initiator confirmation, overdue, auto-close, and reopen.
-18. **`verify:matters-work-detail`** — Seeded collaborative-work walks at 390px and 1280px: simple Matter with no work, work just started (Invite to collaborate vs Request shared responsibility), outstanding Tasks (ordinary completion unavailable; Complete with outstanding work), shared-responsibility request, concurrent Tasks, Task acceptance, execution, blocked dependency, submitted for review, changes requested, Decision recorded, work complete / final response pending; Contribute queue shows Task context.
-19. **`verify:matters-resolution-detail`** — Phase 3 Resolution / evaluation / outcome walks at 390px and 1280px.
-20. **`verify:matter-agent-auth`** — Phase 4A agent-run authorization negatives (RPC + Edge).
-21. **`verify:matters-ai-detail`** — Phase 4A AI assistance walks (18 states) at 390px and 1280px.
-22. **`verify:matters-coding-detail`** — Phase 4B1 Coding Agent walks (14 states) at 390px and 1280px: Code assignment, isolated worktree / dirty-tree provenance, plan approval, diff/tests, denied command, scope expansion, failed tests, human review. Does not commit, push, or deploy.
+5. **`verify:home-post-format`** — Playwright on Home @390px and @1280px: focused composer shows Bold · Italic · Underline · lists · Line spacing, not Agreement font/color/size/align controls.
+6. **`verify:post-likes-rls`** — member session can **insert + delete** `post_likes` (guards the ambiguous `user_id` RLS binding that caused “Could not save like”).
+7. **`verify:post-reposts`** — member session can **plain-repost + delete** without deleting the original (guards Home Repost relationship storage). Editorial pattern (Civizen source vs personal Repost with thoughts): **`docs/04-operations/dev/home-repost-editorial.md`**.
+8. **`verify:post-edit`** — member can edit a new post and an old post; another user cannot; previous wording is retained in `post_revisions`; `created_at`/identity stay frozen; comments/likes/reposts survive. Spec: **`docs/04-operations/dev/home-post-formatting.md`**.
+9. **`verify:home-happiness-shortcut`** — Playwright on Home @390px after login: Score-card Happiness icon visible and tappable to `/happiness` without extra wording; desktop hover tooltip.
+10. **`verify:profile-score-dial`** — Playwright on `/profile` @390px after login: Score dial group visible, five categories present, no startup/`CONTENT_RADIUS` crash (guards the 2026-08-13 geometry-extract miss).
+11. **`verify:happiness-foundation`** — Playwright on `/happiness` @390px after login: five-level language (no numeric Happiness Score), check-in click→type→save, Work Fulfillment entry, Work domain delegates to Work Fulfillment + Marketplace Jobs, Time plan start→complete→follow-up, privacy page.
+12. **`verify:work-fulfillment`** — Playwright on `/happiness/work` @390px after login: two work contexts and primary switch, assessment, Work Joy (insufficient history then cautious pattern), Fit axes, planned→complete action + follow-up, Contribute/Study/Jobs handoff, human-readable alignment labels, no Work Fulfillment score.
+13. **`verify:fulfillment-plans`** — Playwright on Happiness Improve @390px after login: start a Fulfillment Plan, explainable recommendations, persist Not relevant, action lifecycle, Did this help?, support + Civi brief, Work domain does not duplicate Work Fulfillment, private plan data stays off Profile.
+14. **`verify:wellbeing-aggregate-privacy`** — Playwright on Happiness Privacy @390px after login: privacy-protected group insights setting is separate from optional sharing; enable/disable; individual remains private; Profile/Home do not publish Happiness level or aggregate participation.
+15. **`verify:wellbeing-insights`** — Playwright on `/wellbeing-insights` @390px after login, using uniquely scoped synthetic aggregate snapshots: authorized organization Overview/Patterns/Action walk, community pattern, suppression/empty state, deliberate Challenge draft handoff (no auto-publish, no member identities), Profile/Home/Jobs isolation.
+16. **`verify:human-outcome-loop`** — Playwright on Human Outcome Review @390px after login: Challenge → Project operational outcome → Human Outcome Review (baseline/follow-up, non-causal copy, confounding factor, public-safe lesson), Governance implementation review, null result, insufficient/suppressed follow-up, Profile/Home/Jobs/Search isolation.
+17. **`verify:matters-foundation`** — Playwright after login: Contribute hub shows **Questions, Issues & Ideas** and **Suggest Improvements** as a Matter shortcut; `/contribute/matters` queues and create `+`; `/contribute/matters/new` title, description, and intended-party fields; `/contribute/improvements` lands on Suggestion create; 390px and 1280px.
+18. **`verify:matters-auth`** — Member/citizen/stranger RPCs: no initiator impersonation, no unauthorized get/comment/action, comments do not complete actions, authenticated callers cannot run `process_matter_action_timeouts`. Stranger cannot start work, assign, complete, review, invite, or confirm collaborative work.
+19. **`verify:matters-detail`** — Seeded Matter detail walks at 390px and 1280px for waiting Question, interim discussion, clarification, Issue waiting, initiator confirmation, overdue, auto-close, and reopen.
+20. **`verify:matters-work-detail`** — Seeded collaborative-work walks at 390px and 1280px: simple Matter with no work, work just started (Invite to collaborate vs Request shared responsibility), outstanding Tasks (ordinary completion unavailable; Complete with outstanding work), shared-responsibility request, concurrent Tasks, Task acceptance, execution, blocked dependency, submitted for review, changes requested, Decision recorded, work complete / final response pending; Contribute queue shows Task context.
+21. **`verify:matters-resolution-detail`** — Phase 3 Resolution / evaluation / outcome walks at 390px and 1280px.
+22. **`verify:matter-agent-auth`** — Phase 4A agent-run authorization negatives (RPC + Edge).
+23. **`verify:matters-ai-detail`** — Phase 4A AI assistance walks (18 states) at 390px and 1280px.
+24. **`verify:matters-coding-detail`** — Phase 4B1 Coding Agent walks (14 states) at 390px and 1280px: Code assignment, isolated worktree / dirty-tree provenance, plan approval, diff/tests, denied command, scope expansion, failed tests, human review. Does not commit, push, or deploy.
 
 Happiness connected walks (`verify:happiness-foundation`, `verify:work-fulfillment`, `verify:fulfillment-plans`, `verify:wellbeing-aggregate-privacy`) call `resetOwnHappinessRecords` first. That uses the signed-in member’s own Privacy **Delete my Happiness data** control so leftover plans, recommendation feedback, and Work Fulfillment rows from a previous walk cannot contaminate the next one. It does not delete other members’ data. `verify:wellbeing-insights` and `verify:human-outcome-loop` seed and remove synthetic aggregate scopes instead of resetting private Happiness rows.
 

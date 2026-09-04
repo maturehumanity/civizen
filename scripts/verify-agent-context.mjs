@@ -130,6 +130,18 @@ if (!existsSync('scripts/verify-post-reposts.mjs')) {
 if (!agents.includes('verify:post-reposts')) {
   fail('AGENTS.md must reference verify:post-reposts');
 }
+if (!existsSync('scripts/verify-home-post-format.mjs')) {
+  fail('missing scripts/verify-home-post-format.mjs');
+}
+if (!agents.includes('verify:home-post-format')) {
+  fail('AGENTS.md must reference verify:home-post-format');
+}
+if (!existsSync('scripts/verify-post-edit.mjs')) {
+  fail('missing scripts/verify-post-edit.mjs');
+}
+if (!agents.includes('verify:post-edit')) {
+  fail('AGENTS.md must reference verify:post-edit');
+}
 if (!existsSync('scripts/verify-home-happiness-shortcut.mjs')) {
   fail('missing scripts/verify-home-happiness-shortcut.mjs');
 }
@@ -152,6 +164,12 @@ if (!cursorRule.includes('verify:pre-push')) {
 }
 if (!cursorRule.includes('verify:home-post-composer')) {
   fail('.cursor/rules/civizen-project.mdc must require verify:home-post-composer after UI work');
+}
+if (!cursorRule.includes('verify:home-post-format')) {
+  fail('.cursor/rules/civizen-project.mdc must require verify:home-post-format after UI work');
+}
+if (!cursorRule.includes('verify:post-edit')) {
+  fail('.cursor/rules/civizen-project.mdc must require verify:post-edit after UI work');
 }
 if (!cursorRule.includes('verify:home-happiness-shortcut')) {
   fail('.cursor/rules/civizen-project.mdc must require verify:home-happiness-shortcut after UI work');
@@ -194,6 +212,12 @@ if (!existsSync('docs/04-operations/dev/market-jobs-public.md')) {
 }
 if (!agents.includes('market-jobs-public.md')) {
   fail('AGENTS.md must reference docs/04-operations/dev/market-jobs-public.md');
+}
+if (!existsSync('docs/04-operations/dev/home-post-formatting.md')) {
+  fail('missing docs/04-operations/dev/home-post-formatting.md');
+}
+if (!agents.includes('home-post-formatting.md')) {
+  fail('AGENTS.md must reference docs/04-operations/dev/home-post-formatting.md');
 }
 if (!existsSync('docs/assistant/civizen-assistant-cheatsheet.md')) {
   fail('missing docs/assistant/civizen-assistant-cheatsheet.md');
