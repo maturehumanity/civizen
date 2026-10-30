@@ -30,10 +30,12 @@ CREATE TEMP TABLE ci_fixture_people (
   date_of_birth date
 ) ON COMMIT DROP;
 
+-- Identity verification is required before posting, commenting, messaging people, supporting and voting
+-- (20261030120000_identity_verification_live.sql): every fixture is verified except 'guest', which tests the gate.
 INSERT INTO ci_fixture_people VALUES
-  ('c1000000-0000-4000-8000-000000000001', 'maturehumanity',  'Fixture Founder',         'founder',         false, true,  'citizen',           true,  'US', 'en',    '1976-05-11'),
+  ('c1000000-0000-4000-8000-000000000001', 'maturehumanity',  'Fixture Founder',         'founder',         true,  true,  'citizen',           true,  'US', 'en',    '1976-05-11'),
   ('c1000000-0000-4000-8000-000000000002', 'armen',           'Fixture Founder Staff',   'founder',         true,  true,  'citizen',           true,  'US', 'en-US', '1976-05-11'),
-  ('c1000000-0000-4000-8000-000000000003', 'member',          'Fixture Member',          'member',          false, false, 'registered_member', false, 'CA', 'en-CA', NULL),
+  ('c1000000-0000-4000-8000-000000000003', 'member',          'Fixture Member',          'member',          true,  false, 'verified_member', false, 'CA', 'en-CA', NULL),
   ('c1000000-0000-4000-8000-000000000004', 'citizen',         'Fixture Citizen',         'citizen',         true,  false, 'citizen',           false, 'AM', 'en-US', NULL),
   ('c1000000-0000-4000-8000-000000000005', 'verified_member', 'Fixture Verified Member', 'verified_member', true,  false, 'citizen',           false, 'FR', 'fr',    NULL),
   ('c1000000-0000-4000-8000-000000000006', 'certified',       'Fixture Certified',       'certified',       true,  false, 'citizen',           false, 'DE', 'de',    NULL),
