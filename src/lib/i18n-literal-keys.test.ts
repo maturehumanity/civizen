@@ -16,6 +16,8 @@ const ALLOW_DYNAMIC_PREFIXES: readonly string[] = [
   'admin.permissions.sectionNames.',
   'admin.roleDescriptions.',
   'admin.roles.',
+  'verify.live.move.',
+  'verify.mrz.',
   'agreements.attachmentKind.',
   'agreements.cardAction.',
   'agreements.cardStatus.',
