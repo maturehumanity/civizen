@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { createSignedIdentityArtifactUrl, latestArtifactOfKind } from '@/lib/identity-verification';
+import { isVideoPath } from '@/lib/identity-live';
 import { isIdentityReviewOverdue, type IdentityReviewQueueItem } from '@/lib/identity-verification-queue';
 import { IdentityReviewHistory } from './IdentityReviewHistory';
-import { IdentityReviewLiveEvidence, isVideoPath } from './IdentityReviewLiveEvidence';
+import { IdentityReviewLiveEvidence } from './IdentityReviewLiveEvidence';
 
 export type IdentityReviewCaseAction = 'claim' | 'release' | 'approve' | 'reject' | 'requestInfo';
 

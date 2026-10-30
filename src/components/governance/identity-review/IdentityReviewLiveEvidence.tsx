@@ -6,11 +6,6 @@ type Row = Record<string, unknown>;
 const obj = (value: unknown): Row => (value && typeof value === 'object' && !Array.isArray(value) ? (value as Row) : {});
 const list = (value: unknown): string[] => (Array.isArray(value) ? value.filter((v): v is string => typeof v === 'string') : []);
 
-/** Whether a stored file is a recording rather than a photo (live checks store a short clip). */
-export function isVideoPath(path: string | null | undefined): boolean {
-  return Boolean(path && /\.(webm|mp4)$/i.test(path));
-}
-
 /**
  * What the live check sent with the case: the challenge the server issued, what the member's device measured, the
  * fields read from the document's machine-readable zone, and the server's flags. Signals for the reviewer, never a

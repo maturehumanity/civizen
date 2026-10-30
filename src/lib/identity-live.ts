@@ -98,3 +98,8 @@ export function verificationErrorKey(message: string): string {
   const hit = VERIFY_ERRORS.find((code) => message.includes(code));
   return hit ? `verify.errors.${hit}` : 'verify.errors.generic';
 }
+
+/** Whether a stored file is a recording rather than a photo (live checks store a short clip). */
+export function isVideoPath(path: string | null | undefined): boolean {
+  return Boolean(path && /\.(webm|mp4)$/i.test(path));
+}
