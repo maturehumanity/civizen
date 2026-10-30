@@ -9,7 +9,7 @@ import { VERIFICATION_REQUIRED_EVENT, verifyPath } from '@/lib/identity-live';
 
 /**
  * Shown when the member tried something that needs a verified identity: verify now (and come back here), or later.
- * Mounted once in the app layout; any refused request raises it (see verification-signal.ts).
+ * Mounted once at the app root; any refused request raises it (see verification-signal.ts).
  */
 export function VerificationPrompt() {
   const { t } = useLanguage();

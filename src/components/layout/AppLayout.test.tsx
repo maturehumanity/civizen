@@ -23,9 +23,6 @@ vi.mock('@/components/layout/AppSideNav', () => ({
 vi.mock('@/components/layout/NavSecondaryDesktop', () => ({
   NavSecondaryDesktop: () => <div data-testid="nav-secondary-desktop" />,
 }));
-vi.mock('@/components/verification/VerificationPrompt', () => ({
-  VerificationPrompt: () => null,
-}));
 vi.mock('@/components/moderation/RestrictionBanner', () => ({
   RestrictionBanner: () => null,
 }));

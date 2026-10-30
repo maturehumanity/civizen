@@ -4,7 +4,6 @@ import { AppSideNav } from './AppSideNav';
 import { MAIN_CONTENT_ID, SkipToContentLink } from '@/components/layout/SkipToContentLink';
 import { AppTopChrome } from './AppTopChrome';
 import { RestrictionBanner } from '@/components/moderation/RestrictionBanner';
-import { VerificationPrompt } from '@/components/verification/VerificationPrompt';
 import { MobileNav } from './MobileNav';
 import { NavSecondaryDesktop } from './NavSecondaryDesktop';
 import { useIsDesktopLayout } from '@/hooks/useIsDesktopLayout';
@@ -49,7 +48,6 @@ export function AppLayout({
       >
         {showDesktopNav ? <NavSecondaryDesktop /> : null}
         <RestrictionBanner />
-        <VerificationPrompt />
         {children}
       </main>
       {showPhoneNav ? <MobileNav /> : null}
