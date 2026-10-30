@@ -1105,6 +1105,7 @@ export default function Profile() {
             </p>
             {profile?.is_verified ? (
               <span
+                role="img"
                 className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground"
                 title={t('profile.verifiedMember')}
                 aria-label={t('profile.verifiedMember')}
