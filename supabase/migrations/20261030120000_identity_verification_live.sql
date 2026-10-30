@@ -367,7 +367,8 @@ BEGIN
   END IF;
   DELETE FROM public.identity_verification_artifacts WHERE case_id = v_case.id AND artifact_kind IN ('live_presence', 'supporting_document', 'duplicate_check');
   INSERT INTO public.identity_verification_artifacts (case_id, artifact_kind, storage_path, artifact_hash, metadata, created_by) VALUES
-    (v_case.id, 'live_presence', p_video_path, NULL, jsonb_build_object('challenge', v_case.metadata -> 'challenge', 'source', 'in_house_live'), v_me),
+    (v_case.id, 'live_presence', p_video_path, NULL, jsonb_build_object('challenge', v_case.metadata -> 'challenge', 'source', 'in_house_live',
+                       'device_checks', coalesce(p_device_checks, '{}'::jsonb), 'flags', to_jsonb(v_flags)), v_me),
     (v_case.id, 'supporting_document', p_document_path, NULL, jsonb_build_object(
        'format', v_mrz ->> 'format', 'document_code', v_mrz ->> 'document_code', 'issuing_state', v_mrz ->> 'issuing_state',
        'expiry_date', v_mrz ->> 'expiry_date', 'birth_date', v_mrz ->> 'birth_date', 'surname', v_mrz ->> 'surname',
@@ -480,3 +481,11 @@ BEGIN
 END;
 $$;
 REVOKE ALL ON FUNCTION public.consultation_eligibility_reason(uuid, uuid) FROM PUBLIC, anon, authenticated;
+
+-- ---------------------------------------------------------------------------------------------
+-- 7. The identity bucket takes only what verification needs: photos, PDFs and the short live recording
+-- ---------------------------------------------------------------------------------------------
+UPDATE storage.buckets
+   SET file_size_limit = 26214400,
+       allowed_mime_types = ARRAY['image/jpeg', 'image/png', 'image/webp', 'application/pdf', 'video/webm', 'video/mp4']
+ WHERE id = 'identity-verification';
