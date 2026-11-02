@@ -17,10 +17,8 @@ AS $$
 DECLARE v_me uuid := public.current_profile_id(); v_author uuid;
 BEGIN
   IF v_me IS NULL THEN RETURN false; END IF;
-  BEGIN
-    v_author := public.moderation_target_author(p_kind, p_id);
-  EXCEPTION WHEN OTHERS THEN v_author := NULL;
-  END;
+  -- an unknown kind raises (fails closed) instead of skipping the author check
+  v_author := public.moderation_target_author(p_kind, p_id);
   RETURN v_author = v_me
       OR EXISTS (SELECT 1 FROM public.reports r
                   WHERE coalesce(r.target_kind, 'user') = p_kind AND coalesce(r.target_id, r.reported_user_id) = p_id
@@ -188,9 +186,14 @@ BEGIN
       v_excerpt := left(btrim(p_excerpt), 300); v_excerpt_source := 'reporter';
     END IF;
   ELSE
+    -- a contact report names one person: only a direct conversation with exactly one other member qualifies;
+    -- in any other conversation the member reports a specific message instead
+    IF NOT EXISTS (SELECT 1 FROM public.private_conversations WHERE id = p_conversation_id AND kind = 'direct')
+       OR (SELECT count(*) FROM public.private_conversation_members WHERE conversation_id = p_conversation_id AND profile_id <> v_me) <> 1 THEN
+      RAISE EXCEPTION 'report_a_message_instead' USING ERRCODE = '22023';
+    END IF;
     SELECT m.profile_id INTO v_reported FROM public.private_conversation_members m
      WHERE m.conversation_id = p_conversation_id AND m.profile_id <> v_me;
-    IF v_reported IS NULL THEN RAISE EXCEPTION 'nobody_to_report' USING ERRCODE = '22023'; END IF;
   END IF;
 
   -- one open report per member and message (or contact)
@@ -253,10 +256,12 @@ CREATE POLICY "Identity verification files update own" ON storage.objects FOR UP
 USING (
   bucket_id = 'identity-verification'
   AND split_part(name, '/', 1) = (public.current_profile_id())::text
+  AND split_part(name, '/', 2) ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
   AND public.identity_verification_folder_writable(name)
 )
 WITH CHECK (
   bucket_id = 'identity-verification'
   AND split_part(name, '/', 1) = (public.current_profile_id())::text
+  AND split_part(name, '/', 2) ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
   AND public.identity_verification_folder_writable(name)
 );

@@ -96,6 +96,35 @@ BEGIN
   RAISE NOTICE 'ok: T9 chat reports checked by the server';
 END $$;
 
+-- a contact report (no message) names the one other member, and a reviewer can see it
+DO $$
+DECLARE v uuid;
+BEGIN
+  v := public.report_private_conversation('7d000000-0000-4000-8000-0000000000b1', NULL, 'Keeps contacting me', NULL);
+  IF (SELECT reported_user_id FROM public.reports WHERE id = v) <> current_setting('t.citizen_pid')::uuid THEN
+    RAISE EXCEPTION 'contact report named the wrong person';
+  END IF;
+  PERFORM set_config('t.contact_report', v::text, true);
+  RAISE NOTICE 'ok: T9 contact report in a direct conversation';
+END $$;
+
+-- in a conversation with more than one other member a contact report is refused (report a message instead)
+RESET ROLE;
+INSERT INTO public.private_conversation_members (conversation_id, profile_id)
+VALUES ('7d000000-0000-4000-8000-0000000000b1', current_setting('t.mod_pid')::uuid);
+SET LOCAL ROLE authenticated;
+DO $$
+BEGIN
+  PERFORM public.report_private_conversation('7d000000-0000-4000-8000-0000000000b1', NULL, 'Which one of them?', NULL);
+  RAISE EXCEPTION 'contact report accepted in a group conversation';
+EXCEPTION WHEN invalid_parameter_value THEN
+  RAISE NOTICE 'ok: T9 group contact report refused';
+END $$;
+RESET ROLE;
+DELETE FROM public.private_conversation_members
+ WHERE conversation_id = '7d000000-0000-4000-8000-0000000000b1' AND profile_id = current_setting('t.mod_pid')::uuid;
+SET LOCAL ROLE authenticated;
+
 -- a non-member cannot report a conversation
 SELECT set_config('request.jwt.claims', json_build_object('sub', current_setting('t.mod_uid'), 'role', 'authenticated')::text, true);
 DO $$
@@ -109,8 +138,20 @@ END $$;
 -- the reported member cannot review a report about themselves
 RESET ROLE;
 UPDATE public.profiles SET granted_permissions = array_append(coalesce(granted_permissions, '{}'), 'report.review'::public.app_permission)
- WHERE id = current_setting('t.citizen_pid')::uuid;
+ WHERE id IN (current_setting('t.citizen_pid')::uuid, current_setting('t.mod_pid')::uuid);
 SET LOCAL ROLE authenticated;
+
+-- a reviewer reads contact reports (Settings > Messaging lists private_message and private_contact)
+SELECT set_config('request.jwt.claims', json_build_object('sub', current_setting('t.mod_uid'), 'role', 'authenticated')::text, true);
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM public.reports WHERE id = current_setting('t.contact_report')::uuid
+                    AND report_context->>'source' = 'private_contact') THEN
+    RAISE EXCEPTION 'reviewer cannot see a contact report';
+  END IF;
+  RAISE NOTICE 'ok: T9 contact report visible to a reviewer';
+END $$;
+SELECT set_config('request.jwt.claims', json_build_object('sub', current_setting('t.citizen_uid'), 'role', 'authenticated')::text, true);
 SELECT set_config('request.jwt.claims', json_build_object('sub', current_setting('t.citizen_uid'), 'role', 'authenticated')::text, true);
 DO $$
 DECLARE v_id uuid;
@@ -144,6 +185,32 @@ BEGIN
   END LOOP;
   IF ok >= 100 THEN RAISE EXCEPTION 'all 100 reports from one account were accepted'; END IF;
   RAISE NOTICE 'ok: report flood stopped after % reports', ok;
+END $$;
+
+-- the same limit covers chat reports (it sits on the reports table, so every path counts)
+RESET ROLE;
+SET LOCAL session_replication_role = replica;
+INSERT INTO public.private_messages (id, conversation_id, sender_id, content)
+SELECT ('7f000000-0000-4000-8000-' || lpad(i::text, 12, '0'))::uuid, '7d000000-0000-4000-8000-0000000000b1',
+       current_setting('t.citizen_pid')::uuid, 'flood message ' || i
+  FROM generate_series(1, 100) i;
+SET LOCAL session_replication_role = origin;
+SET LOCAL ROLE authenticated;
+SELECT set_config('request.jwt.claims', json_build_object('sub', current_setting('t.member_uid'), 'role', 'authenticated')::text, true);
+DO $$
+DECLARE i int; ok int := 0;
+BEGIN
+  FOR i IN 1..100 LOOP
+    BEGIN
+      PERFORM public.report_private_conversation('7d000000-0000-4000-8000-0000000000b1',
+        ('7f000000-0000-4000-8000-' || lpad(i::text, 12, '0'))::uuid, 'Flooding the queue', NULL);
+      ok := ok + 1;
+    EXCEPTION WHEN OTHERS THEN
+      IF SQLERRM <> 'rate_limited' THEN RAISE; END IF;
+    END;
+  END LOOP;
+  IF ok >= 100 THEN RAISE EXCEPTION 'all 100 chat reports from one account were accepted'; END IF;
+  RAISE NOTICE 'ok: chat report flood stopped after % more reports', ok;
 END $$;
 
 -- ---- T10: submitted evidence cannot be overwritten ----------------------------------------------------------------
